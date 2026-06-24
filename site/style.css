@@ -1,0 +1,129 @@
+/* Game Design Musings — site styles.
+   System fonts, responsive card grid, light/dark via prefers-color-scheme.
+   No build step; edit directly. */
+
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a2e;
+  --muted: #5a5a72;
+  --card-bg: #f6f6fb;
+  --card-border: #e2e2ef;
+  --accent: #5b4bdb;
+  --maxw: 56rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14141c;
+    --fg: #e8e8f0;
+    --muted: #a0a0b8;
+    --card-bg: #1e1e2a;
+    --card-border: #2c2c3c;
+    --accent: #9b8cff;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.site-header,
+main,
+.site-footer {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.site-header {
+  padding-top: 3rem;
+  padding-bottom: 1rem;
+}
+
+.site-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+main h2 {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 0.5rem;
+}
+
+.project-grid {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.project-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.project-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+.project-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.project-card a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.project-card a:hover,
+.project-card a:focus {
+  text-decoration: underline;
+}
+
+.project-card.placeholder {
+  background: transparent;
+  border-style: dashed;
+}
+
+/* Per-project pages can use .prose for a comfortable reading width. */
+.prose {
+  max-width: 42rem;
+}
+
+.prose a { color: var(--accent); }
+
+.site-footer {
+  margin-top: 2rem;
+  padding-bottom: 3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.site-footer code { font-size: 0.85em; }

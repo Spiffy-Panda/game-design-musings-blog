@@ -1,0 +1,21 @@
+# --- Local-only / machine-specific (never committed) ---
+# Identity rules, absolute paths, and tooling locations live here (see CLAUDE.md, Rule 7).
+CLAUDE.local.md
+
+# --- Scratch scripts are throwaway exploration ---
+# Keep the folder's README (it documents the convention); ignore everything else.
+scrap_scripts/*
+!scrap_scripts/README.md
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
