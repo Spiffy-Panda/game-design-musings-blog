@@ -7,12 +7,24 @@ CLAUDE.local.md
 scrap_scripts/*
 !scrap_scripts/README.md
 
+# --- Generated site output (built by utils/python/build_site.py) ---
+# index.html is regenerated from MUSING-CONFIG.json; musings/ is rendered from each
+# musing's MUSING.md. Sources are tracked, build output is not. See musing-tech-notes.md.
+/site/index.html
+/site/musings/
+
 # --- Python ---
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 venv/
+
+# --- Front-end (approaches-app: React/Tailwind via Vite) ---
+# Dependencies + build output. package.json/package-lock.json + src are tracked; the
+# built pages land in site/musings/ (already ignored above) via build_site.py.
+approaches-app/node_modules/
+approaches-app/dist/
 
 # --- OS / editor cruft ---
 .DS_Store

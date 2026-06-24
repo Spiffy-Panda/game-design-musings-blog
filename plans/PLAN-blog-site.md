@@ -20,17 +20,53 @@ now; data-driven later.
 - [x] `.claude/launch.json` — `local-server` preview config for the Claude Code launch panel.
 - [x] `site/README.md` + `site/SITE.md` — deliverable pair (human + agent spec).
 
+## Done (v2 — 2026-06-24 · musing build framework)
+
+- [x] Musings authored as top-level `<MUSE-SLUG>/` folders (`MUSING.md` content +
+      `<FOLDER-NAME>.md` nav + `build-musing.py`), rendered into `site/musings/<slug>/`.
+- [x] `MUSING-CONFIG.json` — registry the build reads (folder, slug, name, description, hidden).
+- [x] `utils/python/build_site.py` — orchestrator: runs each `build-musing.py`, regenerates `index.html`.
+- [x] `utils/python/musing_render.py` — pure-stdlib Markdown→HTML + page chrome (documented subset).
+- [x] `serve_site.py` builds on startup (drafts on); `pages.yml` builds in CI (drafts off).
+- [x] Generated output (`site/index.html`, `site/musings/`) gitignored; `site/projects/` retired.
+- [x] First musing: **Minimalist Space Logistics**.
+- [x] `musing-tech-notes.md` — the cross-musing "how"; `CLAUDE.md` + `README.md` define a musing.
+
+## Done (v3 — 2026-06-24 · MSL approaches + multi-page musings)
+
+- [x] Multi-page musing support: `build-musing.py` can render a sub-page tree; `musing_render.py`
+      gained `back_href`/`back_text` so nested pages back-link to their parent (with depth-aware
+      `css_href`/`home_href`). Documented in `../musing-tech-notes.md`.
+- [x] **Minimalist Space Logistics → `approaches/` sub-tree**: a hub (`APPROACHES.md`) plus three
+      divergent design pitches — *The Invisible Hand* (agent-based economy), *The Tide Line*
+      (pressure-field front), *Dead Reckoning* (deterministic content deck) — each authored by a
+      separate agent and ironed down to the simulation tech it implies.
+- [x] `MUSING.md` links out to the approaches hub; nav spec records the `APR`/`HAND`/`TIDE`/`DEAD`
+      mnemonics (Rule 8).
+
+## Done (v4 — 2026-06-24 · approaches go React + HAND mutations)
+
+- [x] Framework sub-site: `approaches-app/` (Vite + React 19 + Tailwind v4, multi-page,
+      `base: "./"`). `build_site.py` builds it and copies it into `site/`; CI gained a Node
+      step; `--no-frontend` for fast Markdown-only builds. Zero-dependency stance amended
+      (two new rows in `../PROJECT-PITCH.md`).
+- [x] Approaches **hub** rebuilt in React (`Hub.tsx`); retired the Markdown `APPROACHES.md`.
+- [x] Three **HAND-lineage mutations** (React pages, one agent each): *The Two Ledgers* (M1,
+      money / OQ4+OQ5), *The Known War* (M2, topology+front / OQ1+OQ3), *The Glass Cockpit*
+      (M3, visuals / OQ2). All inherit the shared `_R` revisions + the 12-good canon.
+- [x] Original three approaches (HAND/TIDE/DEAD) left as Markdown, per request.
+
 ## Next
 
-- [ ] Add the first real musing under `site/projects/<slug>/` and link it from the landing page.
-- [ ] **Index generator** — `utils/python/build_index.py` that rebuilds `index.html`'s
-      projects grid from per-project metadata (e.g. `site/projects/<slug>/project.json`),
-      so adding a musing stops being a hand-edit of HTML. Promote from scrap once it works.
-- [ ] Light polish: favicon, richer page `<meta>`, a simple per-project page template.
+- [ ] Light polish: favicon, richer page `<meta>` (per-musing description), `<title>` tweaks.
 - [ ] Decide a tag/category scheme for musings (only once there are enough to warrant it).
+- [ ] Maybe: live-rebuild / watch mode so the preview server picks up edits without a restart.
+- [ ] **Minimalist Space Logistics:** pick an engine from the three approaches and build its
+      disqualifying prototype (one-market clearing cell / 12-node field harness / a single hand).
 
-## Open questions
+## Resolved
 
-- Per-musing pages: hand-authored HTML, or author in Markdown and render to HTML at build time?
-- Keep everything in `site/projects/`, or author musings as deliverable folders elsewhere and
-  render/copy into `site/` at build time?
+- Per-musing pages are **authored in Markdown and rendered to HTML at build time** (not
+  hand-authored). See `../musing-tech-notes.md` + the decisions table in `../PROJECT-PITCH.md`.
+- Musings are **authored as top-level `<MUSE-SLUG>/` folders and rendered into `site/`**, not
+  kept under `site/projects/` (now retired).
