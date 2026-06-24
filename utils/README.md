@@ -11,4 +11,4 @@ Every script anchors to the repo root via `__file__`, so it runs from any CWD.
 
 | Script | Run | What it does |
 |--------|-----|--------------|
-| `python/serve.py` | `python utils/python/serve.py [--port 8000] [--host 127.0.0.1] [--no-browser]` | Local static preview server for `site/`. Serves the exact content GitHub Pages publishes; stdlib only. |
+| `python/serve_site.py` | `python utils/python/serve_site.py [--port 8000] [--host 127.0.0.1] [--open]` | Local static preview server for `site/`. Serves the exact content GitHub Pages publishes; stdlib only. Wired to the `local-server` launch config (`.claude/launch.json`). |

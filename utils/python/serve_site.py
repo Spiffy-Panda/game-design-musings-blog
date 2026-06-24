@@ -7,8 +7,11 @@ Pages deployment (see ``.github/workflows/pages.yml``); it is NOT a dynamic back
 
 Anchored to the repo root via ``__file__``, so it runs correctly from any CWD::
 
-    python utils/python/serve.py
-    py utils/python/serve.py --port 9000
+    python utils/python/serve_site.py
+    py utils/python/serve_site.py --port 9000 --open
+
+By default it does not open a browser — the Claude Code "local-server" launch config
+(``.claude/launch.json``) previews it in-panel. Pass ``--open`` for a browser tab.
 
 Standard library only — no dependencies.
 """
@@ -20,7 +23,7 @@ import webbrowser
 from functools import partial
 from pathlib import Path
 
-# utils/python/serve.py -> parents[0]=python, [1]=utils, [2]=repo root
+# utils/python/serve_site.py -> parents[0]=python, [1]=utils, [2]=repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SITE_DIR = REPO_ROOT / "site"
 
@@ -32,7 +35,7 @@ def main() -> int:
     )
     parser.add_argument("--port", type=int, default=8000, help="Port to listen on (default: 8000)")
     parser.add_argument("--host", default="127.0.0.1", help="Host/interface to bind (default: 127.0.0.1)")
-    parser.add_argument("--no-browser", action="store_true", help="Do not open a browser window on start")
+    parser.add_argument("--open", action="store_true", help="Open the site in a browser on start (off by default)")
     args = parser.parse_args()
 
     if not SITE_DIR.is_dir():
@@ -47,7 +50,7 @@ def main() -> int:
         url = f"http://{args.host}:{args.port}/"
         print(f"Serving {SITE_DIR} at {url}")
         print("Press Ctrl+C to stop.")
-        if not args.no_browser:
+        if args.open:
             webbrowser.open(url)
         try:
             httpd.serve_forever()

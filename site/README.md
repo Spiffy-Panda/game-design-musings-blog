@@ -15,10 +15,11 @@ private data and identity details out of it (see Rule 6 in `../CLAUDE.md`).
 From the repo root:
 
 ```
-python utils/python/serve.py
+python utils/python/serve_site.py
 ```
 
-Serves this folder at <http://127.0.0.1:8000/>, the same way Pages serves it.
+Serves this folder at <http://127.0.0.1:8000/>, the same way Pages serves it. (In Claude
+Code, the `local-server` launch config does the same.)
 
 ## Files
 

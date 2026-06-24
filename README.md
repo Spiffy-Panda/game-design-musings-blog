@@ -12,12 +12,14 @@ content is **not** Godot-specific.
 Preview the site locally (Python 3, no dependencies):
 
 ```
-python utils/python/serve.py
-# or:  py utils/python/serve.py --port 9000
+python utils/python/serve_site.py            # prints the local URL
+# or pick a port / auto-open a browser:
+py utils/python/serve_site.py --port 9000 --open
 ```
 
 It serves `site/` at <http://127.0.0.1:8000/> — the same content GitHub Pages
-publishes.
+publishes. In Claude Code, the **local-server** launch config (`.claude/launch.json`)
+starts the same server in the preview panel.
 
 ## Where things live
 

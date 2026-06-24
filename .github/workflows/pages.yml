@@ -3,7 +3,7 @@
 # Publishes to: https://<username>.github.io/game-design-musings-blog/
 # One-time setup (repo Settings -> Pages): set "Source" to "GitHub Actions".
 #
-# Preview the same content locally with: python utils/python/serve.py
+# Preview the same content locally with: python utils/python/serve_site.py
 name: Deploy site to GitHub Pages
 
 on:

@@ -20,6 +20,32 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-06-24 — Local-server launch config + canonical server name
+
+**Context:** Mirrors the `.claude/launch.json` "local-server" preview pattern from a
+sibling project so the site can be previewed in the Claude Code launch panel. Also written
+up as a reusable appendix to the bootstrap skill.
+
+**Choice:** Renamed `utils/python/serve.py` → `utils/python/serve_site.py` (the
+cross-project canonical name the launch config expects) and updated every reference. Added
+`.claude/launch.json` with the `local-server` config (`python utils/python/serve_site.py
+--port 8000`, `port: 8000`). Flipped the server's browser behavior from auto-open
+(`--no-browser` opt-out) to opt-in (`--open`).
+
+**Why:** One canonical server name keeps the pattern identical across repos and lets the
+appendix be authoritative. Browser opt-in matches `python -m http.server` and avoids a
+redundant browser window beside the in-panel preview (the reference launch.json passes no
+browser flag).
+
+**Notes:**
+- Pattern documented in `../initialize-skill-v0_2-appendix-local-site-preview.md` (next to
+  the prototype, outside this repo — a bootstrap artifact, not committed here).
+- `.claude/launch.json` is committed (shared preview config); keep machine-local Claude
+  settings in `.claude/settings.local.json` (gitignore that if it appears).
+- The bootstrap entry below still names the old `serve.py` — left as-is (append-only history).
+
+---
+
 ## 2026-06-24 — Bootstrap: scaffold + landing-page site + Pages deploy
 
 **Context:** Fresh repo for miscellaneous game-design musings and exploration (named

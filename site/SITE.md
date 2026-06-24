@@ -7,7 +7,7 @@ Agent-facing spec for the static directory site. Read this before editing anythi
 
 A static "directory" blog deployed to GitHub Pages
 (<https://spiffy-panda.github.io/game-design-musings-blog/>) via
-`.github/workflows/pages.yml`. The local preview server `utils/python/serve.py` serves
+`.github/workflows/pages.yml`. The local preview server `utils/python/serve_site.py` serves
 this exact folder.
 
 ## Structure
@@ -38,7 +38,7 @@ site/
 2. Add a card to the projects grid in `site/index.html` — copy a `<li class="project-card">`
    and update title, blurb, and `href="./projects/<slug>/"`.
 3. Remove the "no musings yet" placeholder card once the first real card is added.
-4. Preview with `python utils/python/serve.py`, then commit (write a `../DEV-LOG.md` entry
+4. Preview with `python utils/python/serve_site.py`, then commit (write a `../DEV-LOG.md` entry
    first — Rule 5).
 
 ### Project page skeleton

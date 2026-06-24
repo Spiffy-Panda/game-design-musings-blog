@@ -15,8 +15,9 @@ now; data-driven later.
 - [x] `site/index.html` — landing page with intro + (empty) projects grid.
 - [x] `site/style.css` — minimal responsive styling, system fonts, light/dark.
 - [x] `site/projects/` — home for per-musing pages (empty placeholder).
-- [x] `utils/python/serve.py` — stdlib preview server, anchored to repo root; `--port`/`--host`/`--no-browser`.
+- [x] `utils/python/serve_site.py` — stdlib preview server, anchored to repo root; `--port`/`--host`/`--open` (browser opt-in).
 - [x] `.github/workflows/pages.yml` — deploy `site/` to GitHub Pages via Actions.
+- [x] `.claude/launch.json` — `local-server` preview config for the Claude Code launch panel.
 - [x] `site/README.md` + `site/SITE.md` — deliverable pair (human + agent spec).
 
 ## Next
