@@ -1,4 +1,9 @@
-# Deploy the static site in `site/` to GitHub Pages.
+# Build and deploy the static site in `site/` to GitHub Pages.
+#
+# Two jobs: `build` validates the full dual-build (Markdown pages + the approaches-app React
+# sub-site) on ANY ref — pushes, PRs, or a manual run on a feature branch. `deploy` publishes,
+# and runs ONLY from the default branch (the github-pages environment is branch-protected, so
+# feature-branch runs stop after `build`).
 #
 # Publishes to: https://<username>.github.io/game-design-musings-blog/
 # One-time setup (repo Settings -> Pages): set "Source" to "GitHub Actions".
@@ -9,6 +14,7 @@ name: Deploy site to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 # Least-privilege permissions the Pages deploy needs.
@@ -23,7 +29,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Validate the full build on every ref (no Pages environment, so it runs on branches/PRs).
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Set up Node
+        # Builds the approaches React app (approaches-app/); build_site.py runs `npm ci` +
+        # `npm run build` for it and copies the output into site/.
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build site
+        # Renders every musing + regenerates site/index.html, then builds the approaches app
+        # and copies it into site/. No --drafts, so "hidden": true musings are never published.
+        run: python utils/python/build_site.py
+
+  # Publish to GitHub Pages — default branch only. Feature-branch / PR runs skip this job.
   deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -36,15 +66,10 @@ jobs:
         with:
           python-version: '3.x'
       - name: Set up Node
-        # Needed to build the approaches React app (approaches-app/). build_site.py runs
-        # `npm ci` + `npm run build` for it and copies the output into site/.
         uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Build site
-        # Renders every musing + regenerates site/index.html from MUSING-CONFIG.json, then
-        # builds the approaches React app and copies it into site/. No --drafts, so
-        # "hidden": true musings are never published.
         run: python utils/python/build_site.py
       - name: Configure Pages
         uses: actions/configure-pages@v5
