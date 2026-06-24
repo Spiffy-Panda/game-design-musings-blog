@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Local preview server for the Game Design Musings static site.
 
-Serves the published ``site/`` directory over HTTP so you can preview the landing
-page exactly as GitHub Pages will serve it. Static files only — this mirrors the
-Pages deployment (see ``.github/workflows/pages.yml``); it is NOT a dynamic backend.
+Builds the site, then serves the published ``site/`` directory over HTTP so you can
+preview the landing page exactly as GitHub Pages will serve it. On startup it runs the
+site build (``build_site.build()``) with drafts ON — so hidden/work-in-progress musings
+render locally — then serves static files, mirroring the Pages deployment (see
+``.github/workflows/pages.yml``). It is NOT a dynamic backend; restart it to rebuild.
 
 Anchored to the repo root via ``__file__``, so it runs correctly from any CWD::
 
@@ -19,9 +21,12 @@ from __future__ import annotations
 
 import argparse
 import http.server
+import sys
 import webbrowser
 from functools import partial
 from pathlib import Path
+
+import build_site  # sibling module (utils/python/ is on sys.path when run as a script)
 
 # utils/python/serve_site.py -> parents[0]=python, [1]=utils, [2]=repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +42,14 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1", help="Host/interface to bind (default: 127.0.0.1)")
     parser.add_argument("--open", action="store_true", help="Open the site in a browser on start (off by default)")
     args = parser.parse_args()
+
+    # Build the site (render musings + regenerate the index) before serving. Drafts ON
+    # for local preview. A build failure shouldn't stop the preview server — report it
+    # and serve whatever is already on disk.
+    try:
+        build_site.build(include_hidden=True)
+    except Exception as exc:  # noqa: BLE001 - preview convenience over strictness
+        print(f"warning: site build failed ({exc}); serving existing files", file=sys.stderr)
 
     if not SITE_DIR.is_dir():
         print(f"error: site directory not found at {SITE_DIR}")

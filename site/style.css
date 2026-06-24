@@ -111,6 +111,21 @@ main h2 {
   border-style: dashed;
 }
 
+/* "draft" badge on hidden musings (only ever shown in local preview). */
+.project-card .draft {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.5rem;
+  background: var(--card-border);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+}
+
 /* Per-project pages can use .prose for a comfortable reading width. */
 .prose {
   max-width: 42rem;

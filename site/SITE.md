@@ -1,74 +1,75 @@
 # SITE.md — spec for the published site (`site/`)
 
-Agent-facing spec for the static directory site. Read this before editing anything under
-`site/`; you shouldn't need to open a prior project page to learn the shape.
+Agent-facing spec for the static directory site. `site/` is now **generated output**: the
+landing page and every musing page are built from sources elsewhere in the repo. Read this
+to understand the output and the static parts; read `../musing-tech-notes.md` for the build
+pipeline and how to author a musing.
 
 ## What this is
 
 A static "directory" blog deployed to GitHub Pages
 (<https://spiffy-panda.github.io/game-design-musings-blog/>) via
-`.github/workflows/pages.yml`. The local preview server `utils/python/serve_site.py` serves
-this exact folder.
+`.github/workflows/pages.yml`. The local preview server `utils/python/serve_site.py` builds
+the site, then serves this exact folder.
+
+The site is **built**, not hand-authored: `utils/python/build_site.py` reads
+`../MUSING-CONFIG.json`, runs each musing's `build-musing.py`, and writes the output here.
 
 ## Structure
 
 ```
 site/
-  index.html      landing page: header, intro, <ul class="project-grid"> of cards
-  style.css       all styling; system-font stack, responsive grid, light/dark via prefers-color-scheme
-  projects/       one subfolder per musing: projects/<slug>/index.html (+ assets)
+  style.css       all styling; system-font stack, responsive grid, light/dark. TRACKED (source).
+  index.html      landing page: header + <ul class="project-grid"> of cards. GENERATED.
+  musings/        one subfolder per musing: musings/<slug>/index.html (+ assets, + optional
+                  sub-pages; some framework-built, e.g. the React approaches/ tree). GENERATED.
 ```
+
+- **`style.css` is the only tracked file the build doesn't touch** — edit it directly for
+  site-wide styling.
+- **`index.html` and `musings/` are generated** (and gitignored). Don't hand-edit them;
+  they're overwritten on every build. Change a card via `../MUSING-CONFIG.json`; change a
+  page via that musing's `MUSING.md`.
 
 ## Hard conventions
 
 - **Relative links only.** The site is served at `/` locally but under
-  `/game-design-musings-blog/` on Pages. Use `./style.css`, `./projects/<slug>/`,
-  `../../style.css` — never a leading `/` and never an absolute `https://…github.io/…`
-  self-link. This is what makes one set of files work in both places.
-- **No build step, no dependencies.** Plain HTML + CSS. If/when this changes (a generator,
-  a Markdown renderer), record it in `../PROJECT-PITCH.md` and update this spec.
+  `/game-design-musings-blog/` on Pages. Generated pages link to `../../style.css` and
+  `../../index.html`; the renderer enforces this. Never a leading `/` or an absolute
+  `…github.io/…` self-link.
+- **One build step, two toolchains.** `build_site.py` + `musing_render.py` are pure stdlib
+  (no `pip install`) and render the landing page + Markdown musings. The **one exception** is
+  the `approaches/` sub-site for Minimalist Space Logistics: a React/Tailwind app
+  (`../approaches-app/`) that `build_site.py` builds via `npm` and copies into `site/` (the
+  Pages workflow has a Node step). New Python deps or another framework section: record in
+  `../PROJECT-PITCH.md` and update `../musing-tech-notes.md`.
 - **Public-surface gate (Rule 6).** Everything here is published. No dead names, real last
-  names, private paths, secrets, or bulk third-party content.
+  names, private paths, secrets, or bulk third-party content. The sources for the gate live
+  in the musing folders — review each `MUSING.md`, not the generated HTML.
 
-## How to add a musing
+## How a musing becomes a page
 
-1. Create `site/projects/<slug>/index.html`. Copy an existing project page as a template
-   (or the skeleton below). Link back to the landing page with `../../index.html` and the
-   stylesheet with `../../style.css`.
-2. Add a card to the projects grid in `site/index.html` — copy a `<li class="project-card">`
-   and update title, blurb, and `href="./projects/<slug>/"`.
-3. Remove the "no musings yet" placeholder card once the first real card is added.
-4. Preview with `python utils/python/serve_site.py`, then commit (write a `../DEV-LOG.md` entry
-   first — Rule 5).
+Authoring happens in a top-level `<MUSE-SLUG>/` folder, not under `site/`. The short version:
 
-### Project page skeleton
+1. `<MUSE-SLUG>/MUSING.md` is the content; `<MUSE-SLUG>/build-musing.py` renders it.
+2. `../MUSING-CONFIG.json` lists the musing (folder, slug, name, description, hidden).
+3. `build_site.py` renders it to `site/musings/<slug>/` and adds its card to `index.html`.
 
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><!-- Title --> — Game Design Musings</title>
-  <link rel="stylesheet" href="../../style.css">
-</head>
-<body>
-  <main class="prose">
-    <p><a href="../../index.html">← Back to all musings</a></p>
-    <h1><!-- Title --></h1>
-    <!-- content -->
-  </main>
-</body>
-</html>
-```
+Full checklist + the supported Markdown subset: `../musing-tech-notes.md`.
 
 ## Inventory (what exists now)
 
-- `index.html` — landing page; projects grid currently holds a single "no musings yet" placeholder.
-- `style.css` — base styling (header, card grid, `.prose` for project pages).
-- `projects/` — empty except `.gitkeep`.
+- `style.css` — base styling (header, card grid, `.prose` for musing pages, `.draft` badge). Tracked.
+- `index.html` — generated landing page (one card per visible musing).
+- `musings/<slug>/` — generated musing pages. Currently: `minimalist-space-logistics/`,
+  whose `approaches/` sub-tree mixes a **React-built** hub + three mutation pages
+  (`two-ledgers`, `known-war`, `glass-cockpit`) with three **Markdown** approach pages
+  (`the-invisible-hand`, `the-tide-line`, `dead-reckoning`).
 
-## Planned
+## Build & preview
 
-- A generator (`utils/python/build_index.py`) to rebuild the projects grid from per-project
-  metadata. Until then, the grid is hand-edited. See `../plans/PLAN-blog-site.md`.
+- Local: `python utils/python/serve_site.py` (builds with drafts on, then serves).
+- One-shot build: `python utils/python/build_site.py` (add `--drafts` to include hidden musings).
+- CI: `.github/workflows/pages.yml` runs the build (no drafts) before uploading `site/`.
+- Frontend: the `approaches/` React app is built automatically by `build_site.py` (needs
+  Node/npm). `--no-frontend` skips it. See `../approaches-app/README.md`.

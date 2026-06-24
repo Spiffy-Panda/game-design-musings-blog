@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* Make sure Tailwind scans the page TSX + the HTML entries for class usage. */
+@source "../**/*.{ts,tsx}";
+@source "../../*.html";
+@source "../../**/*.html";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Ink + surfaces (dark "ops console" palette shared by every approaches page). */
+  --color-ink-950: #07080c;
+  --color-ink-900: #0a0c12;
+  --color-ink-850: #0e1018;
+  --color-ink-800: #141826;
+  --color-ink-700: #1d2233;
+  --color-ink-600: #2a3146;
+  --color-line: #2a3146;
+  --color-fog-100: #eef1f8;
+  --color-fog-300: #c4c9d8;
+  --color-fog-400: #9aa1b6;
+  --color-fog-500: #767d93;
+}
+
+:root {
+  color-scheme: dark;
+  /* Per-page accent; <Page accent="..."> overrides this via inline style. */
+  --accent: #a78bfa;
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-ink-950);
+  color: var(--color-fog-100);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* A faint engineering grid + a top accent glow — the "console" texture. */
+  background-image:
+    radial-gradient(60rem 40rem at 50% -10%, var(--accent-soft), transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+  background-repeat: no-repeat, repeat, repeat;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--color-ink-950);
+}
+
+a {
+  color: inherit;
+}
+
+/* Thin custom scrollbar to match the console look. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+}

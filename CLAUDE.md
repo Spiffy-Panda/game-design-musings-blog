@@ -4,11 +4,40 @@ This is the LLM entry point for **Game Design Musings**, a repo of miscellaneous
 game-design explorations published as a browsable directory (a small static
 "blog"). Read this file first, then follow the entry-point chain at the bottom.
 
-**Repo shape:** prose / knowledge-base + tooling. The deliverables are written
-explorations surfaced through the static site in `site/`. The only code is
-tooling (a local preview server in `utils/`). There is **no** `src/` product code
-and therefore **no** `CodeDocs/` / `CODE-DESIGN.md` tier — if real source code is
-ever added, stand that tier up then.
+**Repo shape:** prose / knowledge-base + tooling. The deliverables are **musings** —
+written game-design explorations, each authored in its own top-level `<MUSE-SLUG>/`
+folder and rendered into the static site in `site/` by a small build step. The code is
+mostly tooling: a local preview server and the site build in `utils/`, plus a thin
+`build-musing.py` inside each musing folder. **One exception:** `approaches-app/` is a
+React/Tailwind app (Vite) that renders the *Minimalist Space Logistics → approaches* hub +
+mutation pages — the one framework-built part of the site, with its own `README.md` as its
+code-doc (the build stays zero-dependency everywhere else; see `PROJECT-PITCH.md`). There is
+still no general `src/` product tier and no `CodeDocs/` / `CODE-DESIGN.md` tier — if broader
+source code is added, stand that tier up then.
+
+## Musings — the core deliverable
+
+A **musing** is one self-contained game-design exploration: a design note, a mechanics
+experiment, a post-mortem, a half-formed idea worth keeping. Each musing is a top-level
+`<MUSE-SLUG>/` folder, authored in Markdown, and published as one page in the `site/`
+directory (a card on the landing page links to it).
+
+A musing folder holds:
+
+- `MUSING.md` — the published content; the entry point that gets rendered to HTML.
+- `<FOLDER-NAME>.md` — the agent-nav spec (the Rule 2 pair, e.g.
+  `MINIMALIST-SPACE-LOGISTICS.md`). **Not** published.
+- `build-musing.py` — renders `MUSING.md` → `site/musings/<slug>/`. It lives in the musing
+  folder — a sanctioned third script location alongside `utils/` and `scrap_scripts/`,
+  because it's part of the deliverable — and still anchors to the repo root per Rule 1.
+
+`MUSING-CONFIG.json` (repo root) registers every musing. The site build
+(`utils/python/build_site.py`, run by the preview server and by GitHub Pages) reads it,
+runs each `build-musing.py`, and regenerates the landing page from each entry's friendly
+name + description. **`musing-tech-notes.md` (repo root) is the canonical "how"** — the
+build pipeline, the Markdown subset the renderer supports, the per-folder build contract,
+and the gotchas, shared across all musings. Read it before adding or changing a musing,
+and append to it whenever you learn something the next musing would want.
 
 ---
 
@@ -46,7 +75,7 @@ Sonnet-tier models have ignored it before.
 |------|-------|---------|---------|
 | Plan | `plans/` | `PLAN-<slug>.md`, indexed by `PLAN.md` | Forward-looking. Chat dump. |
 | Design | `PROJECT-PITCH.md` | single narrative + decisions table | Why it is built this way. |
-| Deliverable | `<folder>/` | `README.md` + `<FOLDER-NAME>.md` pair | LLM-authored deliverables (e.g. `site/`). |
+| Deliverable | `<MUSE-SLUG>/` (musings); `site/` | `MUSING.md` + `<FOLDER-NAME>.md` pair (musings); `README.md` + `SITE.md` (site) | LLM-authored deliverables. Musings are authored as top-level folders and rendered into `site/`. |
 | Code-doc | *(n/a — no `src/`)* | — | Stand up `CodeDocs/` + `CODE-DESIGN.md` only if real source is added. |
 
 `PLAN.md` is an *index only* — one line per slug.
@@ -101,6 +130,24 @@ back before pushing.
 Identity rules that gate public output live in the **gitignored** `CLAUDE.local.md`,
 not here. They are applied to every public surface under Rule 6.
 
+### Rule 8 — List enumeration in pages (persistent item handles)
+
+Enumerated items that live in a **repo file** (any page — musing or not) get stable,
+referenceable handles. This is the persistent counterpart to the global chat-local
+`_<PREFIX>.<n>` rule: because a page is committed, not throwaway, the leading `_` is
+**dropped** and the item takes the page's mnemonic.
+
+- **Form:** `<PREFIX>.<n>` — a short uppercase page mnemonic, a `.`, then the item number.
+  The Minimalist Space Logistics page's mnemonic is **`MSL`**, so its items are `MSL.1`,
+  `MSL.2`, … Chat-local scratch lists still keep the `_` (e.g. `_D.1`); page items never do.
+- **Scope is implicit.** Inside that page — or in a chat already scoped to it — the prefix
+  is understood: reference items by `.<n>` or the bare number. Qualify with the prefix
+  (`MSL.1`) only when crossing scopes (from another page, or an unscoped chat).
+- **Where the mnemonic lives.** A page declares its mnemonic in its nav spec
+  (`<FOLDER-NAME>.md` for musings) so the handle is stable and discoverable.
+
+Applies to **any page**, not just musing-formatted ones.
+
 ---
 
 ## Where to look first
@@ -108,8 +155,11 @@ not here. They are applied to every public surface under Rule 6.
 - **`PLAN.md`** — index of active/completed plans (`plans/PLAN-<slug>.md`).
 - **`PROJECT-PITCH.md`** — why this project exists + decisions table.
 - **`DEV-LOG.md`** — append-only decision log (newest on top).
-- **`site/SITE.md`** — spec for the published site (structure, how to add a musing).
-- **`utils/README.md`** — catalog of durable tooling (the preview server).
+- **`MUSING-CONFIG.json`** — registry of musings the site build reads (folder, slug, name, description, hidden).
+- **`musing-tech-notes.md`** — the *how* of musings: build pipeline, Markdown subset, per-folder build contract. Canonical, shared across musings.
+- **`site/SITE.md`** — spec for the published site output (structure, the build step, how a musing becomes a page).
+- **`utils/README.md`** — catalog of durable tooling (the preview server + the site build).
+- **`approaches-app/README.md`** — the React/Tailwind sub-site (MSL approaches hub + mutation pages); the one framework-built part of the site.
 - **`scrap_scripts/README.md`** — scratch-script convention + promotion rule.
 - **`CLAUDE.local.md`** — *(gitignored)* machine paths + identity rules.
 - **`README.md`** — human entry point.

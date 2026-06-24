@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "_about": "Registry of musings. The site build (utils/python/build_site.py) reads this to discover each musing folder, run its build-musing.py, and render the landing-page cards. Schema + workflow: musing-tech-notes.md.",
+  "musings": [
+    {
+      "folder": "Minimalist-Space-Logistics",
+      "slug": "minimalist-space-logistics",
+      "name": "Minimalist Space Logistics",
+      "description": "A 4X space game stripped to a single trading ship: out-logistic an unwinnable war until the front can win it for you.",
+      "hidden": false
+    }
+  ]
+}

@@ -4,7 +4,7 @@ Index of plans. One line per slug; the detail lives in `plans/PLAN-<slug>.md`.
 
 ## Active
 
-- [PLAN-blog-site](plans/PLAN-blog-site.md) — the published directory site: landing page, preview server, Pages deploy, and how musings get added.
+- [PLAN-blog-site](plans/PLAN-blog-site.md) — the published directory site: landing page, preview server, Pages deploy, and the musing build framework (`MUSING-CONFIG.json` + per-folder `build-musing.py` + generator), now with multi-page musings (sub-pages) and a React/Tailwind sub-site for the MSL approaches (`approaches-app/`).
 
 ## Completed
 

@@ -31,6 +31,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Set up Node
+        # Needed to build the approaches React app (approaches-app/). build_site.py runs
+        # `npm ci` + `npm run build` for it and copies the output into site/.
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build site
+        # Renders every musing + regenerates site/index.html from MUSING-CONFIG.json, then
+        # builds the approaches React app and copies it into site/. No --drafts, so
+        # "hidden": true musings are never published.
+        run: python utils/python/build_site.py
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site artifact
