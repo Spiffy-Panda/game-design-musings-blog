@@ -25,11 +25,13 @@ h1{font-size:2.6rem;line-height:1.05;letter-spacing:-.02em;margin:.5rem 0 0}
 .lede{font-size:1.15rem;font-style:italic;color:var(--fog-300);max-width:46rem;margin:1.1rem 0 0}
 .note{margin-top:1.4rem;font-size:.9rem;color:var(--fog-400);border-left:2px solid var(--accent);background:var(--accent-soft);padding:.7rem 1rem;border-radius:0 .4rem .4rem 0}
 .note code{font-family:var(--font-mono);font-size:.85em;color:var(--fog-100)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem;margin-top:2.4rem}
+.bar{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1.4rem;font-family:var(--font-mono);font-size:.74rem;color:var(--fog-500)}
+.bar b{color:var(--fog-100)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem;margin-top:1.4rem}
 .card{display:flex;flex-direction:column;gap:.5rem;border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 60%,transparent);border-radius:.8rem;padding:1.1rem 1.1rem 1rem;text-decoration:none;transition:border-color .15s,transform .15s}
 .card.ready{cursor:pointer}
 .card.ready:hover{border-color:color-mix(in oklab,var(--accent) 60%,var(--line));transform:translateY(-2px)}
-.card.pending{opacity:.66}
+.card.pending{opacity:.62}
 .row{display:flex;align-items:center;gap:.5rem}
 .chip{font-family:var(--font-mono);font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:.3rem;background:var(--accent-soft);color:var(--accent)}
 .title{font-size:1.06rem;font-weight:600;color:var(--fog-100)}
@@ -53,6 +55,7 @@ footer{margin-top:3rem;color:var(--fog-500);font-size:.82rem}
   <div class="note">Each card opens a self-contained interactive page (no server, no build — just
   <code>file://</code>). This gallery is a staging area; it isn't deployed. Live build state lives in
   <code>RUN-LOG.md</code>.</div>
+  <div class="bar" id="bar"></div>
 
   <div id="tiers"></div>
 
@@ -66,17 +69,17 @@ const PAGES = [
   {tier:"Tier A — favorite + the two additions + the audit", items:[
     {slug:"solvency-cell", chip:"M1", title:"The Solvency Cell", accent:"#f59e0b", status:"building",
      desc:"Two coupled ledgers, the bid = min(price·qty, till) clamp, and books that always balance."},
-    {slug:"enemy-attack-schedule", chip:"M2", title:"Reading the Offensive", accent:"#fb7185", status:"building",
+    {slug:"enemy-attack-schedule", chip:"M2", title:"Reading the Offensive", accent:"#fb7185", status:"ready",
      desc:"A broad-front opening book whose order you memorize — and your coverage forks the timeline."},
-    {slug:"utility-ai-fit", chip:"audit", title:"Does a Utility AI Fit?", accent:"#34d399", status:"building",
+    {slug:"utility-ai-fit", chip:"audit", title:"Does a Utility AI Fit?", accent:"#34d399", status:"ready",
      desc:"Tune response curves for the faction's contract board; an honest yes-here / no-there verdict."},
-    {slug:"jumpgate-topology", chip:"M2·map", title:"The Jumpgate Web", accent:"#22d3ee", status:"building",
+    {slug:"jumpgate-topology", chip:"M2·map", title:"The Jumpgate Web", accent:"#22d3ee", status:"ready",
      desc:"Lane-graph archetypes and the one-vertex severance that explodes a route — in your hands."},
   ]},
   {tier:"Tier B — across the core sims", items:[
-    {slug:"market-clearing-cell", chip:"HAND", title:"The Clearing Cell", accent:"#f59e0b", status:"queued",
+    {slug:"market-clearing-cell", chip:"HAND", title:"The Clearing Cell", accent:"#f59e0b", status:"building",
      desc:"Damped tâtonnement on one market: your trade moves the price, the price heals."},
-    {slug:"determinism-harness", chip:"APR.5", title:"A Run Is a Seed", accent:"#a78bfa", status:"queued",
+    {slug:"determinism-harness", chip:"APR.5", title:"A Run Is a Seed", accent:"#a78bfa", status:"building",
      desc:"Float vs i64 drift, fixed iteration order, and a seed expanding into a whole world."},
     {slug:"glass-cockpit-instruments", chip:"M3", title:"The Glass Cockpit", accent:"#22d3ee", status:"queued",
      desc:"One screen reads a war too big to walk across: sprites dissolve to ribbons to weather."},
@@ -94,10 +97,12 @@ const PAGES = [
 ];
 const LABEL = {ready:"ready", building:"building…", queued:"queued"};
 const root = document.getElementById("tiers");
+let nReady=0,nTotal=0;
 for(const group of PAGES){
   const h = document.createElement("div"); h.className="tier"; h.textContent=group.tier; root.appendChild(h);
   const grid = document.createElement("div"); grid.className="grid"; root.appendChild(grid);
   for(const p of group.items){
+    nTotal++; if(p.status==="ready") nReady++;
     const ready = p.status==="ready";
     const el = document.createElement(ready?"a":"div");
     el.className = "card "+(ready?"ready":"pending");
@@ -111,6 +116,8 @@ for(const group of PAGES){
     grid.appendChild(el);
   }
 }
+document.getElementById("bar").innerHTML =
+  '<span><b>'+nReady+'</b> / '+nTotal+' ready</span><span>open a lit card to explore · pages fill in as the overnight run lands them</span>';
 </script>
 </body>
 </html>

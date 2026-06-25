@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Jumpgate Web — MSL · topology</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#22d3ee;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --rear:#7dd3fc;--mid:#a5b4fc;--fwd:#f0abfc;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;--dead:#3a4055;
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3rem 1.25rem 6rem}
+@media(max-width:560px){.wrap{padding:2rem 1rem 4rem}}
+
+/* ---- hero ---- */
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--line);background:var(--ink-850);padding:.35rem .7rem;border-radius:999px}
+.chip .dot{width:.4rem;height:.4rem;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.kicker{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 1rem;font-weight:800}
+.lede{font-size:1.15rem;color:var(--fog-300);font-style:italic;max-width:42rem;margin:0 0 1.5rem}
+.spark{border-left:2px solid var(--accent);padding:.4rem 0 .4rem 1rem;margin:1.5rem 0;color:var(--accent);font-size:1.05rem;font-style:italic}
+
+h2{font-size:1.6rem;letter-spacing:-.01em;margin:3.2rem 0 .4rem;font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:650;color:var(--fog-100)}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:2.4rem 0 -.1rem}
+p{color:var(--fog-300);margin:.8rem 0}
+a{color:var(--accent)}
+strong{color:var(--fog-100);font-weight:650}
+em.term{color:var(--fog-100);font-style:normal;font-weight:600}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:4px;padding:.06em .35em;color:var(--fog-100)}
+
+.card{border:1px solid var(--line);background:var(--ink-850);border-radius:12px;padding:1.1rem 1.2rem;margin:1.4rem 0}
+.card.tight{padding:.9rem 1rem}
+
+/* ---- console / interactive ---- */
+.console{border:1px solid var(--line);background:linear-gradient(180deg,var(--ink-850),var(--ink-900));border-radius:14px;padding:0;margin:1.6rem 0;overflow:hidden}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.65rem .9rem;border-bottom:1px solid var(--line);background:var(--ink-800);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--accent)}
+.console-body{padding:.9rem}
+
+.btnrow{display:flex;flex-wrap:wrap;gap:.4rem}
+button{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fog-300);
+  background:var(--ink-800);border:1px solid var(--line);border-radius:7px;padding:.45rem .7rem;cursor:pointer;transition:all .12s ease;line-height:1}
+button:hover{border-color:var(--accent);color:var(--fog-100)}
+button:active{transform:translateY(1px)}
+button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.ghost{background:transparent}
+button.warn:hover{border-color:var(--warn);color:var(--warn)}
+button[disabled]{opacity:.4;cursor:not-allowed}
+button[disabled]:hover{border-color:var(--line);color:var(--fog-300)}
+
+.svgwrap{position:relative;width:100%;border:1px solid var(--line);border-radius:10px;background:
+  radial-gradient(120% 120% at 50% 0%,rgba(34,211,238,.05),transparent 55%),var(--ink-950);overflow:hidden}
+svg{display:block;width:100%;height:auto;touch-action:manipulation}
+.band-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;fill:var(--fog-500)}
+.edge{stroke:#39425e;stroke-width:2;}
+.edge.cut{stroke:#4a2230;stroke-dasharray:4 5;stroke-width:1.5}
+.edge.path{stroke:var(--accent);stroke-width:3.5;filter:drop-shadow(0 0 4px var(--accent))}
+.node-hit{cursor:pointer}
+.node-c{stroke:#0a0c12;stroke-width:2}
+.node-lbl{font-family:var(--font-mono);font-size:10px;fill:var(--ink-950);font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.node-name{font-family:var(--font-sans);font-size:9.5px;fill:var(--fog-400);text-anchor:middle;pointer-events:none}
+.ring-key{stroke:var(--accent);stroke-width:2.5;fill:none}
+.ring-src{stroke:var(--good);stroke-width:2.5;fill:none}
+.ring-sink{stroke:var(--fwd);stroke-width:2;fill:none;stroke-dasharray:3 3}
+
+/* readouts */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin:.9rem 0 .2rem}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{border:1px solid var(--line);background:var(--ink-850);border-radius:9px;padding:.6rem .7rem}
+.stat .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--fog-500);display:block;margin-bottom:.2rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--accent);line-height:1.1}
+.stat .v.sm{font-size:1rem}
+.stat .v.bad{color:var(--bad)} .stat .v.good{color:var(--good)} .stat .v.warn{color:var(--warn)}
+.stat .sub{font-size:.66rem;color:var(--fog-500);margin-top:.15rem;font-family:var(--font-mono)}
+
+.why{font-family:var(--font-mono);font-size:.8rem;color:var(--fog-300);background:var(--ink-900);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:.6rem .8rem;margin:.7rem 0 0;min-height:1.2rem}
+.why b{color:var(--accent)}
+.why .ov{color:var(--bad)}
+
+.legend{display:flex;flex-wrap:wrap;gap:.7rem 1.1rem;font-family:var(--font-mono);font-size:.68rem;color:var(--fog-400);margin:.7rem 0 0}
+.legend span{display:inline-flex;align-items:center;gap:.35rem}
+.swatch{width:.7rem;height:.7rem;border-radius:50%;display:inline-block;border:1px solid #0a0c12}
+.swatch.sq{border-radius:2px}
+.hint{font-size:.74rem;color:var(--fog-500);font-family:var(--font-mono);margin:.55rem 0 0}
+
+.arch-desc{font-family:var(--font-mono);font-size:.78rem;color:var(--fog-400);margin:.7rem 0 0;min-height:2.4em}
+.arch-desc b{color:var(--fog-100)}
+.arch-desc .trade{color:var(--warn)}
+
+.note{font-size:.82rem;color:var(--fog-400)}
+table.cmp{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.86rem}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:.5rem .6rem;text-align:left;vertical-align:top}
+table.cmp th{background:var(--ink-800);font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400);font-weight:600}
+table.cmp td{color:var(--fog-300)}
+table.cmp td b{color:var(--fog-100)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-size:.78rem;color:var(--fog-500);font-family:var(--font-mono)}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-radius:4px;padding:.05rem .35rem;color:var(--fog-400);background:var(--ink-800)}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:.66rem;padding:.1rem .45rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-400)}
+.pill.rear{color:var(--rear);border-color:color-mix(in oklab,var(--rear) 40%,var(--line))}
+.pill.mid{color:var(--mid);border-color:color-mix(in oklab,var(--mid) 40%,var(--line))}
+.pill.fwd{color:var(--fwd);border-color:color-mix(in oklab,var(--fwd) 40%,var(--line))}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="chip"><span class="dot"></span>M2 · topology</span>
+  <div class="kicker">the jumpgate web</div>
+  <h1>The Jumpgate Web</h1>
+  <p class="lede">One hauler. An unwinnable war. The lane graph is the board — and a front that
+  deletes nodes from one edge is the only opponent that matters.</p>
+  <div class="spark">A graph that <em>looks</em> richly connected can hinge, catastrophically, on a single vertex. The right topology turns "a node fell" into a strategic event. The wrong one erases geography entirely.</div>
+
+  <p>Minimalist Space Logistics is a routing game first. You buy cheap in the <span class="pill rear">rear</span>,
+  haul forward, and sell into shortage at the <span class="pill fwd">forward</span> line, banking the margin.
+  You never fight. The war is sovereign: the enemy front <strong>advances</strong>, <strong>overruns</strong> systems
+  from the forward edge inward, and that severs or reverses the lanes touching them. The whole game lives or dies
+  on one design choice — <em class="term">what shape is the jumpgate web?</em></p>
+
+  <p>The seed for this page: "there are jumpgates, like X4 — a standard jump-gate web like Freelancer / X-series /
+  Stellaris / Mass Effect relays." So the rest of this is a tour of those webs, made pokeable. Five real space
+  games already ran this experiment for us; below you can load each one's topology over the <em>same</em> sixteen
+  systems and watch how it behaves when the front eats it.</p>
+
+  <!-- ============ INTERACTIVE 1 + 2 : the main console ============ -->
+  <div class="eyebrow">interactive · poke the model</div>
+  <h2 style="margin-top:.6rem">The board, and the keystone</h2>
+  <p>Sixteen systems, three distance bands. Pick a topology to lay out the lanes, then <strong>click any system to
+  overrun it</strong> (or click a lane to cut it). Everything recomputes for real: shortest paths are
+  <em>Dijkstra</em> over the live edges; the heat on each node is its <em>betweenness</em> — how many rear→forward
+  supply routes are forced through it. The single hottest node is the <em>keystone</em>. Delete it and watch what happens.</p>
+
+  <div class="console">
+    <div class="console-head">
+      <span class="console-title">graph model — <b id="archName">backbone + clusters</b></span>
+      <div class="btnrow" id="archBtns"></div>
+    </div>
+    <div class="console-body">
+      <div class="svgwrap">
+        <svg id="net" viewBox="0 0 760 470" role="img" aria-label="Interactive jumpgate network graph"></svg>
+      </div>
+
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--rear)"></i>rear band</span>
+        <span><i class="swatch" style="background:var(--mid)"></i>midfield</span>
+        <span><i class="swatch" style="background:var(--fwd)"></i>forward</span>
+        <span><i class="swatch" style="background:var(--dead);"></i>overrun</span>
+        <span><svg width="14" height="14" style="overflow:visible"><circle cx="7" cy="7" r="6" class="ring-src"/></svg>shipyard (source)</span>
+        <span><svg width="14" height="14" style="overflow:visible"><circle cx="7" cy="7" r="6" class="ring-key"/></svg>keystone</span>
+        <span><span class="swatch" style="background:var(--accent);width:1.1rem;height:.18rem;border-radius:2px"></span>active route</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="k">rear → forward</span><span class="v" id="stRoute">–</span><span class="sub" id="stRouteSub">jumps to nearest depot</span></div>
+        <div class="stat"><span class="k">depots cut off</span><span class="v" id="stCut">0</span><span class="sub" id="stCutSub">of 0 forward depots</span></div>
+        <div class="stat"><span class="k">keystone node</span><span class="v sm" id="stKey">–</span><span class="sub" id="stKeySub">betweenness –</span></div>
+        <div class="stat"><span class="k">overrun</span><span class="v sm" id="stOver">0</span><span class="sub">systems lost to the front</span></div>
+      </div>
+
+      <div class="why" id="why">Load is nominal. Click a system to overrun it, or hit <b>Play</b> below to advance the front.</div>
+
+      <div class="console-head" style="border-top:1px solid var(--line);border-bottom:none;margin-top:.9rem">
+        <span class="console-title">front control</span>
+        <div class="btnrow">
+          <button id="btnPlay">▶ Play front</button>
+          <button id="btnStep" class="ghost">Step</button>
+          <button id="btnReseed" class="ghost">⟲ Reseed fall order</button>
+          <button id="btnReset" class="ghost warn">Reset board</button>
+        </div>
+      </div>
+      <div class="hint">Seed <code id="seedTag">—</code>. The fall order is deterministic per seed (APR.5: a run is a seed). Reseed for a different collapse. <span class="kbd">click node</span> = overrun · <span class="kbd">click lane</span> = cut.</div>
+    </div>
+  </div>
+
+  <div class="arch-desc" id="archDesc"></div>
+
+  <h3>What you're meant to see</h3>
+  <p>Load <strong>Mesh</strong> and start clicking forward systems — the route barely moves, because there's always
+  another way around. That's the failure mode: geography that shrugs off losses isn't a board, it's wallpaper.
+  Now load <strong>Pipe-corridor</strong> or <strong>Backbone</strong> and overrun the single keystone the heatmap
+  is screaming about. The route doesn't degrade gently — it <em>jumps</em>, or a clutch of depots goes black
+  all at once. That discontinuity is the whole game.</p>
+
+  <div class="spark">This is the Niarja lesson, in your hands: in 2020 a live event in EVE Online severed <em>one</em> high-sec
+  system on the Jita–Amarr trade run, and the safe route went from about 9 jumps to about 44. One vertex. Find your
+  keystone before the war does.</div>
+
+  <!-- ============ ARCHETYPE TOUR ============ -->
+  <div class="eyebrow">the five webs · what each game taught</div>
+  <h2 style="margin-top:.6rem">Five shapes, five lessons</h2>
+  <p>Each button above is a real game's answer to "how do ships get between stars," distilled to a topology you can
+  stress-test. One sentence each on where it comes from:</p>
+
+  <table class="cmp">
+    <thead><tr><th style="width:9.5rem">Archetype · source</th><th>Shape</th><th>Front behaviour &amp; tradeoff</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Ring</b><br><span class="note">EVE high-sec</span></td>
+        <td>A single loop; every system touches exactly two neighbours.</td>
+        <td>Elegant but thin — only two route lengths exist. The front cuts the near arc; reroute the long way until both arcs fall. <span class="trade">Extreme chokepoint sensitivity, almost no depth.</span></td>
+      </tr>
+      <tr>
+        <td><b>Hub-and-spoke</b><br><span class="note">Freelancer houses</span></td>
+        <td>One or two high-traffic capitals; everything radiates from them.</td>
+        <td>Spoke losses are trivial; a hub loss collapses the map. <span class="trade">Drama, but the whole game revolves around one point of failure.</span></td>
+      </tr>
+      <tr>
+        <td><b>Mesh</b><br><span class="note">X4 two-tier · dense</span></td>
+        <td>Every system wired to 2–4 others; no dominant node.</td>
+        <td>The front must erase a wide column before supply chokes. Rerouting is free. <span class="trade">Forgiving to the point of having no tension — geography barely matters.</span></td>
+      </tr>
+      <tr>
+        <td><b>Backbone + clusters</b><br><span class="note">Mass Effect relays</span></td>
+        <td>A spine of junctions (one per band); small clusters hang off each.</td>
+        <td>Lose a backbone junction and its <em>entire</em> cluster strands at once. <span class="trade">Threshold moments at band scale — the recommended core.</span></td>
+      </tr>
+      <tr>
+        <td><b>Pipe-corridor</b><br><span class="note">EVE null-sec pipes</span></td>
+        <td>A backbone, plus a single-strand forward corridor with one way in.</td>
+        <td>No reroute inside the pipe; lose its mouth and the whole corridor is gone. <span class="trade">Lethal, high-stakes — a gamble route, not a default.</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Two games sit at the edges of this space and define it by contrast. <strong>Stellaris</strong> proved topology
+  only matters if you <em>enforce</em> it: while warp drives and wormhole generators let fleets opt out of the
+  hyperlane graph, chokepoints and static defence were meaningless — patch 1.8 ripped both out and only then did
+  geography become strategic. And <strong>Elite Dangerous</strong> is the control case with <em>no</em> gate graph
+  at all: any ship jumps to any star in range, so space collapses to a pure distance metric and the entire
+  board-game layer — defensible systems, severable corridors — simply vanishes. MSL commits to the graph on
+  purpose. That commitment is the genre.</p>
+
+  <!-- ============ RECOMMENDED BOARD ============ -->
+  <div class="eyebrow">the recommendation</div>
+  <h2 style="margin-top:.6rem">A board worth shipping</h2>
+  <p>Load <strong>Pipe-corridor</strong> one more time — that's the proposal. <strong>Backbone + local clusters</strong>
+  as the spine (one junction per band, a small resource cluster hanging off each), <em>plus</em> one forward
+  <strong>pipe</strong> as an optional high-stakes fast lane with no in-pipe reroute. Sixteen systems: small enough
+  to hold the whole map in your head, structured enough that a single fall is an event.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Why this shape</h3>
+    <p style="margin-top:.4rem"><strong>The backbone gives you threshold moments.</strong> Individual depot losses sting
+    but never lock you out — the dead-end cluster spokes are designed to cost cargo, not routes. Then the front reaches
+    a junction and a whole band's cluster goes dark in one beat. Pressure builds, then breaks. That cadence is the drama
+    the mesh can't produce and the hub produces too bluntly.</p>
+    <p><strong>The pipe is the gamble.</strong> It's the shortest path to the frontmost depot when it's open — real margin,
+    real speed. But it has one mouth and no way to reroute inside it. Take it when you're ahead; get caught in it when the
+    front jumps and you eat the full retreat. It's the optional spice on top of a sound spine, exactly the Freelancer
+    insight (a corridor you can sever without taking the system) married to the EVE null-sec pipe (no reroute once you're committed).</p>
+    <p style="margin-bottom:0"><strong>Keep it ~16.</strong> Bigger and the keystone stops being legible; the player can no
+    longer feel which vertex the war is walking toward. The threat has to be readable to be a threat.</p>
+  </div>
+
+  <div class="card tight">
+    <p style="margin:0;font-family:var(--font-mono);font-size:.78rem;color:var(--fog-400)">
+    <b style="color:var(--accent)">The aha.</b> Connectivity is not resilience. A web can look generous and still pivot
+    on one node — and that fragility, <em style="color:var(--fog-100);font-style:normal">made visible and made the player's
+    problem</em>, is what turns a supply map into a game.</p>
+  </div>
+
+  <div class="foot">
+    MSL · M2 topology · "The Jumpgate Web" — an explorable note. Graph + Dijkstra + betweenness computed live in-page;
+    randomness from a seeded mulberry32 PRNG. Game references (EVE Online, Freelancer, X-series, Stellaris, Mass Effect,
+    Elite Dangerous) are transformative design analysis. Authored by Panda.
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ===================================================================
+   The Jumpgate Web — live graph model for MSL
+   Pure vanilla JS. Real adjacency per archetype, Dijkstra shortest
+   paths, betweenness criticality, deterministic front sweep.
+   =================================================================== */
+
+/* ---------- tiny seeded PRNG (mulberry32) ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- layout geometry ----------
+   16 nodes, 3 bands. x grows from rear (left) to forward (right).
+   Coordinates in the 760x470 viewBox. Bands are columns. */
+const W = 760, H = 470, PAD_T = 46, PAD_B = 26;
+const BAND_X = { rear: 150, mid: 380, fwd: 610 };
+
+/* Node roster — stable ids, band, friendly role label, and a home y.
+   Source = R1 shipyard. Sinks = forward depots (band fwd). */
+const NODES = [
+  // REAR (5)
+  { id:"R1", band:"rear", name:"Keelyard",  role:"shipyard", y:0.22, src:true },
+  { id:"R2", band:"rear", name:"Ironreach", role:"extract",  y:0.42 },
+  { id:"R3", band:"rear", name:"Sallow",    role:"extract",  y:0.62 },
+  { id:"R4", band:"rear", name:"Gantry",    role:"junction", y:0.80 },
+  { id:"R5", band:"rear", name:"Cinder",    role:"extract",  y:0.05 },
+  // MID (6)
+  { id:"M1", band:"mid",  name:"Halfway",   role:"junction", y:0.50 },
+  { id:"M2", band:"mid",  name:"Forge",     role:"refinery", y:0.18 },
+  { id:"M3", band:"mid",  name:"Slag",      role:"refinery", y:0.05 },
+  { id:"M4", band:"mid",  name:"Crucible",  role:"refinery", y:0.78 },
+  { id:"M5", band:"mid",  name:"Drossvale", role:"refinery", y:0.93 },
+  { id:"M6", band:"mid",  name:"Throat",    role:"junction", y:0.33 },
+  // FWD (5)
+  { id:"F1", band:"fwd",  name:"Bastion",   role:"junction", y:0.46, sink:true },
+  { id:"F2", band:"fwd",  name:"Picket",    role:"depot",    y:0.20, sink:true },
+  { id:"F3", band:"fwd",  name:"Trench",    role:"depot",    y:0.68, sink:true },
+  { id:"F4", band:"fwd",  name:"Spurmouth", role:"depot",    y:0.86, sink:true },
+  { id:"F5", band:"fwd",  name:"Razorline", role:"depot",    y:1.02, sink:true },
+];
+const NODE_BY_ID = {}; NODES.forEach(n => NODE_BY_ID[n.id] = n);
+
+/* compute pixel coords */
+function layout(){
+  const top = PAD_T, bot = H - PAD_B, span = bot - top;
+  NODES.forEach(n => {
+    n.x = BAND_X[n.band];
+    n.py = top + n.y * span;
+  });
+  // gentle horizontal jitter so same-band columns aren't a dead straight line
+  const jit = { R5:-26, R2:18, R3:-16, M2:24, M3:-20, M4:22, M5:-18, F2:20, F3:-14, F4:18, F5:-10 };
+  for (const id in jit){ if (NODE_BY_ID[id]) NODE_BY_ID[id].x += jit[id]; }
+}
+layout();
+
+/* ---------- archetype edge sets ----------
+   Each returns an array of [a,b] undirected lane pairs over the 16 ids.
+   These are hand-authored to genuinely embody each topology. */
+const ARCHETYPES = {
+  ring: {
+    name: "ring",
+    label: "Ring",
+    desc: "<b>Ring (EVE high-sec).</b> One loop, every system with exactly two neighbours. Only two route lengths exist in the whole map — the front cuts the near arc and you reroute the long way around, until both arcs fall. <span class='trade'>Maximum chokepoint sensitivity, minimum depth.</span>",
+    edges(){
+      // a single Hamiltonian-ish loop through all 16, ordered to snake rear→fwd→rear
+      const order = ["R1","R2","R3","R4","M1","M4","M5","F3","F4","F5","F1","F2","M6","M2","M3","R5"];
+      const e = [];
+      for (let i=0;i<order.length;i++) e.push([order[i], order[(i+1)%order.length]]);
+      return e;
+    }
+  },
+  hub: {
+    name: "hub",
+    label: "Hub & spoke",
+    desc: "<b>Hub &amp; spoke (Freelancer houses).</b> A capital per band concentrates all traffic; everything else is a spoke. Losing a spoke is trivial; losing a hub collapses everything behind it. <span class='trade'>High drama, but the map revolves around a couple of single points of failure.</span>",
+    edges(){
+      const e = [];
+      const hubs = { rear:"R1", mid:"M1", fwd:"F1" };
+      // spokes within band -> band hub
+      NODES.forEach(n => { if (n.id !== hubs[n.band]) e.push([hubs[n.band], n.id]); });
+      // hubs chained rear->mid->fwd (the inter-band backbone of hubs)
+      e.push(["R1","M1"]); e.push(["M1","F1"]);
+      return e;
+    }
+  },
+  mesh: {
+    name: "mesh",
+    label: "Mesh",
+    desc: "<b>Mesh (X4, dense).</b> Every system wired to several neighbours, no dominant node. The front has to erase a whole column before supply chokes, and rerouting is basically free. <span class='trade'>Forgiving to a fault — poke it and the route barely flinches. Geography stops mattering.</span>",
+    edges(){
+      // connect each node to a few nearest nodes (by pixel distance), capped, plus
+      // guaranteed forward progression so it's well-connected across bands.
+      const e = new Set();
+      const key = (a,b) => a<b ? a+"|"+b : b+"|"+a;
+      const add = (a,b) => { if (a!==b) e.add(key(a,b)); };
+      // k-nearest (k=3) over euclidean
+      NODES.forEach(a => {
+        const others = NODES.filter(n=>n.id!==a.id)
+          .map(n=>({id:n.id, d:Math.hypot(n.x-a.x, n.py-a.py)}))
+          .sort((p,q)=>p.d-q.d).slice(0,3);
+        others.forEach(o => add(a.id, o.id));
+      });
+      // ensure inter-band bridges (rear->mid->fwd) so mesh spans the map
+      [["R1","M2"],["R2","M1"],["R4","M4"],["M2","F2"],["M1","F1"],["M6","F1"],["M4","F3"],["M5","F4"]].forEach(([a,b])=>add(a,b));
+      return [...e].map(s=>s.split("|"));
+    }
+  },
+  backbone: {
+    name: "backbone",
+    label: "Backbone + clusters",
+    desc: "<b>Backbone + clusters (Mass Effect relays).</b> A spine of junctions, one per band (Gantry → Halfway/Throat → Bastion), with a small resource cluster hanging off each. Lose a junction and its whole cluster strands at once. <span class='trade'>Band-scale threshold moments — individual losses sting, junction losses are crises. The recommended core.</span>",
+    edges(){
+      const e = [];
+      // REAR cluster around R4 (Gantry junction)
+      e.push(["R4","R1"],["R4","R2"],["R4","R3"],["R1","R5"],["R1","R2"]);
+      // backbone spine: R4 -> M1 -> M6 -> F1
+      e.push(["R4","M1"],["M1","M6"],["M6","F1"]);
+      // MID cluster: M1 anchors M2/M3, M6 anchors M4/M5
+      e.push(["M1","M2"],["M2","M3"],["M1","M4"],["M4","M5"],["M6","M4"]);
+      // FWD cluster around F1 (Bastion)
+      e.push(["F1","F2"],["F1","F3"],["F2","F4"],["F3","F4"],["F4","F5"]);
+      return e;
+    }
+  },
+  pipe: {
+    name: "pipe",
+    label: "Pipe-corridor",
+    desc: "<b>Pipe-corridor (the recommendation).</b> The backbone spine, plus a single-strand forward corridor — Throat → Crucible → Drossvale → Razorline — with one mouth and no internal reroute. Fast when open; if its mouth (Crucible) falls, the whole pipe is gone. <span class='trade'>A high-stakes optional fast lane bolted onto a sound spine. A gamble, not a default.</span>",
+    edges(){
+      const e = [];
+      // backbone spine (rear & mid junctions, fwd cluster) — same skeleton as backbone
+      e.push(["R4","R1"],["R4","R2"],["R4","R3"],["R1","R5"],["R1","R2"]);
+      e.push(["R4","M1"],["M1","M6"],["M6","F1"]);
+      e.push(["M1","M2"],["M2","M3"]);
+      e.push(["F1","F2"],["F1","F3"],["F2","F3"]);
+      // THE PIPE: a single strand from mid (M6 Throat) out to the frontmost depot.
+      // one entrance (M4), no lateral links along it.
+      e.push(["M6","M4"],["M4","M5"],["M5","F4"],["F4","F5"]);
+      return e;
+    }
+  }
+};
+const ARCH_ORDER = ["ring","hub","mesh","backbone","pipe"];
+
+/* ---------- graph state ---------- */
+let archKey = "backbone";
+let adj = {};            // id -> Set of neighbour ids (full, ignoring overrun)
+let edgeList = [];       // [{a,b}] for drawing
+let overrun = {};        // id -> true if fallen
+let cutLanes = {};       // "a|b" -> true if manually cut
+let seed = 0;
+let fallOrder = [];      // deterministic order nodes fall under the front
+let sweepIdx = 0;
+let playing = false;
+let playTimer = null;
+
+const SOURCE = "R1";
+const SINKS = NODES.filter(n=>n.sink).map(n=>n.id);
+
+function laneKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
+
+function buildGraph(){
+  const raw = ARCHETYPES[archKey].edges();
+  adj = {}; NODES.forEach(n => adj[n.id] = new Set());
+  const seen = new Set(); edgeList = [];
+  raw.forEach(([a,b]) => {
+    if (!NODE_BY_ID[a] || !NODE_BY_ID[b] || a===b) return;
+    adj[a].add(b); adj[b].add(a);
+    const k = laneKey(a,b);
+    if (!seen.has(k)){ seen.add(k); edgeList.push({a,b,key:k}); }
+  });
+}
+
+/* live adjacency: drop overrun nodes and cut/overrun-touching lanes */
+function liveNeighbours(id){
+  if (overrun[id]) return [];
+  const out = [];
+  adj[id].forEach(nb => {
+    if (overrun[nb]) return;
+    if (cutLanes[laneKey(id,nb)]) return;
+    out.push(nb);
+  });
+  return out;
+}
+
+/* ---------- Dijkstra (unit edge weights = jump count) ---------- */
+function dijkstra(src){
+  const dist = {}, prev = {};
+  NODES.forEach(n => dist[n.id] = Infinity);
+  if (overrun[src]) return { dist, prev };
+  dist[src] = 0;
+  // simple array-based PQ (16 nodes — trivial)
+  const pq = [{ id:src, d:0 }];
+  const done = {};
+  while (pq.length){
+    // extract-min
+    let mi = 0;
+    for (let i=1;i<pq.length;i++) if (pq[i].d < pq[mi].d) mi = i;
+    const { id } = pq.splice(mi,1)[0];
+    if (done[id]) continue;
+    done[id] = true;
+    liveNeighbours(id).forEach(nb => {
+      const nd = dist[id] + 1;
+      if (nd < dist[nb]){ dist[nb] = nd; prev[nb] = id; pq.push({ id:nb, d:nd }); }
+    });
+  }
+  return { dist, prev };
+}
+
+function pathTo(prev, target){
+  const p = []; let cur = target;
+  while (cur !== undefined){ p.push(cur); cur = prev[cur]; }
+  return p.reverse();
+}
+
+/* ---------- betweenness over rear→forward routes ----------
+   For criticality we count, for each node, how many (source-ish rear
+   origin → forward sink) shortest paths pass through it. We use all rear
+   nodes as origins and all forward sinks as targets to get a stable heat
+   that reflects "supply throughput", not just the single R1 route. */
+function betweenness(){
+  const score = {}; NODES.forEach(n => score[n.id] = 0);
+  const origins = NODES.filter(n => n.band==="rear" && !overrun[n.id]).map(n=>n.id);
+  origins.forEach(o => {
+    const { dist, prev } = dijkstra(o);
+    SINKS.forEach(s => {
+      if (overrun[s] || dist[s] === Infinity) return;
+      const path = pathTo(prev, s);
+      // credit interior nodes (exclude the endpoints themselves)
+      for (let i=1;i<path.length-1;i++) score[path[i]]++;
+    });
+  });
+  return score;
+}
+
+/* ---------- recompute + render ---------- */
+function recompute(){
+  const { dist, prev } = dijkstra(SOURCE);
+
+  // nearest reachable forward depot from the shipyard
+  let best = Infinity, bestSink = null;
+  SINKS.forEach(s => { if (!overrun[s] && dist[s] < best){ best = dist[s]; bestSink = s; } });
+
+  // depots cut off
+  const liveSinks = SINKS.filter(s => !overrun[s]);
+  const reachable = liveSinks.filter(s => dist[s] < Infinity);
+  const cutOff = liveSinks.length - reachable.length;
+
+  // criticality
+  const score = betweenness();
+  let keyId = null, keyScore = -1;
+  NODES.forEach(n => {
+    if (overrun[n.id]) return;
+    if (n.id === SOURCE) return; // shipyard is trivially on everything; not the interesting keystone
+    if (score[n.id] > keyScore){ keyScore = score[n.id]; keyId = n.id; }
+  });
+  if (keyScore <= 0){ keyId = null; } // no interior load -> no keystone
+
+  // active best-path edge set for highlight
+  const pathEdges = new Set();
+  if (bestSink){
+    const p = pathTo(prev, bestSink);
+    for (let i=0;i<p.length-1;i++) pathEdges.add(laneKey(p[i], p[i+1]));
+  }
+
+  render({ dist, score, keyId, keyScore, best, bestSink, cutOff, liveSinks, pathEdges });
+  return { best, bestSink, cutOff, liveSinks, keyId, keyScore };
+}
+
+const svg = document.getElementById("net");
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+function heatColor(t){
+  // t in [0,1] -> cool grey to hot accent/amber to bad-red for the very top
+  if (t <= 0) return "rgb(91,103,128)";
+  // interpolate: 0 -> muted, .5 -> accent, 1 -> warn/bad
+  const stops = [
+    [0.0, [91,103,128]],   // grey
+    [0.45,[34,211,238]],   // accent cyan
+    [0.75,[251,191,36]],   // amber
+    [1.0, [251,113,133]],  // red
+  ];
+  let lo = stops[0], hi = stops[stops.length-1];
+  for (let i=0;i<stops.length-1;i++){ if (t>=stops[i][0] && t<=stops[i+1][0]){ lo=stops[i]; hi=stops[i+1]; break; } }
+  const f = (t-lo[0])/((hi[0]-lo[0])||1);
+  const c = lo[1].map((v,i)=> Math.round(v + (hi[1][i]-v)*f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+function bandFill(band){ return band==="rear" ? "var(--rear)" : band==="mid" ? "var(--mid)" : "var(--fwd)"; }
+
+function render(R){
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // band guide columns + labels
+  const bands = [["rear","REAR"],["mid","MIDFIELD"],["fwd","FORWARD"]];
+  bands.forEach(([b,lbl]) => {
+    const x = BAND_X[b];
+    svg.appendChild(el("line",{ x1:x, y1:PAD_T-8, x2:x, y2:H-PAD_B+4, stroke:"rgba(255,255,255,.035)", "stroke-width":34, "stroke-linecap":"round" }));
+    const t = el("text",{ x:x, y:24, class:"band-label", "text-anchor":"middle" }); t.textContent = lbl; svg.appendChild(t);
+  });
+  // front indicator (advancing wall from the right)
+  if (sweepIdx > 0 || playing){
+    const frontX = frontLineX();
+    if (frontX !== null){
+      const g = el("g",{});
+      g.appendChild(el("line",{ x1:frontX, y1:PAD_T-12, x2:frontX, y2:H-PAD_B+6, stroke:"var(--bad)", "stroke-width":2, "stroke-dasharray":"2 4", opacity:.7 }));
+      svg.appendChild(g);
+      const ft = el("text",{ x:frontX-4, y:PAD_T-16, class:"band-label", "text-anchor":"end", fill:"var(--bad)" }); ft.textContent="◄ FRONT"; svg.appendChild(ft);
+    }
+  }
+
+  const maxScore = Math.max(1, ...NODES.filter(n=>!overrun[n.id]).map(n=>R.score[n.id]||0));
+
+  // edges first (under nodes)
+  edgeList.forEach(e => {
+    const a = NODE_BY_ID[e.a], b = NODE_BY_ID[e.b];
+    const dead = overrun[e.a] || overrun[e.b] || cutLanes[e.key];
+    const onPath = R.pathEdges.has(e.key);
+    const cls = onPath ? "edge path" : dead ? "edge cut" : "edge";
+    const ln = el("line",{ x1:a.x, y1:a.py, x2:b.x, y2:b.py, class:cls });
+    if (!dead){
+      // clickable fat invisible hit-line to cut the lane
+      const hit = el("line",{ x1:a.x, y1:a.py, x2:b.x, y2:b.py, stroke:"transparent", "stroke-width":14, style:"cursor:pointer" });
+      hit.addEventListener("click", (ev)=>{ ev.stopPropagation(); cutLane(e.key, e.a, e.b); });
+      svg.appendChild(ln); svg.appendChild(hit);
+    } else {
+      svg.appendChild(ln);
+    }
+  });
+
+  // nodes
+  NODES.forEach(n => {
+    const g = el("g",{ class:"node-hit" });
+    g.addEventListener("click", (ev)=>{ ev.stopPropagation(); toggleOverrun(n.id); });
+
+    const isSrc = n.id === SOURCE;
+    const isKey = n.id === R.keyId;
+    const r = isSrc ? 15 : 13;
+
+    // criticality halo ring (heat)
+    const sc = overrun[n.id] ? 0 : (R.score[n.id]||0);
+    const t = sc / maxScore;
+    if (!overrun[n.id] && sc > 0){
+      g.appendChild(el("circle",{ cx:n.x, cy:n.py, r:r+6, fill:"none", stroke:heatColor(t), "stroke-width":3, opacity: (0.25 + 0.6*t).toFixed(3) }));
+    }
+
+    // sink marker (dashed outer)
+    if (n.sink && !overrun[n.id]){
+      g.appendChild(el("circle",{ cx:n.x, cy:n.py, r:r+10, class:"ring-sink" }));
+    }
+    // keystone ring
+    if (isKey){
+      g.appendChild(el("circle",{ cx:n.x, cy:n.py, r:r+13, class:"ring-key" }));
+    }
+    // source ring
+    if (isSrc){
+      g.appendChild(el("circle",{ cx:n.x, cy:n.py, r:r+10, class:"ring-src" }));
+    }
+
+    // the node body
+    const fill = overrun[n.id] ? "var(--dead)" : bandFill(n.band);
+    g.appendChild(el("circle",{ cx:n.x, cy:n.py, r:r, fill:fill, class:"node-c", opacity: overrun[n.id] ? .55 : 1 }));
+
+    // X mark if overrun
+    if (overrun[n.id]){
+      g.appendChild(el("line",{ x1:n.x-5, y1:n.py-5, x2:n.x+5, y2:n.py+5, stroke:"var(--bad)", "stroke-width":2 }));
+      g.appendChild(el("line",{ x1:n.x+5, y1:n.py-5, x2:n.x-5, y2:n.py+5, stroke:"var(--bad)", "stroke-width":2 }));
+    } else {
+      const lbl = el("text",{ x:n.x, y:n.py, class:"node-lbl" }); lbl.textContent = n.id; g.appendChild(lbl);
+    }
+    // name under node
+    const nm = el("text",{ x:n.x, y:n.py + r + 11, class:"node-name", opacity: overrun[n.id] ? .4 : .9 });
+    nm.textContent = n.name; g.appendChild(nm);
+
+    svg.appendChild(g);
+  });
+
+  // background click = no-op (kept for future deselect)
+  svg.addEventListener("click", ()=>{}, { once:true });
+
+  /* ---- text readouts ---- */
+  const stRoute = document.getElementById("stRoute");
+  const stRouteSub = document.getElementById("stRouteSub");
+  if (R.bestSink){
+    stRoute.textContent = R.best;
+    stRoute.className = "v" + (R.best >= 12 ? " warn" : "");
+    stRouteSub.textContent = "jumps → " + NODE_BY_ID[R.bestSink].name;
+  } else {
+    stRoute.textContent = "✕";
+    stRoute.className = "v bad";
+    stRouteSub.textContent = "no depot reachable";
+  }
+
+  const stCut = document.getElementById("stCut");
+  stCut.textContent = R.cutOff;
+  stCut.className = "v" + (R.cutOff>0 ? " bad" : " good");
+  document.getElementById("stCutSub").textContent = "of " + R.liveSinks.length + " live depots";
+
+  const stKey = document.getElementById("stKey");
+  if (R.keyId){
+    stKey.textContent = R.keyId + " · " + NODE_BY_ID[R.keyId].name;
+    document.getElementById("stKeySub").textContent = "betweenness " + R.keyScore + " (most routes through it)";
+  } else {
+    stKey.textContent = "—";
+    document.getElementById("stKeySub").textContent = "no shared bottleneck";
+  }
+
+  const overCount = NODES.filter(n=>overrun[n.id]).length;
+  document.getElementById("stOver").textContent = overCount;
+}
+
+/* the visual front line x-position, derived from how many fwd/mid bands have fallen */
+function frontLineX(){
+  // place the wall just left of the rightmost still-standing column that the front hasn't passed
+  // Simplest faithful cue: based on which bands still have any non-overrun node fed by the sweep.
+  const fwdAlive = NODES.some(n=>n.band==="fwd" && !overrun[n.id]);
+  const midAlive = NODES.some(n=>n.band==="mid" && !overrun[n.id]);
+  if (fwdAlive) return BAND_X.fwd + 55;
+  if (midAlive) return BAND_X.mid + 60;
+  return BAND_X.rear + 60;
+}
+
+/* ---------- interactions ---------- */
+function toggleOverrun(id){
+  overrun[id] = !overrun[id];
+  const r = recompute();
+  announceManual(id, r);
+}
+function cutLane(key, a, b){
+  cutLanes[key] = !cutLanes[key];
+  const r = recompute();
+  setWhy(`Cut lane <b>${a}–${b}</b>. ` + routeSentence(r));
+}
+
+const whyEl = document.getElementById("why");
+function setWhy(html){ whyEl.innerHTML = html; }
+
+function routeSentence(r){
+  if (!r.bestSink) return `<span class='ov'>No depot is reachable from the shipyard — supply is severed.</span>`;
+  let s = `Nearest depot is now <b>${NODE_BY_ID[r.bestSink].name}</b> at <b>${r.best} jumps</b>`;
+  if (r.cutOff>0) s += `, and <span class='ov'>${r.cutOff} depot${r.cutOff>1?"s are":" is"} cut off.</span>`;
+  else s += `.`;
+  if (r.keyId) s += ` Keystone: <b>${r.keyId}</b>.`;
+  return s;
+}
+
+let lastRoute = null;
+function announceManual(id, r){
+  const n = NODE_BY_ID[id];
+  if (overrun[id]){
+    let head = `Overran <b>${id} ${n.name}</b>.`;
+    // detect a dramatic jump or severance vs the previous state
+    if (lastRoute){
+      if (lastRoute.bestSink && !r.bestSink){
+        head += ` <span class='ov'>That was load-bearing — the rear can no longer reach the front at all.</span>`;
+      } else if (lastRoute.bestSink && r.bestSink && r.best - lastRoute.best >= 3){
+        head += ` Route exploded <b>+${r.best - lastRoute.best} jumps</b> — the only path now detours hard. ` + routeSentence(r);
+      } else if (r.cutOff > (lastRoute.cutOff||0)){
+        head += ` ${r.cutOff - lastRoute.cutOff} more depot(s) just went dark. ` + routeSentence(r);
+      } else {
+        head += ` ` + routeSentence(r);
+      }
+    } else head += ` ` + routeSentence(r);
+    setWhy(head);
+  } else {
+    setWhy(`Restored <b>${id} ${n.name}</b>. ` + routeSentence(r));
+  }
+  lastRoute = r;
+}
+
+/* ---------- front sweep (deterministic per seed) ----------
+   Forward depots fall first, then midfield, then rear. Within a band the
+   order is shuffled by the PRNG, so a reseed changes the collapse. */
+function computeFallOrder(){
+  const rng = mulberry32(seed);
+  const byBand = { fwd:[], mid:[], rear:[] };
+  NODES.forEach(n => byBand[n.band].push(n.id));
+  function shuf(arr){
+    for (let i=arr.length-1;i>0;i--){ const j = Math.floor(rng()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    return arr;
+  }
+  // front eats forward edge inward: fwd, then mid, then rear.
+  // keep the shipyard (R1) for last so the game-over is a real terminus.
+  const rear = shuf(byBand.rear.slice()).filter(id=>id!==SOURCE);
+  fallOrder = [...shuf(byBand.fwd.slice()), ...shuf(byBand.mid.slice()), ...rear, SOURCE];
+  sweepIdx = 0;
+}
+
+function stepFront(){
+  if (sweepIdx >= fallOrder.length){ stopPlay(); setWhy(`The front has overrun the entire map. Run over.`); return false; }
+  const id = fallOrder[sweepIdx++];
+  overrun[id] = true;
+  const r = recompute();
+  const n = NODE_BY_ID[id];
+  let msg = `Front advances — <b>${id} ${n.name}</b> overrun`;
+  const bandWord = n.band==="fwd"?"forward depot":n.band==="mid"?"midfield":"rear";
+  msg += ` (${bandWord}).`;
+  if (lastRoute && lastRoute.bestSink && !r.bestSink){
+    msg += ` <span class='ov'>Supply line broken — no depot reachable.</span>`;
+  } else if (lastRoute && lastRoute.bestSink && r.bestSink && r.best>lastRoute.best){
+    msg += ` Rear→front route lengthens to <b>${r.best}</b>.`;
+  } else if (r.bestSink){
+    msg += ` Route holds at <b>${r.best}</b>.`;
+  }
+  if (r.cutOff>0 && (!lastRoute || r.cutOff>(lastRoute.cutOff||0))) msg += ` <span class='ov'>${r.cutOff} depot(s) cut off.</span>`;
+  setWhy(msg);
+  lastRoute = r;
+  if (id === SOURCE){ stopPlay(); }
+  return true;
+}
+
+function startPlay(){
+  if (playing) return;
+  if (sweepIdx >= fallOrder.length) computeFallOrder();
+  playing = true;
+  document.getElementById("btnPlay").textContent = "❚❚ Pause";
+  document.getElementById("btnPlay").classList.add("on");
+  playTimer = setInterval(()=>{ const cont = stepFront(); if (!cont) stopPlay(); }, 900);
+}
+function stopPlay(){
+  playing = false;
+  if (playTimer){ clearInterval(playTimer); playTimer = null; }
+  const b = document.getElementById("btnPlay");
+  b.textContent = "▶ Play front"; b.classList.remove("on");
+}
+
+/* ---------- board / archetype management ---------- */
+function loadArch(k, keepFront){
+  archKey = k;
+  buildGraph();
+  if (!keepFront){
+    overrun = {}; cutLanes = {}; lastRoute = null;
+    computeFallOrder();
+    stopPlay();
+  }
+  document.getElementById("archName").textContent = ARCHETYPES[k].label.toLowerCase();
+  document.getElementById("archDesc").innerHTML = ARCHETYPES[k].desc;
+  // sync buttons
+  [...document.querySelectorAll("#archBtns button")].forEach(b => b.classList.toggle("on", b.dataset.k === k));
+  const r = recompute();
+  lastRoute = r;
+  if (!keepFront) setWhy(`Loaded <b>${ARCHETYPES[k].label}</b>. ` + routeSentence(r) + ` Click a system to overrun it.`);
+}
+
+function resetBoard(){
+  overrun = {}; cutLanes = {}; lastRoute = null;
+  computeFallOrder(); stopPlay();
+  const r = recompute(); lastRoute = r;
+  setWhy(`Board reset. ` + routeSentence(r));
+}
+
+function reseed(){
+  seed = (Math.floor(Math.random()*0xFFFFFF)) >>> 0;
+  document.getElementById("seedTag").textContent = "0x" + seed.toString(16).toUpperCase().padStart(6,"0");
+  // reseed implies a fresh collapse order; clear the front too
+  overrun = {}; cutLanes = {}; lastRoute = null;
+  computeFallOrder(); stopPlay();
+  const r = recompute(); lastRoute = r;
+  setWhy(`Reseeded to <b>0x${seed.toString(16).toUpperCase().padStart(6,"0")}</b> — a new fall order. ` + routeSentence(r));
+}
+
+/* ---------- wire up ---------- */
+function buildArchButtons(){
+  const host = document.getElementById("archBtns");
+  ARCH_ORDER.forEach(k => {
+    const b = document.createElement("button");
+    b.textContent = ARCHETYPES[k].label;
+    b.dataset.k = k;
+    b.addEventListener("click", ()=> loadArch(k, false));
+    host.appendChild(b);
+  });
+}
+
+document.getElementById("btnPlay").addEventListener("click", ()=>{ if (playing) stopPlay(); else startPlay(); });
+document.getElementById("btnStep").addEventListener("click", ()=>{ stopPlay(); if (sweepIdx>=fallOrder.length) computeFallOrder(); stepFront(); });
+document.getElementById("btnReseed").addEventListener("click", reseed);
+document.getElementById("btnReset").addEventListener("click", resetBoard);
+
+/* init */
+buildArchButtons();
+seed = 0x5EED01;
+document.getElementById("seedTag").textContent = "0x" + seed.toString(16).toUpperCase().padStart(6,"0");
+loadArch("backbone", false);
+</script>
+</body>
+</html>

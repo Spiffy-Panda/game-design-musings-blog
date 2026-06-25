@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reading the Offensive — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: the MSL enemy is a scripted-yet-reactive opening book over a broad front. Memorise the schedule, then watch your own coverage choices fork it." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#fb7185;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* op-type palette (distinct hues, all legible on dark) */
+  --op-mass:#fb7185;     /* MASS ASSAULT  — rose (the accent / the kill) */
+  --op-gate:#60a5fa;     /* JUMPGATE DENIAL — blue */
+  --op-raid:#fbbf24;     /* DEPOT RAID — amber */
+  --op-intd:#a78bfa;     /* INTERDICTION — violet */
+  --held:#34d399;        /* held / success — green */
+  --fell:#f87171;        /* fell / failure — red */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:64rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:42rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.card.pad0{padding:0;overflow:hidden}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.scripted{color:#bfdbfe;border-color:#3b5b8c;background:rgba(96,165,250,.1)}
+.phasebadge.endgame{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.12)}
+.phasebadge.over{color:var(--fog-100);border-color:var(--accent);background:var(--accent)}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:1rem}
+@media (max-width:880px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport bar */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr;gap:.55rem;margin-top:.2rem}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+
+/* SVG host */
+.svghost{width:100%;overflow-x:auto;border-radius:9px}
+svg{display:block;max-width:100%}
+.svg-tip{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;fill:var(--fog-500)}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:.6rem .9rem;margin-top:.6rem}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400)}
+.legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* decision prompt */
+.decision{border:1px solid var(--accent);background:rgba(251,113,133,.08);border-radius:11px;padding:.7rem .8rem;margin-top:.2rem;transition:.2s}
+.decision.idle{border-color:var(--line);background:var(--ink-900)}
+.decision .dq{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fog-400)}
+.decision .dop{font-size:1.02rem;font-weight:700;color:var(--fog-100);margin:.25rem 0 .1rem}
+.decision .dwhy{font-family:var(--font-mono);font-size:.74rem;color:var(--fog-400);line-height:1.5}
+.decbtns{display:flex;gap:.5rem;margin-top:.6rem}
+.decbtns button{flex:1}
+button.hold{color:var(--held);border-color:#2c6b54;background:rgba(52,211,153,.08)}
+button.hold:hover{background:rgba(52,211,153,.16);border-color:var(--held)}
+button.fall{color:var(--fell);border-color:#7a3636;background:rgba(248,113,113,.08)}
+button.fall:hover{background:rgba(248,113,113,.16);border-color:var(--fell)}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums}
+.gate{font-family:var(--font-mono);font-size:.74rem;line-height:1.7}
+.gate .pass{color:var(--held)} .gate .wait{color:var(--fog-500)} .gate .br{color:var(--accent)}
+.gate .row{white-space:nowrap}
+
+/* front map (broad front state) */
+.fmap{display:grid;gap:.32rem}
+.fseg{display:grid;grid-template-columns:5.2rem 1fr;align-items:center;gap:.5rem}
+.fseg .nm{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400);text-align:right;text-transform:uppercase}
+.cells{display:flex;gap:.22rem}
+.cell{flex:1;height:16px;border-radius:3px;border:1px solid var(--line);background:var(--ink-800);position:relative;transition:.3s}
+.cell.held{background:rgba(52,211,153,.14);border-color:#2c6b54}
+.cell.contested{background:rgba(251,191,36,.18);border-color:#7a5e1f;animation:pulse 1.1s ease-in-out infinite}
+.cell.overrun{background:var(--op-mass);border-color:var(--op-mass);opacity:.92}
+.cell.front{box-shadow:0 0 0 2px var(--accent) inset}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:8.8rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .held{color:var(--held)} .log .fell{color:var(--fell)} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)}
+
+/* fog map / observed keyframes */
+.fog .obs{color:var(--fog-100)} .fog .un{color:#384055}
+.fograow{display:grid;grid-template-columns:auto 1fr auto;gap:.4rem .7rem;font-family:var(--font-mono);font-size:.74rem;align-items:baseline;padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.035)}
+.fograow:last-child{border:none}
+.fograow .fk{color:var(--fog-500)} .fograow .fv{color:var(--fog-100)} .fograow .fu{color:#3c4458}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:.3rem;vertical-align:middle}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <span class="chip"><b>M2</b> · enemy / front lineage</span>
+  <div class="kicker">HAND lineage · the known war</div>
+  <h1>Reading the Offensive</h1>
+  <p class="lede">The enemy could strike a dozen places a dozen ways. It always strikes them in the same learnable order — so a veteran doesn't fight the war, she <em>recites</em> it. Until her own coverage choices start rewriting the script.</p>
+  <p class="spark">A first run is blind. A tenth run is <span>a heist you've already cased</span> — yet the take is never the same twice.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one ship</strong> and an unwinnable war to supply. The front is sovereign <span class="hand">APR.2</span>: you never fire a shot, you only haul goods into the shortage it creates. So the entire skill ceiling is <em>knowing what the war will do next</em> — and this page is about the part of the war you can actually learn.</p>
+
+<p>The enemy here is not a rival trader. It is an <strong>attrition automaton</strong> <span class="hand">M2.2</span> — it never bargains, never buys, never reacts to your prices. You cannot out-trade it. What it <em>does</em> have is an <strong>opening book</strong>: a scripted-yet-reactive sequence of attacks across a broad front, fired under conditions a careful player can memorise. Learn the book and the early war becomes navigable. That memorisation <em>is</em> the meta-game <span class="hand">M2.5</span>; the discoveries are logged in-world <span class="hand">R.5</span>, never handed to you on a menu.</p>
+
+<h2><span class="eye">the model</span>An opening book, not a timeline</h2>
+
+<p>A flat timeline would be trivial — memorise four timestamps, done. The offensive is a <strong>small decision tree</strong> instead. Every operation fires from a <strong>gate</strong> built from three conditions, exactly the ones a veteran rehearses:</p>
+
+<ul class="tight">
+  <li><b>Time since run start</b> — the op can't fire before tick <code>t</code>. The war has a tempo.</li>
+  <li><b>Time since the previous op</b> — a minimum <code>gap</code>. The enemy can't sustain two blows back-to-back; cadence is its bottleneck.</li>
+  <li><b>A branch on the previous op's outcome</b> — whether you <b>held</b> (covered it) or <b>let it fall</b> selects <em>which op comes next</em>. Same opening, two futures.</li>
+</ul>
+
+<p>Formally each op fires when <code>tick ≥ t</code> <strong>AND</strong> <code>tick − lastOp ≥ gap</code> <strong>AND</strong> we are sitting on its node along the active branch. Four op types span the breadth of "many places, many ways":</p>
+
+<ul class="tight">
+  <li><b style="color:var(--op-mass)">MASS ASSAULT</b> — overruns the next system in a segment. The only op that actually deletes map.</li>
+  <li><b style="color:var(--op-gate)">JUMPGATE DENIAL</b> — cuts or reverses a lane, lengthening your haul.</li>
+  <li><b style="color:var(--op-raid)">DEPOT RAID</b> — drains a forward depot's stock, spiking the very shortage you sell into.</li>
+  <li><b style="color:var(--op-intd)">INTERDICTION</b> — raises a corridor's risk without taking ground.</li>
+</ul>
+
+<p>And it is <strong>scripted-yet-reactive</strong>: holding a segment <em>pushes its next op later</em> (you bought tempo), abandoning one <em>lurches the next strike early</em> (the enemy exploits the opening). The opening is <strong>keyframed</strong> — learnable. Once the book is exhausted the front stops following a script and advances on <strong>pure accumulated pressure</strong>. Memorisation carries you through the opening; only skill carries you through the endgame.</p>
+
+<div class="callout">
+  <div class="lab">how to read the instrument</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">Press <strong>Play</strong> and watch ops light up on the <strong>war plan</strong> (left: a Gantt of the broad front; rows are segments, blocks are scheduled ops). When an op comes due the sim <em>pauses</em> and asks you to <strong>HOLD</strong> or <strong>LET FALL</strong> it. Your choice forks the <strong>branch tree</strong> below and redraws the rest of the opening. The right column tells you the active op, <em>why</em> its gate opened, the broad-front map, and which keyframes you've actually observed. Same seed ⇒ same book; your choices ⇒ your war.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">WAR-PLAN SCOPE · <b>front "ROSE"</b></div>
+    <div class="phasebadge scripted" id="phaseBadge">SCRIPTED OPENING</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">▶ Play</button>
+        <button class="ctl" id="btnStep">⏭ Step</button>
+        <button class="ctl" id="btnReset">⟲ Reset</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="ROSE-1207" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:.8rem">
+        <div class="slider">
+          <span class="lab">op cadence — min gap since last op</span>
+          <span class="val" id="vGap">34 t</span>
+          <input type="range" id="sGap" min="14" max="64" step="2" value="34" />
+        </div>
+        <div class="slider">
+          <span class="lab">start offset — earliest first strike</span>
+          <span class="val" id="vStart">28 t</span>
+          <input type="range" id="sStart" min="8" max="70" step="2" value="28" />
+        </div>
+        <div class="slider">
+          <span class="lab">front intensity — endgame pressure rate</span>
+          <span class="val" id="vInt">1.00×</span>
+          <input type="range" id="sInt" min="50" max="220" step="5" value="100" />
+        </div>
+        <div class="note" style="margin-top:.1rem">Cadence &amp; offset reshape the <em>book</em> (they retime gates); intensity only bites <em>after</em> the script runs out. Changing a slider re-plans from the current tick.</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: war plan (gantt) + branch tree -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="panel">
+          <h4>War plan — broad front <span class="sub">rows = segments · blocks = scheduled ops</span></h4>
+          <div class="svghost"><svg id="gantt" viewBox="0 0 640 250" role="img" aria-label="Gantt timeline of enemy operations across front segments"></svg></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="panel">
+          <h4>The opening book <span class="sub">nodes = ops · edges = held / fell</span></h4>
+          <div class="svghost"><svg id="tree" viewBox="0 0 640 300" role="img" aria-label="Branch tree of the opening book"></svg></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: decision + readouts + maps -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        <div class="decision idle" id="decision">
+          <div class="dq" id="decQ">no op pending — front is quiet</div>
+          <div class="dop" id="decOp">—</div>
+          <div class="dwhy" id="decWhy">Press Play. The sim halts the instant an op's gate opens and hands you the choice.</div>
+          <div class="decbtns">
+            <button class="ctl hold" id="btnHold" disabled>◆ HOLD · cover it</button>
+            <button class="ctl fall" id="btnFall" disabled>▽ LET FALL</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Active op — why it fired</h4>
+          <div class="gate" id="gate"><span class="wait">idle — no gate evaluating</span></div>
+          <div class="kv" style="margin-top:.55rem">
+            <span class="k">phase</span><span class="v" id="kvPhase">scripted opening</span>
+            <span class="k">ops fired</span><span class="v" id="kvFired">0</span>
+            <span class="k">held / fell</span><span class="v" id="kvHF">0 / 0</span>
+            <span class="k">pressure</span><span class="v" id="kvPress">0.0</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Broad-front state <span class="sub">held · contested · overrun</span></h4>
+          <div class="fmap" id="fmap"></div>
+        </div>
+
+        <div class="panel">
+          <h4>Fog map — observed keyframes <span class="sub">R.5 · unknown ≠ random</span></h4>
+          <div class="fog" id="fog"></div>
+        </div>
+
+        <div class="panel">
+          <h4>Event log <span class="sub">in-world discoveries</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just did</span>Two players, one memorised book, two wars</h2>
+
+<p>Run the same seed twice and the <em>plan</em> is identical: same first strike, same gates, same fork points. That is the heist you cased on run ten. But the moment you choose <strong>HOLD</strong> instead of <strong>LET FALL</strong>, the active branch flips and a <em>different</em> op queues next — a different target, a different gate. Two veterans who memorised the exact same opening still diverge the instant their coverage decisions differ. The script is shared; the playthrough is yours.</p>
+
+<p>Watch the <strong>phase badge</strong>. While it reads <span style="color:#bfdbfe">SCRIPTED OPENING</span> you are inside the book — every strike is a keyframe you could have known. When it flips to <span style="color:#fecdd3">PURE-PRESSURE ENDGAME</span> the keyframes are spent: the front now advances on accumulated pressure alone, and no amount of memorising helps. That is the deliberate seam between the two halves of mastery — <strong>recall</strong> gets you through the opening, <strong>play</strong> gets you through the close.</p>
+
+<p>And notice the <strong>fog map</strong>: keyframes you haven't reached yet read as <code>unobserved</code>, not as noise. The schedule is fully determined from the seed <span class="hand">APR.5</span> — you simply haven't <em>seen</em> it yet. A fresh player's ignorance is missing knowledge, never randomness; that is what makes the war learnable at all and what makes run-over-run mastery the actual game <span class="hand">M2.5</span>.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <div class="rt"><b>Memorisation &gt; mastery.</b> If the opening never changes, the skill collapses into rote recall: run ten plays itself, and the game stops asking anything of you.</div>
+  <div class="mit"><b>Mitigations, both already in the model:</b> a <em>seed-family</em> that shuffles which keyframes are pre-set versus emergent — the <code>ROSE-####</code> field reseeds the book so the segment order, op types, and fork structure all move, defeating a single memorised line — and a <em>script that runs out</em>, handing the back half to the pure-pressure endgame where recall is worthless. Memorisation should be the <em>price of admission</em> to the real fight, not the fight.</div>
+</div>
+
+<div class="risk">
+  <div class="rt"><b>Determinism rot.</b> The whole promise is "same seed ⇒ same war." One stray <code>Math.random</code>, one float that rounds differently on another machine, one set iterated in hash order, and the cased heist desyncs — the player's memorised book stops matching the run and trust evaporates.</div>
+  <div class="mit"><b>Mitigation:</b> the sim is a fixed-timestep tick loop over a single reseedable <code>mulberry32</code> PRNG (no bare <code>Math.random</code> anywhere), all gates are integer-tick comparisons, and iteration order over segments and ops is fixed and explicit <span class="hand">APR.5</span>. Determinism is a <em>property you test</em>, not a thing you hope for — replay the seed in CI and diff the op log.</div>
+</div>
+
+<p class="note" style="margin-top:1.6rem">Model + page by Panda. The enemy is intentionally <em>not</em> an economy <span class="hand">M2.2</span>: it schedules attrition, it does not trade. Op types, gates, and front geometry here are illustrative of the lineage, tuned for legibility over balance.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · HAND lineage — M2 "The Known War" · explorable explanation · runs offline from a single file.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   Reading the Offensive — deterministic opening-book simulator
+   No external requests. One reseedable PRNG (mulberry32). Integer-tick gates.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* stable string -> uint32 hash so seed text maps deterministically */
+function hashSeed(str){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+
+/* ---------- static world ---------- */
+const OP_TYPES = {
+  MASS: {key:"MASS", label:"MASS ASSAULT",   color:"var(--op-mass)", glyph:"▤", short:"MASS"},
+  GATE: {key:"GATE", label:"JUMPGATE DENIAL",color:"var(--op-gate)", glyph:"⌖", short:"GATE"},
+  RAID: {key:"RAID", label:"DEPOT RAID",     color:"var(--op-raid)", glyph:"◆", short:"RAID"},
+  INTD: {key:"INTD", label:"INTERDICTION",   color:"var(--op-intd)", glyph:"╳", short:"INTD"}
+};
+const OP_ORDER = ["MASS","GATE","RAID","INTD"]; // fixed iteration order for determinism
+
+/* Three front segments, each a chain of systems rear->forward.
+   These are FIXED; only which gets hit, and when, comes from the book. */
+const SEGMENTS = [
+  {id:0, name:"VELA",  systems:4},
+  {id:1, name:"CORVUS",systems:4},
+  {id:2, name:"DRACO", systems:4}
+];
+
+/* ---------- the opening book ----------
+   Built deterministically from the seed. It is a binary decision tree of ops.
+   Each node: {id, type, seg, dt (added to running t), gap, depth, held:childId, fell:childId}
+   Gates are computed at plan time from cumulative t + sliders. Leaves -> endgame.       */
+
+const KEYFRAME_COUNT = 6;  // scripted ops before pure-pressure endgame
+
+function buildBook(seedNum, startOffset, gapBase){
+  const rnd = mulberry32(seedNum);
+  // pick a deterministic permutation of op types weighted so MASS recurs
+  const pool = ["MASS","MASS","GATE","RAID","INTD","MASS","GATE","RAID","INTD","MASS"];
+  function pick(arr){ return arr[Math.floor(rnd()*arr.length)]; }
+
+  let nextId = 0;
+  const nodes = {};
+  // We grow a tree to KEYFRAME_COUNT depth along *both* branches but share structure:
+  // each depth has its own op definition; held vs fell pick different NEXT ops.
+  // To stay a small, learnable book we generate two candidate ops per depth
+  // (the "held-line successor" and the "fell-line successor") and let outcome route.
+  // Depth 0 is the single opening strike.
+
+  function mkOp(depth){
+    const id = nextId++;
+    const type = pick(pool);
+    const seg = Math.floor(rnd()*SEGMENTS.length);
+    // dt: spacing contribution for this op; jitter is seeded & integer
+    const dt = Math.round(8 + rnd()*22);
+    const gap = Math.round(gapBase * (0.7 + rnd()*0.7)); // per-op gap varies around slider
+    nodes[id] = {id, type, seg, dt, gap, depth, held:null, fell:null, fired:false};
+    return id;
+  }
+
+  // root
+  const rootId = mkOp(0);
+  // build successors: BFS to KEYFRAME_COUNT total nodes-deep lines.
+  // We keep it compact: a held child and a fell child per node, but cap total depth.
+  function grow(id, depth){
+    if (depth >= KEYFRAME_COUNT-1) return; // leaf depth -> children null -> endgame
+    const node = nodes[id];
+    node.held = mkOp(depth+1);
+    node.fell = mkOp(depth+1);
+    grow(node.held, depth+1);
+    grow(node.fell, depth+1);
+  }
+  grow(rootId, 0);
+  return {rootId, nodes};
+}
+
+/* ---------- simulation state ---------- */
+const S = {
+  seedNum:0, seedStr:"",
+  book:null,
+  tick:0,
+  running:false,
+  lastOpTick:-9999,
+  activeId:null,          // node currently on the live branch awaiting gate
+  pendingDecision:false,  // gate open, waiting for HOLD/LET FALL
+  firedCount:0, heldCount:0, fellCount:0,
+  pressure:0,
+  phase:"scripted",       // scripted | endgame | over
+  branchPath:[],          // list of {id, outcome} chosen so far
+  // front map: per segment how many systems overrun; contested flag
+  front:[],               // [{overrun:int, contested:bool}]
+  observed:{},            // id -> true once gate opened (fog map)
+  log:[],
+  // sliders
+  gap:34, start:28, intensity:1.0,
+  raf:null, acc:0,
+};
+
+const TICK_MS = 70;       // wall-clock per tick when playing (fixed timestep feel)
+const OVERRUN_LIMIT = SEGMENTS.reduce((a,s)=>a+s.systems,0);
+
+/* compute the absolute fire-tick of every node along a given branch decision set.
+   Because the tree branches, "scheduled t" is only well-defined along the ACTIVE path
+   plus one ply of lookahead. We compute earliest-possible fire ticks for display by
+   walking from root applying max(prevFire+gap, prevFire+dt, start for root).        */
+function scheduleAlong(path){
+  // path: array of outcomes ('held'/'fell') from root. Returns ordered [{node, fireT}]
+  const out = [];
+  let id = S.book.rootId;
+  let prevFire = 0;
+  let depth = 0;
+  while (id != null){
+    const n = S.book.nodes[id];
+    let fireT;
+    if (depth === 0){
+      fireT = Math.max(S.start, n.dt);
+    } else {
+      fireT = prevFire + Math.max(n.gap, n.dt);
+    }
+    out.push({node:n, fireT});
+    prevFire = fireT;
+    const oc = path[depth];
+    if (oc === undefined) break;          // no more decisions known -> stop lookahead
+    id = (oc === 'held') ? n.held : n.fell;
+    depth++;
+  }
+  return out;
+}
+
+/* full pre-plan for the GANTT: we show the active path so far (committed),
+   then BOTH children of the frontier as faded "possible next" blocks.        */
+function planForGantt(){
+  const committed = scheduleAlong(S.branchPath.map(p=>p.outcome));
+  // committed includes the frontier node (the one awaiting/at decision)
+  const frontier = committed[committed.length-1];
+  const ghosts = [];
+  if (frontier && S.phase!=="endgame"){
+    const fn = frontier.node;
+    const baseT = frontier.fireT;
+    [["held",fn.held],["fell",fn.fell]].forEach(([oc,cid])=>{
+      if (cid!=null){
+        const c = S.book.nodes[cid];
+        const ft = baseT + Math.max(c.gap, c.dt);
+        ghosts.push({node:c, fireT:ft, ghost:true, via:oc});
+      }
+    });
+  }
+  return {committed, ghosts, frontier};
+}
+
+/* ---------- reset / seed ---------- */
+// endgame PRNG: lazily created in runEndgame(), reset by reseed() — part of run state.
+let endgameRnd = null;
+function reseed(seedStr){
+  S.seedStr = seedStr;
+  S.seedNum = hashSeed(seedStr);
+  S.book = buildBook(S.seedNum, S.start, S.gap);
+  S.tick = 0; S.lastOpTick = -9999;
+  S.firedCount = 0; S.heldCount = 0; S.fellCount = 0;
+  S.pressure = 0; S.phase = "scripted";
+  S.branchPath = [];
+  S.pendingDecision = false;
+  S.front = SEGMENTS.map(()=>({overrun:0, contested:false}));
+  S.observed = {};
+  S.log = [];
+  // determinism: the endgame PRNG and its threshold tracker are part of run state,
+  // so a reseed MUST reset them here — otherwise a second run reuses the advanced
+  // PRNG and the "same seed -> same war" promise breaks (determinism rot).
+  endgameRnd = null;
+  S._lastThresh = 0;
+  // active = root
+  S.activeId = S.book.rootId;
+  pushLog("sys", 0, "Front ROSE seeded — opening book loaded. " + KEYFRAME_COUNT + " keyframes.");
+  stop();
+  render();
+}
+
+/* recompute the book in place when sliders move, preserving progress where sane.
+   Simplest deterministic approach: rebuild book from seed with new params, then
+   keep the same branchPath outcomes & front state, and re-home activeId.        */
+function replanFromSliders(){
+  if (!S.book) return;
+  const path = S.branchPath.slice();
+  S.book = buildBook(S.seedNum, S.start, S.gap);
+  // re-walk committed outcomes to find current active node
+  let id = S.book.rootId;
+  for (const step of path){
+    const n = S.book.nodes[id];
+    n.fired = true;
+    id = (step.outcome==='held') ? n.held : n.fell;
+  }
+  S.activeId = id; // next undecided node (or null -> endgame)
+  if (id == null && S.phase!=="over") S.phase = "endgame";
+  render();
+}
+
+/* ---------- core tick ---------- */
+function stepTick(){
+  if (S.phase === "over") return;
+  S.tick++;
+
+  if (S.phase === "scripted"){
+    evaluateGate();
+  }
+  if (S.phase === "endgame"){
+    runEndgame();
+  }
+  // contested visuals decay handled in render via front state
+  render();
+}
+
+/* SCRIPTED: check whether the active node's gate is open. If so, halt for decision. */
+function evaluateGate(){
+  if (S.pendingDecision) return;      // already waiting on the player
+  const id = S.activeId;
+  if (id == null){ enterEndgame("book exhausted"); return; }
+  const n = S.book.nodes[id];
+  const sched = scheduleAlong(S.branchPath.map(p=>p.outcome));
+  const frontier = sched[sched.length-1];
+  const fireT = frontier ? frontier.fireT : S.start;
+
+  const cond_t   = S.tick >= fireT;
+  const cond_gap = (S.tick - S.lastOpTick) >= n.gap;
+
+  if (cond_t && cond_gap){
+    // gate opens -> observe it (fog), halt, ask player
+    S.observed[id] = {fireT, gap:n.gap, type:n.type, seg:n.seg};
+    S.pendingDecision = true;
+    S.running = false;            // auto-pause for the choice
+    stopRAF();
+    pushLog("info", S.tick, "GATE OPEN — " + OP_TYPES[n.type].label + " on " + SEGMENTS[n.seg].name +
+      " · t≥" + fireT + " ✓, gap≥" + n.gap + " ✓ — awaiting coverage call.");
+  }
+}
+
+/* resolve player's HOLD / LET FALL on the active op */
+function resolveDecision(outcome){          // outcome: 'held' | 'fell'
+  if (!S.pendingDecision) return;
+  const id = S.activeId;
+  const n = S.book.nodes[id];
+  S.pendingDecision = false;
+  S.firedCount++;
+  S.lastOpTick = S.tick;
+  n.fired = true;
+
+  applyOpEffect(n, outcome);
+
+  if (outcome === 'held'){
+    S.heldCount++;
+    pushLog("held", S.tick, "HELD · " + OP_TYPES[n.type].label + " on " + SEGMENTS[n.seg].name +
+      " blunted. Tempo bought — next strike pushed later. → branch HELD");
+  } else {
+    S.fellCount++;
+    pushLog("fell", S.tick, "FELL · " + OP_TYPES[n.type].label + " on " + SEGMENTS[n.seg].name +
+      " landed. Enemy exploits the opening — next strike lurches early. → branch FELL");
+  }
+  S.branchPath.push({id, outcome});
+
+  // advance active to the selected child
+  const nextId = (outcome === 'held') ? n.held : n.fell;
+  if (nextId == null){
+    enterEndgame("book exhausted — last keyframe " + (outcome==='held'?'held':'fell'));
+  } else {
+    S.activeId = nextId;
+    // reactive timing: HELD adds slack to next gap, FELL shaves it (scripted-yet-reactive)
+    const child = S.book.nodes[nextId];
+    if (outcome === 'held') child.gap = Math.round(child.gap * 1.18);
+    else child.gap = Math.max(8, Math.round(child.gap * 0.74));
+  }
+  render();
+}
+
+/* an op's mechanical effect on the broad-front map */
+function applyOpEffect(n, outcome){
+  const seg = S.front[n.seg];
+  if (n.type === "MASS"){
+    if (outcome === 'fell'){
+      // overrun next system in the segment
+      if (seg.overrun < SEGMENTS[n.seg].systems) seg.overrun++;
+      seg.contested = false;
+    } else {
+      seg.contested = true; // held: the assault is contested, no ground lost
+    }
+  } else if (n.type === "GATE"){
+    // lane cut: models as light pressure + contest, never direct overrun
+    if (outcome === 'fell'){ S.pressure += 1.4; seg.contested = true; }
+  } else if (n.type === "RAID"){
+    if (outcome === 'fell'){ S.pressure += 1.0; seg.contested = true; }
+  } else if (n.type === "INTD"){
+    if (outcome === 'fell'){ S.pressure += 0.7; }
+  }
+  // every fall feeds the eventual endgame pressure
+  if (outcome === 'fell') S.pressure += 0.6;
+  checkLoss();
+}
+
+function enterEndgame(reason){
+  if (S.phase === "over") return;
+  S.phase = "endgame";
+  S.activeId = null;
+  S.pendingDecision = false;
+  pushLog("sys", S.tick, "SCRIPT EXHAUSTED (" + reason + ") — front now advances on PURE PRESSURE. Recall is spent; skill only from here.");
+  render();
+}
+
+/* ENDGAME: no script. Accumulated pressure advances the front automatically,
+   scaled by the intensity slider. Still deterministic (uses seeded PRNG for
+   *which* contested segment yields, integer thresholds). endgameRnd is declared
+   up by reseed() (it is run state that reseed must reset).                       */
+function runEndgame(){
+  if (!endgameRnd) endgameRnd = mulberry32(S.seedNum ^ 0x9E3779B9);
+  S.pressure += 0.08 * S.intensity;
+  // every time pressure crosses an integer threshold, push the front somewhere
+  const threshold = Math.floor(S.pressure);
+  if (threshold > (S._lastThresh||0)){
+    S._lastThresh = threshold;
+    // choose a segment in fixed order preference: most-contested, else lowest index not full
+    let target = -1;
+    for (let i=0;i<SEGMENTS.length;i++){
+      if (S.front[i].contested && S.front[i].overrun < SEGMENTS[i].systems){ target=i; break; }
+    }
+    if (target<0){
+      for (let i=0;i<SEGMENTS.length;i++){
+        if (S.front[i].overrun < SEGMENTS[i].systems){ target=i; break; }
+      }
+    }
+    if (target>=0){
+      // seeded coin to occasionally contest a fresh neighbour instead (variety, deterministic)
+      if (endgameRnd() < 0.25){
+        const alt = (target+1)%SEGMENTS.length;
+        if (S.front[alt].overrun < SEGMENTS[alt].systems) S.front[alt].contested = true;
+      }
+      S.front[target].overrun++;
+      S.front[target].contested = false;
+      pushLog("fell", S.tick, "PRESSURE BREAK · " + SEGMENTS[target].name + " loses a system to accumulated attrition (P=" + S.pressure.toFixed(1) + ").");
+      checkLoss();
+    }
+  }
+}
+
+function checkLoss(){
+  const total = S.front.reduce((a,s)=>a+s.overrun,0);
+  if (total >= OVERRUN_LIMIT){
+    S.phase = "over";
+    S.running = false; stopRAF();
+    pushLog("sys", S.tick, "FRONT OVERRUN — the run ends. (In MSL the loss banks prestige toward a better starting position.)");
+  }
+}
+
+/* ---------- log ---------- */
+function pushLog(cls, t, msg){
+  S.log.unshift({cls, t, msg});
+  if (S.log.length > 60) S.log.pop();
+}
+
+/* ====================== RENDERING ====================== */
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function opColorVar(type){ return OP_TYPES[type].color; }
+
+function render(){
+  $("clk").textContent = S.tick;
+  // phase badge
+  const pb = $("phaseBadge");
+  pb.className = "phasebadge " + (S.phase==="over"?"over":S.phase);
+  pb.textContent = S.phase==="over" ? "FRONT OVERRUN" : (S.phase==="endgame" ? "PURE-PRESSURE ENDGAME" : "SCRIPTED OPENING");
+
+  $("kvPhase").textContent = S.phase==="over"?"run ended":(S.phase==="endgame"?"pure-pressure endgame":"scripted opening");
+  $("kvFired").textContent = S.firedCount + " / " + KEYFRAME_COUNT;
+  $("kvHF").textContent = S.heldCount + " / " + S.fellCount;
+  $("kvPress").textContent = S.pressure.toFixed(1);
+
+  renderGantt();
+  renderTree();
+  renderDecision();
+  renderGate();
+  renderFront();
+  renderFog();
+  renderLog();
+  // transport button label
+  $("btnPlay").textContent = S.running ? "⏸ Pause" : "▶ Play";
+  const done = S.phase==="over";
+  $("btnStep").disabled = done;
+  $("btnPlay").disabled = done && !S.running;
+}
+
+/* ---- Gantt ---- */
+function renderGantt(){
+  const svg = $("gantt"); svg.innerHTML = "";
+  const W=640, H=250, padL=70, padR=14, padT=16, padB=26;
+  const plotW = W-padL-padR;
+  const rowH = (H-padT-padB)/SEGMENTS.length;
+
+  // time scale: derive max from committed plan + ghosts + a margin, or current tick
+  const {committed, ghosts, frontier} = S.book ? planForGantt() : {committed:[],ghosts:[],frontier:null};
+  let maxT = 60;
+  committed.forEach(c=>maxT=Math.max(maxT,c.fireT));
+  ghosts.forEach(g=>maxT=Math.max(maxT,g.fireT));
+  maxT = Math.max(maxT, S.tick) * 1.12 + 10;
+  const x = t => padL + (t/maxT)*plotW;
+
+  // grid + time ticks
+  for (let i=0;i<=5;i++){
+    const tt = Math.round(maxT*i/5);
+    const gx = x(tt);
+    el("line",{x1:gx,y1:padT,x2:gx,y2:H-padB,stroke:"var(--line)","stroke-width":1,opacity:.5},svg);
+    const lab = el("text",{x:gx,y:H-padB+15,"text-anchor":"middle",class:"svg-tip"},svg);
+    lab.textContent = "t"+tt;
+  }
+  // segment rows + labels
+  SEGMENTS.forEach((seg,i)=>{
+    const y = padT + i*rowH;
+    el("line",{x1:padL,y1:y+rowH,x2:W-padR,y2:y+rowH,stroke:"var(--line)","stroke-width":1,opacity:.4},svg);
+    const lt = el("text",{x:padL-10,y:y+rowH/2+4,"text-anchor":"end",class:"svg-tip",fill:"var(--fog-400)"},svg);
+    lt.textContent = seg.name;
+    // overrun shading on the row (how much of this segment is gone)
+    const segState = S.front[i];
+    if (segState && segState.overrun>0){
+      const frac = segState.overrun/seg.systems;
+      el("rect",{x:padL,y:y+3,width:plotW*frac,height:rowH-6,fill:"var(--op-mass)",opacity:.07},svg);
+    }
+  });
+
+  // committed op blocks
+  committed.forEach((c,idx)=>{
+    drawOpBlock(svg, c.node, c.fireT, x, padT, rowH, {ghost:false,
+      active:(c.node.id===S.activeId), fired:c.node.fired});
+  });
+  // ghost (possible-next) blocks
+  ghosts.forEach(g=>{
+    drawOpBlock(svg, g.node, g.fireT, x, padT, rowH, {ghost:true, via:g.via});
+  });
+
+  // NOW line
+  const nx = x(S.tick);
+  el("line",{x1:nx,y1:padT-2,x2:nx,y2:H-padB+2,stroke:"var(--accent)","stroke-width":1.5,
+    "stroke-dasharray":"3 3",opacity:.95},svg);
+  const nl = el("text",{x:Math.min(nx+4,W-padR-26),y:padT+8,class:"svg-tip",fill:"var(--accent)"},svg);
+  nl.textContent = "NOW";
+
+  // legend
+  const lg = $("legend");
+  if (!lg.dataset.built){
+    OP_ORDER.forEach(k=>{
+      const it=document.createElement("span"); it.className="it";
+      it.innerHTML='<span class="sw" style="background:'+OP_TYPES[k].color+'"></span>'+OP_TYPES[k].label;
+      lg.appendChild(it);
+    });
+    const a=document.createElement("span"); a.className="it";
+    a.innerHTML='<span class="sw" style="background:transparent;border:1px dashed var(--fog-500)"></span>possible next (faded)';
+    lg.appendChild(a);
+    lg.dataset.built="1";
+  }
+}
+
+function drawOpBlock(svg, node, fireT, x, padT, rowH, opt){
+  const y = padT + node.seg*rowH + 5;
+  const h = rowH-10;
+  const cx = x(fireT);
+  const w = 26;
+  const col = opColorVar(node.type);
+  const g = el("g",{},svg);
+  const rect = el("rect",{x:cx-w/2,y:y,width:w,height:h,rx:4,
+    fill: opt.ghost ? "transparent" : col,
+    stroke: opt.ghost ? "var(--fog-500)" : col,
+    "stroke-width": opt.ghost ? 1 : (opt.active?2:1),
+    "stroke-dasharray": opt.ghost ? "3 2" : "none",
+    opacity: opt.ghost ? 0.55 : (opt.fired?0.95:0.85)},g);
+  if (opt.active && !opt.ghost){
+    el("rect",{x:cx-w/2-3,y:y-3,width:w+6,height:h+6,rx:6,fill:"none",
+      stroke:"var(--accent)","stroke-width":1.6,opacity:.9},g);
+  }
+  // glyph
+  const tx = el("text",{x:cx,y:y+h/2+4,"text-anchor":"middle",
+    "font-family":"var(--font-mono)","font-size":11,"font-weight":700,
+    fill: opt.ghost ? "var(--fog-400)" : "var(--ink-950)"},g);
+  tx.textContent = OP_TYPES[node.type].short;
+  // tiny outcome flag if fired
+  const fired = S.branchPath.find(p=>p.id===node.id);
+  if (fired){
+    el("circle",{cx:cx+w/2-2,cy:y+3,r:3.4,
+      fill: fired.outcome==='held'?"var(--held)":"var(--fell)",
+      stroke:"var(--ink-950)","stroke-width":1},g);
+  }
+  if (opt.ghost && opt.via){
+    const vt = el("text",{x:cx,y:y-4,"text-anchor":"middle",class:"svg-tip",
+      fill: opt.via==='held'?"var(--held)":"var(--fell)","font-size":8},g);
+    vt.textContent = opt.via.toUpperCase();
+  }
+}
+
+/* ---- Branch tree ---- */
+function renderTree(){
+  const svg = $("tree"); svg.innerHTML = "";
+  if (!S.book) return;
+  const W=640, H=300, padT=24, padB=16;
+  const depths = KEYFRAME_COUNT;
+  const colW = (W-40)/depths;
+
+  // We lay out the tree but PRUNE to keep it legible: show the committed path fully,
+  // plus children of the frontier, plus a faded skeleton of deeper structure on the
+  // active side. Position by (depth -> x, a y-slot per node).
+  // Build display nodes via BFS with y-bands.
+  const placed = {}; // id -> {x,y,node,onPath,reachable}
+  const pathIds = new Set([S.book.rootId, ...S.branchPath.map(p=>{
+    // include each chosen child
+    return null;
+  }).filter(Boolean)]);
+
+  // recompute the exact chain of node ids along committed path
+  const chain = [];
+  {
+    let id=S.book.rootId; let i=0;
+    chain.push(id);
+    while(i<S.branchPath.length){
+      const n=S.book.nodes[id];
+      id = S.branchPath[i].outcome==='held'?n.held:n.fell;
+      if(id==null) break;
+      chain.push(id); i++;
+    }
+  }
+  const chainSet = new Set(chain);
+  const frontierId = chain[chain.length-1];
+
+  // assign y slots: do a depth-limited layout. For each depth keep a list of nodes to show.
+  // Show: all chain nodes, plus both children of frontier, plus (faded) both children of
+  // each chain node so the player sees the forks they DIDN'T take.
+  const showByDepth = {};
+  function add(id, depth, faded){
+    if (id==null) return;
+    if (!showByDepth[depth]) showByDepth[depth]=[];
+    if (!showByDepth[depth].some(o=>o.id===id))
+      showByDepth[depth].push({id, faded});
+  }
+  // chain
+  chain.forEach((id,d)=> add(id,d,false));
+  // siblings of chain (the not-taken fork at each decided step)
+  for (let d=0; d<chain.length-1; d++){
+    const n=S.book.nodes[chain[d]];
+    const taken = S.branchPath[d].outcome;
+    const notId = taken==='held'? n.fell : n.held;
+    add(notId, d+1, true);
+  }
+  // frontier children (the live choice)
+  if (frontierId!=null){
+    const fn=S.book.nodes[frontierId];
+    add(fn.held, chain.length, false);
+    add(fn.fell, chain.length, false);
+  }
+
+  const maxDepth = Math.max(...Object.keys(showByDepth).map(Number));
+  // position
+  Object.keys(showByDepth).forEach(ds=>{
+    const d=+ds; const arr=showByDepth[d];
+    const x = 24 + d*colW + colW*0.18;
+    const bandH = H-padT-padB;
+    arr.forEach((o,i)=>{
+      const y = padT + bandH*((i+1)/(arr.length+1));
+      placed[o.id] = {x, y, node:S.book.nodes[o.id], faded:o.faded, depth:d};
+    });
+  });
+
+  // edges first
+  function edge(aId,bId,outcome,faded){
+    const a=placed[aId], b=placed[bId];
+    if(!a||!b) return;
+    const onLive = chainSet.has(aId) && chainSet.has(bId);
+    const col = outcome==='held' ? "var(--held)" : "var(--fell)";
+    const mx=(a.x+b.x)/2;
+    el("path",{d:`M${a.x+13},${a.y} C ${mx},${a.y} ${mx},${b.y} ${b.x-13},${b.y}`,
+      fill:"none",stroke:col,
+      "stroke-width": onLive?2.4:1.2,
+      opacity: faded?0.28:(onLive?0.95:0.6)},svg);
+    // edge label
+    if(!faded){
+      const lx=mx, ly=(a.y+b.y)/2 - 3;
+      const t=el("text",{x:lx,y:ly,"text-anchor":"middle","font-family":"var(--font-mono)",
+        "font-size":8,fill:col,opacity: onLive?1:0.7},svg);
+      t.textContent = outcome==='held'?'HELD':'FELL';
+    }
+  }
+  // draw edges from every placed node to its placed children
+  Object.values(placed).forEach(p=>{
+    const n=p.node;
+    if (n.held!=null && placed[n.held]) edge(n.id,n.held,'held', p.faded||placed[n.held].faded && !chainSet.has(n.held));
+    if (n.fell!=null && placed[n.fell]) edge(n.id,n.fell,'fell', p.faded||placed[n.fell].faded && !chainSet.has(n.fell));
+  });
+
+  // nodes
+  Object.values(placed).forEach(p=>{
+    const n=p.node;
+    const onLive = chainSet.has(n.id);
+    const isFrontier = (n.id===frontierId);
+    const isActiveChoice = isFrontier && S.pendingDecision;
+    const r=11;
+    const g=el("g",{},svg);
+    el("circle",{cx:p.x,cy:p.y,r,
+      fill: p.faded ? "var(--ink-800)" : opColorVar(n.type),
+      stroke: isActiveChoice ? "var(--accent)" : (onLive? "var(--fog-100)":"var(--line)"),
+      "stroke-width": isActiveChoice?2.6:(onLive?1.8:1),
+      opacity: p.faded?0.45:1},g);
+    if (isActiveChoice){
+      el("circle",{cx:p.x,cy:p.y,r:r+4,fill:"none",stroke:"var(--accent)",
+        "stroke-width":1.4,opacity:.85},g);
+    }
+    const tx=el("text",{x:p.x,y:p.y+3.5,"text-anchor":"middle","font-family":"var(--font-mono)",
+      "font-size":9,"font-weight":700,
+      fill: p.faded?"var(--fog-400)":"var(--ink-950)"},g);
+    tx.textContent = OP_TYPES[n.type].short.slice(0,4);
+    // segment tag under node
+    const st=el("text",{x:p.x,y:p.y+r+9,"text-anchor":"middle",class:"svg-tip","font-size":7.5,
+      fill: onLive?"var(--fog-300)":"var(--fog-500)",opacity:p.faded?.5:1},svg);
+    st.textContent = SEGMENTS[n.seg].name;
+    // outcome marker
+    const chosen = S.branchPath.find(q=>q.id===n.id);
+    if (chosen){
+      el("circle",{cx:p.x+r-2,cy:p.y-r+2,r:3.6,
+        fill:chosen.outcome==='held'?"var(--held)":"var(--fell)",
+        stroke:"var(--ink-950)","stroke-width":1},svg);
+    }
+  });
+
+  // depth axis hint
+  const dt=el("text",{x:24,y:14,class:"svg-tip"},svg);
+  dt.textContent = "OPENING ROOT";
+  const de=el("text",{x:W-20,y:14,"text-anchor":"end",class:"svg-tip"},svg);
+  de.textContent = "→ ENDGAME";
+}
+
+/* ---- decision prompt ---- */
+function renderDecision(){
+  const d=$("decision");
+  if (S.pendingDecision && S.activeId!=null){
+    const n=S.book.nodes[S.activeId];
+    d.className="decision";
+    $("decQ").textContent = "OP INBOUND — your coverage call";
+    $("decOp").innerHTML = OP_TYPES[n.type].glyph+" <span style='color:"+opColorVar(n.type)+"'>"+
+      OP_TYPES[n.type].label+"</span> → "+SEGMENTS[n.seg].name;
+    const sched = scheduleAlong(S.branchPath.map(p=>p.outcome));
+    const fireT = sched[sched.length-1].fireT;
+    $("decWhy").innerHTML = "fired: <b>t≥"+fireT+"</b> ✓ &nbsp; <b>gap≥"+n.gap+"</b> ✓ &nbsp;·&nbsp; "+
+      "HOLD pushes the next strike later; LET FALL lurches it early.";
+    $("btnHold").disabled=false; $("btnFall").disabled=false;
+  } else {
+    d.className="decision idle";
+    $("btnHold").disabled=true; $("btnFall").disabled=true;
+    if (S.phase==="over"){
+      $("decQ").textContent="run ended — front overrun";
+      $("decOp").textContent="—";
+      $("decWhy").textContent="Reset (or reseed) to case the opening again. Same seed replays the exact book.";
+    } else if (S.phase==="endgame"){
+      $("decQ").textContent="pure-pressure endgame — no choices left";
+      $("decOp").innerHTML="<span style='color:var(--fog-400)'>script exhausted</span>";
+      $("decWhy").textContent="The book is spent. The front advances on accumulated pressure; keep stepping to see it close.";
+    } else {
+      $("decQ").textContent="no op pending — front is quiet";
+      $("decOp").textContent="—";
+      $("decWhy").textContent= S.running ? "advancing… the sim will halt the instant the next gate opens."
+                                         : "Press Play or Step. The sim halts the instant an op's gate opens.";
+    }
+  }
+}
+
+/* ---- gate readout ---- */
+function renderGate(){
+  const g=$("gate");
+  if (S.phase==="endgame"||S.phase==="over"){
+    g.innerHTML = "<span class='wait'>no gate — "+(S.phase==="over"?"run ended":"endgame runs on pressure, not script")+"</span>";
+    return;
+  }
+  if (S.activeId==null){ g.innerHTML="<span class='wait'>book exhausted</span>"; return; }
+  const n=S.book.nodes[S.activeId];
+  const sched = scheduleAlong(S.branchPath.map(p=>p.outcome));
+  const fireT = sched[sched.length-1].fireT;
+  const ct = S.tick>=fireT, cg=(S.tick-S.lastOpTick)>=n.gap;
+  const since = S.lastOpTick<0 ? S.tick : (S.tick-S.lastOpTick);
+  const branchLabel = S.branchPath.length
+    ? "prev op "+(S.branchPath[S.branchPath.length-1].outcome==='held'?"HELD":"FELL")+" → this branch"
+    : "opening strike → root branch";
+  g.innerHTML =
+    "<div class='row'>cond 1 — time since start: "+
+      (ct?"<span class='pass'>tick "+S.tick+" ≥ "+fireT+" ✓</span>":"<span class='wait'>tick "+S.tick+" / "+fireT+" …</span>")+"</div>"+
+    "<div class='row'>cond 2 — gap since last op: "+
+      (cg?"<span class='pass'>"+since+" ≥ "+n.gap+" ✓</span>":"<span class='wait'>"+since+" / "+n.gap+" …</span>")+"</div>"+
+    "<div class='row'>cond 3 — branch: <span class='br'>"+branchLabel+"</span></div>"+
+    "<div class='row' style='margin-top:.25rem'>next: <span style='color:"+opColorVar(n.type)+"'>"+
+      OP_TYPES[n.type].label+"</span> on "+SEGMENTS[n.seg].name+
+      (S.pendingDecision?" — <span class='br'>GATE OPEN, awaiting call</span>":"")+"</div>";
+}
+
+/* ---- broad-front map ---- */
+function renderFront(){
+  const host=$("fmap"); host.innerHTML="";
+  SEGMENTS.forEach((seg,i)=>{
+    const st=S.front[i];
+    const row=document.createElement("div"); row.className="fseg";
+    const nm=document.createElement("div"); nm.className="nm"; nm.textContent=seg.name;
+    const cells=document.createElement("div"); cells.className="cells";
+    for (let c=0;c<seg.systems;c++){
+      const cell=document.createElement("div"); cell.className="cell";
+      // systems overrun fill from the FORWARD edge inward (front eats forward systems first)
+      const overrunFromForward = c >= (seg.systems - st.overrun);
+      if (overrunFromForward) cell.classList.add("overrun");
+      else if (st.contested && c === (seg.systems - st.overrun -1)) cell.classList.add("contested");
+      // mark current front edge
+      if (c === (seg.systems - st.overrun -1) && st.overrun < seg.systems) cell.classList.add("front");
+      cells.appendChild(cell);
+    }
+    row.appendChild(nm); row.appendChild(cells);
+    host.appendChild(row);
+  });
+}
+
+/* ---- fog map (observed keyframes) ---- */
+function renderFog(){
+  const host=$("fog"); host.innerHTML="";
+  // walk root chain across all KEYFRAME depths; show observed vs unobserved
+  for (let d=0; d<KEYFRAME_COUNT; d++){
+    const row=document.createElement("div"); row.className="fograow";
+    // is there an observed node at this depth on the committed path?
+    const chainId = committedChainId(d);
+    const obs = chainId!=null ? S.observed[chainId] : null;
+    const kf=document.createElement("span"); kf.className="fk"; kf.textContent="KF"+(d+1);
+    const fv=document.createElement("span");
+    if (obs){
+      fv.className="fv";
+      fv.innerHTML="<span class='dot' style='background:"+OP_TYPES[obs.type].color+"'></span>"+
+        OP_TYPES[obs.type].label+" · "+SEGMENTS[obs.seg].name;
+    } else {
+      fv.className="fu"; fv.innerHTML="<span class='dot' style='background:#2a3146'></span>unobserved — not yet seen";
+    }
+    const ft=document.createElement("span");
+    ft.style.fontSize=".7rem";
+    if (obs){ ft.className="fk"; ft.textContent="t≥"+obs.fireT; }
+    else { ft.className="fu"; ft.textContent="t = ?"; }
+    row.appendChild(kf); row.appendChild(fv); row.appendChild(ft);
+    host.appendChild(row);
+  }
+}
+function committedChainId(depth){
+  if (!S.book) return null;
+  let id=S.book.rootId;
+  for (let i=0;i<depth;i++){
+    if (i>=S.branchPath.length) {
+      // beyond what we've decided: there is no single committed node -> unknown
+      // BUT if it's exactly the frontier (i==branchPath.length) the active node IS known/observed
+      return null;
+    }
+    const n=S.book.nodes[id];
+    id = S.branchPath[i].outcome==='held'?n.held:n.fell;
+    if (id==null) return null;
+  }
+  // depth==branchPath.length -> this is the frontier/active node (may be observed)
+  return id;
+}
+
+/* ---- log ---- */
+function renderLog(){
+  const host=$("log"); host.innerHTML="";
+  S.log.forEach(l=>{
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML="<span class='t'>T+"+String(l.t).padStart(3," ")+"</span> <span class='"+l.cls+"'>"+l.msg+"</span>";
+    host.appendChild(ln);
+  });
+}
+
+/* ====================== TRANSPORT / LOOP ====================== */
+function loop(ts){
+  if (!S.running){ S.raf=null; return; }
+  if (!S._last) S._last=ts;
+  const dt = ts - S._last;
+  if (dt >= TICK_MS){
+    S._last = ts;
+    stepTick();
+    if (S.pendingDecision || S.phase==="over"){ // auto-pause already handled, stop loop
+      S.running = (S.phase!=="over") && S.running && !S.pendingDecision;
+      if (!S.running){ stopRAF(); render(); return; }
+    }
+  }
+  S.raf = requestAnimationFrame(loop);
+}
+function play(){
+  if (S.phase==="over") return;
+  if (S.pendingDecision) return; // must decide first
+  S.running=true; S._last=0;
+  if (!S.raf) S.raf=requestAnimationFrame(loop);
+  render();
+}
+function stop(){ S.running=false; stopRAF(); }
+function stopRAF(){ if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; } }
+
+/* ====================== WIRING ====================== */
+function wire(){
+  $("btnPlay").addEventListener("click", ()=>{ S.running ? (stop(),render()) : play(); });
+  $("btnStep").addEventListener("click", ()=>{ stop(); if(!S.pendingDecision) stepTick(); render(); });
+  $("btnReset").addEventListener("click", ()=>{ reseed($("seed").value.trim()||"ROSE-1207"); });
+  $("btnHold").addEventListener("click", ()=>resolveDecision('held'));
+  $("btnFall").addEventListener("click", ()=>resolveDecision('fell'));
+
+  $("seed").addEventListener("change", ()=>{ reseed($("seed").value.trim()||"ROSE-1207"); });
+
+  // seed-family chips
+  const chips=["ROSE-1207","ROSE-0044","ROSE-1984","ROSE-7777","ROSE-0512"];
+  const cwrap=$("seedchips");
+  chips.forEach(c=>{
+    const b=document.createElement("span"); b.className="seedchip"; b.textContent=c;
+    b.addEventListener("click", ()=>{ $("seed").value=c; reseed(c); });
+    cwrap.appendChild(b);
+  });
+
+  $("sGap").addEventListener("input", e=>{ S.gap=+e.target.value; $("vGap").textContent=S.gap+" t"; replanFromSliders(); });
+  $("sStart").addEventListener("input", e=>{ S.start=+e.target.value; $("vStart").textContent=S.start+" t"; replanFromSliders(); });
+  $("sInt").addEventListener("input", e=>{ S.intensity=(+e.target.value)/100; $("vInt").textContent=S.intensity.toFixed(2)+"×"; render(); });
+
+  // keyboard niceties
+  document.addEventListener("keydown", e=>{
+    if (e.target.tagName==="INPUT") return;
+    if (e.code==="Space"){ e.preventDefault(); S.running?(stop(),render()):play(); }
+    else if (e.key==="s"||e.key==="S"){ stop(); if(!S.pendingDecision) stepTick(); render(); }
+    else if (e.key==="h"||e.key==="H"){ if(!$("btnHold").disabled) resolveDecision('held'); }
+    else if (e.key==="f"||e.key==="F"){ if(!$("btnFall").disabled) resolveDecision('fell'); }
+    else if (e.key==="r"||e.key==="R"){ reseed($("seed").value.trim()||"ROSE-1207"); }
+  });
+}
+
+/* ---------- boot ---------- */
+wire();
+reseed("ROSE-1207");
+</script>
+</body>
+</html>
