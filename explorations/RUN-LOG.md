@@ -1,56 +1,46 @@
 # RUN-LOG — overnight explorables orchestration
 
-Live state for the 2026-06-25 overnight run; the durable source of truth across
-re-invocations. (The *why* is in `../DEV-LOG.md`; the plan is in
-`../plans/PLAN-msl-explorations.md`.) Newest events on top.
+Live state for the 2026-06-25 overnight run; durable across re-invocations.
+(The *why* is in `../DEV-LOG.md`; the plan is in `../plans/PLAN-msl-explorations.md`.)
 
 ## Parameters
 
-- **Started:** 2026-06-25 03:17 PT. **Launch cutoff:** 07:00 PT (= 10:00 ET; tied to peak hours).
-- **Cadence:** rolling ~3 Opus builders, top-up-on-completion. Each page QA'd (identity grep + structure)
-  and committed as it lands. **Not pushed.** Stop on quality once the high-value angles are covered.
+- **Started:** 03:17 PT. **Launch cutoff:** 07:00 PT (= 10:00 ET; tied to peak hours).
+- Rolling ~3 Opus builders, top-up-on-completion; each QA'd (identity grep + structure) and committed
+  as it lands. **Not pushed.** Stop on quality once the high-value angles are covered.
 
-## Scoreboard — 10 ready / 16 planned
+## Scoreboard — 11 ready / 16 planned
 
-- **Ready + committed (10):** solvency-cell, enemy-attack-schedule, utility-ai-fit, jumpgate-topology,
-  market-clearing-cell, determinism-harness, contract-board, front-as-fluid, glass-cockpit-instruments,
-  prestige-reseeding (+ scout `_research/jumpgate-webs.md`).
-- **Building (3):** run-clock-integral, endgame-pressure, twelve-good-supply-chain.
-- **Queued — Tier C (3):** liquidity-deflation-spiral, risk-vs-reward-contract, seed-sharing-replay.
+- **Ready + committed (11):** solvency-cell · enemy-attack-schedule · utility-ai-fit · jumpgate-topology ·
+  market-clearing-cell · determinism-harness · contract-board · front-as-fluid · glass-cockpit-instruments ·
+  prestige-reseeding · run-clock-integral (+ scout `_research/jumpgate-webs.md`).
+- **Building (3):** endgame-pressure · twelve-good-supply-chain · liquidity-deflation-spiral.
+- **Queued — Tier C (2):** risk-vs-reward-contract · seed-sharing-replay.
 
-Every builder caught + fixed a genuine bug during headless self-verify (reseed determinism, move-cap,
-deflation model, unquoted CSS key, stray `<Handle>` JSX). One infra retry (glass-cockpit idle-timeout).
+Every builder caught + fixed a real bug in self-verify (reseed determinism, move-cap, deflation model,
+unquoted CSS key, stray `<Handle>` JSX). One infra retry (glass-cockpit idle-timeout). After 16 → stop.
 
 ## Hygiene / rule notes
 
-- `contract-board` agent edited the tracked `.claude/launch.json` to verify — **reverted**, not committed.
-- `front-as-fluid` agent used one `node -e` (Rule 1 brush) — no artifact; later prompts forbid it by name.
-- Tier-C prompts also forbid touching `explorations/index.html` (the orchestrator owns the gallery).
+- `contract-board` agent edited tracked `.claude/launch.json` — **reverted**, not committed.
+- `front-as-fluid` agent used one `node -e` (Rule 1 brush) — no artifact; later prompts forbid by name
+  and also forbid touching the gallery / starting servers. Subsequent agents complied.
 
-## Backlog
+## Remaining wrap-up
 
-**Tier A** ✅ solvency-cell · enemy-attack-schedule · utility-ai-fit · jumpgate-topology
-**Tier B** ✅ market-clearing-cell · determinism-harness · contract-board · front-as-fluid ·
-glass-cockpit-instruments · prestige-reseeding — building: run-clock-integral, endgame-pressure
-**Tier C** building: twelve-good-supply-chain — queued: liquidity-deflation-spiral, risk-vs-reward-contract,
-seed-sharing-replay. (Further ideas if time: lane-routing-astar.)
-
-## Remaining wrap-up tasks
-
-- Visual screenshot pass on marquee pages (solvency-cell, enemy-attack-schedule, jumpgate-topology,
-  glass-cockpit-instruments) via Playwright `file://` — morning proof + catch any render breakage.
+- Visual screenshot pass (Playwright `file://`) on marquee pages — morning proof + render check.
 - Final gallery + RUN-LOG sync; DEV-LOG results addendum; tick PLAN-msl-explorations done-criteria.
 
-## Scout outputs
+## Commits (newest first)
 
-- ready — `_research/jumpgate-webs.md` (X4 / Freelancer / EVE-Niarja / Stellaris / ME relays / Elite).
+- 09c1f7b prestige-reseeding (+ Tier-C opened) · d7a188e front-as-fluid + glass-cockpit ·
+  2799923 contract-board · a2607f5 solvency + determinism + market ·
+  d4ea75e utility-ai-fit + jumpgate-topology + enemy-attack-schedule · a226a3f scaffold.
+- (run-clock-integral committing now.)
 
 ## Event log (newest on top)
 
-- ~04:55 PT — `prestige-reseeding` done; committed. Launched Tier-C `twelve-good-supply-chain`; added
-  Tier-C row to the gallery. 10 ready.
-- ~04:40 PT — committed front-as-fluid + glass-cockpit (d7a188e); launched endgame-pressure.
-- ~04:25 PT — contract-board done (commit 2799923); glass-cockpit relaunched; prestige + run-clock launched.
-- ~04:10 PT — committed solvency + determinism + market (a2607f5).
-- ~03:41 PT — committed utility-ai-fit + jumpgate-topology + enemy-attack-schedule (d4ea75e).
-- 03:17 PT — branch cut; wave 0 launched; base commit a226a3f.
+- ~05:05 PT — run-clock-integral done; committed. Launched Tier-C liquidity-deflation-spiral. 11 ready.
+- ~04:55 PT — prestige-reseeding done; committed; Tier C opened; twelve-good launched.
+- ~04:40 PT — front-as-fluid + glass-cockpit committed; endgame-pressure launched.
+- 03:17 PT — branch cut off `musing/msl-approaches-react`; wave 0 launched; base commit a226a3f.
