@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Deflation Spiral — M1 · Money Must Circulate</title>
+<meta name="description" content="An explorable explanation of Minimalist Space Logistics' macro money model: a war economy can starve with full warehouses. Velocity is the vital sign; three guards keep the blood moving. Double-entry integer credits, conserved, deterministic." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --pool:#7c6cff;--pool-soft:color-mix(in oklab,var(--pool) 22%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:70rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 .6rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.22rem .7rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.04em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:1.3rem 0 .3rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .7rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.3rem 0 0;max-width:43rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.7rem 0 .4rem;font-size:1.05rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.7rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.4rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ===== the instrument ===== */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.85)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;padding:.28rem .7rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.healthy{color:#a7f3d0;border-color:#2c6b54;background:rgba(52,211,153,.14)}
+.phasebadge.slowing{color:#fde68a;border-color:#7a5e1f;background:rgba(245,158,11,.14)}
+.phasebadge.spiral{color:#fecaca;border-color:#7f3b3b;background:rgba(248,113,113,.16)}
+
+.console-body{padding:1rem}
+
+/* circulation diagram */
+.svgwrap{width:100%;border:1px solid var(--line);border-radius:10px;background:radial-gradient(46rem 20rem at 50% -30%,var(--accent-soft),transparent 70%),var(--ink-950);overflow:hidden}
+svg{display:block;width:100%;height:auto}
+.tick{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+
+/* top stat strip */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin:1rem 0 .2rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.9rem 0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:.9rem;margin:.9rem 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .v.accent{color:var(--accent)} .stat .v.good{color:var(--good)} .stat .v.bad{color:var(--bad)} .stat .v.pool{color:var(--pool)}
+.stat .sub{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.15rem}
+
+/* velocity dial */
+.velo{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.velo .big{font-family:var(--font-mono);font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
+.velo .arrow{font-size:1.3rem;line-height:1}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--fog-500)}
+
+/* conservation light */
+.cons{display:flex;align-items:center;gap:.55rem;font-family:var(--font-mono);font-size:.82rem;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem;background:var(--ink-900)}
+.dot{width:.7rem;height:.7rem;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px currentColor}
+.dot.ok{background:var(--good);color:var(--good)}
+.dot.rot{background:var(--bad);color:var(--bad)}
+.cons .sum{color:var(--fog-100);font-weight:600}
+.cons .lbl{color:var(--fog-500)}
+
+/* why line */
+.why{border:1px solid var(--accent);background:rgba(245,158,11,.08);border-radius:11px;padding:.7rem .85rem;margin:.9rem 0 .2rem;transition:.2s;min-height:2.7rem}
+.why.idle{border-color:var(--line);background:var(--ink-900)}
+.why.spiral{border-color:var(--bad);background:rgba(248,113,113,.09)}
+.why .wq{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.82rem;color:var(--fog-100);line-height:1.5;margin-top:.25rem}
+.why .wmsg b{color:var(--accent)} .why.spiral .wmsg b{color:var(--bad)}
+
+/* charts */
+.chartwrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);margin:.2rem 0 0;padding:.5rem .55rem .35rem}
+.chartwrap h4{margin:.1rem .1rem .35rem;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between}
+.legend{display:flex;gap:.9rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400);margin:.1rem .1rem .35rem}
+.legend i{display:inline-block;width:.85rem;height:.18rem;border-radius:2px;vertical-align:middle;margin-right:.3rem}
+canvas{display:block;width:100%;border-radius:6px}
+#cFlow{height:128px} #cBoard{height:96px}
+
+/* phase diagram */
+.phasewrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);padding:.6rem .65rem .4rem}
+.phasewrap h4{margin:.1rem .1rem .4rem;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);font-weight:600}
+#phaseSvg{cursor:grab;touch-action:none}
+#phaseSvg.drag{cursor:grabbing}
+.phaselbl{font-family:var(--font-mono);font-size:.62rem;fill:var(--fog-500);letter-spacing:.08em}
+.phasenote{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400);margin-top:.35rem;line-height:1.5}
+.phasenote b.h{color:var(--good)} .phasenote b.s{color:var(--bad)}
+
+/* controls */
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.8rem .85rem;margin:.9rem 0}
+.panel > .ph{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin:0 0 .55rem}
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem 1.1rem}
+@media(max-width:620px){.controls{grid-template-columns:1fr}.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.velo .big{font-size:2rem}}
+.ctl{display:flex;flex-direction:column;gap:.15rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.04em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.ctl label .num{color:var(--accent);font-size:.74rem;font-variant-numeric:tabular-nums}
+.ctl label .num.guard{color:var(--good)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+input[type=range].g::-webkit-slider-thumb{background:var(--good);box-shadow:0 0 0 1px var(--good)}
+input[type=range].g::-moz-range-thumb{background:var(--good)}
+.toggle{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--good);width:1rem;height:1rem}
+.gd{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .9rem}
+@media(max-width:620px){.gd{grid-template-columns:1fr}}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.4rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button[disabled]{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.demoZone{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line)}
+.demoZone .lbl{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);width:100%}
+button.demo.spike{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+button.demo.spike:hover{background:color-mix(in oklab,var(--bad) 26%,transparent)}
+button.demo.heal{border-color:var(--good);color:var(--good);background:var(--good-soft)}
+button.demo.heal:hover{background:color-mix(in oklab,var(--good) 26%,transparent)}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.7rem 0 0;letter-spacing:.02em}
+
+/* ledger flash */
+.ledger{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400);background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin:.2rem 0 0;height:6.2rem;overflow:hidden;line-height:1.55}
+.ledger .row{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ledger .dr{color:var(--bad)} .ledger .cr{color:var(--good)} .ledger .acc{color:var(--fog-100)} .ledger .mint{color:var(--accent)}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.85rem 1.05rem;margin:.9rem 0;background:color-mix(in oklab,var(--ink-850) 82%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.3rem 0;font-size:.95rem}
+.risk .mit{color:var(--fog-400)} .risk .mit b{color:var(--good)}
+
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <span class="chip"><b>M1</b> · amber lineage · the money macro</span>
+  <div class="kicker">money must circulate</div>
+  <h1>The Deflation Spiral</h1>
+  <p class="lede">A war economy can starve with full warehouses. The goods are there; the <em>money to pay for them</em> has pooled and stopped moving. Velocity is the vital sign — and three guards keep the blood pumping.</p>
+  <p class="spark">Money is never minted at the point of sale. Every credit you earn was sitting in someone else's account a tick ago. So the only question that matters is: <b>is it still circulating, or has it pooled and died?</b></p>
+</header>
+
+<main>
+
+<p>The sibling page, <code>solvency-cell</code>, models <strong>one station</strong>: a single till, and the clamp <code>bid = min(price·qty, till)</code> that pays you only what the till can cover. That's the micro view — one cell, one shortage, one payer-gap. This page is the <strong>macro</strong>: the whole money supply at once. One faction <strong>treasury</strong>, a handful of station <strong>tills</strong>, the <strong>front</strong>, and your <strong>wallet</strong> — and the thing that flows between them all, tick by tick, conserved to the credit.</p>
+
+<p>In the "Two Ledgers" reading <span class="handle">(M1)</span>, money is a <em>finite, simulated resource</em>. It isn't conjured when you sell. It enters the economy through exactly one door — a periodic <strong>war-bond</strong> credited to the treasury — and from there it must keep <em>moving</em>: treasury pays bounties to you and pays the front; the front buys station production, which fills the tills; you trade against the tills; and a small <strong>carrying cost</strong> bleeds each till back up toward the treasury every tick. Stir all that and a naïve economy just sloshes — money goes round, nothing breaks. The carrying cost is what makes <strong>pooling</strong> possible: money drains <em>up</em> into the treasury, and if it isn't pushed back <em>down</em> fast enough, it piles up where it can't pay anyone. The board goes quiet. You can't earn. That's the <strong>deflationary spiral</strong>, and it is a macro phenomenon — no single till is the culprit.</p>
+
+<div class="card">
+  <p class="tight"><strong>The five money moves, every tick, in fixed order</strong> — each one is double-entry: it debits one account and credits another by the same integer amount. Nothing is created except at the war-bond door.</p>
+  <ul class="tight">
+    <li><b>1 · War-bond tick</b> — a guaranteed credit <em>into</em> the treasury. The only money <em>source</em>. <span style="color:var(--good)">Guard ①</span>.</li>
+    <li><b>2 · Bounties</b> — treasury → your wallet, but only while the treasury sits above its floor.</li>
+    <li><b>3 · Trade</b> — your wallet ↔ the tills as you buy and sell goods.</li>
+    <li><b>4 · Front pays tills</b> — the front buys station output, paid <em>out of the treasury into the tills</em>. This is what <em>re-circulates</em> the hoarded treasury back down. <span style="color:var(--good)">Guard ②</span>.</li>
+    <li><b>5 · Carrying cost</b> — each till bleeds a small fraction back <em>up</em> to the treasury. The leak that makes pooling — and therefore the spiral — real.</li>
+  </ul>
+  <p class="tight" style="margin-top:.6rem">A sixth rule isn't a flow at all: a <b style="color:var(--good)">treasury floor (Guard ③)</b> tops the treasury up when it's broke, forcing a minimum board so bounties never fully stop. Toggle any guard off and watch velocity decide the economy's fate.</p>
+</div>
+
+<p>Below is that whole economy on a fixed deterministic tick, one seeded PRNG, integer credits. Poke it. Drag the operating point across the phase diagram and watch the regime flip.</p>
+
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">MONEY MACRO · <b>M1 "TWO LEDGERS"</b> · circulation &amp; velocity</div>
+    <div style="display:flex;align-items:center;gap:.9rem">
+      <span class="tick">TICK <span id="tickN">0</span></span>
+      <span class="phasebadge healthy" id="phaseBadge">HEALTHY CIRCULATION</span>
+    </div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- circulation diagram -->
+    <div class="svgwrap" aria-label="Live money-circulation diagram: treasury, station tills, the front, and your wallet, with animated flow arrows whose thickness is flow this tick.">
+      <svg id="circ" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- top stat strip -->
+    <div class="grid4">
+      <div class="stat">
+        <div class="k">Money velocity · circulated ÷ supply</div>
+        <div class="velo"><span class="big" id="veloBig">—</span><span class="arrow flat" id="veloArrow">•</span></div>
+        <div class="sub" id="veloSub">vital sign</div>
+      </div>
+      <div class="stat"><div class="k">Active (circulating)</div><div class="v good" id="rActive">—</div><div class="sub">moved last tick</div></div>
+      <div class="stat"><div class="k">Pooled (idle in treasury)</div><div class="v pool" id="rPooled">—</div><div class="sub" id="rPooledSub">above what it spends</div></div>
+      <div class="stat"><div class="k">Board activity</div><div class="v accent" id="rBoard">—</div><div class="sub" id="rBoardSub">contracts payable</div></div>
+    </div>
+
+    <!-- conservation + why -->
+    <div class="grid2" style="margin-top:.2rem">
+      <div class="stat" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="k">Conservation invariant · Σ(treasury + Σtills + front + wallet)</div>
+        <div class="cons" style="margin-top:.4rem">
+          <span class="dot ok" id="consDot"></span>
+          <span class="sum" id="consSum">—</span>
+          <span class="lbl" id="consLbl">balanced · no mint at trade</span>
+        </div>
+      </div>
+      <div class="why idle" id="why">
+        <div class="wq">why — the macro readout</div>
+        <div class="wmsg" id="whyMsg">Press Play. Money enters at the war-bond, circulates down through the front into the tills, and you earn from the flow. Watch velocity.</div>
+      </div>
+    </div>
+
+    <!-- account gauges -->
+    <div class="panel">
+      <div class="ph">per-account balances · gauges</div>
+      <div id="gauges"></div>
+    </div>
+
+    <!-- charts row -->
+    <div class="grid2">
+      <div class="chartwrap">
+        <h4><span>Active vs pooled money</span><span id="flowLen">last 200 ticks</span></h4>
+        <div class="legend">
+          <span><i style="background:#34d399"></i>active (circulating)</span>
+          <span><i style="background:#7c6cff"></i>pooled (treasury idle)</span>
+        </div>
+        <canvas id="cFlow" width="900" height="128"></canvas>
+      </div>
+      <div class="phasewrap">
+        <h4>Phase diagram · drag the operating point</h4>
+        <svg id="phaseSvg" viewBox="0 0 300 230" role="img" aria-label="Two-dimensional phase diagram: war-bond rate on the x-axis, front-pays-tills circulation rate on the y-axis, shaded healthy versus spiral, with the current operating point plotted and draggable."></svg>
+        <div class="phasenote" id="phaseNote">Drag the dot. <b class="h">Up-right</b> = strong source + strong circulation = healthy. <b class="s">Down-left</b> = throttled = spiral.</div>
+      </div>
+    </div>
+
+    <!-- board activity chart -->
+    <div class="chartwrap" style="margin-top:.9rem">
+      <h4><span>Board activity (contracts the economy can pay)</span><span style="color:var(--fog-500)">goes quiet in a spiral</span></h4>
+      <canvas id="cBoard" width="900" height="96"></canvas>
+    </div>
+
+    <!-- ledger flash -->
+    <div class="panel" style="margin-top:.9rem">
+      <div class="ph">double-entry postings · newest on top · DR leaves, CR lands, MINT = war-bond/floor</div>
+      <div class="ledger" id="ledger"></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="panel">
+      <div class="ph">the dials</div>
+      <div class="controls">
+        <div class="ctl"><label>War-bond tick size <span style="color:var(--good)">(source)</span> <span class="num" id="vBond">220</span></label><input type="range" id="bond" min="0" max="700" step="10" value="220"></div>
+        <div class="ctl"><label>Front-pays-tills rate <span style="color:var(--good)">(circulation)</span> <span class="num" id="vCirc">0.65</span></label><input type="range" id="circRate" min="0" max="100" step="1" value="65"></div>
+        <div class="ctl"><label>Treasury spend fraction (bounties) <span class="num" id="vSpend">0.40</span></label><input type="range" id="spend" min="0" max="90" step="1" value="40"></div>
+        <div class="ctl"><label>Till carrying cost / leak (per-mille) <span class="num" id="vLeak">30</span></label><input type="range" id="leak" min="0" max="120" step="1" value="30"></div>
+        <div class="ctl"><label>Front demand (units it wants) <span class="num" id="vDemand">18</span></label><input type="range" id="demand" min="0" max="40" step="1" value="18"></div>
+        <div class="ctl"><label>Your trade intensity (auto buy/sell) <span class="num" id="vTrade">6</span></label><input type="range" id="trade" min="0" max="20" step="1" value="6"></div>
+      </div>
+
+      <div class="ph" style="margin:1rem 0 .5rem">the three guards</div>
+      <div class="gd">
+        <label class="toggle"><input type="checkbox" id="gBond" checked> Guard ① — war-bond tick (the only money source)</label>
+        <label class="toggle"><input type="checkbox" id="gCirc" checked> Guard ② — front pays tills (re-circulation)</label>
+        <label class="toggle"><input type="checkbox" id="gFloor" checked> Guard ③ — treasury floor (forces a minimum board)</label>
+        <div></div>
+      </div>
+
+      <div class="btnrow" style="margin-top:1rem">
+        <button id="playBtn" class="primary">▶ Play</button>
+        <button id="stepBtn">⏭ Step</button>
+        <button id="resetBtn" class="ghost">↺ Reset (seed 4071)</button>
+        <span class="sep"></span>
+        <span style="font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500)">speed</span>
+        <button id="speedBtn" class="ghost">1×</button>
+      </div>
+
+      <div class="demoZone">
+        <span class="lbl">one-click scripted demos</span>
+        <button class="demo spike" id="demoSpiral">☠ Trigger spiral (throttle the guards)</button>
+        <button class="demo heal" id="demoGuard">✚ Deploy a guard (restore circulation)</button>
+        <button class="demo ghost" id="demoNaive">↻ Naïve model (leak off — just sloshes)</button>
+      </div>
+
+      <div class="status" id="status">Ready. Seed 4071. Press <span class="kbd">Play</span>, or trigger a spiral and then deploy a guard to break it. Keys: <span class="kbd">space</span> play/pause · <span class="kbd">→</span> step · <span class="kbd">r</span> reset.</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<p class="note">Everything above is computed live by a fixed-timestep integer model seeded from a tiny <code>mulberry32</code> PRNG. Money is fixed-point credits; the displayed integers <em>are</em> the state. Same seed + same dial settings reproduces the run exactly <span class="handle">(APR.5)</span>.</p>
+
+<hr class="rule">
+
+<h2><span class="eye">how to read it</span>Velocity is the vital sign</h2>
+
+<h3>MSL.1 · Money is conserved — the books always balance</h3>
+<p>There are exactly four kinds of account: the faction <strong>treasury</strong>, the station <strong>tills</strong> (five of them), the <strong>front</strong>, and your <strong>wallet</strong>. Every money move is <strong>double-entry</strong> — one <code>post()</code> primitive that debits one account and credits another by the same integer amount, in the same tick. Nothing is minted at the point of sale. The green <strong>conservation light</strong> sums every account each frame and checks it against a reference that moves <em>only</em> when the war-bond legitimately mints (logged as a <span style="color:var(--accent)">MINT</span>, never disguised as a trade). Trades, bounties, the front's purchases, the carrying-cost leak — none of them change the sum. If the light ever drifted on a plain trade, that's <strong>conservation rot</strong>, and the model would be lying to you.</p>
+
+<h3>MSL.2 · A naïve model sloshes — the leak is what makes the spiral real</h3>
+<p>Here's the subtle part. If money only ever moved <em>down</em> (treasury → front → tills → you), the economy couldn't pool: a slow source plus circulation just redistributes the same pile, and the board never goes quiet. Run <em>Naïve model (leak off)</em> and you'll see it — velocity wobbles but the tills never starve. The <strong>carrying cost</strong> is the missing ingredient: it bleeds money <em>up</em>, against the flow, into the treasury. Now the direction of money depends on a <em>race</em> — leak draining up vs. the front pushing down. Throttle the front (Guard ②) and the leak wins: money climbs into the treasury and <strong>pools</strong>, where it can't pay anyone. That's the deflationary spiral, and it only exists because something drains upward. The guards are the counter-forces.</p>
+
+<h3>MSL.3 · The three guards, and what each one does</h3>
+<ul class="tight">
+  <li><b>Guard ① — the war-bond tick.</b> A guaranteed external <em>source</em>. Without it the treasury can only re-spend what the leak recycles, so the whole supply slowly grinds down to a trickle. It's the heartbeat: a bounded credit that keeps money entering the loop.</li>
+  <li><b>Guard ② — the front pays the tills.</b> <em>Circulation.</em> This is the pump that pushes the hoarding treasury's money back <em>down</em> into the tills, against the leak. Throttle it and pooling wins; open it and the tills stay funded and keep paying you.</li>
+  <li><b>Guard ③ — the treasury floor.</b> A <em>backstop.</em> When the treasury is broke, the floor tops it up so bounties never fully stop — it forces a minimum board even in the worst case, so the spiral bottoms out instead of flatlining to zero.</li>
+</ul>
+
+<h3>MSL.4 · The phase diagram — drag it across the line</h3>
+<p>The 2-D phase plot maps <strong>war-bond rate</strong> (the source, x-axis) against <strong>front-pays-tills rate</strong> (circulation, y-axis), shaded <span style="color:var(--good)">healthy</span> where the economy can sustain a circulating supply and <span style="color:var(--bad)">spiral</span> where the leak wins and money pools out of reach. The amber dot is your current operating point — drag it and the two sliders move with it, live. Cross the boundary toward the lower-left and watch velocity collapse, the tills trend to zero, and the board go quiet; drag back up-right and circulation recovers. The boundary isn't drawn by hand — it's the same fixed-point model probed across the plane.</p>
+
+<div class="card">
+  <p class="tight"><strong>The aha, in three moves:</strong></p>
+  <p class="tight">1. Hit <em>Trigger spiral</em>. The warehouses stay full but the tills drain to zero, velocity craters toward 0.1, and the board goes quiet — the economy <span style="color:var(--bad)">strangles itself</span> with goods on the shelf.</p>
+  <p class="tight">2. Hit <em>Deploy a guard</em> — the war-bond climbs and circulation reopens. Money starts moving down again, the tills refill, velocity recovers, contracts reappear. <span style="color:var(--good)">Same seed, no reset.</span></p>
+  <p class="tight">3. Through all of it the conservation light stays <span style="color:var(--good)">green</span>. The total never changed — the money was always there. It had just stopped <em>moving</em>.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <h4>Macro legibility — "why is the board dead?"</h4>
+  <p>A pooling failure is invisible from inside a single station. Goods are stocked, prices look normal, yet no contracts pay — and a player with no view of the whole money supply just sees a dead board and no reason for it. A macro failure mode that can't be read is indistinguishable from a bug, and players will (rightly) call it broken.</p>
+  <p class="mit"><b>Mitigation the model shows:</b> the failure is given <em>instruments</em>. A single <strong>money-velocity</strong> number is the vital sign; the active-vs-pooled time series shows the supply climbing into the treasury and going idle; the <strong>phase classifier</strong> labels the regime <span style="color:var(--good)">HEALTHY</span> / <span style="color:var(--bad)">SPIRAL</span> outright; and the one-line <em>why</em> spells the chain ("front-pay throttled → tills drained to 0 in 18 ticks → velocity 0.1 → SPIRAL"). "Why is the board dead?" becomes a sentence the player can read.</p>
+</div>
+
+<div class="risk">
+  <h4>Determinism — a money sim that can't be replayed</h4>
+  <p>If the same seed and the same dials produced different runs, none of this would be trustable — a "spiral" could be a rounding artifact, and a replay-based bug report would be impossible. Floating-point credits drift across machines; an unordered account iteration reorders the postings; a stray <code>Math.random</code> in a fee desyncs two runs by tick 200.</p>
+  <p class="mit"><b>Mitigation the model shows:</b> every credit is an <strong>integer</strong> (fixed-point), every move goes through one double-entry <code>post()</code> in a <strong>fixed account order</strong>, and the only randomness is a single reseedable <code>mulberry32</code> advanced exactly once per tick — used for small demand jitter, never for the money itself. Money is conserved by construction, so the conservation light is a continuous proof the replay is honest <span class="handle">(APR.5)</span>.</p>
+</div>
+
+<p class="note" style="margin-top:1.6rem">This is the macro complement to <code>solvency-cell</code>'s single till. The micro page shows <em>one</em> payer-gap; this one shows the money supply that funds every gap at once — and its one catastrophic failure, where a war economy starves with full warehouses because the blood stopped moving. Build the cell first; then make sure the cells stay liquid. Model + page by Panda.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · M1 — THE TWO LEDGERS · liquidity-deflation-spiral · the amber lineage<br>
+  deterministic · seeded · double-entry integer credits · self-contained · runs offline from a single file
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   THE DEFLATION SPIRAL — deterministic integer double-entry MACRO money model
+   ---------------------------------------------------------------------------
+   Accounts: 1 treasury, NTILL station tills, 1 front, 1 wallet (player).
+   Money is INTEGER credits. Every move is double-entry via post(): it debits
+   one account and credits another by the same amount, so the total is CONSERVED.
+   The ONLY way new credits enter is mint() at the war-bond door (Guard 1),
+   which bumps a conservation reference so the invariant explicitly accounts for it.
+   One reseedable mulberry32 PRNG, advanced exactly once per tick (demand jitter
+   only — never the money). Fixed tick, fixed account order => bit-for-bit replay.
+   ========================================================================= */
+
+/* ---- tiny reseedable PRNG (mulberry32) ---- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const els = {
+  tickN:$('tickN'), phaseBadge:$('phaseBadge'),
+  veloBig:$('veloBig'), veloArrow:$('veloArrow'), veloSub:$('veloSub'),
+  rActive:$('rActive'), rPooled:$('rPooled'), rPooledSub:$('rPooledSub'),
+  rBoard:$('rBoard'), rBoardSub:$('rBoardSub'),
+  consDot:$('consDot'), consSum:$('consSum'), consLbl:$('consLbl'),
+  why:$('why'), whyMsg:$('whyMsg'),
+  gauges:$('gauges'), ledger:$('ledger'),
+  circ:$('circ'), cFlow:$('cFlow'), cBoard:$('cBoard'), phaseSvg:$('phaseSvg'), phaseNote:$('phaseNote'),
+  bond:$('bond'), circRate:$('circRate'), spend:$('spend'), leak:$('leak'), demand:$('demand'), trade:$('trade'),
+  vBond:$('vBond'), vCirc:$('vCirc'), vSpend:$('vSpend'), vLeak:$('vLeak'), vDemand:$('vDemand'), vTrade:$('vTrade'),
+  gBond:$('gBond'), gCirc:$('gCirc'), gFloor:$('gFloor'),
+  playBtn:$('playBtn'), stepBtn:$('stepBtn'), resetBtn:$('resetBtn'), speedBtn:$('speedBtn'),
+  demoSpiral:$('demoSpiral'), demoGuard:$('demoGuard'), demoNaive:$('demoNaive'),
+  status:$('status'),
+};
+
+/* ---- constants (credits are plain integers) ---- */
+const SEED          = 4071;
+const NTILL         = 5;
+const BOND_PERIOD   = 4;       // ticks between war-bond credits (the heartbeat)
+const TREASURY_FLOOR= 1200;    // Guard 3: floor the treasury won't dip below (when on)
+const UNIT_PRICE    = 12;      // credits the front pays per unit of station output
+const PROD_PER_TILL = 5;       // units each station produces per tick (goods are plentiful)
+const INV_CAP       = 120;     // shelf limit per station (warehouses fill, then sit full)
+const VELO_WIN      = 8;       // ticks the velocity average smooths over
+const HIST          = 200;
+// velocity thresholds calibrated to THIS model's circulating fraction (~0.05 healthy,
+// collapsing toward ~0.01 as the churn dies). Spiral needs BOTH low velocity and dying
+// tills, so these only have to bracket the regime, not carry the verdict alone.
+const SPIRAL_VELO   = 0.022;   // sustained velocity below this + dying tills => spiral
+const HEALTHY_VELO  = 0.038;   // velocity above this (with no dry tills) => clearly healthy
+const TILL_DRY      = 40;      // a till at/under this is "dry" (can't pay / post a bounty)
+const LEAK_FLAT     = 40;      // FLAT carrying cost per till per tick (when the leak is on).
+                               // Proportional leak alone asymptotes; this flat floor is what
+                               // lets a throttled till actually reach ZERO -> the real spiral.
+                               // Sized so the total flat drain across all tills OUT-PACES the
+                               // most a cut-off player can buy back from bounties — otherwise
+                               // the player inadvertently pumps the tills and no spiral forms.
+
+let S, prng, running=false, raf=null, speed=1, lastT=0, acc=0;
+let demo=null;          // active scripted-demo state machine
+let dragging=false;
+
+/* ============================ STATE ============================ */
+function freshState(){
+  const tills = [];
+  for(let i=0;i<NTILL;i++) tills.push(900);   // each station starts with working cash
+  return {
+    tick:0,
+    treasury: 6000,
+    tills,                       // array of integer till balances
+    front: 0,                    // the front's operating account (transient each tick)
+    wallet: 3000,
+    inv: new Array(NTILL).fill(20),   // goods on the shelf at each station (units)
+    baseSum: 0,                  // conservation reference (only mint() moves it)
+    curSum: 0, rot:false,
+    // per-tick bookkeeping
+    circulated: 0,               // total credits that MOVED this tick (for velocity)
+    velHist: [],                 // recent per-tick circulated, for the smoothed velocity
+    velocity: 0,
+    pooled: 0, active: 0, board: NTILL,   // tills start funded -> board open on tick 1
+    spiralStreak: 0,             // consecutive ticks classified spiral (debounce)
+    why: {cls:'idle', msg:''},
+    phase: 'healthy',
+    // history ring buffers
+    hActive:[], hPooled:[], hBoard:[],
+  };
+}
+
+/* ---- THE double-entry primitive: never mint, always move ---- */
+function post(from, to, amt, tag){
+  amt = Math.max(0, Math.floor(amt));
+  if(amt===0) return 0;
+  const have = readAcc(from);
+  if(amt > have) amt = have;     // cannot post money that isn't in `from`
+  if(amt<=0) return 0;
+  writeAcc(from, have - amt);
+  writeAcc(to, readAcc(to) + amt);
+  S.circulated += amt;           // every real move counts toward velocity
+  logPost(from, to, amt, tag, false);
+  return amt;
+}
+/* sanctioned mint: the ONLY way new credits enter. Bumps baseSum so the
+   invariant explicitly accounts for it. Logged as MINT, never a trade. */
+function mint(to, amt, tag){
+  amt = Math.max(0, Math.floor(amt));
+  if(amt===0) return 0;
+  writeAcc(to, readAcc(to) + amt);
+  S.baseSum += amt;
+  logPost('mint', to, amt, tag, true);
+  return amt;
+}
+/* account addressing: 'treasury' | 'front' | 'wallet' | 'till:N' */
+function readAcc(a){
+  if(a==='treasury') return S.treasury;
+  if(a==='front')    return S.front;
+  if(a==='wallet')   return S.wallet;
+  if(a.startsWith('till:')) return S.tills[+a.slice(5)];
+  return 0;
+}
+function writeAcc(a,v){
+  if(a==='treasury'){ S.treasury=v; return; }
+  if(a==='front'){ S.front=v; return; }
+  if(a==='wallet'){ S.wallet=v; return; }
+  if(a.startsWith('till:')){ S.tills[+a.slice(5)]=v; return; }
+}
+function accName(a){
+  if(a==='treasury') return 'TREASURY';
+  if(a==='front')    return 'FRONT';
+  if(a==='wallet')   return 'WALLET';
+  if(a==='mint')     return 'WAR-BOND';
+  if(a.startsWith('till:')) return 'TILL'+(+a.slice(5)+1);
+  return a;
+}
+
+/* ---- ledger flash log ---- */
+let ledgerRows=[];
+function logPost(from,to,amt,tag,isMint){
+  const left = isMint
+    ? `<span class="mint">MINT</span>`
+    : `<span class="dr">DR ${accName(from)}</span>`;
+  ledgerRows.unshift(
+    `<div class="row">t${S.tick} · ${left} → <span class="cr">CR ${accName(to)}</span> <span class="acc">${amt} cr</span> <span style="color:var(--fog-500)">${tag||''}</span></div>`
+  );
+  if(ledgerRows.length>16) ledgerRows.length=16;
+}
+
+/* ============================ ONE FIXED TICK ============================ */
+function step(){
+  S.tick++;
+  S.circulated = 0;             // reset the per-tick flow meter
+
+  const bondSz   = +els.bond.value;
+  const circRate = (+els.circRate.value)/100;     // fraction of treasury the front may spend on tills
+  const spendFr  = (+els.spend.value)/100;        // fraction of treasury available for bounties
+  const leakBP   = +els.leak.value;               // per-mille of each till bled up to treasury
+  const demand   = +els.demand.value;             // units the front wants
+  const tradeI   = +els.trade.value;              // your auto trade intensity
+  const gBond  = els.gBond.checked;
+  const gCirc  = els.gCirc.checked;
+  const gFloor = els.gFloor.checked;
+
+  // advance PRNG exactly once per tick (demand jitter only — never money)
+  const jitter = prng();
+
+  // ---- MOVE 1 · WAR-BOND TICK (Guard 1): the only money SOURCE ----
+  if(gBond && bondSz>0 && (S.tick % BOND_PERIOD === 0)){
+    mint('treasury', bondSz, '(war-bond)');
+  }
+  // ---- Guard 3 · TREASURY FLOOR: top up if broke (also a sanctioned mint) ----
+  if(gFloor && S.treasury < TREASURY_FLOOR){
+    mint('treasury', TREASURY_FLOOR - S.treasury, '(floor top-up)');
+  }
+
+  // ---- PRODUCTION: stations make goods (plentiful). Pure goods, no money. ----
+  for(let i=0;i<NTILL;i++){
+    S.inv[i] = Math.min(INV_CAP, S.inv[i] + PROD_PER_TILL);
+  }
+
+  // ---- MOVE 2 · BOUNTIES: treasury -> wallet (your income) ----
+  // The faction pays you for hauling — but a bounty is a CONTRACT POSTED BY A STATION,
+  // and a station can only post one if its till is solvent. So the bounty board's size
+  // is gated by how many tills were funded at the end of last tick (S.board). When the
+  // tills dry up the board goes QUIET: bounties collapse, you're cut off, and you can no
+  // longer prop the tills from your wallet. THIS is the feedback that makes the spiral
+  // self-reinforcing — not money vanishing, money ceasing to circulate to you.
+  const boardFrac = S.board / NTILL;                       // 0..1 from last tick's solvency
+  const bountyFloor = gFloor ? TREASURY_FLOOR : 0;
+  const bountyBudget = Math.max(0, Math.floor((S.treasury - bountyFloor) * spendFr));
+  const bountyCap = Math.floor((140 + Math.floor(jitter*40)) * boardFrac);  // quiet board => tiny cap
+  const bountyPay = Math.min(bountyBudget, bountyCap);
+  if(bountyPay>0) post('treasury','wallet', bountyPay, '(bounty)');
+
+  // ---- MOVE 3 · TRADE: you buy from / sell to the tills (goods <-> money) ----
+  // Auto-trader: you SELL into tills that can pay (earning), and occasionally BUY
+  // from a flush till (returning money to it). Selling pulls money OUT of tills toward you;
+  // it does NOT create money. tradeI scales how hard you work the board.
+  //
+  // The hauler is (near) FLOW-NEUTRAL on its own wallet: each tick you SELL into the
+  // richest till (till -> wallet) and immediately BUY a comparable amount from the
+  // poorest stocked till (wallet -> till). That churns money *both ways* — high
+  // velocity — without one-way-draining the tills. Your actual profit is the BOUNTY
+  // (move 2); your trading just keeps credits moving between tills via your wallet.
+  // Critically: a till can only pay you what it HOLDS (the clamp bid=min(ask,till)),
+  // so when circulation is throttled and the tills run dry, your selling earns nothing
+  // and the churn itself dies — velocity falls. That is the spiral biting the player.
+  if(tradeI>0){
+    // SELL: richest till pays you for goods you haul in (clamped by its till).
+    let best=-1, bestTill=-1;
+    for(let i=0;i<NTILL;i++){ if(S.tills[i]>bestTill){ bestTill=S.tills[i]; best=i; } }
+    let earned=0;
+    if(best>=0 && S.tills[best]>0){
+      const ask = tradeI * UNIT_PRICE;
+      const paid = Math.min(ask, S.tills[best]);          // bid = min(price·qty, till)
+      if(paid>0){
+        earned = post('till:'+best, 'wallet', paid, '(you sell)');
+        S.inv[best] = Math.min(INV_CAP, S.inv[best] + Math.ceil(earned/UNIT_PRICE));
+      }
+    }
+    // BUY: push roughly what you just earned (plus a slice of any wallet surplus) back
+    // into the POOREST stocked till — you spend your takings back into circulation, so
+    // the wallet stays bounded and credits keep cycling down instead of piling up in you.
+    let poor=-1, poorTill=1e18;
+    for(let i=0;i<NTILL;i++){ if(S.inv[i]>0 && S.tills[i]<poorTill){ poorTill=S.tills[i]; poor=i; } }
+    if(poor>=0){
+      const surplus = Math.max(0, S.wallet - 2500);       // spend down anything above a float
+      const spendBack = Math.min(S.wallet, earned + Math.floor(surplus*0.25));
+      const units = Math.min(S.inv[poor], Math.floor(spendBack/UNIT_PRICE));
+      const cost = units*UNIT_PRICE;
+      if(cost>0){ post('wallet','till:'+poor, cost, '(you buy)'); S.inv[poor]-=units; }
+    }
+  }
+
+  // ---- MOVE 4 · FRONT PAYS TILLS (Guard 2): re-circulation, treasury -> tills ----
+  // The front consumes station output and pays for it OUT OF THE TREASURY into the
+  // tills. This is the PUMP that pushes hoarded money back DOWN. Its budget is
+  // circRate of the treasury (above the bounty floor). With Guard 2 off, the pump
+  // is dead and money can only drain UP via the leak.
+  if(gCirc && circRate>0){
+    const circFloor = gFloor ? TREASURY_FLOOR : 0;
+    let circBudget = Math.max(0, Math.floor((S.treasury - circFloor) * circRate));
+    // route to tills round-robin, paying only for goods actually on the shelf
+    const wantEach = Math.max(1, Math.floor(demand / NTILL));
+    for(let i=0;i<NTILL && circBudget>0;i++){
+      const units = Math.min(wantEach + (i< (demand % NTILL) ? 1:0), S.inv[i]);
+      if(units<=0) continue;
+      const pay = Math.min(units*UNIT_PRICE, circBudget);
+      const moved = post('treasury','till:'+i, pay, '(front buys)');
+      circBudget -= moved;
+      const consumed = Math.min(units, Math.floor(moved/UNIT_PRICE));
+      S.inv[i] -= consumed;       // the front burns the goods it paid for
+    }
+  }
+  // the front holds no standing balance — anything routed through it would be transient;
+  // here the front pays tills directly from the treasury, so S.front stays 0.
+
+  // ---- MOVE 5 · CARRYING COST / LEAK: each till bleeds UP to treasury ----
+  // A small per-mille of each till drains back to the treasury every tick. This is
+  // the ONLY upward flow, and it is what makes POOLING possible: throttle the pump
+  // (Guard 2) and the leak wins — money climbs into the treasury and goes idle.
+  if(leakBP>0){
+    for(let i=0;i<NTILL;i++){
+      if(S.tills[i]>0){
+        // proportional part (a fat till bleeds faster) + a FLAT floor (so a thin till
+        // still drains to zero instead of asymptoting above the dry line). The flat
+        // part is what makes pooling terminal: without inflow, every till hits 0.
+        const bleed = Math.floor(S.tills[i]*leakBP/1000) + LEAK_FLAT;
+        post('till:'+i, 'treasury', bleed, '(carrying cost)');
+      }
+    }
+  }
+
+  // ---- METRICS ----
+  computeMetrics();
+  classify();
+  writeWhy();
+  pushHist();
+
+  // scripted demo driver (acts AFTER the world tick)
+  if(demo) demo.drive();
+}
+
+/* ---- conservation: Σ of every account vs the minted reference ---- */
+function computeMetrics(){
+  let sum = S.treasury + S.front + S.wallet;
+  let tillSum=0;
+  for(let i=0;i<NTILL;i++){ tillSum += S.tills[i]; }
+  sum += tillSum;
+  if(S.baseSum===0) S.baseSum = sum;     // first lock-in
+  S.curSum = sum;
+  S.rot = (sum !== S.baseSum);
+
+  // VELOCITY = circulated this tick / total money supply, smoothed over a window.
+  S.velHist.push(S.circulated);
+  if(S.velHist.length>VELO_WIN) S.velHist.shift();
+  const avgCirc = S.velHist.reduce((a,c)=>a+c,0)/S.velHist.length;
+  S.velocity = sum>0 ? avgCirc/sum : 0;
+
+  // POOLED = treasury money that can't get out this tick — the hoard above whatever
+  // the bounty + front-pump budgets can actually push downward. When circulation is
+  // throttled (Guard 2 off / low), the pushable budget shrinks and almost the whole
+  // treasury counts as POOLED: idle money the economy can't spend. ACTIVE = the rest
+  // (tills + wallet + the treasury slice that CAN move). The two sum to the supply.
+  const spendFr  = (+els.spend.value)/100;
+  const circRate = els.gCirc.checked ? (+els.circRate.value)/100 : 0;
+  const pushable = Math.floor(S.treasury * Math.min(1, spendFr + circRate));
+  S.pooled = Math.max(0, S.treasury - pushable);
+  S.active = Math.max(0, sum - S.pooled);
+
+  // BOARD ACTIVITY proxy: how many of the tills are solvent enough to pay for a
+  // contract right now (till above the dry line). 0..NTILL. Goes quiet in a spiral.
+  let live=0; for(let i=0;i<NTILL;i++){ if(S.tills[i]>TILL_DRY) live++; }
+  S.board = live;
+}
+
+/* ---- phase classifier: HEALTHY / SLOWING / SPIRAL ----
+   A spiral is BOTH symptoms at once: velocity has collapsed AND the tills are
+   trending to zero. Requiring both is deliberate — it keeps a full-till economy
+   that merely churns slowly (e.g. the naive leak-off model) from being mislabeled
+   a spiral, and it makes the SPIRAL verdict mean exactly what the fiction says:
+   money has stopped moving AND the stations can no longer pay. Debounced over a few
+   ticks so a single quiet tick doesn't trip it. */
+function classify(){
+  let dryCount=0; for(let i=0;i<NTILL;i++){ if(S.tills[i]<=TILL_DRY) dryCount++; }
+  const lowVel = S.velocity < SPIRAL_VELO;
+  const tillsDying = dryCount >= Math.ceil(NTILL*0.6);   // >=3 of 5 tills dry
+  if(lowVel && tillsDying) S.spiralStreak++;
+  else S.spiralStreak = Math.max(0, S.spiralStreak-2);
+
+  if(S.spiralStreak >= 3) S.phase='spiral';
+  else if(S.velocity >= HEALTHY_VELO && dryCount===0) S.phase='healthy';
+  else S.phase='slowing';
+}
+
+/* ---- the one-line "why" (the macro readout) ---- */
+let firstSpiralTick = -1;
+function writeWhy(){
+  const v = S.velocity.toFixed(2);
+  let dry=0; for(let i=0;i<NTILL;i++){ if(S.tills[i]<=TILL_DRY) dry++; }
+  if(S.phase==='spiral'){
+    if(firstSpiralTick<0) firstSpiralTick = S.tick;
+    const drained = firstSpiralTick;
+    S.why = {cls:'spiral', msg:
+      `<b>SPIRAL</b> — circulation throttled → ${dry}/${NTILL} tills drained below the dry line → velocity ${v} → the board is going quiet. Money pooled in the treasury (${S.pooled.toLocaleString()} cr idle) with goods still on the shelf.`};
+  } else {
+    firstSpiralTick = -1;
+    if(S.phase==='healthy'){
+      S.why = {cls:'', msg:
+        `<b>HEALTHY</b> — the war-bond feeds the treasury, the front pumps it back into ${S.board}/${NTILL} funded tills, you earn from the flow. Velocity ${v}: money is circulating, not pooling.`};
+    } else {
+      S.why = {cls:'idle', msg:
+        `SLOWING — velocity ${v}. ${dry>0?dry+'/'+NTILL+' tills near the dry line; ':''}the leak is draining money up faster than the front pushes it down. Open circulation or raise the war-bond before it tips.`};
+    }
+  }
+}
+
+function pushHist(){
+  S.hActive.push(S.active); S.hPooled.push(S.pooled); S.hBoard.push(S.board);
+  if(S.hActive.length>HIST){ S.hActive.shift(); S.hPooled.shift(); S.hBoard.shift(); }
+}
+
+/* ============================ RENDER ============================ */
+function render(){
+  els.tickN.textContent = S.tick;
+
+  // velocity headline
+  els.veloBig.textContent = S.velocity.toFixed(2);
+  const prevV = S._prevVelo===undefined?S.velocity:S._prevVelo;
+  const dv = S.velocity - prevV; S._prevVelo = S.velocity;
+  const ar = els.veloArrow;
+  if(dv>0.004){ ar.textContent='▲'; ar.className='arrow up'; }
+  else if(dv<-0.004){ ar.textContent='▼'; ar.className='arrow down'; }
+  else { ar.textContent='•'; ar.className='arrow flat'; }
+  els.veloBig.style.color = S.phase==='spiral' ? 'var(--bad)' : S.phase==='healthy' ? 'var(--good)' : 'var(--accent)';
+  els.veloSub.textContent = S.velocity<SPIRAL_VELO ? 'flatlining' : S.velocity>=HEALTHY_VELO ? 'pumping' : 'vital sign';
+
+  // stat strip
+  els.rActive.textContent = S.active.toLocaleString();
+  els.rPooled.textContent = S.pooled.toLocaleString();
+  els.rPooledSub.textContent = S.pooled> S.active ? 'more idle than moving!' : 'above what it spends';
+  els.rBoard.textContent = S.board + ' / ' + NTILL;
+  els.rBoardSub.textContent = S.board===0 ? 'board is DEAD' : S.board<=2 ? 'going quiet' : 'contracts payable';
+  els.rBoard.className = 'v ' + (S.board===0?'bad':S.board<=2?'accent':'good');
+
+  // conservation light
+  els.consSum.textContent = 'Σ ' + S.curSum.toLocaleString() + ' cr';
+  if(S.rot){
+    els.consDot.className='dot rot';
+    els.consLbl.textContent='CONSERVATION ROT — sum drifted!';
+    els.consLbl.style.color='var(--bad)';
+  } else {
+    els.consDot.className='dot ok';
+    els.consLbl.textContent='balanced · no mint at trade';
+    els.consLbl.style.color='var(--good)';
+  }
+
+  // phase badge
+  els.phaseBadge.className = 'phasebadge ' + S.phase;
+  els.phaseBadge.textContent = S.phase==='spiral' ? 'DEFLATIONARY SPIRAL'
+    : S.phase==='healthy' ? 'HEALTHY CIRCULATION' : 'CIRCULATION SLOWING';
+
+  // why
+  els.why.className = 'why ' + (S.why.cls||'');
+  els.whyMsg.innerHTML = S.why.msg;
+
+  // ledger
+  els.ledger.innerHTML = ledgerRows.join('');
+
+  renderGauges();
+  renderCirc();
+  drawFlow();
+  drawBoard();
+  drawPhase();
+
+  els.playBtn.textContent = running ? '⏸ Pause' : '▶ Play';
+}
+
+/* ---- per-account gauges ---- */
+function renderGauges(){
+  const supply = S.curSum||1;
+  const rows = [];
+  rows.push(gaugeRow('FACTION TREASURY', S.treasury, supply, 'var(--pool)', S.treasury>S.active?'pooling':''));
+  for(let i=0;i<NTILL;i++){
+    const dry = S.tills[i]<=TILL_DRY;
+    rows.push(gaugeRow('TILL '+(i+1), S.tills[i], supply, dry?'var(--bad)':'var(--good)', dry?'DRY':''));
+  }
+  rows.push(gaugeRow('YOUR WALLET', S.wallet, supply, 'var(--cool)', ''));
+  els.gauges.innerHTML = rows.join('');
+}
+function gaugeRow(name, val, supply, color, tag){
+  const pct = Math.max(0, Math.min(100, val/supply*100));
+  const tagHtml = tag ? `<span style="color:${color==='var(--bad)'?'var(--bad)':'var(--accent)'};font-size:.62rem;margin-left:.4rem">${tag}</span>` : '';
+  return `<div style="display:grid;grid-template-columns:7rem 1fr 5rem;gap:.5rem;align-items:center;margin:.22rem 0">
+    <span style="font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400);letter-spacing:.04em;text-align:right">${name}${tagHtml}</span>
+    <span style="position:relative;height:.95rem;border:1px solid var(--line);border-radius:5px;background:var(--ink-950);overflow:hidden">
+      <span style="position:absolute;left:0;top:0;bottom:0;width:${pct.toFixed(1)}%;background:${color};opacity:.85;transition:width .12s linear"></span>
+    </span>
+    <span style="font-family:var(--font-mono);font-size:.72rem;color:var(--fog-100);font-variant-numeric:tabular-nums;text-align:right">${val.toLocaleString()}</span>
+  </div>`;
+}
+
+/* ============================ CIRCULATION DIAGRAM ============================ */
+/* nodes laid out: TREASURY (top center, the hoard), FRONT (left), TILLS (center row),
+   WALLET (right). Arrows animate; thickness = the credits that moved on that edge
+   this tick. We track per-edge flow during step() via flowEdges. */
+const SVGNS="http://www.w3.org/2000/svg";
+let edgeFlow = {};         // edge key -> credits moved this tick
+function noteEdge(key,amt){ edgeFlow[key]=(edgeFlow[key]||0)+amt; }
+
+/* re-derive edge flows from the ledger of THIS tick (simpler & exact): we instead
+   accumulate during postings. Hook into logPost via a parallel tap. */
+const origLog = logPost;
+// (edgeFlow is filled in postingTap below)
+
+function postingTap(from,to,amt){
+  // map account pairs to diagram edges
+  const t = a => a==='treasury'?'T': a==='wallet'?'W': a==='front'?'F': a.startsWith('till:')?'L':'?';
+  const f = t(from)==='?' && from==='mint' ? 'M' : t(from);
+  const g = t(to);
+  noteEdge(f+'>'+g, amt);
+}
+
+const CIRC_NODES = {
+  T:{x:380,y:54,  w:200,h:46, label:'FACTION TREASURY', col:'var(--pool)'},
+  F:{x:70, y:150, w:150,h:74, label:'THE FRONT',        col:'var(--bad)'},
+  L:{x:300,y:150, w:180,h:74, label:'STATION TILLS ×5', col:'var(--good)'},
+  W:{x:560,y:150, w:150,h:74, label:'YOUR WALLET',      col:'var(--cool)'},
+};
+function renderCirc(){
+  const svg=els.circ; svg.innerHTML='';
+  // defs: arrow markers per color
+  const defs=mk('defs',{},svg);
+  marker(defs,'mFog','#9aa1b6'); marker(defs,'mGood','#34d399');
+  marker(defs,'mPool','#7c6cff'); marker(defs,'mCool','#60a5fa');
+  marker(defs,'mBad','#f87171'); marker(defs,'mAcc','#f59e0b');
+
+  // edges: [from,to, color, markerId, label, curve]
+  // money enters at war-bond (top), flows down via front->tills, you trade with tills,
+  // bounties treasury->wallet, leak tills->treasury (upward).
+  const E = [
+    ['M','T','var(--accent)','mAcc','war-bond ▸ mint', 'down'],
+    ['T','F','var(--bad)','mBad','funds front', 'tf'],
+    ['F','L','var(--good)','mGood','front pays tills', 'fl'],
+    ['T','W','var(--cool)','mCool','bounties', 'tw'],
+    ['L','W','var(--accent)','mAcc','you sell', 'lw'],
+    ['L','T','var(--pool)','mPool','carrying cost ▲', 'lt'],
+  ];
+
+  // draw nodes first as faint boxes
+  for(const k in CIRC_NODES){
+    const n=CIRC_NODES[k];
+    mk('rect',{x:n.x-n.w/2,y:n.y-n.h/2,width:n.w,height:n.h,rx:9,fill:'#0e1018',stroke:n.col,'stroke-opacity':.5},svg);
+  }
+
+  // war-bond source pip above treasury
+  mk('circle',{cx:380,cy:18,r:6,fill:'var(--accent)','fill-opacity':.85},svg);
+  mk('text',{x:392,y:22,fill:'var(--accent)','font-family':'var(--font-mono)','font-size':9,'letter-spacing':1.5},svg).textContent='WAR-BOND (source)';
+
+  // edges
+  const maxFlow = Math.max(1, ...Object.values(edgeFlow));
+  for(const [a,b,col,mk_,label,curve] of E){
+    const flow = edgeFlow[a+'>'+b]||0;
+    const w = 1.2 + Math.min(7, (flow/maxFlow)*7);
+    const dimmed = flow<=0;
+    const path = edgePath(a,b,curve);
+    const p = mk('path',{d:path,fill:'none',stroke:col,'stroke-width':w.toFixed(2),
+      'marker-end':'url(#'+mk_+')','stroke-opacity':dimmed?0.16:0.85,'stroke-linecap':'round'},svg);
+    // animated flow dot along the edge when flowing
+    if(!dimmed){
+      const dot=mk('circle',{r:(2+Math.min(3,w/2)).toFixed(1),fill:col},svg);
+      const an=mk('animateMotion',{dur:(Math.max(0.5,1.6-(flow/maxFlow))).toFixed(2)+'s',repeatCount:'indefinite',path:path},dot);
+    }
+    // label at midpoint
+    const mid=edgeMid(a,b,curve);
+    mk('text',{x:mid.x,y:mid.y,fill:dimmed?'var(--fog-500)':col,'font-family':'var(--font-mono)','font-size':8.5,
+      'text-anchor':'middle','opacity':dimmed?0.5:0.95},svg).textContent=label;
+  }
+
+  // node labels + live balances (drawn over edges)
+  nodeText('T', 'FACTION TREASURY', S.treasury.toLocaleString()+' cr', S.pooled>S.active?'pooling ▲':'');
+  nodeText('F', 'THE FRONT', els.gCirc.checked? 'buys production':'pump OFF', '');
+  nodeText('L', 'STATION TILLS ×5', tillSummary(), '');
+  nodeText('W', 'YOUR WALLET', S.wallet.toLocaleString()+' cr', '');
+}
+function tillSummary(){
+  let s=0,dry=0; for(let i=0;i<NTILL;i++){ s+=S.tills[i]; if(S.tills[i]<=TILL_DRY) dry++; }
+  return s.toLocaleString()+' cr'+(dry>0?' · '+dry+' dry':'');
+}
+function nodeText(k,title,val,tag){
+  const n=CIRC_NODES[k]; const svg=els.circ;
+  mk('text',{x:n.x,y:n.y-n.h/2+15,fill:n.col,'font-family':'var(--font-mono)','font-size':9,'letter-spacing':1.5,'text-anchor':'middle'},svg).textContent=title;
+  mk('text',{x:n.x,y:n.y+6,fill:'var(--fog-100)','font-family':'var(--font-mono)','font-size':15,'font-weight':700,'text-anchor':'middle'},svg).textContent=val;
+  if(tag) mk('text',{x:n.x,y:n.y+22,fill:'var(--pool)','font-family':'var(--font-mono)','font-size':8.5,'text-anchor':'middle'},svg).textContent=tag;
+}
+function edgePath(a,b,curve){
+  const n=CIRC_NODES, A=n[a]||{x:380,y:18}, B=n[b];
+  if(a==='M'){ return `M380,24 L380,${B.y-B.h/2}`; }                       // war-bond down into treasury
+  if(curve==='tf') return `M${A.x-A.w/2},${A.y+8} C220,40 150,${B.y-B.h/2-6} ${B.x},${B.y-B.h/2}`;     // treasury -> front
+  if(curve==='fl') return `M${A.x+A.w/2},${A.y} L${B.x-B.w/2},${A.y}`;                                   // front -> tills
+  if(curve==='tw') return `M${A.x+A.w/2},${A.y+8} C560,40 640,${B.y-B.h/2-6} ${B.x},${B.y-B.h/2}`;       // treasury -> wallet
+  if(curve==='lw') return `M${A.x+A.w/2},${A.y} L${B.x-B.w/2},${A.y}`;                                   // tills -> wallet
+  if(curve==='lt') return `M${A.x},${A.y-A.h/2} C${A.x-40},90 ${B.x-30},${B.y+B.h/2+8} ${B.x-20},${B.y+B.h/2}`; // tills -> treasury (up, leak)
+  return `M${A.x},${A.y} L${B.x},${B.y}`;
+}
+function edgeMid(a,b,curve){
+  if(a==='M') return {x:300,y:40};
+  if(curve==='tf') return {x:170,y:96};
+  if(curve==='fl') return {x:255,y:142};
+  if(curve==='tw') return {x:600,y:96};
+  if(curve==='lw') return {x:525,y:142};
+  if(curve==='lt') return {x:300,y:108};
+  return {x:(CIRC_NODES[a].x+CIRC_NODES[b].x)/2,y:(CIRC_NODES[a].y+CIRC_NODES[b].y)/2};
+}
+function mk(tag,attrs,parent){ const e=document.createElementNS(SVGNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent)parent.appendChild(e); return e; }
+function marker(defs,id,col){
+  const m=mk('marker',{id,markerWidth:8,markerHeight:8,refX:6,refY:3,orient:'auto'},defs);
+  mk('path',{d:'M0,0 L6,3 L0,6 Z',fill:col},m);
+}
+
+/* ============================ CHARTS ============================ */
+function drawFlow(){
+  const c=els.cFlow, ctx=c.getContext('2d'), w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  const n=S.hActive.length; if(n<2) return;
+  const max=Math.max(1, S.curSum, ...S.hActive, ...S.hPooled);
+  const X=i=> i/(HIST-1)*w;
+  // pooled as a filled area (idle money rising = bad)
+  ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i+(HIST-n)); const y=h-(S.hPooled[i]/max)*h; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+  ctx.lineTo(X(HIST-1),h); ctx.lineTo(X(HIST-n),h); ctx.closePath();
+  ctx.fillStyle='rgba(124,108,255,.18)'; ctx.fill();
+  // pooled line
+  plot(ctx,S.hPooled,max,'#7c6cff',1.8,h,X,n);
+  // active line
+  plot(ctx,S.hActive,max,'#34d399',2,h,X,n);
+}
+function drawBoard(){
+  const c=els.cBoard, ctx=c.getContext('2d'), w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  const n=S.hBoard.length; if(n<1) return;
+  const X=i=> i/(HIST-1)*w;
+  const bw = Math.max(2, w/HIST - 1);
+  for(let i=0;i<n;i++){
+    const v=S.hBoard[i];
+    const x=X(i+(HIST-n));
+    const bh = (v/NTILL)*(h-6);
+    ctx.fillStyle = v===0 ? 'rgba(248,113,113,.85)' : v<=2 ? 'rgba(245,158,11,.8)' : 'rgba(52,211,153,.7)';
+    ctx.fillRect(x, h-bh-2, bw, bh);
+  }
+  // dead-board baseline
+  ctx.strokeStyle='rgba(248,113,113,.35)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,h-2); ctx.lineTo(w,h-2); ctx.stroke(); ctx.setLineDash([]);
+}
+function plot(ctx,arr,max,col,wd,h,X,n){
+  ctx.strokeStyle=col; ctx.lineWidth=wd; ctx.beginPath();
+  for(let i=0;i<arr.length;i++){ const x=X(i+(HIST-n)); const y=h-(arr[i]/max)*h; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+  ctx.stroke();
+}
+
+/* ============================ PHASE DIAGRAM ============================ */
+/* x-axis = war-bond rate (0..700), y-axis = front-pays-tills rate (0..1).
+   Shading: a cell is HEALTHY when source + circulation can outpace the leak at the
+   current leak setting, else SPIRAL. We estimate the steady-state direction of money
+   with a cheap closed-form proxy (no nested sim): the treasury's downward push
+   (bond/period + circ*treasuryGuess) vs the upward leak (leakBP * tillsGuess).
+   The dot is the live operating point; dragging it sets the two sliders. */
+const PHX0=42, PHY0=14, PHW=244, PHH=176;   // plot rect inside the 300x230 viewBox
+function phaseHealthy(bondV, circV){
+  // Cheap closed-form proxy for "does money reach the tills faster than the leak drains
+  // them?" — no nested sim, it only shades a map. KEY SUBTLETY: the war-bond enters the
+  // TREASURY; it only reaches the tills via CIRCULATION (the front pump). So a huge bond
+  // with circ=0 is dead money — it pools and the tills still starve. We therefore gate
+  // the bond's usefulness on circulation, matching the real model's failure at the
+  // bottom edge (high source, no flow => still a spiral).
+  const leakBP = +els.leak.value;
+  if(leakBP<=0) return true;                       // no leak => can't pool => always healthy (naive)
+  const Trep = 4000, Lrep = 400*NTILL;             // representative stocks (coarse on purpose)
+  // DOWN-flow that actually lands in tills = the front pump moving treasury cash down.
+  // The war-bond only swells what the pump has to work with, so it helps ONLY when circ>0.
+  const pump = circV * Trep * 0.25;                // front pump throughput this tick
+  const bondHelp = circV>0 ? Math.min(bondV/BOND_PERIOD, pump) : 0; // bond carried down by the pump
+  const down = pump + bondHelp*0.5;
+  // UP-flow = proportional leak + the FLAT carrying cost across every till. The flat
+  // term is discounted here: in practice the treasury floor (Guard 3) and the player's
+  // residual buy-back blunt it near the boundary, so the real model holds at lower
+  // circulation than a naive sum predicts. The map is a guide; the live badge is truth.
+  const up = (leakBP/1000)*Lrep + LEAK_FLAT*NTILL*0.6;
+  return down > up*0.85;                            // healthy if down beats the (discounted) drain
+}
+function drawPhase(){
+  const svg=els.phaseSvg; svg.innerHTML='';
+  // shade the plane cell by cell
+  const COLS=22, ROWS=16;
+  for(let cx=0;cx<COLS;cx++){
+    for(let cy=0;cy<ROWS;cy++){
+      const bondV = (cx+0.5)/COLS*700;
+      const circV = 1-(cy+0.5)/ROWS;              // top = high circulation
+      const ok = phaseHealthy(bondV, circV);
+      const x=PHX0+cx/COLS*PHW, y=PHY0+cy/ROWS*PHH;
+      mk('rect',{x,y,width:PHW/COLS+0.6,height:PHH/ROWS+0.6,
+        fill: ok?'rgba(52,211,153,.16)':'rgba(248,113,113,.16)'},svg);
+    }
+  }
+  // boundary contour (sample the sign change along each column)
+  let prev=null; const pts=[];
+  for(let cx=0;cx<=COLS;cx++){
+    const bondV=cx/COLS*700;
+    // find circ where it flips
+    let flip=null;
+    for(let cy=0;cy<=ROWS;cy++){
+      const circV=1-cy/ROWS;
+      if(phaseHealthy(bondV,circV)){ flip=cy; break; }
+    }
+    if(flip!==null){ pts.push([PHX0+cx/COLS*PHW, PHY0+flip/ROWS*PHH]); }
+  }
+  if(pts.length>1){
+    let d='M'+pts[0][0]+','+pts[0][1];
+    for(let i=1;i<pts.length;i++) d+=' L'+pts[i][0]+','+pts[i][1];
+    mk('path',{d,fill:'none',stroke:'var(--fog-300)','stroke-width':1.2,'stroke-dasharray':'3 3',opacity:.7},svg);
+  }
+  // frame + axis labels
+  mk('rect',{x:PHX0,y:PHY0,width:PHW,height:PHH,fill:'none',stroke:'var(--line)'},svg);
+  txt(svg,'war-bond rate ▸', PHX0+PHW/2, PHY0+PHH+22,'middle');
+  txt(svg,'0',PHX0,PHY0+PHH+12,'middle'); txt(svg,'700',PHX0+PHW,PHY0+PHH+12,'middle');
+  const yl=mk('text',{x:12,y:PHY0+PHH/2,'transform':`rotate(-90 12 ${PHY0+PHH/2})`,class:'phaselbl','text-anchor':'middle'},svg);
+  yl.textContent='◂ circulation rate';
+  // region tags
+  txt(svg,'HEALTHY',PHX0+PHW-6,PHY0+14,'end','var(--good)');
+  txt(svg,'SPIRAL',PHX0+6,PHY0+PHH-8,'start','var(--bad)');
+
+  // operating point
+  const bx = PHX0 + (+els.bond.value)/700*PHW;
+  const cy = PHY0 + (1-(+els.circRate.value)/100)*PHH;
+  const opOk = phaseHealthy(+els.bond.value, (+els.circRate.value)/100);
+  mk('circle',{cx:bx,cy:cy,r:9,fill:'none',stroke:'var(--accent)','stroke-width':1.5,opacity:.5},svg);
+  mk('circle',{cx:bx,cy:cy,r:5,fill:'var(--accent)',stroke:'var(--ink-950)','stroke-width':1.5},svg);
+  // crosshair
+  mk('line',{x1:bx,y1:PHY0,x2:bx,y2:PHY0+PHH,stroke:'var(--accent)','stroke-width':.6,opacity:.3},svg);
+  mk('line',{x1:PHX0,y1:cy,x2:PHX0+PHW,y2:cy,stroke:'var(--accent)','stroke-width':.6,opacity:.3},svg);
+
+  els.phaseNote.innerHTML = opOk
+    ? 'Operating point in the <b class="h">HEALTHY</b> region — down-flow (war-bond + front pump) outpaces the upward leak.'
+    : 'Operating point in the <b class="s">SPIRAL</b> region — the leak drains money up faster than it is pushed down. Drag up or right.';
+}
+function txt(svg,s,x,y,anchor,fill){
+  const t=mk('text',{x,y,class:'phaselbl','text-anchor':anchor||'start'},svg);
+  if(fill) t.setAttribute('fill',fill);
+  t.textContent=s; return t;
+}
+
+/* phase-diagram drag -> sets sliders */
+function phasePoint(ev){
+  const svg=els.phaseSvg, r=svg.getBoundingClientRect();
+  const px=(ev.clientX-r.left)/r.width*300;
+  const py=(ev.clientY-r.top)/r.height*230;
+  let fx=(px-PHX0)/PHW, fy=(py-PHY0)/PHH;
+  fx=Math.max(0,Math.min(1,fx)); fy=Math.max(0,Math.min(1,fy));
+  const bondV=Math.round(fx*700/10)*10;
+  const circV=Math.round((1-fy)*100);
+  els.bond.value=bondV; els.circRate.value=circV;
+  // dragging implies you want circulation/source ON
+  if(circV>0) els.gCirc.checked=true;
+  if(bondV>0) els.gBond.checked=true;
+  syncLabels();
+  if(!running) render(); else drawPhase();
+}
+els.phaseSvg.addEventListener('pointerdown',e=>{ dragging=true; els.phaseSvg.classList.add('drag'); els.phaseSvg.setPointerCapture(e.pointerId); demo=null; phasePoint(e); });
+els.phaseSvg.addEventListener('pointermove',e=>{ if(dragging) phasePoint(e); });
+els.phaseSvg.addEventListener('pointerup',e=>{ dragging=false; els.phaseSvg.classList.remove('drag'); });
+els.phaseSvg.addEventListener('pointercancel',()=>{ dragging=false; els.phaseSvg.classList.remove('drag'); });
+
+/* ============================ LOOP ============================ */
+const TICK_MS=120;
+function tickOnce(){ edgeFlow={}; // reset per-tick edge flows; postings refill it
+  // tap postings for this tick by wrapping logPost temporarily
+  step();
+}
+function loop(t){
+  if(!running) return;
+  if(!lastT) lastT=t;
+  acc += (t-lastT); lastT=t;
+  const budget=TICK_MS/speed;
+  let guard=0;
+  while(acc>=budget && guard<6){ tickOnce(); acc-=budget; guard++; }
+  render();
+  raf=requestAnimationFrame(loop);
+}
+function play(){ if(running)return; running=true; lastT=0; acc=0; raf=requestAnimationFrame(loop); render(); }
+function pause(){ running=false; if(raf)cancelAnimationFrame(raf); raf=null; render(); }
+function togglePlay(){ running?pause():play(); }
+function doStep(){ pause(); demo=null; edgeFlow={}; step(); render(); }
+
+function reset(){
+  pause(); demo=null;
+  S = freshState();
+  prng = mulberry32(SEED);
+  ledgerRows=[]; edgeFlow={}; firstSpiralTick=-1; S._prevVelo=undefined;
+  computeMetrics(); classify();
+  S.why={cls:'idle', msg:'Reset · seed '+SEED+'. Books locked at Σ '+S.curSum.toLocaleString()+' cr. Press Play.'};
+  flash('Reset to seed '+SEED+'. Σ '+S.curSum.toLocaleString()+' cr — every credit accounted for.');
+  render();
+}
+
+/* ---- wrap logPost so postings feed the diagram's edge flows ---- */
+(function(){
+  const _log = logPost;
+  logPost = function(from,to,amt,tag,isMint){
+    _log(from,to,amt,tag,isMint);
+    postingTap(from,to,amt);
+  };
+})();
+
+/* ============================ SCRIPTED DEMOS ============================
+   Verified by reasoning over the integer model:
+   - SPIRAL: kill circulation (Guard 2) + war-bond (Guard 1) + floor (Guard 3) and
+     raise the leak. The leak now drains the tills UP with nothing pushing back down;
+     within ~15-20 ticks the tills cross the dry line, velocity collapses, board quiets.
+   - GUARD: from a spiral, snap the war-bond up and reopen circulation. Money floods
+     back down, tills refill, velocity recovers, contracts reappear — same seed.
+   - NAIVE: leak = 0. Money can't drain up, so it can't pool; it just sloshes and the
+     board never dies, no matter how throttled circulation is. Proves the leak is the
+     necessary ingredient for the spiral.
+============================================================================ */
+function startDemo(kind){
+  reset();
+  if(kind==='spiral'){
+    setControls({bond:220, circRate:65, spend:40, leak:30, demand:18, trade:6, gBond:true, gCirc:true, gFloor:true});
+    demo={ t:0, phase:'warm', drive(){
+      this.t++;
+      if(this.phase==='warm' && this.t>=6){
+        // throttle the guards: this is the trigger
+        els.gCirc.checked=false; els.gBond.checked=false; els.gFloor.checked=false;
+        els.leak.value=70; syncLabels();
+        this.phase='choke';
+        flash('SPIRAL TRIGGERED at t'+S.tick+': circulation OFF, war-bond OFF, floor OFF, leak ▲. Watch the tills drain up and the board go quiet.');
+      } else if(this.phase==='choke'){
+        if(S.phase==='spiral' && !this.announced){ this.announced=true;
+          flash('DEFLATIONARY SPIRAL: full warehouses, empty tills — velocity '+S.velocity.toFixed(2)+', '+S.board+'/'+NTILL+' contracts payable. The economy strangled itself.');
+        }
+        if(this.t>=46){ pause(); demo=null;
+          flash('Spiral locked in: velocity '+S.velocity.toFixed(2)+', board '+S.board+'/'+NTILL+'. Now hit "Deploy a guard" — same seed, no reset.');
+        }
+      }
+    }};
+    play();
+  }
+  if(kind==='guard'){
+    // start already-spiraling, then deploy guards to break it
+    setControls({bond:0, circRate:0, spend:40, leak:70, demand:18, trade:6, gBond:false, gCirc:false, gFloor:false});
+    // pre-drain the tills so we begin in the hole (deterministic warmup)
+    demo={ t:0, phase:'sink', drive(){
+      this.t++;
+      if(this.phase==='sink'){
+        if(S.phase==='spiral' || this.t>=20){ this.phase='deploy'; this.t=0;
+          flash('In the spiral (velocity '+S.velocity.toFixed(2)+'). DEPLOYING GUARDS: war-bond ▲, circulation reopened, floor on…');
+          els.gBond.checked=true; els.gCirc.checked=true; els.gFloor.checked=true;
+          els.bond.value=420; els.circRate.value=75; els.leak.value=30; syncLabels();
+        }
+      } else if(this.phase==='deploy'){
+        if(S.phase==='healthy' && !this.announced){ this.announced=true;
+          flash('CIRCULATION RESTORED at t'+S.tick+': war-bond +flow pushed money back down. Velocity '+S.velocity.toFixed(2)+', '+S.board+'/'+NTILL+' tills funded again — HEALTHY.');
+        }
+        if(this.t>=42){ pause(); demo=null;
+          flash('Recovered: velocity '+S.velocity.toFixed(2)+', board '+S.board+'/'+NTILL+'. The money was always there — it just needed to move.');
+        }
+      }
+    }};
+    play();
+  }
+  if(kind==='naive'){
+    // leak OFF: money can't drain up, so it can't pool — the spiral can't form even
+    // with circulation throttled. Demonstrates the leak is the necessary ingredient.
+    setControls({bond:140, circRate:10, spend:40, leak:0, demand:18, trade:6, gBond:true, gCirc:true, gFloor:false});
+    demo={ t:0, drive(){
+      this.t++;
+      if(this.t===10) flash('NAIVE model (leak OFF): circulation is throttled low, yet money just sloshes — no upward drain, so nothing pools.');
+      if(this.t>=70){ pause(); demo=null;
+        flash('NAIVE result: velocity '+S.velocity.toFixed(2)+', board still '+S.board+'/'+NTILL+'. With no leak, pooling is impossible — the spiral needs the carrying cost to exist.');
+      }
+    }};
+    play();
+  }
+}
+
+/* ---- control sync ---- */
+function setControls(o){
+  if('bond' in o) els.bond.value=o.bond;
+  if('circRate' in o) els.circRate.value=o.circRate;
+  if('spend' in o) els.spend.value=o.spend;
+  if('leak' in o) els.leak.value=o.leak;
+  if('demand' in o) els.demand.value=o.demand;
+  if('trade' in o) els.trade.value=o.trade;
+  if('gBond' in o) els.gBond.checked=o.gBond;
+  if('gCirc' in o) els.gCirc.checked=o.gCirc;
+  if('gFloor' in o) els.gFloor.checked=o.gFloor;
+  syncLabels();
+}
+function syncLabels(){
+  els.vBond.textContent=els.bond.value;
+  els.vCirc.textContent=((+els.circRate.value)/100).toFixed(2);
+  els.vSpend.textContent=((+els.spend.value)/100).toFixed(2);
+  els.vLeak.textContent=els.leak.value;
+  els.vDemand.textContent=els.demand.value;
+  els.vTrade.textContent=els.trade.value;
+}
+function flash(msg){ els.status.textContent=msg; }
+
+/* ============================ WIRING ============================ */
+['bond','circRate','spend','leak','demand','trade'].forEach(k=>{
+  els[k].addEventListener('input',()=>{ syncLabels(); if(!running) render(); else drawPhase(); });
+});
+['gBond','gCirc','gFloor'].forEach(k=>{
+  els[k].addEventListener('change',()=>{ if(!running) render(); });
+});
+els.playBtn.addEventListener('click',()=>{ demo=null; togglePlay(); });
+els.stepBtn.addEventListener('click',doStep);
+els.resetBtn.addEventListener('click',reset);
+els.speedBtn.addEventListener('click',()=>{
+  speed = speed===1?2:speed===2?4:1;
+  els.speedBtn.textContent=speed+'×';
+});
+els.demoSpiral.addEventListener('click',()=>startDemo('spiral'));
+els.demoGuard.addEventListener('click',()=>startDemo('guard'));
+els.demoNaive.addEventListener('click',()=>startDemo('naive'));
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); demo=null; togglePlay(); }
+  else if(e.code==='ArrowRight'){ e.preventDefault(); doStep(); }
+  else if(e.key==='r'||e.key==='R'){ reset(); }
+});
+
+/* ---- boot ---- */
+reset();
+syncLabels();
+</script>
+</body>
+</html>

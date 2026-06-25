@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Share a Lost Run — APR.5 · seed → world → share code → replay</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-200:#d6dae8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#a78bfa;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --warm:#f59e0b;--warm-soft:color-mix(in oklab,var(--warm) 18%,transparent);
+  --rose:#fb7185;
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3.2rem 0 .5rem;padding-top:.4rem}
+h2 .num{font-family:var(--font-mono);color:var(--accent);font-size:1rem;letter-spacing:.06em;margin-right:.5rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+em{color:var(--fog-200)}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+.lesson{border-left:3px solid var(--good);background:linear-gradient(90deg,var(--good-soft),transparent 85%);padding:.7rem 1rem;margin:1.1rem 0 .3rem;font-size:.95rem;color:var(--fog-100);border-radius:0 6px 6px 0}
+.lesson b{color:var(--good)}
+
+/* ===== generic instrument panel ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:1.6rem 0 2rem;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .badge{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:.08rem .45rem;background:var(--accent-soft)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+/* readouts */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.9rem 0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin:.9rem 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1;word-break:break-all}
+.stat .v.accent{color:var(--accent)} .stat .v.good{color:var(--good)} .stat .v.bad{color:var(--bad)} .stat .v.cool{color:var(--cool)} .stat .v.warm{color:var(--warm)} .stat .v.rose{color:var(--rose)}
+.stat .v.sm{font-size:1.05rem}
+.stat .sub{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.15rem}
+
+/* run card */
+.runcard{border:1px solid var(--line);border-radius:12px;background:radial-gradient(34rem 14rem at 50% -30%,var(--accent-soft),transparent 70%),var(--ink-900);padding:.7rem .8rem .85rem;margin:.2rem 0}
+.runcard .rc-top{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;margin:.1rem .15rem .5rem;flex-wrap:wrap}
+.runcard .rc-code{font-family:var(--font-mono);font-size:1.02rem;font-weight:700;letter-spacing:.06em;color:var(--accent);user-select:all}
+.runcard .rc-tag{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500)}
+.mapwrap{border:1px solid var(--line);border-radius:9px;background:var(--ink-950);overflow:hidden}
+svg{display:block;width:100%;height:auto}
+
+.fallrow{display:flex;flex-wrap:wrap;gap:.32rem;margin:.55rem 0 .2rem;font-family:var(--font-mono);font-size:.7rem;align-items:center}
+.fallrow .lbl{color:var(--fog-500);letter-spacing:.1em;margin-right:.25rem}
+.ft{border:1px solid var(--line);border-radius:5px;padding:.16rem .42rem;color:var(--fog-200);background:var(--ink-850);white-space:nowrap}
+.ft .o{color:var(--accent);margin-right:.3rem}
+.ft.depot{border-color:var(--rose)} .ft.depot .nm{color:var(--rose)}
+.ft.first{box-shadow:0 0 0 1px var(--accent-soft)}
+
+.flavor{font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);margin:.5rem .1rem .15rem;line-height:1.5}
+.flavor .em{color:var(--accent)}
+.diffbar{display:flex;align-items:center;gap:.5rem;margin:.45rem .1rem .1rem;font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500)}
+.diffbar .track{flex:1;height:7px;border-radius:5px;background:var(--ink-700);overflow:hidden;border:1px solid var(--line)}
+.diffbar .fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--good),var(--warm) 55%,var(--bad))}
+.diffbar .pct{color:var(--fog-200);min-width:5.4rem;text-align:right}
+
+/* share strip */
+.share{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;border:1px dashed var(--accent);border-radius:10px;padding:.55rem .75rem;background:var(--accent-soft);margin:.9rem 0 .2rem}
+.share .lbl{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.share .code{font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--fog-100);letter-spacing:.06em;user-select:all}
+.share .grow{flex:1 1 8rem;min-width:7rem}
+
+/* PRNG tape */
+.tape{display:flex;flex-wrap:wrap;gap:.3rem;border:1px solid var(--line);border-radius:10px;background:var(--ink-950);padding:.55rem .6rem;margin:.7rem 0 .3rem}
+.cell{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-300);background:var(--ink-850);border:1px solid var(--line);border-radius:5px;padding:.2rem .35rem;min-width:3.4rem;text-align:center}
+.cell .ix{display:block;color:var(--fog-500);font-size:.56rem;letter-spacing:.06em}
+.cell.hot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft)}
+
+/* compare two */
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:.6rem 0 .2rem}
+@media(max-width:620px){.twocol{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.controls{grid-template-columns:1fr}}
+
+/* verdict bar */
+.verdict{display:flex;align-items:center;gap:.7rem;border:1px solid var(--line);border-radius:12px;padding:.7rem .9rem;margin:.9rem 0 .2rem;background:var(--ink-900);font-family:var(--font-mono)}
+.verdict .glyph{font-size:1.5rem;line-height:1}
+.verdict.match{border-color:var(--good);background:linear-gradient(90deg,var(--good-soft),transparent 70%)}
+.verdict.mismatch{border-color:var(--bad);background:linear-gradient(90deg,var(--bad-soft),transparent 70%)}
+.verdict.idle{border-color:var(--line)}
+.verdict .vtxt{font-size:.92rem;color:var(--fog-100)}
+.verdict .vtxt b.m{color:var(--good)} .verdict .vtxt b.x{color:var(--bad)}
+.hashrow{display:flex;gap:.7rem;flex-wrap:wrap;margin:.55rem 0 .2rem}
+.hashpill{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-radius:7px;padding:.3rem .5rem;background:var(--ink-950);color:var(--fog-300)}
+.hashpill b{color:var(--fog-100)} .hashpill.a b{color:var(--cool)} .hashpill.b b{color:var(--warm)}
+.hashpill.eq{border-color:var(--good)} .hashpill.ne{border-color:var(--bad)}
+
+/* daily */
+.daily{border:1px solid var(--accent);border-radius:12px;background:linear-gradient(135deg,var(--accent-soft),transparent 70%),var(--ink-900);padding:.2rem 0 0}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.1rem 0 .4rem}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline}
+.ctl label .num{color:var(--accent);font-size:.74rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+input[type=number],input[type=text].seedbox{font-family:var(--font-mono);font-size:.82rem;background:var(--ink-950);border:1px solid var(--line);border-radius:7px;color:var(--fog-100);padding:.35rem .5rem;width:100%}
+input[type=number]:focus,input[type=text].seedbox:focus{outline:none;border-color:var(--accent)}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+button.warm{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+button.warm:hover{background:color-mix(in oklab,var(--warm) 26%,transparent)}
+.sepv{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.chips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.28rem .5rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--accent)}
+.qlabel{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);letter-spacing:.08em}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.6rem 0 0;letter-spacing:.02em}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+.backlink{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);text-decoration:none;letter-spacing:.04em}
+.backlink:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="../">← All explorables</a>
+
+  <div style="height:1.1rem"></div>
+  <div class="chip">APR.5</div>
+  <p class="eyebrow">a run is a seed</p>
+  <h1>Share a Lost Run</h1>
+  <p class="lede">You lost. The war overran your hauler at t-something and banked some prestige. Here is the strange gift determinism hands you: that exact defeat is now a six-character code you can text to a friend — "this is the war that beat me; beat it yourself."</p>
+
+  <div class="spark">
+    A run is a <b>pure function of its seed</b>. So a loss isn't gone — it's an <b>artifact</b>. The same code regenerates the same producers, the same enemy fall order, the same collapse, anywhere, on anyone's machine. The daily challenge, "beat my run," same-war leaderboards — that whole social layer <b>falls out for free</b>, with no servers in the sim. Just a seed.</div>
+
+  <p>In <strong>Minimalist Space Logistics</strong> you keep one hauler supplying an unwinnable war. Every run is a <em>seed</em>; every run ends in an overrun. Because the sim is deterministic <span class="handle">(APR.5)</span> — fixed ticks, one seeded PRNG, fixed iteration order, integer money — a finished run is fully reproducible. The same seed regenerates the same war <em>byte for byte</em>: the same map, the same fall order, the same events. That is the entire premise of this page: <strong>determinism is the substrate; sharing is the payoff.</strong></p>
+
+  <p class="note">The <em>mechanism</em> — why floats would rot it, why iteration order is the subtle killer, the rerun-and-compare CI gate — is the sibling page <code>determinism-harness</code>. This page doesn't re-derive it. It takes "the run is a seed" as given and shows what that <strong>buys the player</strong>: a shareable, replayable artifact and the social loop built on top of it <span class="handle">(R.5 — the war is learnable and shareable)</span>.</p>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- 1 — SEED -> WORLD : the run card                             -->
+  <!-- ============================================================ -->
+  <h2><span class="num">1</span>Seed → world: the run card</h2>
+  <p>Type a seed, pick a chip, or roll a random one. From that single 32-bit number a <code>mulberry32</code> stream is drawn <em>in a fixed sequence</em> to lay out a banded map (rear supply → forward line), decide which systems fall and in what order, place your producers and the forward depot, and write a one-line difficulty read. Nothing here is stored or fetched — it is <strong>computed from the seed</strong>, live, every time.</p>
+
+  <div class="sim" id="sim1">
+    <div class="sim-head">
+      <span class="t">1 · one seed → one run card</span>
+      <span class="badge" id="c1draws">0 draws</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="runcard" id="c1card">
+        <div class="rc-top">
+          <span class="rc-code" id="c1code">MSL-000004D2</span>
+          <span class="rc-tag" id="c1tag">run card · seed-derived</span>
+        </div>
+        <div class="mapwrap">
+          <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" id="c1svg"></svg>
+        </div>
+        <div class="fallrow" id="c1fall"><span class="lbl">ENEMY FALL ORDER →</span></div>
+        <div class="flavor" id="c1flavor"></div>
+        <div class="diffbar">
+          <span>DIFFICULTY</span>
+          <span class="track"><span class="fill" id="c1difffill" style="width:50%"></span></span>
+          <span class="pct" id="c1diffpct">—</span>
+        </div>
+      </div>
+
+      <div class="share">
+        <span class="lbl">share code</span>
+        <span class="code" id="c1share">MSL-000004D2</span>
+        <button id="c1copy" class="ghost" style="padding:.3rem .6rem">copy</button>
+        <span class="qlabel" id="c1copymsg"></span>
+        <span class="grow"></span>
+        <input type="text" class="seedbox" id="c1paste" placeholder="paste a code… e.g. MSL-7F3A9C" style="max-width:14rem">
+        <button id="c1load" class="ghost" style="padding:.3rem .6rem">load</button>
+      </div>
+
+      <div class="tape" id="c1tape" aria-label="PRNG stream values consumed to build this world"></div>
+
+      <div class="grid3">
+        <div class="stat"><div class="k">Seed</div><div class="v accent sm" id="c1seedout">1234</div><div class="sub">the whole war, in 32 bits</div></div>
+        <div class="stat"><div class="k">PRNG draws</div><div class="v sm" id="c1calls">0</div><div class="sub">to build this card</div></div>
+        <div class="stat"><div class="k">World hash</div><div class="v warm sm" id="c1hash">—</div><div class="sub">fingerprint of the war</div></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl"><label>Producer nodes <span class="num" id="vC1Nodes">7</span></label><input type="range" id="c1nodes" min="4" max="11" step="1" value="7"></div>
+        <div class="ctl"><label>Front systems (fall-order length) <span class="num" id="vC1Sectors">6</span></label><input type="range" id="c1sectors" min="4" max="9" step="1" value="6"></div>
+      </div>
+      <div class="btnrow">
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="c1seed" value="1234" style="width:8rem">
+        <button id="c1gen" class="primary">↻ Generate</button>
+        <button id="c1rand" class="ghost">🎲 Random seed</button>
+        <div class="chips" id="c1chips" style="margin-left:.2rem"></div>
+      </div>
+      <div class="status" id="c1status">Seed 1234 → a fixed war. The same code anywhere regenerates this exact card.</div>
+    </div>
+  </div>
+
+  <div class="lesson">This is the whole trick in one panel: a tiny code on the left, a complete war on the right, and the map is a <b>deterministic function of the code</b>. Hand the code to anyone and they get <i>your</i> war — not a similar one, the same one. That is what makes a loss worth sharing.</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- 2 — PROVE IDENTICAL : replay = byte-for-byte                 -->
+  <!-- ============================================================ -->
+  <h2><span class="num">2</span>Prove it's identical — replay</h2>
+  <p>"Same seed = same war" is a claim. Here it is a button. We generate the run from the current seed, then generate it <em>again</em> from the same seed, and fold each world's keyframes (bands, node placements, fall order — the discrete, integer state, never a raw float) into an <code>FNV-1a</code> hash. If the sim is a pure function of the seed, the two hashes match exactly. That match is what a <strong>replay</strong> stands on: re-run the seed and you walk the identical collapse.</p>
+
+  <div class="sim" id="sim2">
+    <div class="sim-head">
+      <span class="t">2 · generate twice · demand identical</span>
+      <span class="badge" id="c2runs">0 runs</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="verdict idle" id="c2verdict">
+        <span class="glyph" id="c2glyph">○</span>
+        <span class="vtxt" id="c2vtxt">Press <b style="color:var(--accent)">Replay — prove identical</b>. The seed is regenerated twice; the two world hashes must match.</span>
+      </div>
+
+      <div class="hashrow">
+        <span class="hashpill a">pass 1 · <b id="c2h1">—</b></span>
+        <span class="hashpill b">pass 2 · <b id="c2h2">—</b></span>
+        <span class="hashpill" id="c2eq">verdict · <b>idle</b></span>
+      </div>
+
+      <div class="grid3">
+        <div class="stat"><div class="k">Seed replayed</div><div class="v accent sm" id="c2seed">1234</div><div class="sub">regenerates this war</div></div>
+        <div class="stat"><div class="k">PRNG draws / pass</div><div class="v sm" id="c2calls">0</div><div class="sub">must be equal</div></div>
+        <div class="stat"><div class="k">Forward depot falls</div><div class="v rose sm" id="c2depot">—</div><div class="sub">same in both passes</div></div>
+      </div>
+
+      <div class="card" style="margin:.9rem 0 .3rem">
+        <p class="tight" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)">what a replay needs · seed + input stream</p>
+        <p class="tight note">The map is reproduced from the seed alone. A <em>full</em> replay of <strong>your</strong> run is the seed <b>plus your input stream</b> — every order you issued, tick by tick — fed back into the same deterministic sim to reconstruct your exact playthrough. That seed-plus-inputs recording is the substrate run-ghosts would be built on <span class="handle">(R.2 — ghosts shelved, but the substrate is this)</span>. Here we prove the seed half: the world is identical every time.</p>
+      </div>
+
+      <div class="btnrow">
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="c2seedbox" value="1234" style="width:8rem">
+        <button id="c2run" class="primary">⟳ Replay — prove identical</button>
+        <button id="c2corrupt" class="warm">⚡ Inject one unseeded draw</button>
+      </div>
+      <div class="status" id="c2status">Generate twice from one seed; the world hash must not move. That immovability is the replay guarantee.</div>
+    </div>
+  </div>
+
+  <div class="lesson">The green match is the player-facing promise behind every shared seed: regenerate, and you get the identical war. The amber button shows the flip side — slip <b>one</b> unseeded draw into world-gen and the two passes diverge, the hash splits, and "same seed" quietly stops being true. (That failure mode is the sibling <code>determinism-harness</code>'s whole subject; here it's just a warning light.)</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- 3 — COMPARE TWO SEEDS                                        -->
+  <!-- ============================================================ -->
+  <h2><span class="num">3</span>Compare two seeds — feel the seed-space</h2>
+  <p>One seed is a war; the space of seeds is every war. Generate two run cards side by side and the seed-space becomes tangible — different maps, different fall orders, different depots, different difficulty. Swap a seed and the whole card rewrites, deterministically. This is why a <em>daily</em> seed is interesting: out of billions of distinct wars, today everyone is handed the same one.</p>
+
+  <div class="sim" id="sim3">
+    <div class="sim-head">
+      <span class="t">3 · two seeds · two wars</span>
+      <span class="badge" id="c3delta">Δ —</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="twocol">
+        <div class="runcard" id="c3cardL">
+          <div class="rc-top"><span class="rc-code" id="c3codeL">MSL-…</span><span class="rc-tag">seed A</span></div>
+          <div class="mapwrap"><svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg" id="c3svgL"></svg></div>
+          <div class="fallrow" id="c3fallL"><span class="lbl">FALL →</span></div>
+          <div class="flavor" id="c3flavL"></div>
+        </div>
+        <div class="runcard" id="c3cardR">
+          <div class="rc-top"><span class="rc-code" id="c3codeR">MSL-…</span><span class="rc-tag">seed B</span></div>
+          <div class="mapwrap"><svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg" id="c3svgR"></svg></div>
+          <div class="fallrow" id="c3fallR"><span class="lbl">FALL →</span></div>
+          <div class="flavor" id="c3flavR"></div>
+        </div>
+      </div>
+
+      <div class="diffbar" style="margin-top:.7rem">
+        <span>WORLD DIVERGENCE A↔B</span>
+        <span class="track"><span class="fill" id="c3difffill" style="width:0%"></span></span>
+        <span class="pct" id="c3diffpct">—</span>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>seed A</label>
+          <div class="btnrow" style="margin:.1rem 0 0">
+            <input type="text" class="seedbox" id="c3seedL" value="1234" style="width:7rem">
+            <button id="c3randL" class="ghost" style="padding:.32rem .55rem">🎲</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <label>seed B</label>
+          <div class="btnrow" style="margin:.1rem 0 0">
+            <input type="text" class="seedbox" id="c3seedR" value="9999" style="width:7rem">
+            <button id="c3randR" class="ghost" style="padding:.32rem .55rem">🎲</button>
+          </div>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button id="c3gen" class="primary">↻ Generate both</button>
+        <button id="c3swap" class="ghost">⇄ Swap A/B</button>
+        <button id="c3twins" class="ghost">≡ Make B = A</button>
+      </div>
+      <div class="status" id="c3status">Two seeds, two wars. Set B equal to A to watch divergence collapse to 0% — identical seeds, identical war.</div>
+    </div>
+  </div>
+
+  <div class="lesson">Divergence at <b>0%</b> means the two cards are byte-identical — proof that the same seed is the same war (this is the "compare" form of the replay check). Push the seeds apart and the bar climbs: the seed-space is wide, and each point in it is a fully-specified, shareable war.</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- 4 — DAILY SEED : the social hook                            -->
+  <!-- ============================================================ -->
+  <h2><span class="num">4</span>The daily seed — everyone fights the same war</h2>
+  <p>Now the payoff lands. Derive one seed from today's date and you have a <strong>daily challenge</strong> for free: every player, everywhere, is handed the identical war — same map, same fall order, same depot, same collapse pressure — and the only variable is <em>how long you survive it</em>. Post your survival time; compare against the same war, not a similar one. That is a same-war leaderboard with <strong>no servers in the sim</strong> — the seed <em>is</em> the shared state.</p>
+
+  <div class="sim daily" id="sim4">
+    <div class="sim-head">
+      <span class="t">4 · seed of the day · beat my run</span>
+      <span class="badge" id="c4date">today</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="runcard" id="c4card">
+        <div class="rc-top">
+          <span class="rc-code" id="c4code">MSL-…</span>
+          <span class="rc-tag" id="c4tag">daily · derived from the date</span>
+        </div>
+        <div class="mapwrap"><svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" id="c4svg"></svg></div>
+        <div class="fallrow" id="c4fall"><span class="lbl">ENEMY FALL ORDER →</span></div>
+        <div class="flavor" id="c4flavor"></div>
+      </div>
+
+      <div class="grid3">
+        <div class="stat"><div class="k">Today's war</div><div class="v accent sm" id="c4share">MSL-…</div><div class="sub" id="c4datesub">everyone gets this one</div></div>
+        <div class="stat"><div class="k">Par survival</div><div class="v good sm" id="c4par">t—</div><div class="sub">seed-derived target tick</div></div>
+        <div class="stat"><div class="k">Forward depot</div><div class="v rose sm" id="c4depot">—</div><div class="sub" id="c4depotsub">falls at t—</div></div>
+      </div>
+
+      <div class="card" style="margin:.9rem 0 .3rem;border-color:var(--accent)">
+        <p class="tight"><strong>The leaderboard is implicit.</strong> Two players who type the same daily code generate the same war; a survival time means the same thing on both screens because they fought the <em>same enemy fall order from the same map</em>. The "board" is just a list of <code>(name, survival tick)</code> against one shared seed — no authoritative server simulating anything, because the seed already pins the world.</p>
+      </div>
+
+      <div class="btnrow">
+        <button id="c4today" class="primary">📅 Today's seed</button>
+        <button id="c4next" class="ghost">→ Tomorrow's war</button>
+        <button id="c4send" class="ghost">⇪ Send to panel 1</button>
+        <span class="sepv"></span>
+        <span class="qlabel" id="c4offlbl">offset · today</span>
+      </div>
+      <div class="status" id="c4status">A fixed seed-of-the-day. Everyone fights this exact war today — post your survival time.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in one line:</strong> determinism turns a loss into an <em>artifact you can hand to a friend</em> — "here's the exact war that beat me; beat it yourself" — and the whole social/leaderboard layer falls out for free, no servers in the sim, just a seed.</p>
+    <p class="tight note">Everything above is one <code>mulberry32</code> stream and a fixed draw order. The share code is the seed in hex; the daily seed is the date hashed into that same space; the "beat my run" board is a list of times against one code. No network was touched to render this page — which is exactly the point: the seed already <em>is</em> the shared world.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>Seed stability across versions</h4>
+    <p>A share code is only a promise if it means the <em>same war</em> on every build. The instant world-gen changes — a new producer type, a tweaked band layout, an extra draw inserted mid-sequence — the same seed expands into a <strong>different</strong> world, and every code anyone ever shared silently rots. "MSL-7F3A9C beat me" becomes a lie on the next patch. This is the quiet killer of seed-sharing games: the seed didn't change, the function did.</p>
+    <p class="mit"><b>Mitigation:</b> version the seed/world-gen <em>format</em>, not just the game — stamp each code with the gen-version (e.g. <code>MSL2-7F3A9C</code>) and keep old generators resolvable so historical codes still reproduce their original war, or explicitly mark them retired. Treat world-gen as a stable serialized format with migrations, the way you would a save file — never an implementation detail free to drift.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Determinism — the whole premise</h4>
+    <p>Every claim on this page rests on one assumption: the sim is a <em>pure</em> function of the seed (and inputs). One unseeded <code>rand()</code> in a code path that touches state, one hash-map iteration order, one float where an integer belongs, and shared seeds diverge — your friend pastes your code and gets a different war, the daily leaderboard compares times across non-identical worlds, replays desync. The feature isn't "sharing"; the feature is "sharing <em>only because</em> the world is reproducible," and that reproducibility is fragile.</p>
+    <p class="mit"><b>Mitigation:</b> this is precisely what the sibling <code>determinism-harness</code> defends — one seeded PRNG advanced only on ticks, a fixed iteration order, integer money, and a rerun-and-compare gate in CI that fails the build the moment two runs of a seed disagree. The amber breaker in panel 2 is a miniature of that failure: one unseeded draw and the prove-identical hash splits.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">Seed-sharing is the violet thread's dividend: get determinism right once, at the bottom <span class="handle">(APR.5)</span>, and a lost run stops being a dead end. It becomes a thing you can hand to someone — learnable, replayable, beatable <span class="handle">(R.5)</span> — and the daily challenge, the "beat my run" dare, the same-war board all arrive without a single server simulating the game.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · APR.5 — A RUN IS A SEED · seed-sharing-replay · the violet lineage<br>
+    deterministic · seeded · self-contained · no network · a loss is an artifact you can share
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   SHARE A LOST RUN — every world here is computed live from a seed.
+   This page is the PAYOFF of determinism (APR.5); the MECHANISM is
+   the sibling `determinism-harness`. Shared primitives below mirror
+   that page so a seed means the same thing across the set.
+     - mulberry32 : tiny reseedable PRNG (the ONE stream)
+     - Stream     : call-counting wrapper + integer helper
+     - fnv1a      : world-hash for prove-identical / compare
+     - shareCode  : seed <-> "MSL-XXXXXXXX" hex
+   Same seed + same draw order  ->  byte-identical world, every time.
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ----
+   Deterministic from its 32-bit seed; same seed yields same sequence. */
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* call-counting wrapper: proves two passes advanced the stream identically. */
+function Stream(seed){
+  const r = mulberry32(seed);
+  let n = 0;
+  const f = function(){ n++; return r(); };
+  f.count = () => n;
+  f.int = (lo, hi) => lo + Math.floor(f() * (hi - lo + 1));  // inclusive int
+  f.pick = (arr) => arr[Math.floor(f() * arr.length)];
+  return f;
+}
+/* ---- FNV-1a 32-bit rolling hash over DISCRETE state (no raw floats) ---- */
+function Hasher(){
+  let h = 0x811c9dc5 >>> 0;
+  return {
+    push(n){ n = (n|0); for(let i=0;i<4;i++){ h ^= (n & 0xff); n >>>= 8; h = Math.imul(h, 0x01000193) >>> 0; } return this; },
+    hex(){ return ("00000000" + h.toString(16)).slice(-8).toUpperCase(); }
+  };
+}
+/* ---- seed parsing: accept a raw number OR a share code "MSL-XXXX" ---- */
+function parseSeed(str){
+  if(str == null) return 1234;
+  str = String(str).trim().toUpperCase();
+  const m = str.match(/MSL-?([0-9A-F]+)/);          // tolerate MSL-7F3A9C or MSL7F3A9C
+  if(m) return (parseInt(m[1], 16) >>> 0);
+  if(/^0X[0-9A-F]+$/.test(str)) return (parseInt(str, 16) >>> 0);
+  const n = parseInt(str.replace(/[^0-9]/g,''), 10);
+  return Number.isFinite(n) ? (n >>> 0) : 1234;
+}
+function shareCode(seed){ return "MSL-" + (seed >>> 0).toString(16).toUpperCase().padStart(8, "0"); }
+
+const $ = id => document.getElementById(id);
+function clamp(x,a,b){ return x<a?a:x>b?b:x; }
+
+/* ---- naming tables (flavor, drawn deterministically from the stream) ---- */
+const SYS_NAMES = ["CASTOR","POLLUX","VEGA","RIGEL","ALTAIR","MIZAR","DENEB","ANTARES","SPICA","ATLAS","HELIX","CERES"];
+const BANDS = ["FORWARD","MID","REAR"];
+const BANDCOL = ["#fb7185","#f59e0b","#60a5fa"];   // forward=rose, mid=warm, rear=cool
+
+/* ============================================================
+   CORE: genWorld(seed, nodes, sectors)
+   Draws, in a FIXED order, from one Stream:
+     1) for each producer node: band, x, yield-jitter, wobble
+     2) the enemy fall order: a seeded Fisher-Yates over the front systems
+     3) which producer is the forward DEPOT (the exposed one)
+   Then folds the discrete keyframes into an FNV-1a world hash.
+   Same args -> identical world object + identical hash.
+   ============================================================ */
+function genWorld(seed, nodes, sectors){
+  seed = seed >>> 0;
+  const s = Stream(seed);
+  const tape = [], hot = new Set();
+  const draw = (tag) => { const v = s(); tape.push({v, tag}); return v; };
+  const markHot = () => hot.add(tape.length - 1);
+
+  // 1) producer nodes
+  const ns = [];
+  for(let i=0;i<nodes;i++){
+    const band = Math.floor(draw('p'+i+'.band') * 3); markHot();
+    const x = 0.08 + draw('p'+i+'.x') * 0.84;          markHot();
+    const jitterPct = Math.round(draw('p'+i+'.jit')*40 - 20); markHot();   // -20..+20%
+    const wob = draw('p'+i+'.wob')*0.10 - 0.05;
+    ns.push({ id:i, band, x, jitterPct, y: 0.22 + band*0.26 + wob });
+  }
+
+  // 2) enemy fall order: seeded shuffle of front-system ids
+  const order = [];
+  for(let i=0;i<sectors;i++) order.push(i);
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(draw('fall.swap'+i) * (i+1)); markHot();
+    const t = order[i]; order[i]=order[j]; order[j]=t;
+  }
+  // give each front system a name + a fall tick (monotonic from the order position)
+  const sysNames = [];
+  for(let i=0;i<sectors;i++) sysNames.push(SYS_NAMES[(seed + i*7) % SYS_NAMES.length]);
+  // fall ticks: first faller is earliest; spacing wobbles a little (seeded)
+  const fall = order.map((sysId, pos) => {
+    const base = 6 + pos*4;
+    const wob = Math.floor(draw('fall.t'+pos) * 4); markHot();
+    return { sysId, name: sysNames[sysId], tick: base + wob, pos };
+  });
+
+  // 3) forward DEPOT: pick one FORWARD-band producer if any, else the lowest-x node
+  const fwd = ns.filter(n => n.band === 0);
+  let depot;
+  const dpick = draw('depot'); markHot();
+  if(fwd.length){ depot = fwd[Math.floor(dpick * fwd.length)]; }
+  else { depot = ns.slice().sort((a,b)=>a.x-b.x)[0]; }
+  depot.isDepot = true;
+  // the depot's system in the fall order = the first FORWARD-ish faller; tie it to fall[0]
+  const depotFall = fall[0];
+
+  // 4) difficulty score (0..100), integer, from structural facts:
+  //    - exposed forward depot that falls early  -> harder
+  //    - many forward producers                  -> more to defend -> harder
+  //    - tight (low) first-fall tick             -> faster collapse -> harder
+  const fwdCount = ns.filter(n=>n.band===0).length;
+  const firstFall = fall[0].tick;
+  let diff = 30 + fwdCount*7 + clamp(34 - firstFall, -10, 24);
+  diff += Math.floor(draw('diff.jit')*12 - 6); markHot();
+  diff = clamp(diff, 8, 98);
+
+  // world hash: fold ONLY discrete integers (bit-exact everywhere)
+  const hh = Hasher();
+  for(const n of ns){ hh.push(n.band).push(Math.round(n.x*1000)).push(n.jitterPct).push(n.isDepot?1:0); }
+  for(const f of fall){ hh.push(f.sysId).push(f.tick); }
+  hh.push(depot.id).push(diff);
+  const hash = hh.hex();
+
+  return { seed, nodes, sectors, ns, fall, depot, depotFall, diff, hash, tape, hot, calls: s.count() };
+}
+
+/* flavor sentence, deterministic from the world's structural facts */
+function flavorOf(W){
+  const fwdCount = W.ns.filter(n=>n.band===0).length;
+  const rearCount = W.ns.filter(n=>n.band===2).length;
+  const rear = rearCount>=3 ? "deep rear" : rearCount===0 ? "no rear cushion" : "thin rear";
+  const front = fwdCount>=3 ? "crowded forward line" : fwdCount===0 ? "hollow front" : "exposed forward depot";
+  const speed = W.fall[0].tick<=8 ? "fast collapse" : W.fall[0].tick>=14 ? "slow grind" : "steady bleed";
+  const depotN = W.depotFall.name;
+  return { rear, front, speed, depotN, depotTick: W.depotFall.tick, text:
+    rear.charAt(0).toUpperCase()+rear.slice(1) + ", " + front + " — <span class='em'>" + speed + "</span>. "
+    + "Forward depot <b style='color:var(--rose)'>" + depotN + "</b> falls at <b style='color:var(--rose)'>t" + W.depotFall.tick + "</b>." };
+}
+
+/* ---- shared SVG renderer: draw a banded map of one world into an <svg> ---- */
+function renderMap(svgEl, W, VW, VH){
+  const bandH = (VH - 24) / 3;
+  let s = "";
+  for(let b=0;b<3;b++){
+    const y0 = 12 + b*bandH;
+    s += '<rect x="10" y="'+y0.toFixed(1)+'" width="'+(VW-20)+'" height="'+(bandH-8).toFixed(1)+'" rx="8" fill="#0e1018" stroke="'+BANDCOL[b]+'" stroke-opacity=".28"/>';
+    s += '<text x="20" y="'+(y0+15)+'" fill="'+BANDCOL[b]+'" font-size="9" letter-spacing="2" font-family="ui-monospace,monospace">'+BANDS[b]+'</text>';
+  }
+  // a faint "front line" at the top of the FORWARD band
+  s += '<line x1="10" y1="13" x2="'+(VW-10)+'" y2="13" stroke="#fb7185" stroke-opacity=".35" stroke-dasharray="3 4" stroke-width="1"/>';
+  for(const nd of W.ns){
+    const cx = 20 + nd.x*(VW-40);
+    const y0 = 12 + nd.band*bandH;
+    const cy = y0 + (bandH-8)/2 + (nd.id%2? 7 : -3);
+    const r = 8 + Math.abs(nd.jitterPct)/7;
+    const col = BANDCOL[nd.band];
+    const depot = nd.isDepot;
+    s += '<line x1="'+cx.toFixed(1)+'" y1="'+(y0+(bandH-8)/2).toFixed(1)+'" x2="'+cx.toFixed(1)+'" y2="'+cy.toFixed(1)+'" stroke="'+col+'" stroke-opacity=".4" stroke-width="1"/>';
+    if(depot){
+      // depot = a diamond, rose-ringed, to read as "the exposed one"
+      const R = r+3;
+      s += '<path d="M '+cx.toFixed(1)+' '+(cy-R).toFixed(1)+' L '+(cx+R).toFixed(1)+' '+cy.toFixed(1)+' L '+cx.toFixed(1)+' '+(cy+R).toFixed(1)+' L '+(cx-R).toFixed(1)+' '+cy.toFixed(1)+' Z" fill="'+col+'" fill-opacity=".20" stroke="#fb7185" stroke-width="1.8"/>';
+    } else {
+      s += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+col+'" fill-opacity=".16" stroke="'+col+'" stroke-width="1.4"/>';
+    }
+    s += '<text x="'+cx.toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" fill="#eef1f8" font-size="9" text-anchor="middle" font-family="ui-monospace,monospace">P'+nd.id+'</text>';
+    if(depot) s += '<text x="'+cx.toFixed(1)+'" y="'+(cy - (r+7)).toFixed(1)+'" fill="#fb7185" font-size="7" text-anchor="middle" letter-spacing="1" font-family="ui-monospace,monospace">DEPOT</text>';
+  }
+  svgEl.innerHTML = s;
+}
+
+/* ---- shared: render a fall-order chip row ---- */
+function renderFall(host, W, short){
+  let f = '<span class="lbl">'+(short?'FALL →':'ENEMY FALL ORDER →')+'</span>';
+  W.fall.forEach((ff, i)=>{
+    const isDepot = (ff.sysId === W.depotFall.sysId && i===0);
+    f += '<span class="ft'+(isDepot?' depot':'')+(i===0?' first':'')+'"><span class="o">'+(i+1)+'</span><span class="nm">'+ff.name+'</span> · t'+ff.tick+'</span>';
+  });
+  host.innerHTML = f;
+}
+
+/* ---- shared: percent of differing keyframes between two worlds (for compare) ---- */
+function worldDivergence(A, B){
+  // compare aligned discrete keyframes; count mismatches / total
+  let diff=0, tot=0;
+  const nodesN = Math.max(A.ns.length, B.ns.length);
+  for(let i=0;i<nodesN;i++){
+    const a=A.ns[i], b=B.ns[i];
+    for(const key of ['band','jitterPct']){ tot++; if(!a||!b|| a[key]!==b[key]) diff++; }
+    tot++; if(!a||!b|| Math.round(a.x*100)!==Math.round(b.x*100)) diff++;
+  }
+  const fallN = Math.max(A.fall.length, B.fall.length);
+  for(let i=0;i<fallN;i++){
+    const a=A.fall[i], b=B.fall[i];
+    tot++; if(!a||!b|| a.sysId!==b.sysId) diff++;
+    tot++; if(!a||!b|| a.tick!==b.tick) diff++;
+  }
+  tot++; if(A.depot.id!==B.depot.id) diff++;
+  tot++; if(A.diff!==B.diff) diff++;
+  return Math.round(100*diff/tot);
+}
+
+/* ============================================================
+   PANEL 1 — SEED -> WORLD : the run card
+   ============================================================ */
+const P1 = { seed:1234, world:null };
+function p1Gen(seed){
+  P1.seed = seed >>> 0;
+  const nodes = +$('c1nodes').value, sectors = +$('c1sectors').value;
+  P1.world = genWorld(P1.seed, nodes, sectors);
+  p1Render();
+}
+function p1Render(){
+  const W = P1.world;
+  $('c1code').textContent = shareCode(W.seed);
+  $('c1share').textContent = shareCode(W.seed);
+  $('c1seedout').textContent = W.seed;
+  $('c1calls').textContent = W.calls;
+  $('c1draws').textContent = W.calls + " draws";
+  $('c1hash').textContent = W.hash;
+  $('c1seed').value = W.seed;
+
+  renderMap($('c1svg'), W, 700, 250);
+  renderFall($('c1fall'), W, false);
+
+  const fv = flavorOf(W);
+  $('c1flavor').innerHTML = fv.text;
+  $('c1difffill').style.width = W.diff + "%";
+  const label = W.diff>=72 ? "brutal" : W.diff>=52 ? "hard" : W.diff>=34 ? "fair" : "gentle";
+  $('c1diffpct').textContent = W.diff + " · " + label;
+
+  // PRNG tape
+  const tape = $('c1tape');
+  let t = "", showN = Math.min(W.tape.length, 44);
+  for(let i=0;i<showN;i++){
+    const c = W.tape[i], h = W.hot.has(i);
+    t += '<span class="cell'+(h?' hot':'')+'" title="'+c.tag+'"><span class="ix">'+i+'</span>'+c.v.toFixed(4)+'</span>';
+  }
+  if(W.tape.length>showN) t += '<span class="cell" style="opacity:.5">…+'+(W.tape.length-showN)+'</span>';
+  tape.innerHTML = t;
+}
+function p1Status(){
+  const W = P1.world, fv = flavorOf(W);
+  $('c1status').innerHTML = "seed "+shareCode(W.seed)+" → forward depot <b style='color:var(--rose)'>"+fv.depotN+"</b> falls at <b style='color:var(--rose)'>t"+fv.depotTick+"</b>; the same code anywhere regenerates this exact war.";
+}
+
+/* ============================================================
+   PANEL 2 — PROVE IDENTICAL : generate twice, demand match
+   ============================================================ */
+function p2Run(corrupt){
+  const seed = parseSeed($('c2seedbox').value);
+  const nodes = +$('c1nodes').value, sectors = +$('c1sectors').value;
+  const a = genWorld(seed, nodes, sectors);
+  // pass 2: identical unless we inject an unseeded draw mid-gen (the breaker)
+  let b;
+  if(corrupt){
+    // emulate "one rogue rand() in world-gen": perturb pass 2 with a NON-seed input.
+    // Math.random() is unseeded -> pass 2 diverges from pass 1, hash splits.
+    const rogueSeed = (seed ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+    b = genWorld(rogueSeed, nodes, sectors);
+  } else {
+    b = genWorld(seed, nodes, sectors);   // pure: same seed, same args
+  }
+  const match = a.hash === b.hash;
+
+  $('c2h1').textContent = a.hash;
+  $('c2h2').textContent = b.hash;
+  $('c2seed').textContent = seed;
+  $('c2seedbox').value = seed;
+  $('c2calls').textContent = a.calls + (a.calls===b.calls ? "" : " / "+b.calls);
+  $('c2runs').textContent = "2 runs";
+  $('c2depot').textContent = a.depotFall.name + " · t" + a.depotFall.tick;
+
+  const v = $('c2verdict');
+  v.className = "verdict " + (match ? "match":"mismatch");
+  $('c2glyph').textContent = match ? "✓" : "✗";
+  const eq = $('c2eq');
+  eq.className = "hashpill " + (match ? "eq":"ne");
+  eq.innerHTML = "verdict · <b>" + (match ? "IDENTICAL ✓":"DIVERGED ✗") + "</b>";
+
+  if(match){
+    $('c2vtxt').innerHTML = "Seed "+seed+" generated twice → <b class='m'>BYTE-IDENTICAL ✓</b>. Same world hash, "+a.calls+" PRNG draws each pass. <i>This</i> is the replay guarantee — and why a shared code reproduces your exact war.";
+    $('c2status').innerHTML = "Identical. Regenerating seed "+seed+" gives the same war every time — the foundation of replay and shared seeds.";
+  } else {
+    $('c2vtxt').innerHTML = "Seed "+seed+" generated twice → <b class='x'>DIVERGED ✗</b>. One unseeded draw entered world-gen, so the two passes no longer agree. <i>Same seed</i> just stopped meaning the same war.";
+    $('c2status').innerHTML = "Diverged: an unseeded draw broke purity. Shared codes and replay would now be lies — exactly what `determinism-harness` exists to prevent.";
+  }
+}
+
+/* ============================================================
+   PANEL 3 — COMPARE TWO SEEDS
+   ============================================================ */
+function p3Gen(){
+  const nodes = +$('c1nodes').value, sectors = +$('c1sectors').value;
+  const A = genWorld(parseSeed($('c3seedL').value), nodes, sectors);
+  const B = genWorld(parseSeed($('c3seedR').value), nodes, sectors);
+  $('c3seedL').value = A.seed; $('c3seedR').value = B.seed;
+  $('c3codeL').textContent = shareCode(A.seed);
+  $('c3codeR').textContent = shareCode(B.seed);
+  renderMap($('c3svgL'), A, 700, 230);
+  renderMap($('c3svgR'), B, 700, 230);
+  renderFall($('c3fallL'), A, true);
+  renderFall($('c3fallR'), B, true);
+  $('c3flavL').innerHTML = flavorOf(A).text;
+  $('c3flavR').innerHTML = flavorOf(B).text;
+
+  const dv = worldDivergence(A, B);
+  $('c3difffill').style.width = dv + "%";
+  $('c3diffpct').textContent = dv + "% differ";
+  $('c3delta').textContent = "Δ " + dv + "%";
+  if(dv===0){
+    $('c3status').innerHTML = "Divergence <b style='color:var(--good)'>0%</b> — seeds "+A.seed+" and "+B.seed+" produce byte-identical wars. Same seed = same war, proven by comparison.";
+  } else {
+    $('c3status').innerHTML = "Seeds "+A.seed+" and "+B.seed+" diverge <b style='color:var(--warm)'>"+dv+"%</b> across keyframes — two distinct wars from two points in seed-space.";
+  }
+}
+
+/* ============================================================
+   PANEL 4 — DAILY SEED : the social hook
+   Derive a seed from a date (UTC y/m/d) so it's the SAME for everyone,
+   everywhere, that day. Offset shifts to tomorrow's war, etc.
+   ============================================================ */
+let P4_offset = 0;
+function dateSeed(offsetDays){
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  const y = d.getUTCFullYear(), m = d.getUTCMonth()+1, day = d.getUTCDate();
+  // fold y/m/d into the 32-bit seed space with the same FNV-1a we hash worlds with
+  const hh = Hasher();
+  hh.push(y).push(m).push(day).push(0x5A11);   // a fixed "daily" salt
+  return { seed: (parseInt(hh.hex(),16) >>> 0), y, m, day };
+}
+function p4Show(offset){
+  P4_offset = offset;
+  const ds = dateSeed(offset);
+  const nodes = +$('c1nodes').value, sectors = +$('c1sectors').value;
+  const W = genWorld(ds.seed, nodes, sectors);
+  const dateStr = ds.y + "-" + String(ds.m).padStart(2,'0') + "-" + String(ds.day).padStart(2,'0');
+  const label = offset===0 ? "TODAY" : offset===1 ? "+1 DAY" : (offset>0?"+"+offset+" DAYS":offset+" DAYS");
+
+  $('c4code').textContent = shareCode(W.seed);
+  $('c4share').textContent = shareCode(W.seed);
+  $('c4date').textContent = label;
+  $('c4datesub').textContent = dateStr + " · UTC";
+  $('c4offlbl').textContent = "offset · " + (offset===0?"today":(offset>0?"+"+offset+"d":offset+"d"));
+  $('c4tag').textContent = "daily · " + dateStr;
+
+  renderMap($('c4svg'), W, 700, 250);
+  renderFall($('c4fall'), W, false);
+  $('c4flavor').innerHTML = flavorOf(W).text;
+
+  // par survival: seed-derived target tick, framed as "beat this"
+  const par = W.fall[W.fall.length-1].tick + 4 + (W.diff>60? 0 : 3);
+  $('c4par').textContent = "t" + par;
+  $('c4depot').textContent = W.depotFall.name;
+  $('c4depotsub').textContent = "falls at t" + W.depotFall.tick;
+
+  $('c4status').innerHTML = "Daily war <b style='color:var(--accent)'>"+shareCode(W.seed)+"</b> ("+dateStr+"): everyone fights this exact map today. Survive past <b style='color:var(--good)'>t"+par+"</b> to beat par — post your time.";
+}
+
+/* ============================================================
+   COPY helper (no clipboard permission required; shows affordance)
+   ============================================================ */
+function copyCode(code, msgEl){
+  const done = ()=>{ msgEl.textContent="copied ✓"; setTimeout(()=>{ msgEl.textContent=""; }, 1500); };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done, done); }
+    else { done(); }
+  }catch(e){ done(); }
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+function randSeed(){ return (Math.floor(Math.random()*0xffffffff)) >>> 0; }
+
+function wire(){
+  // shared node/sector sliders feed every panel; regenerate all on change
+  function regenAll(){
+    p1Gen(P1.seed); p1Status();
+    p3Gen();
+    p4Show(P4_offset);
+  }
+  $('c1nodes').addEventListener('input', e=>{ $('vC1Nodes').textContent=e.target.value; regenAll(); });
+  $('c1sectors').addEventListener('input', e=>{ $('vC1Sectors').textContent=e.target.value; regenAll(); });
+
+  // PANEL 1
+  $('c1gen').addEventListener('click', ()=>{ p1Gen(parseSeed($('c1seed').value)); p1Status(); });
+  $('c1seed').addEventListener('change', ()=>{ p1Gen(parseSeed($('c1seed').value)); p1Status(); });
+  $('c1rand').addEventListener('click', ()=>{ const sd=randSeed(); $('c1seed').value=sd; p1Gen(sd); p1Status(); });
+  $('c1copy').addEventListener('click', ()=> copyCode(shareCode(P1.seed), $('c1copymsg')));
+  $('c1load').addEventListener('click', ()=>{
+    const raw = $('c1paste').value.trim();
+    if(!raw){ $('c1status').innerHTML="Paste a code like <b>MSL-7F3A9C</b> then press load."; return; }
+    const sd = parseSeed(raw);
+    $('c1seed').value = sd; p1Gen(sd);
+    $('c1status').innerHTML = "Loaded <b style='color:var(--accent)'>"+shareCode(sd)+"</b> from pasted code → that exact war regenerated. (Same code, same map, anywhere.)";
+    $('c1paste').value = "";
+  });
+  $('c1paste').addEventListener('keydown', e=>{ if(e.key==='Enter') $('c1load').click(); });
+
+  // seed chips
+  const CHIPS = [
+    {lbl:"1234", v:1234}, {lbl:"7F3A9C", v:"MSL-7F3A9C"}, {lbl:"42", v:42},
+    {lbl:"0xDECAF", v:"0xDECAF"}, {lbl:"99999", v:99999}
+  ];
+  const chipHost = $('c1chips');
+  CHIPS.forEach(c=>{
+    const b = document.createElement('button');
+    b.className='seedchip'; b.textContent=c.lbl;
+    b.addEventListener('click', ()=>{ const sd=parseSeed(String(c.v)); $('c1seed').value=sd; p1Gen(sd); p1Status(); });
+    chipHost.appendChild(b);
+  });
+
+  // PANEL 2
+  $('c2run').addEventListener('click', ()=> p2Run(false));
+  $('c2corrupt').addEventListener('click', ()=> p2Run(true));
+  $('c2seedbox').addEventListener('change', ()=> p2Run(false));
+
+  // PANEL 3
+  $('c3gen').addEventListener('click', p3Gen);
+  $('c3seedL').addEventListener('change', p3Gen);
+  $('c3seedR').addEventListener('change', p3Gen);
+  $('c3randL').addEventListener('click', ()=>{ $('c3seedL').value=randSeed(); p3Gen(); });
+  $('c3randR').addEventListener('click', ()=>{ $('c3seedR').value=randSeed(); p3Gen(); });
+  $('c3swap').addEventListener('click', ()=>{ const a=$('c3seedL').value; $('c3seedL').value=$('c3seedR').value; $('c3seedR').value=a; p3Gen(); });
+  $('c3twins').addEventListener('click', ()=>{ $('c3seedR').value=$('c3seedL').value; p3Gen(); });
+
+  // PANEL 4
+  $('c4today').addEventListener('click', ()=> p4Show(0));
+  $('c4next').addEventListener('click', ()=> p4Show(P4_offset+1));
+  $('c4send').addEventListener('click', ()=>{
+    const ds = dateSeed(P4_offset);
+    $('c1seed').value = ds.seed; p1Gen(ds.seed);
+    $('c1status').innerHTML = "Daily war <b style='color:var(--accent)'>"+shareCode(ds.seed)+"</b> loaded into panel 1 — generate, replay, or share it like any other seed.";
+    document.getElementById('sim1').scrollIntoView({behavior:'smooth', block:'center'});
+  });
+}
+
+/* ---- boot: render an initial deterministic world for every panel ---- */
+function boot(){
+  wire();
+  p1Gen(parseSeed($('c1seed').value)); p1Status();
+  p2Run(false);   // show a green IDENTICAL verdict on load — the page proves itself
+  p3Gen();
+  p4Show(0);      // today's daily war
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

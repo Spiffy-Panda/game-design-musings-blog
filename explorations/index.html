@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MSL · Technical Explorables</title>
+<title>Explorations — Minimalist Space Logistics</title>
+<meta name="description" content="Sixteen interactive 'explorables' — one technical aspect of Minimalist Space Logistics each, built to be poked, not just read.">
 <style>
 :root{
   --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
@@ -19,115 +20,133 @@ body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font
   background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
 ::selection{background:var(--accent);color:var(--ink-950)}
 a{color:inherit}
-.wrap{max-width:60rem;margin:0 auto;padding:3.5rem 1.5rem 6rem}
+.topbar{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:var(--ink-900)}
+.topbar .inner{max-width:60rem;margin:0 auto;padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;font-size:.9rem}
+.topbar a{color:var(--fog-300);text-decoration:none;font-weight:500;transition:color .15s}
+.topbar a:hover{color:var(--accent)}
+.topbar .right{color:var(--fog-500)}
+.wrap{max-width:60rem;margin:0 auto;padding:3rem 1.5rem 6rem}
 .kicker{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
-h1{font-size:2.6rem;line-height:1.05;letter-spacing:-.02em;margin:.5rem 0 0}
-.lede{font-size:1.15rem;font-style:italic;color:var(--fog-300);max-width:46rem;margin:1.1rem 0 0}
-.note{margin-top:1.4rem;font-size:.9rem;color:var(--fog-400);border-left:2px solid var(--accent);background:var(--accent-soft);padding:.7rem 1rem;border-radius:0 .4rem .4rem 0}
-.note code{font-family:var(--font-mono);font-size:.85em;color:var(--fog-100)}
-.bar{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1.4rem;font-family:var(--font-mono);font-size:.74rem;color:var(--fog-500)}
-.bar b{color:var(--fog-100)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem;margin-top:1.4rem}
-.card{display:flex;flex-direction:column;gap:.5rem;border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 60%,transparent);border-radius:.8rem;padding:1.1rem 1.1rem 1rem;text-decoration:none;transition:border-color .15s,transform .15s}
-.card.ready{cursor:pointer}
-.card.ready:hover{border-color:color-mix(in oklab,var(--accent) 60%,var(--line));transform:translateY(-2px)}
-.card.pending{opacity:.62}
+h1{font-size:2.7rem;line-height:1.05;letter-spacing:-.02em;margin:.5rem 0 0}
+.lede{font-size:1.18rem;font-style:italic;color:var(--fog-300);max-width:48rem;margin:1.1rem 0 0}
+.intro{max-width:48rem;color:var(--fog-300);margin:1.5rem 0 0}
+.intro a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--accent) 40%,transparent)}
+.spark{margin-top:1.6rem;border-left:2px solid var(--accent);background:var(--accent-soft);padding:.7rem 1.1rem;border-radius:0 .4rem .4rem 0;color:var(--fog-100)}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.8rem;font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend i{width:.6rem;height:.6rem;border-radius:2px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem;margin-top:1.2rem}
+.card{display:flex;flex-direction:column;gap:.5rem;border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 60%,transparent);border-radius:.8rem;padding:1.1rem 1.1rem 1.05rem;text-decoration:none;transition:border-color .15s,transform .15s}
+.card:hover{border-color:color-mix(in oklab,var(--accent) 60%,var(--line));transform:translateY(-2px)}
 .row{display:flex;align-items:center;gap:.5rem}
 .chip{font-family:var(--font-mono);font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:.3rem;background:var(--accent-soft);color:var(--accent)}
 .title{font-size:1.06rem;font-weight:600;color:var(--fog-100)}
 .desc{font-size:.86rem;color:var(--fog-400);margin:0}
-.status{margin-top:auto;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:.4rem;padding-top:.5rem}
-.dot{width:.5rem;height:.5rem;border-radius:50%}
-.s-ready .dot{background:#34d399} .s-ready{color:#34d399}
-.s-building .dot{background:#f59e0b;animation:pulse 1.4s ease-in-out infinite} .s-building{color:#f59e0b}
-.s-queued .dot{background:var(--fog-500)} .s-queued{color:var(--fog-500)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.tier{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);margin:2.4rem 0 -.6rem}
-footer{margin-top:3rem;color:var(--fog-500);font-size:.82rem}
+.go{margin-top:auto;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);padding-top:.4rem;opacity:.8}
+.tier{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-400);margin:2.6rem 0 -.4rem}
+.tier small{color:var(--fog-500);text-transform:none;letter-spacing:0;font-size:.82rem;font-family:var(--font-sans)}
+footer{margin-top:3.5rem;border-top:1px solid var(--line);padding-top:1.4rem;color:var(--fog-500);font-size:.85rem}
+footer a{color:var(--fog-400);text-decoration:none;border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--accent)}
 </style>
 </head>
 <body>
+<div class="topbar"><div class="inner">
+  <a href="../">← Minimalist Space Logistics</a>
+  <a class="right" href="../approaches/">Approaches hub →</a>
+</div></div>
+
 <div class="wrap">
-  <div class="kicker">Minimalist Space Logistics · staging gallery</div>
+  <div class="kicker">Minimalist Space Logistics · explorations</div>
   <h1>Technical Explorables</h1>
-  <p class="lede">One settled fiction, handed to a fleet of explorers — each told to take a single
-  technical aspect of the game and make it something you can <em>poke</em>, not just read.</p>
-  <div class="note">Each card opens a self-contained interactive page (no server, no build — just
-  <code>file://</code>). This gallery is a staging area; it isn't deployed. Live build state lives in
-  <code>RUN-LOG.md</code>.</div>
-  <div class="bar" id="bar"></div>
+  <p class="lede">Sixteen interactive cuts through the one question the approaches left open —
+  <em>what is the computer actually doing while you play?</em></p>
+
+  <p class="intro">The <a href="../approaches/">approaches</a> settled what the game <em>is</em> and forked on
+  what it's <em>made of</em>. These explorables take that fork apart one piece at a time: each is a single
+  technical aspect — a market that heals, a war you can memorize, a jumpgate web that hinges on one vertex,
+  money that can run dry — built as a small live model you can <strong>poke</strong>, not just read. They were
+  seeded by two design additions (a learnable broad-front enemy schedule; a jumpgate lane web) and an honest
+  "does a utility AI even fit here?" audit, then fanned across the core simulations.</p>
+
+  <div class="spark">Every page is one self-contained file with a real, computed model behind it — drag a
+  slider, cut a lane, drain a till, and the numbers actually move. Determinism throughout: same seed, same run.</div>
+
+  <div class="legend">
+    <span><i style="background:#f59e0b"></i>amber · the economy</span>
+    <span><i style="background:#fb7185"></i>rose · the enemy / front</span>
+    <span><i style="background:#22d3ee"></i>cyan · topology &amp; rendering</span>
+    <span><i style="background:#a78bfa"></i>violet · cross-cutting</span>
+    <span><i style="background:#34d399"></i>emerald · technique audit</span>
+  </div>
 
   <div id="tiers"></div>
 
-  <footer>Generated overnight, 2026-06-25 · accents echo the lineages: amber economy · rose enemy/front
-  · cyan topology/rendering · violet cross-cutting · emerald technique audit.</footer>
+  <footer>
+    Sixteen explorations of <a href="../">Minimalist Space Logistics</a> · sibling to the
+    <a href="../approaches/">approaches gallery</a>. Each page is a self-contained interactive file — open one,
+    and poke it.
+  </footer>
 </div>
 
 <script>
-// Single source of truth — edit a status to refresh a card. status: ready | building | queued
 const PAGES = [
-  {tier:"Tier A — favorite + the two additions + the audit", items:[
-    {slug:"solvency-cell", chip:"M1", title:"The Solvency Cell", accent:"#f59e0b", status:"ready",
+  {tier:"Your priorities", note:"the favorite, both additions, and the audit", items:[
+    {slug:"solvency-cell", chip:"M1", title:"The Solvency Cell", accent:"#f59e0b",
      desc:"Two coupled ledgers, the bid = min(price·qty, till) clamp, and books that always balance."},
-    {slug:"enemy-attack-schedule", chip:"M2", title:"Reading the Offensive", accent:"#fb7185", status:"ready",
+    {slug:"enemy-attack-schedule", chip:"M2", title:"Reading the Offensive", accent:"#fb7185",
      desc:"A broad-front opening book whose order you memorize — and your coverage forks the timeline."},
-    {slug:"utility-ai-fit", chip:"audit", title:"Does a Utility AI Fit?", accent:"#34d399", status:"ready",
+    {slug:"utility-ai-fit", chip:"audit", title:"Does a Utility AI Fit?", accent:"#34d399",
      desc:"Tune response curves for the faction's contract board; an honest yes-here / no-there verdict."},
-    {slug:"jumpgate-topology", chip:"M2·map", title:"The Jumpgate Web", accent:"#22d3ee", status:"ready",
+    {slug:"jumpgate-topology", chip:"M2·map", title:"The Jumpgate Web", accent:"#22d3ee",
      desc:"Lane-graph archetypes and the one-vertex severance that explodes a route — in your hands."},
   ]},
-  {tier:"Tier B — across the core sims", items:[
-    {slug:"market-clearing-cell", chip:"HAND", title:"The Clearing Cell", accent:"#f59e0b", status:"ready",
+  {tier:"The core simulations", note:"one settled fiction, a different engine each", items:[
+    {slug:"market-clearing-cell", chip:"HAND", title:"The Clearing Cell", accent:"#f59e0b",
      desc:"Damped tâtonnement on one market: your trade moves the price, the price heals."},
-    {slug:"determinism-harness", chip:"APR.5", title:"A Run Is a Seed", accent:"#a78bfa", status:"ready",
+    {slug:"determinism-harness", chip:"APR.5", title:"A Run Is a Seed", accent:"#a78bfa",
      desc:"Float vs i64 drift, fixed iteration order, and a seed expanding into a whole world."},
-    {slug:"glass-cockpit-instruments", chip:"M3", title:"The Glass Cockpit", accent:"#22d3ee", status:"ready",
+    {slug:"glass-cockpit-instruments", chip:"M3", title:"The Glass Cockpit", accent:"#22d3ee",
      desc:"One screen reads a war too big to walk across: sprites dissolve to ribbons to weather."},
-    {slug:"contract-board", chip:"R.4", title:"The Contract Board", accent:"#f59e0b", status:"ready",
+    {slug:"contract-board", chip:"R.4", title:"The Contract Board", accent:"#f59e0b",
      desc:"A budget-constrained greedy board: a quiet board is a war going broke."},
-    {slug:"front-as-fluid", chip:"TIDE", title:"The Tide Line", accent:"#fb7185", status:"ready",
+    {slug:"front-as-fluid", chip:"TIDE", title:"The Tide Line", accent:"#fb7185",
      desc:"Reaction-diffusion pressure on a graph; starved sectors rupture and cut the lanes behind you."},
-    {slug:"prestige-reseeding", chip:"APR.3", title:"Cartographic Prestige", accent:"#a78bfa", status:"ready",
-     desc:"Loss re-seeds the map: new producers bend every downstream price gradient."},
-    {slug:"run-clock-integral", chip:"HAND.2", title:"The Endogenous Doomsday", accent:"#f59e0b", status:"ready",
+    {slug:"prestige-reseeding", chip:"APR.3", title:"Cartographic Prestige", accent:"#a78bfa",
+     desc:"Loss re-seeds the map: new producers bend every downstream gradient until the front holds."},
+    {slug:"run-clock-integral", chip:"HAND.2", title:"The Endogenous Doomsday", accent:"#f59e0b",
      desc:"The clock isn't a timer — it's the integral of the shortage you failed to cover."},
-    {slug:"endgame-pressure", chip:"M2", title:"When the Script Runs Out", accent:"#fb7185", status:"ready",
+    {slug:"endgame-pressure", chip:"M2", title:"When the Script Runs Out", accent:"#fb7185",
      desc:"Memorization carries the scripted opening; only skill carries the pure-pressure close."},
   ]},
-  {tier:"Tier C — deeper cuts", items:[
-    {slug:"twelve-good-supply-chain", chip:"R.6", title:"The Supply Chain Has Depth", accent:"#f59e0b", status:"ready",
+  {tier:"Deeper cuts", note:"the structure underneath", items:[
+    {slug:"twelve-good-supply-chain", chip:"R.6", title:"The Supply Chain Has Depth", accent:"#f59e0b",
      desc:"Trace a front shortage three links upstream — raw → intermediate → finished."},
-    {slug:"liquidity-deflation-spiral", chip:"M1", title:"The Deflation Spiral", accent:"#f59e0b", status:"building",
+    {slug:"liquidity-deflation-spiral", chip:"M1", title:"The Deflation Spiral", accent:"#f59e0b",
      desc:"Push the war economy into a money-death spiral, then watch the guards pull it back."},
-    {slug:"risk-vs-reward-contract", chip:"M2.4", title:"Pricing the Danger", accent:"#fb7185", status:"building",
+    {slug:"risk-vs-reward-contract", chip:"M2.4", title:"Pricing the Danger", accent:"#fb7185",
      desc:"Payout scales with deficit and distance — but the danger the faction won't price is in the geometry."},
-    {slug:"seed-sharing-replay", chip:"APR.5", title:"Share a Lost Run", accent:"#a78bfa", status:"building",
+    {slug:"seed-sharing-replay", chip:"APR.5", title:"Share a Lost Run", accent:"#a78bfa",
      desc:"A seed is a whole war: paste one, replay it byte-for-byte — the roguelite social hook."},
   ]},
 ];
-const LABEL = {ready:"ready", building:"building…", queued:"queued"};
 const root = document.getElementById("tiers");
-let nReady=0,nTotal=0;
 for(const group of PAGES){
-  const h = document.createElement("div"); h.className="tier"; h.textContent=group.tier; root.appendChild(h);
+  const h = document.createElement("div"); h.className="tier";
+  h.innerHTML = group.tier + ' <small>— ' + group.note + '</small>'; root.appendChild(h);
   const grid = document.createElement("div"); grid.className="grid"; root.appendChild(grid);
   for(const p of group.items){
-    nTotal++; if(p.status==="ready") nReady++;
-    const ready = p.status==="ready";
-    const el = document.createElement(ready?"a":"div");
-    el.className = "card "+(ready?"ready":"pending");
+    const el = document.createElement("a");
+    el.className = "card"; el.href = "./"+p.slug+"/";
     el.style.setProperty("--accent", p.accent);
     el.style.setProperty("--accent-soft", "color-mix(in oklab,"+p.accent+" 18%,transparent)");
-    if(ready) el.href = "./"+p.slug+"/";
     el.innerHTML =
       '<div class="row"><span class="chip">'+p.chip+'</span><span class="title">'+p.title+'</span></div>'+
       '<p class="desc">'+p.desc+'</p>'+
-      '<div class="status s-'+p.status+'"><span class="dot"></span>'+LABEL[p.status]+'</div>';
+      '<div class="go">open →</div>';
     grid.appendChild(el);
   }
 }
-document.getElementById("bar").innerHTML =
-  '<span><b>'+nReady+'</b> / '+nTotal+' ready</span><span>open a lit card to explore · pages fill in as the overnight run lands them</span>';
 </script>
 </body>
 </html>
