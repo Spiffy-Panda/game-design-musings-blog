@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Chain Has Depth — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation of MSL's twelve goods (R.6): six general, six military, each spanning raw to intermediate to finished. The front shortage you see is rarely where the problem is — depth means you trace it upstream through a production DAG to the binding bottleneck." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* tier hues */
+  --raw:#60a5fa;        /* blue — raws, dug from the map */
+  --inter:#a78bfa;      /* violet — intermediates, refined */
+  --fin:#f59e0b;        /* amber — finished, what the front wants */
+  --gen:#5eead4;        /* teal — general-goods accent */
+  --mil:#fb7185;        /* rose — military-goods accent */
+  --flow:#f59e0b;       /* live flow on an edge */
+  --starve:#ef4444;     /* a starved / bottlenecked edge or node */
+  --supply:#38bdf8;     /* the batch you, the hauler, drop in */
+  --ok:#34d399;         /* healthy stock */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:70rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:42rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.supplied{color:#a7f3d0;border-color:#2c6b54;background:rgba(52,211,153,.12)}
+.phasebadge.straining{color:#fde68a;border-color:#7a5e1f;background:rgba(245,158,11,.12)}
+.phasebadge.short{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.16)}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:1rem}
+@media (max-width:960px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport bar */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl.toggle.on{color:var(--ink-950);background:var(--mil);border-color:var(--mil);font-weight:700}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:.55rem .9rem;margin-top:.2rem}
+@media (max-width:560px){.sliders{grid-template-columns:1fr}}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.15rem 0 0}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+
+/* graph host */
+.graphhost{width:100%;overflow:hidden;border-radius:9px;background:radial-gradient(120% 90% at 88% 8%,rgba(245,158,11,.05),transparent 55%),var(--ink-950);border:1px solid var(--line);position:relative}
+svg{display:block;max-width:100%;height:auto}
+.graphhost .hint{position:absolute;left:10px;bottom:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--fog-500);pointer-events:none;background:rgba(7,8,12,.6);padding:.1rem .4rem;border-radius:5px}
+
+/* node visuals (SVG-class hooks set in JS) */
+.gnode{cursor:pointer}
+.gnode rect{transition:fill .18s, stroke .18s}
+.gnode text{pointer-events:none;font-family:var(--font-mono)}
+.glabel{fill:var(--fog-100);font-size:8.5px;letter-spacing:.02em}
+.gsub{fill:var(--fog-500);font-size:6.5px;letter-spacing:.04em}
+.gnum{fill:var(--accent);font-size:8px;font-variant-numeric:tabular-nums}
+.tierlab{fill:var(--fog-500);font-family:var(--font-mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase}
+.edge{fill:none;stroke-linecap:round}
+.edgeflow{fill:none;stroke-linecap:round}
+.frontbox{fill:rgba(251,113,133,.06);stroke:var(--mil);stroke-dasharray:3 3}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:.55rem .95rem;margin-top:.6rem;align-items:center}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.03em;color:var(--fog-400)}
+.legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid rgba(255,255,255,.18)}
+.legend .ln{width:16px;height:3px;border-radius:2px;display:inline-block}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums;text-align:right}
+.kv .v.big{color:var(--accent);font-size:1.15rem}
+.kv .v.bad{color:var(--starve)}
+.kv .v.good{color:var(--ok)}
+
+/* throughput meter */
+.meter{height:9px;border-radius:5px;background:var(--ink-700);overflow:hidden;margin:.45rem 0 .1rem}
+.meter i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--mil),var(--fin));transition:width .2s,background .2s}
+
+/* "why" one-liner */
+.why{border:1px solid var(--accent);background:rgba(245,158,11,.08);border-radius:11px;padding:.7rem .8rem;margin-top:.2rem;transition:.2s;min-height:3.4rem}
+.why.idle{border-color:var(--line);background:var(--ink-900)}
+.why .wq{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.79rem;color:var(--fog-100);line-height:1.55;margin-top:.25rem}
+.why .wmsg b{color:var(--accent)} .why .wmsg .s{color:var(--starve)} .why .wmsg .u{color:var(--supply)}
+
+/* trace path readout */
+.trace{font-family:var(--font-mono);font-size:.74rem;line-height:1.6;background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.45rem;min-height:2.2rem;color:var(--fog-400)}
+.trace .step{color:var(--fog-100)} .trace .arr{color:var(--mil);padding:0 .3rem} .trace .cause{color:var(--starve);font-weight:700}
+.trace .ok{color:var(--ok)}
+
+/* per-good stock bars */
+.stocks{display:grid;grid-template-columns:1fr 1fr;gap:.28rem .7rem;margin-top:.2rem}
+@media (max-width:560px){.stocks{grid-template-columns:1fr}}
+.stockrow{display:grid;grid-template-columns:auto 1fr auto;gap:.4rem;align-items:center;font-family:var(--font-mono);font-size:.7rem;cursor:pointer;border-radius:6px;padding:.1rem .2rem}
+.stockrow:hover{background:var(--ink-800)}
+.stockrow .nm{color:var(--fog-300);white-space:nowrap}
+.stockrow .nm .tg{font-size:.58rem;color:var(--fog-500)}
+.stockrow .bar{height:6px;border-radius:4px;background:var(--ink-700);overflow:hidden;min-width:40px}
+.stockrow .bar i{display:block;height:100%;border-radius:4px;background:var(--ok)}
+.stockrow .q{color:var(--fog-100);font-variant-numeric:tabular-nums;min-width:2.2rem;text-align:right}
+.stockrow.flagged{outline:1px solid var(--starve)}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:8.6rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .short{color:var(--starve)} .log .drop{color:var(--supply)} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)} .log .good{color:var(--ok)}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+.eqn{font-family:var(--font-mono);font-size:.9rem;color:var(--fog-100);background:var(--ink-900);border:1px solid var(--line);
+  border-radius:10px;padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;line-height:1.85}
+.eqn .c{color:var(--fog-500)} .eqn .k{color:var(--accent)}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <span class="chip"><b>R.6</b> · six general, six military</span>
+  <div class="kicker">AMBER lineage · the chain has depth</div>
+  <h1>The Chain Has Depth</h1>
+  <p class="lede">Twelve goods, six general and six military, each one rising from raw to intermediate to finished. The front only ever asks for the finished military goods — but those rest on three links of chain you never see on the contract board.</p>
+  <p class="spark">A shortage at the front is almost never where the problem is. Depth means you <span>trace it upstream</span> to the link that's actually choking.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one hauler</strong> and an unwinnable war to keep fed. The surface is deliberately thin: a handful of prices, a few contracts, a demand light at the front that blinks from green to red. That thinness is the pitch — you read a market, not a spreadsheet. But under the surface sits a <strong>production graph</strong>, and <span class="hand">R.6</span> is its spine: <strong>twelve goods</strong>, a clean <strong>six general / six military</strong> split, and every good lives at one of three depths — <strong>raw → intermediate → finished</strong>.</p>
+
+<p>That depth is the whole point of this page. The front is a sink: each tick it draws <strong>finished military</strong> goods and nothing else. A finished good is built from intermediates; intermediates are refined from raws; raws are mined at producers scattered across the map. So when the front light goes red on <strong>munitions</strong>, the cause might be the munitions fab — or the <em>fuel</em> feeding it, or the <em>volatiles</em> feeding the fuel, three links back. <strong>Logistics stops being "haul A to B" and becomes "find the one link that's starving the whole branch."</strong></p>
+
+<h2><span class="eye">the model</span>A production DAG: twelve goods, three tiers, one flow</h2>
+
+<p>Lay the twelve goods out as a directed acyclic graph, left to right by depth. <strong>Raws</strong> (blue) emit a fixed amount each tick — they're the mines. <strong>Intermediates</strong> (violet) and <strong>finished</strong> goods (amber) are <em>converters</em>: each pulls its inputs from upstream at a fixed recipe ratio and pushes output downstream. The catch is the bound on how much it can push:</p>
+
+<div class="eqn">
+<span class="c">// one converter node i, each tick, in fixed order, integer quantities</span><br>
+want   = capacity<sub>i</sub><span class="c"> &nbsp; // what this stage could run if fully fed</span><br>
+canMake = <span class="k">min</span>( capacity<sub>i</sub>, &nbsp;⌊ stock(in) / ratio(in) ⌋ &nbsp;<span class="k">for each</span> input in )<br>
+<span class="c">// → a stage runs at the rate of its LIMITING input. one short input throttles all of it.</span><br>
+<span class="k">for each</span> input: stock(input) <span class="k">−=</span> canMake · ratio(input)<br>
+stock(i) <span class="k">+=</span> canMake<span class="c"> &nbsp; // output accrues; downstream pulls it next</span><br>
+<span class="c">// finally, the front draws finished military:</span> &nbsp; drawn = <span class="k">min</span>( demand, stock(finmil) )
+</div>
+
+<p>The <strong>limiting input</strong> rule is the engine. A converter is only as fast as its <em>worst-fed</em> input — so a single starved upstream good throttles everything below it, and the throttle <strong>propagates</strong>: the fab makes less, so the front gets less, so the light goes red. Cut a raw mine's capacity and you can watch a deficit travel three nodes to the right over a few ticks. Everything is integer and runs in a <strong>fixed node order</strong> <span class="hand">APR.5</span> — given a seed, the run is bit-for-bit identical every time.</p>
+
+<div class="callout">
+  <div class="lab">how to drive the instrument</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">Press <strong>Play</strong>. Edges thicken with live flow; a starved edge thins and reddens, and on every converter the <em>limiting input</em> is ringed in red. <strong>Click any node to bottleneck it</strong> (slam its capacity low) and watch the shortage ripple downstream to the front. Then click a <strong>finished-military good</strong> in the stock list, or its node, and hit <strong>Trace</strong>: the page walks the upstream path from the front shortage to the <em>actual</em> bottleneck and names it. Drop a <strong>relief batch</strong> of an intermediate — you're the hauler — to unstick a branch by hand. Tier sliders set capacity wholesale; the demand slider leans on the front.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">PRODUCTION DAG · <b>economy "AMBER"</b> · 12 goods · raw → inter → finished</div>
+    <div class="phasebadge supplied" id="phaseBadge">FRONT SUPPLIED</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">&#9654; Play</button>
+        <button class="ctl" id="btnStep">&#9197; Step</button>
+        <button class="ctl" id="btnReset">&#10227; Reset</button>
+        <button class="ctl toggle" id="btnBneck">&#9888; Click-to-bottleneck: ON</button>
+        <button class="ctl" id="btnTrace">&#128269; Trace the shortage</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="AMBER-0612" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:.85rem">
+        <div class="slider">
+          <span class="lab">raw mine output</span><span class="val" id="vRaw">100%</span>
+          <input type="range" id="sRaw" min="20" max="140" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">intermediate capacity</span><span class="val" id="vInter">100%</span>
+          <input type="range" id="sInter" min="20" max="140" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">finished-fab capacity</span><span class="val" id="vFin">100%</span>
+          <input type="range" id="sFin" min="20" max="140" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">front demand intensity</span><span class="val" id="vDem">100%</span>
+          <input type="range" id="sDem" min="40" max="200" value="100" />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the graph -->
+      <div class="panel" style="padding:.5rem">
+        <div class="graphhost">
+          <svg id="dag" viewBox="0 0 640 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Production DAG of twelve goods across three tiers feeding the front"></svg>
+          <div class="hint" id="graphHint">click a node to bottleneck · click a finished-military node to trace</div>
+        </div>
+        <div class="legend">
+          <span class="it"><span class="sw" style="background:var(--raw)"></span>raw</span>
+          <span class="it"><span class="sw" style="background:var(--inter)"></span>intermediate</span>
+          <span class="it"><span class="sw" style="background:var(--fin)"></span>finished</span>
+          <span class="it"><span class="ln" style="background:var(--flow)"></span>flowing</span>
+          <span class="it"><span class="ln" style="background:var(--starve)"></span>starved / limiting</span>
+          <span class="it"><span class="sw" style="background:var(--supply)"></span>relief drop</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: readouts -->
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+
+        <div class="panel">
+          <h4>FINISHED-MILITARY THROUGHPUT <span class="sub" id="thruSub">to the front</span></h4>
+          <div class="kv">
+            <span class="k">delivered / demanded</span><span class="v big"><span id="thruNow">0</span><span style="color:var(--fog-500);font-size:.8rem"> / <span id="thruDem">0</span></span></span>
+          </div>
+          <div class="meter"><i id="thruBar" style="width:100%"></i></div>
+          <div class="kv" style="margin-top:.35rem">
+            <span class="k">fill rate (avg)</span><span class="v" id="fillAvg">100%</span>
+            <span class="k">binding bottleneck</span><span class="v bad" id="binding">none</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>WHY <span class="sub">the one-line read</span></h4>
+          <div class="why idle" id="why">
+            <div class="wq">// reading the chain</div>
+            <div class="wmsg" id="whyMsg">Press Play. The front is fully supplied while every stage runs at capacity.</div>
+          </div>
+          <div class="trace" id="trace">Trace idle — click a finished-military good, then <b style="color:var(--fog-300)">Trace the shortage</b>.</div>
+        </div>
+
+        <div class="panel">
+          <h4>PER-GOOD STOCK <span class="sub">click a good to select · drop relieves it</span></h4>
+          <div class="stocks" id="stocks"></div>
+          <div style="margin-top:.55rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+            <button class="ctl" id="btnDrop" style="font-size:.68rem">&#128230; Drop relief batch</button>
+            <span style="font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500)" id="dropSel">selected: FUEL (int · mil)</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>EVENT LOG <span class="sub">fixed-tick, deterministic</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just did</span>The shortage is a puzzle with an upstream cause</h2>
+
+<p>Bottleneck the <strong>volatiles</strong> mine and watch the front light go red on <strong>missiles</strong>. The naive read is "make more missiles" — but the missile fab is fine; it's <em>starved</em>. Trace it, and the page walks the path: <span class="hand">missiles ← propellant-starved (the limiting input) ← volatiles mine at capacity</span>. The fix isn't at the front. It's three links back, and the hauler's job is to <strong>carry the relief to the choke</strong>, not to the symptom. That's the difference depth makes: a flat economy would let you fix the shortage where you see it; a deep one turns every shortage into a small diagnosis.</p>
+
+<p>This is also why the <strong>minimalist surface holds up</strong>. The player sees a price and a red light — a thin instrument. But because the model underneath has real depth, that thin reading is <em>load-bearing</em>: the red light is a true signal that some branch of a twelve-node graph is choking, and the interesting play is reasoning back to where. The surface stays small; the game stays deep. You don't need twelve gauges if one red light reliably points you at a chain worth untangling.</p>
+
+<h3>Notice the limiting-input rule do the work</h3>
+<p>Each converter runs at <code>min(capacity, limiting input)</code>, so over-supplying one input does nothing if a <em>different</em> input is the bottleneck — pour all the alloy you like into the armor fab and plate output won't move if its <em>composite</em> feed is the short one. That's the rule that makes tracing meaningful: there is always exactly one binding constraint per starved branch, and finding it is the whole skill. Drop a relief batch on the <em>right</em> intermediate and the branch unsticks; drop it on the wrong one and you've wasted a haul.</p>
+
+<h2><span class="eye">risks, named</span>Where this gets hard to keep honest</h2>
+
+<div class="risk">
+  <div class="rt">Risk — <b>legibility</b>. Twelve goods and a DAG is a lot to put on screen at once.</div>
+  <div class="mit"><b>Mitigation:</b> surface only the <b>binding constraint</b>, never the whole graph's numbers. The instrument keeps the layout fixed and readable, dims everything that isn't flowing, rings only the one limiting input per converter, and gives the player a single red light plus a <b>Trace</b> that names the cause. The discipline is the minimalist readout: the model can be deep as long as what you <em>show</em> is one signal and one path. If the player ever has to read all twelve stocks to act, the surface has failed.</div>
+</div>
+
+<div class="risk">
+  <div class="rt">Risk — <b>determinism</b>. Flow through a graph invites float drift and order-dependence.</div>
+  <div class="mit"><b>Mitigation:</b> <b>fixed node order</b> and <b>integer quantities</b> <span class="hand">APR.5</span>. Raws emit, then converters resolve in a fixed topological order, then the front draws — same sequence every tick. Every quantity is an integer and the limiting-input math is floor-division, so there's no float to smear two runs apart. A run is a seed; bottleneck the same mine on the same tick of the same seed and the cascade is identical. (The PRNG here only jitters mine yields and demand within fixed bounds — it never changes the order of resolution.)</div>
+</div>
+
+<p class="note" style="margin-top:1.4rem">The aha, stated plainly: keeping the war supplied is not running a single parcel from A to B — it's keeping a multi-stage chain fed. A front shortage is the <em>last</em> place to look for its own cause; depth means the answer is upstream, and the hauler who learns to trace beats the hauler who keeps re-running the same delivery into a fab that was never the problem.</p>
+
+<div class="hr"></div>
+<footer>
+  Minimalist Space Logistics · explorable explanation · <span style="color:var(--fog-400)">“The Chain Has Depth”</span> — slug <code style="font-size:.92em">twelve-good-supply-chain</code> · amber economic lineage · authored by Panda. Self-contained; runs offline.
+</footer>
+</main>
+</div>
+
+<script>
+"use strict";
+(function(){
+  /* ---------------- deterministic PRNG: mulberry32 ---------------- */
+  function mulberry32(a){
+    return function(){
+      a|=0; a=(a+0x6D2B79F5)|0;
+      let t=Math.imul(a^(a>>>15),1|a);
+      t=(t+Math.imul(t^(t>>>7),61|t))^t;
+      return ((t^(t>>>14))>>>0)/4294967296;
+    };
+  }
+  function hashSeed(str){
+    let h=2166136261>>>0;
+    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+    return h>>>0;
+  }
+
+  /* ---------------- the twelve goods (R.6): 6 general + 6 military, raw->inter->finished ----------------
+     id, label, tier(raw|inter|fin), cls(gen|mil), inputs:[{from, ratio}], col, row, baseCap
+     Layout: 4 columns (raw, inter, fin, front). Rows: general band on top, military band below. */
+  const RAW=0, INTER=1, FIN=2;
+  const NODES = [
+    // -------- GENERAL band (top) --------
+    {id:"water",   lab:"WATER",       tier:RAW,   cls:"gen", col:0, row:0, baseCap:14, inputs:[]},
+    {id:"hydro",   lab:"HYDROCARB",   tier:RAW,   cls:"gen", col:0, row:1, baseCap:16, inputs:[]},
+    {id:"rations", lab:"RATIONS",     tier:INTER, cls:"gen", col:1, row:0, baseCap:9,  inputs:[{from:"water",ratio:1}]},
+    {id:"polymer", lab:"POLYMERS",    tier:INTER, cls:"gen", col:1, row:1, baseCap:13, inputs:[{from:"hydro",ratio:1}]},
+    {id:"medkit",  lab:"MEDKIT",      tier:FIN,   cls:"gen", col:2, row:0, baseCap:8,  inputs:[{from:"rations",ratio:1},{from:"polymer",ratio:1}]},
+    {id:"fieldkit",lab:"FIELD-KIT",   tier:FIN,   cls:"gen", col:2, row:1, baseCap:8,  inputs:[{from:"polymer",ratio:1}]},
+    // -------- MILITARY band (bottom) --------
+    {id:"ore",     lab:"ORE",         tier:RAW,   cls:"mil", col:0, row:3, baseCap:20, inputs:[]},
+    {id:"volat",   lab:"VOLATILES",   tier:RAW,   cls:"mil", col:0, row:4, baseCap:20, inputs:[]},
+    {id:"rare",    lab:"RARE-EARTH",  tier:RAW,   cls:"mil", col:0, row:5, baseCap:16, inputs:[]},
+    {id:"alloy",   lab:"ALLOY",       tier:INTER, cls:"mil", col:1, row:3, baseCap:16, inputs:[{from:"ore",ratio:1}]},
+    {id:"fuel",    lab:"FUEL",        tier:INTER, cls:"mil", col:1, row:4, baseCap:16, inputs:[{from:"volat",ratio:1}]},
+    {id:"elec",    lab:"ELECTRONICS", tier:INTER, cls:"mil", col:1, row:5, baseCap:14, inputs:[{from:"rare",ratio:1}]},
+    // finished military (3): the front pulls ONLY these
+    {id:"muni",    lab:"MUNITIONS",   tier:FIN,   cls:"mil", col:2, row:3, baseCap:9,  inputs:[{from:"alloy",ratio:1},{from:"fuel",ratio:1}]},
+    {id:"armor",   lab:"ARMOR-PLATE", tier:FIN,   cls:"mil", col:2, row:4, baseCap:8,  inputs:[{from:"alloy",ratio:1},{from:"elec",ratio:1}]},
+    {id:"missile", lab:"MISSILES",    tier:FIN,   cls:"mil", col:2, row:5, baseCap:8,  inputs:[{from:"fuel",ratio:1},{from:"elec",ratio:1}]},
+  ];
+  // note: 12 GOODS by R.6 are the canonical dozen; here we model them plus two extra military raws
+  //       (rare-earth, volatiles split) so the DAG branches read clearly. The 12 "named" goods are
+  //       the 6 general + 6 military across tiers; the front sink consumes the 3 finished military.
+  const FRONT_GOODS=["muni","armor","missile"];
+  const FRONT_DEMAND_BASE={muni:7, armor:6, missile:6};
+
+  // index + adjacency
+  const IDX={}; NODES.forEach((n,i)=>IDX[n.id]=i);
+  // downstream map: who consumes me
+  const CONSUMERS={}; NODES.forEach(n=>CONSUMERS[n.id]=[]);
+  NODES.forEach(n=>n.inputs.forEach(inp=>CONSUMERS[inp.from].push(n.id)));
+
+  // resolution order: raws first (emit), then inter, then fin — fixed topological order
+  const ORDER = NODES.map((n,i)=>i).sort((a,b)=> NODES[a].tier-NODES[b].tier || a-b);
+
+  /* ---------------- geometry ---------------- */
+  const COLX=[70,250,430]; const FRONTX=580;
+  function rowY(r){ return 46 + r*70; }
+  const NW=104, NH=46;
+  function nodeXY(n){ return {x:COLX[n.col], y:rowY(n.row)}; }
+
+  /* ---------------- live state ---------------- */
+  const S = {
+    stock:new Float64Array(NODES.length),   // integer-valued, stored as number
+    made:new Float64Array(NODES.length),    // produced this tick
+    limIn:new Int8Array(NODES.length),      // index into node.inputs that bound it, -1 none
+    starved:new Uint8Array(NODES.length),   // ran below capacity due to inputs
+    bottlenecked:new Uint8Array(NODES.length), // user-clamped
+    flowOnEdge:{},                          // "from>to" -> qty this tick
+    tick:0, rng:null, seedStr:"",
+    running:false,
+    capRaw:1, capInter:1, capFin:1, demMul:1,
+    bneckMode:true,
+    selected:"fuel",
+    tracePath:null,                          // array of node ids highlighted
+    delivered:{}, demand:{},
+    fillHist:[],
+    relief:{},                               // node id -> ticks remaining of supply glow
+  };
+
+  /* ---------------- DOM ---------------- */
+  const $=id=>document.getElementById(id);
+  const svg=$("dag");
+  const SVGNS="http://www.w3.org/2000/svg";
+  function el(tag,attrs){ const e=document.createElementNS(SVGNS,tag); if(attrs) for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+  // built lazily
+  let edgeEls={}, edgeFlowEls={}, nodeEls={}, nodeRect={}, nodeNum={}, nodeRing={}, frontPull={};
+
+  /* ---------------- build SVG ---------------- */
+  function buildSVG(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    edgeEls={}; edgeFlowEls={}; nodeEls={}; nodeRect={}; nodeNum={}; nodeRing={}; frontPull={};
+
+    // tier column labels
+    const labs=[["RAW · mined",COLX[0]],["INTERMEDIATE · refined",COLX[1]],["FINISHED · fabbed",COLX[2]],["FRONT",FRONTX]];
+    labs.forEach(([t,x])=>{
+      const tl=el("text",{x:x,y:18,"text-anchor":"middle","class":"tierlab"}); tl.textContent=t; svg.appendChild(tl);
+    });
+    // band separator
+    const sep=el("line",{x1:30,y1:rowY(2)+2,x2:610,y2:rowY(2)+2,stroke:"var(--line)","stroke-dasharray":"2 4"}); svg.appendChild(sep);
+    const gb=el("text",{x:34,y:rowY(0)-22,"class":"tierlab",fill:"var(--gen)"}); gb.textContent="GENERAL"; svg.appendChild(gb);
+    const mb=el("text",{x:34,y:rowY(3)-22,"class":"tierlab",fill:"var(--mil)"}); mb.textContent="MILITARY"; svg.appendChild(mb);
+
+    // front box
+    const fb=el("rect",{x:FRONTX-26,y:rowY(3)-24,width:52,height:rowY(5)-rowY(3)+48,rx:9,"class":"frontbox"}); svg.appendChild(fb);
+    const ft=el("text",{x:FRONTX,y:rowY(4)+2,"text-anchor":"middle","class":"glabel",fill:"var(--mil)","font-size":"9"}); ft.textContent="THE"; svg.appendChild(ft);
+    const ft2=el("text",{x:FRONTX,y:rowY(4)+13,"text-anchor":"middle","class":"glabel",fill:"var(--mil)","font-size":"9"}); ft2.textContent="FRONT"; svg.appendChild(ft2);
+
+    // edges (recipe links) — base + flow overlay, drawn first so nodes sit on top
+    NODES.forEach(n=>{
+      const to=nodeXY(n);
+      n.inputs.forEach(inp=>{
+        const from=nodeXY(NODES[IDX[inp.from]]);
+        const x1=from.x+NW/2, y1=from.y, x2=to.x-NW/2, y2=to.y;
+        const mx=(x1+x2)/2;
+        const d=`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+        const key=inp.from+">"+n.id;
+        const base=el("path",{d:d,"class":"edge",stroke:"var(--line)","stroke-width":"1.4"});
+        const flow=el("path",{d:d,"class":"edgeflow",stroke:"var(--flow)","stroke-width":"0","opacity":"0.9"});
+        svg.appendChild(base); svg.appendChild(flow);
+        edgeEls[key]=base; edgeFlowEls[key]=flow;
+      });
+    });
+    // front pull edges (finished mil -> front)
+    FRONT_GOODS.forEach(id=>{
+      const from=nodeXY(NODES[IDX[id]]);
+      const x1=from.x+NW/2, y1=from.y, x2=FRONTX-26, y2=from.y;
+      const d=`M ${x1} ${y1} L ${x2} ${y2}`;
+      const base=el("path",{d:d,"class":"edge",stroke:"var(--mil)","stroke-width":"1.4","opacity":"0.5"});
+      const flow=el("path",{d:d,"class":"edgeflow",stroke:"var(--mil)","stroke-width":"0"});
+      svg.appendChild(base); svg.appendChild(flow);
+      frontPull[id]={base,flow};
+    });
+
+    // nodes
+    NODES.forEach(n=>{
+      const {x,y}=nodeXY(n);
+      const g=el("g",{"class":"gnode"}); g.setAttribute("data-id",n.id);
+      const ring=el("rect",{x:x-NW/2-3,y:y-NH/2-3,width:NW+6,height:NH+6,rx:9,fill:"none",stroke:"none","stroke-width":"2"});
+      const rect=el("rect",{x:x-NW/2,y:y-NH/2,width:NW,height:NH,rx:7,fill:tierFill(n,1),stroke:tierStroke(n),"stroke-width":"1.3"});
+      const lab=el("text",{x:x-NW/2+8,y:y-NH/2+15,"class":"glabel"}); lab.textContent=n.lab;
+      const sub=el("text",{x:x-NW/2+8,y:y-NH/2+25,"class":"gsub"}); sub.textContent=(n.tier===RAW?"raw":n.tier===INTER?"inter":"finished")+" · "+n.cls;
+      const num=el("text",{x:x+NW/2-8,y:y+NH/2-7,"text-anchor":"end","class":"gnum"}); num.textContent="0";
+      g.appendChild(ring); g.appendChild(rect); g.appendChild(lab); g.appendChild(sub); g.appendChild(num);
+      svg.appendChild(g);
+      nodeEls[n.id]=g; nodeRect[n.id]=rect; nodeNum[n.id]=num; nodeRing[n.id]=ring;
+      g.addEventListener("click",()=>onNodeClick(n.id));
+    });
+  }
+  function tierStroke(n){ return n.tier===RAW?"var(--raw)":n.tier===INTER?"var(--inter)":"var(--fin)"; }
+  function tierFill(n,a){
+    // base subtle fill tinted by tier
+    if(n.tier===RAW) return "rgba(96,165,250,"+(0.10*a)+")";
+    if(n.tier===INTER) return "rgba(167,139,250,"+(0.10*a)+")";
+    return "rgba(245,158,11,"+(0.12*a)+")";
+  }
+
+  /* ---------------- the simulation ---------------- */
+  function effCap(n){
+    let m = n.tier===RAW?S.capRaw : n.tier===INTER?S.capInter : S.capFin;
+    let c = n.baseCap*m;
+    if(S.bottlenecked[IDX[n.id]]) c = Math.max(1, n.baseCap*0.12); // clamped hard
+    return Math.max(0, Math.floor(c));
+  }
+
+  function step(){
+    S.tick++;
+    S.made.fill(0); S.limIn.fill(-1); S.starved.fill(0);
+    S.flowOnEdge={};
+    // decay relief glow
+    for(const k in S.relief){ S.relief[k]--; if(S.relief[k]<=0) delete S.relief[k]; }
+
+    // resolve in fixed topological order
+    for(const i of ORDER){
+      const n=NODES[i];
+      const cap=effCap(n);
+      if(n.tier===RAW){
+        // raws emit; small deterministic jitter within +/-1 from PRNG, never negative
+        const jit = Math.floor(S.rng()*3)-1; // -1,0,1
+        const made = Math.max(0, cap+jit);
+        S.made[i]=made;
+        S.stock[i]+=made;
+      } else {
+        // converter: rate = min(capacity, limiting input availability)
+        let canMake=cap; let limIdx=-1; let limVal=Infinity;
+        n.inputs.forEach((inp,k)=>{
+          const avail=Math.floor(S.stock[IDX[inp.from]]/inp.ratio);
+          if(avail<limVal){ limVal=avail; limIdx=k; }
+        });
+        if(limVal<canMake){ canMake=limVal; S.starved[i]=1; S.limIn[i]=limIdx; }
+        canMake=Math.max(0,Math.floor(canMake));
+        // consume
+        n.inputs.forEach(inp=>{
+          const use=canMake*inp.ratio;
+          S.stock[IDX[inp.from]]-=use;
+          S.flowOnEdge[inp.from+">"+n.id]=use;
+        });
+        S.made[i]=canMake;
+        S.stock[i]+=canMake;
+      }
+    }
+
+    // front draws finished military
+    S.demand={}; S.delivered={}; let totDem=0, totDel=0;
+    FRONT_GOODS.forEach(id=>{
+      const dem=Math.max(0,Math.round(FRONT_DEMAND_BASE[id]*S.demMul));
+      const i=IDX[id];
+      const drawn=Math.min(dem, Math.floor(S.stock[i]));
+      S.stock[i]-=drawn;
+      S.demand[id]=dem; S.delivered[id]=drawn;
+      totDem+=dem; totDel+=drawn;
+      S.flowOnEdge["FRONT_"+id]=drawn;
+    });
+    S.delivered._tot=totDel; S.demand._tot=totDem;
+    const fill = totDem>0 ? totDel/totDem : 1;
+    S.fillHist.push(fill); if(S.fillHist.length>30) S.fillHist.shift();
+
+    // clamp tiny negative float crumbs to integer floor cleanliness
+    for(let i=0;i<S.stock.length;i++){ if(S.stock[i]<0) S.stock[i]=0; S.stock[i]=Math.floor(S.stock[i]); }
+
+    logTick(totDel,totDem);
+    refreshTraceLive();
+  }
+
+  /* ---------------- bottleneck tracing ----------------
+     Given a front good that's short, walk UPSTREAM following each converter's
+     LIMITING input until we reach a node that is itself capacity-bound (a raw at
+     cap, or a converter whose limiter is its own capacity). Returns the path. */
+  function tracePath(startId){
+    const path=[startId];
+    let cur=startId; let guard=0;
+    while(guard++<12){
+      const i=IDX[cur]; const n=NODES[i];
+      if(n.tier===RAW){
+        // a raw is the root cause if it's bottlenecked or below nominal
+        break;
+      }
+      if(S.starved[i] && S.limIn[i]>=0){
+        const lim=n.inputs[S.limIn[i]].from;
+        path.push(lim); cur=lim;
+      } else {
+        // not input-starved: this converter itself is the binding capacity
+        break;
+      }
+    }
+    return path;
+  }
+  function describeCause(id){
+    const n=NODES[IDX[id]];
+    if(S.bottlenecked[IDX[id]]) return n.lab+" — you bottlenecked it";
+    if(n.tier===RAW) return n.lab+" mine at capacity";
+    return n.lab+" fab capped";
+  }
+
+  // most-short front good (lowest fill ratio, demand>0)
+  function worstFrontGood(){
+    let worst=null, wf=2;
+    FRONT_GOODS.forEach(id=>{
+      const dem=S.demand[id]||0; if(dem<=0) return;
+      const f=(S.delivered[id]||0)/dem;
+      if(f<wf){ wf=f; worst=id; }
+    });
+    return {id:worst, fill:wf};
+  }
+
+  function doTrace(forceId){
+    const start = forceId || (FRONT_GOODS.includes(S.selected)?S.selected:worstFrontGood().id);
+    if(!start){ setTraceText('<span class="ok">No finished-military good selected.</span>'); return; }
+    const path=tracePath(start);
+    S.tracePath=path;
+    // build readout
+    const startN=NODES[IDX[start]];
+    const dem=S.demand[start]||0, del=S.delivered[start]||0;
+    let html="";
+    if(dem>0 && del>=dem && !S.starved[IDX[start]]){
+      html='<span class="ok">'+startN.lab+' is fully supplied to the front — no upstream shortage to trace.</span>';
+    } else {
+      const parts=[];
+      for(let k=0;k<path.length;k++){
+        const n=NODES[IDX[path[k]]];
+        const isCause=(k===path.length-1);
+        if(k>0) parts.push('<span class="arr">&#9666;</span>');
+        if(isCause) parts.push('<span class="cause">'+describeCause(path[k])+'</span>');
+        else parts.push('<span class="step">'+n.lab+(S.starved[IDX[path[k]]]&&k>0?' (starved)':'')+'</span>');
+      }
+      html='<span class="step">FRONT short on '+startN.lab+'</span> <span class="arr">&#9666;</span> '+parts.slice(1).join(' ');
+      if(path.length===1) html='<span class="step">FRONT short on '+startN.lab+'</span> <span class="arr">&#9666;</span> <span class="cause">'+describeCause(start)+'</span>';
+    }
+    setTraceText(html);
+    render();
+    pushLog("trace","TRACE "+startN.lab+" &rarr; "+describeCause(path[path.length-1]),"sys");
+  }
+  function setTraceText(html){ $("trace").innerHTML=html; }
+  function refreshTraceLive(){ if(S.tracePath){ doTraceQuiet(); } }
+  function doTraceQuiet(){
+    // refresh existing trace each tick without logging
+    const start = (S.tracePath && S.tracePath.length)?S.tracePath[0]:null;
+    if(!start) return;
+    const path=tracePath(start); S.tracePath=path;
+    const startN=NODES[IDX[start]];
+    const dem=S.demand[start]||0, del=S.delivered[start]||0;
+    let html="";
+    if(dem>0 && del>=dem && !S.starved[IDX[start]]){
+      html='<span class="ok">'+startN.lab+' now fully supplied — branch is clear.</span>';
+    } else {
+      const parts=[];
+      for(let k=1;k<path.length;k++){
+        const n=NODES[IDX[path[k]]];
+        const isCause=(k===path.length-1);
+        parts.push('<span class="arr">&#9666;</span>');
+        if(isCause) parts.push('<span class="cause">'+describeCause(path[k])+'</span>');
+        else parts.push('<span class="step">'+n.lab+' (starved)</span>');
+      }
+      html='<span class="step">FRONT short on '+startN.lab+'</span> '+(parts.length?parts.join(' '):'<span class="arr">&#9666;</span> <span class="cause">'+describeCause(start)+'</span>');
+    }
+    setTraceText(html);
+  }
+
+  /* ---------------- "why" + binding bottleneck ---------------- */
+  function bindingBottleneck(){
+    // the single most impactful constraint: prefer a user bottleneck on a starving branch,
+    // else the raw/inter feeding the worst front good
+    const w=worstFrontGood();
+    if(!w.id || w.fill>=0.999){
+      // fully fed — report the tightest-running stage as the binder
+      let tight=null, tv=2;
+      NODES.forEach(n=>{ if(n.tier===RAW) return; const i=IDX[n.id]; const cap=effCap(n); const r=cap>0?S.made[i]/cap:1; if(r<tv){tv=r;tight=n;} });
+      return {id:tight?tight.id:null, front:null, healthy:true};
+    }
+    const path=tracePath(w.id);
+    return {id:path[path.length-1], front:w.id, fill:w.fill, healthy:false};
+  }
+
+  function updateWhy(){
+    const b=bindingBottleneck();
+    const why=$("why"), msg=$("whyMsg");
+    if(b.healthy || !b.front){
+      why.classList.add("idle");
+      msg.innerHTML='The front is <b>fully supplied</b>. Every branch is running at the rate its inputs allow — no link is binding hard enough to short the front yet.';
+      $("binding").textContent="none"; $("binding").className="v good";
+    } else {
+      why.classList.remove("idle");
+      const fn=NODES[IDX[b.front]], cn=NODES[IDX[b.id]];
+      const pct=Math.round(b.fill*100);
+      msg.innerHTML='Front is <span class="s">short on '+fn.lab+'</span> ('+pct+'% filled). Trace runs upstream to <b>'+cn.lab+'</b> — '+(NODES[IDX[b.id]].tier===RAW?'the mine is the choke':'the binding stage')+'. Relief belongs <span class="u">there</span>, not at the fab.';
+      $("binding").textContent=cn.lab; $("binding").className="v bad";
+    }
+  }
+
+  /* ---------------- rendering ---------------- */
+  function render(){
+    // edges: width + colour by flow / starvation
+    NODES.forEach(n=>{
+      n.inputs.forEach((inp,k)=>{
+        const key=inp.from+">"+n.id;
+        const base=edgeEls[key], flow=edgeFlowEls[key];
+        const f=S.flowOnEdge[key]||0;
+        const cap=Math.max(1,effCap(n)*inp.ratio);
+        const intensity=Math.min(1, f/cap);
+        const isLim = (S.starved[IDX[n.id]] && S.limIn[IDX[n.id]]===k);
+        const onTrace = S.tracePath && onTraceEdge(inp.from,n.id);
+        if(isLim){
+          base.setAttribute("stroke","var(--starve)"); base.setAttribute("opacity","0.55");
+          flow.setAttribute("stroke","var(--starve)"); flow.setAttribute("stroke-width", (1.2+intensity*4).toFixed(2)); flow.setAttribute("opacity","0.9");
+        } else {
+          base.setAttribute("stroke", onTrace?"var(--mil)":"var(--line)"); base.setAttribute("opacity", onTrace?"0.7":"0.45");
+          flow.setAttribute("stroke", onTrace?"var(--mil)":"var(--flow)");
+          flow.setAttribute("stroke-width", (intensity*5).toFixed(2));
+          flow.setAttribute("opacity", (0.3+intensity*0.6).toFixed(2));
+        }
+      });
+    });
+    // front pulls
+    FRONT_GOODS.forEach(id=>{
+      const fp=frontPull[id]; const drawn=S.flowOnEdge["FRONT_"+id]||0; const dem=S.demand[id]||1;
+      const r=Math.min(1, drawn/Math.max(1,dem));
+      const shortHere = (S.demand[id]||0) > drawn;
+      fp.flow.setAttribute("stroke-width",(0.8+r*4).toFixed(2));
+      fp.flow.setAttribute("stroke", shortHere?"var(--starve)":"var(--mil)");
+      fp.flow.setAttribute("opacity",(0.35+r*0.55).toFixed(2));
+      fp.base.setAttribute("stroke", shortHere?"var(--starve)":"var(--mil)");
+    });
+    // nodes
+    NODES.forEach(n=>{
+      const i=IDX[n.id];
+      const rect=nodeRect[n.id], num=nodeNum[n.id], ring=nodeRing[n.id];
+      num.textContent=Math.floor(S.stock[i]);
+      // fill intensity by how busy it is
+      const cap=Math.max(1,effCap(n));
+      const busy=Math.min(1, (n.tier===RAW?S.made[i]:S.made[i])/cap);
+      rect.setAttribute("fill", tierFill(n, 0.6+busy*1.6));
+      // stroke states
+      let stroke=tierStroke(n), sw="1.3";
+      if(S.bottlenecked[i]){ stroke="var(--starve)"; sw="2"; }
+      else if(S.starved[i]){ stroke="var(--starve)"; sw="1.6"; }
+      rect.setAttribute("stroke",stroke); rect.setAttribute("stroke-width",sw);
+      // limiting-input ring: ring the node that IS a limiter for someone downstream? We ring the
+      // converter node itself when starved (the red stroke). The relief glow:
+      let ringStroke="none", ringW="2";
+      if(S.relief[n.id]){ ringStroke="var(--supply)"; ringW="2.4"; }
+      else if(S.tracePath && S.tracePath.includes(n.id)){ ringStroke="var(--mil)"; ringW="2.2"; }
+      else if(n.id===S.selected){ ringStroke="var(--accent)"; ringW="1.8"; }
+      ring.setAttribute("stroke",ringStroke); ring.setAttribute("stroke-width",ringW);
+      ring.setAttribute("stroke-dasharray", (S.tracePath&&S.tracePath.includes(n.id)&&!S.relief[n.id])?"4 3":"none");
+    });
+    renderReadouts();
+  }
+  function onTraceEdge(fromId,toId){
+    if(!S.tracePath) return false;
+    const p=S.tracePath;
+    for(let k=0;k<p.length-1;k++){ if(p[k]===toId && p[k+1]===fromId) return true; }
+    return false;
+  }
+
+  function renderReadouts(){
+    const totDel=S.delivered._tot||0, totDem=S.demand._tot||0;
+    $("thruNow").textContent=totDel; $("thruDem").textContent=totDem;
+    const fill = totDem>0 ? totDel/totDem : 1;
+    const bar=$("thruBar"); bar.style.width=(fill*100).toFixed(0)+"%";
+    bar.style.background = fill>=0.99?"linear-gradient(90deg,var(--ok),var(--fin))" : fill>=0.7?"linear-gradient(90deg,var(--fin),var(--mil))":"linear-gradient(90deg,var(--starve),var(--mil))";
+    const avg=S.fillHist.length? S.fillHist.reduce((a,b)=>a+b,0)/S.fillHist.length : 1;
+    $("fillAvg").textContent=Math.round(avg*100)+"%";
+    $("fillAvg").className = "v "+(avg>=0.99?"good":avg>=0.7?"":"bad");
+    // phase badge
+    const pb=$("phaseBadge");
+    pb.className="phasebadge "+(fill>=0.99?"supplied":fill>=0.7?"straining":"short");
+    pb.textContent = fill>=0.99?"FRONT SUPPLIED":fill>=0.7?"FRONT STRAINING":"FRONT SHORT";
+    // stocks
+    renderStocks();
+    updateWhy();
+  }
+
+  function renderStocks(){
+    const host=$("stocks");
+    if(host.childElementCount!==NODES.length){
+      host.innerHTML="";
+      NODES.forEach(n=>{
+        const row=document.createElement("div"); row.className="stockrow"; row.setAttribute("data-id",n.id);
+        row.innerHTML='<span class="nm">'+n.lab+' <span class="tg">'+(n.tier===RAW?"raw":n.tier===INTER?"int":"fin")+'·'+n.cls+'</span></span>'+
+                      '<span class="bar"><i></i></span><span class="q">0</span>';
+        row.addEventListener("click",()=>selectGood(n.id));
+        host.appendChild(row);
+      });
+    }
+    NODES.forEach(n=>{
+      const i=IDX[n.id];
+      const row=host.querySelector('[data-id="'+n.id+'"]');
+      const q=Math.floor(S.stock[i]);
+      row.querySelector(".q").textContent=q;
+      const bar=row.querySelector(".bar i");
+      const ref=n.baseCap*2.2;
+      bar.style.width=Math.min(100, (q/ref)*100).toFixed(0)+"%";
+      const low = q< n.baseCap*0.5;
+      bar.style.background = S.starved[i]?"var(--starve)":(low?"var(--inter)":"var(--ok)");
+      row.classList.toggle("flagged", S.tracePath && S.tracePath.includes(n.id));
+      row.style.outlineColor = (n.id===S.selected)?"var(--accent)":"var(--starve)";
+      if(n.id===S.selected){ row.style.outline="1px solid var(--accent)"; } else if(!(S.tracePath&&S.tracePath.includes(n.id))){ row.style.outline="none"; }
+    });
+  }
+
+  /* ---------------- logging ---------------- */
+  const LOG=$("log");
+  function pushLog(t,html,cls){
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML='<span class="t">T+'+S.tick+'</span> <span class="'+cls+'">'+html+'</span>';
+    LOG.insertBefore(ln,LOG.firstChild);
+    while(LOG.childElementCount>40) LOG.removeChild(LOG.lastChild);
+  }
+  let lastShort=null;
+  function logTick(totDel,totDem){
+    const fill=totDem>0?totDel/totDem:1;
+    if(fill>=0.99){
+      if(lastShort!==false){ pushLog("ok","front fully supplied · "+totDel+"/"+totDem+" finished-mil delivered","good"); lastShort=false; }
+    } else {
+      const w=worstFrontGood();
+      const path=tracePath(w.id);
+      const cause=NODES[IDX[path[path.length-1]]].lab;
+      const key=w.id+"|"+cause;
+      if(key!==lastShort){
+        pushLog("short","FRONT SHORT "+NODES[IDX[w.id]].lab+" ("+Math.round(w.fill*100)+"%) &mdash; cause: "+cause,"short");
+        lastShort=key;
+      }
+    }
+  }
+
+  /* ---------------- interactions ---------------- */
+  function onNodeClick(id){
+    const n=NODES[IDX[id]];
+    selectGood(id);
+    if(S.bneckMode){
+      const i=IDX[id];
+      S.bottlenecked[i]=S.bottlenecked[i]?0:1;
+      if(S.bottlenecked[i]) pushLog("bn",n.lab+" BOTTLENECKED (capacity slashed)","sys");
+      else pushLog("bn",n.lab+" bottleneck cleared","info");
+      // auto-trace from front if this is upstream of a front good
+      if(S.bottlenecked[i]){ setTimeout(()=>{ doTrace(); },0); }
+      stepIfPaused();
+    }
+  }
+  function selectGood(id){
+    S.selected=id;
+    const n=NODES[IDX[id]];
+    $("dropSel").textContent="selected: "+n.lab+" ("+(n.tier===RAW?"raw":n.tier===INTER?"int":"fin")+" · "+n.cls+")";
+    if(FRONT_GOODS.includes(id)) $("graphHint").textContent="finished-military selected — hit Trace to walk upstream";
+    render();
+  }
+  function dropRelief(){
+    const id=S.selected; const i=IDX[id]; const n=NODES[IDX[id]];
+    const batch=Math.round(n.baseCap*1.8);
+    S.stock[i]+=batch;
+    S.relief[id]=4;
+    pushLog("drop","RELIEF DROP +"+batch+" "+n.lab+" (you hauled it in)","drop");
+    render();
+    stepIfPaused();
+  }
+  function stepIfPaused(){ if(!S.running){ render(); } }
+
+  /* ---------------- loop ---------------- */
+  let acc=0, last=0; const TICK_MS=480;
+  function frame(ts){
+    if(!S.running){ last=ts; return; }
+    if(!last) last=ts;
+    acc+=ts-last; last=ts;
+    while(acc>=TICK_MS){ step(); acc-=TICK_MS; }
+    render();
+    requestAnimationFrame(frame);
+  }
+  function play(){ if(S.running) return; S.running=true; $("btnPlay").innerHTML="&#10073;&#10073; Pause"; $("btnPlay").classList.remove("primary"); last=0; acc=0; requestAnimationFrame(frame); }
+  function pause(){ S.running=false; $("btnPlay").innerHTML="&#9654; Play"; $("btnPlay").classList.add("primary"); }
+  function togglePlay(){ S.running?pause():play(); }
+
+  /* ---------------- reset / seed ---------------- */
+  function reset(keepSeed){
+    pause();
+    const sv=$("seed").value.trim()||"AMBER-0612";
+    S.seedStr=sv; S.rng=mulberry32(hashSeed(sv));
+    S.tick=0; S.stock.fill(0); S.made.fill(0); S.limIn.fill(-1); S.starved.fill(0);
+    S.bottlenecked.fill(0); S.flowOnEdge={}; S.fillHist=[]; S.tracePath=null; S.relief={};
+    lastShort=null;
+    // warm-start: prime each stock with a small buffer so the chain isn't empty on tick 0
+    NODES.forEach(n=>{ S.stock[IDX[n.id]] = Math.floor(n.baseCap* (n.tier===RAW?1.5:1.0)); });
+    LOG.innerHTML="";
+    $("clk").textContent="0";
+    setTraceText('Trace idle — click a finished-military good, then <b style="color:var(--fog-300)">Trace the shortage</b>.');
+    // a few settle ticks so the instrument opens in a live, supplied state
+    for(let k=0;k<6;k++) step();
+    pushLog("sys","economy AMBER seeded · "+sv+" · 12 goods primed","sys");
+    render();
+  }
+
+  /* ---------------- wire controls ---------------- */
+  function pct(v){ return Math.round(v)+"%"; }
+  function wire(){
+    $("btnPlay").addEventListener("click",togglePlay);
+    $("btnStep").addEventListener("click",()=>{ pause(); step(); render(); });
+    $("btnReset").addEventListener("click",()=>reset());
+    $("btnBneck").addEventListener("click",()=>{
+      S.bneckMode=!S.bneckMode;
+      $("btnBneck").classList.toggle("on",S.bneckMode);
+      $("btnBneck").innerHTML="&#9888; Click-to-bottleneck: "+(S.bneckMode?"ON":"OFF");
+      $("graphHint").textContent=S.bneckMode?"click a node to bottleneck · click a finished-military node to trace":"bottleneck mode off — clicks just select a good";
+    });
+    $("btnBneck").classList.add("on");
+    $("btnTrace").addEventListener("click",()=>doTrace());
+    $("btnDrop").addEventListener("click",dropRelief);
+
+    const bindSlider=(sid,vid,key,fmt)=>{
+      const s=$(sid), v=$(vid);
+      s.addEventListener("input",()=>{
+        const val=+s.value;
+        if(key==="demMul") S.demMul=val/100; else S[key]=val/100;
+        v.textContent=fmt(val);
+        stepIfPaused();
+      });
+    };
+    bindSlider("sRaw","vRaw","capRaw",pct);
+    bindSlider("sInter","vInter","capInter",pct);
+    bindSlider("sFin","vFin","capFin",pct);
+    bindSlider("sDem","vDem","demMul",pct);
+
+    // seed chips
+    const chips=["AMBER-0612","HAULER-7","DEEP-CHAIN","FRONT-RED","CHOKE-3"];
+    const host=$("seedchips");
+    chips.forEach(c=>{
+      const b=document.createElement("span"); b.className="seedchip"; b.textContent=c;
+      b.addEventListener("click",()=>{ $("seed").value=c; reset(); });
+      host.appendChild(b);
+    });
+    $("seed").addEventListener("change",()=>reset());
+    $("seed").addEventListener("keydown",e=>{ if(e.key==="Enter") reset(); });
+
+    // keep clock label synced each animation via render override
+  }
+
+  // patch render to also stamp the clock
+  const _render=render;
+  render=function(){ _render(); $("clk").textContent=S.tick; };
+
+  /* ---------------- boot ---------------- */
+  buildSVG();
+  wire();
+  reset();
+  selectGood("fuel");
+})();
+</script>
+</body>
+</html>
