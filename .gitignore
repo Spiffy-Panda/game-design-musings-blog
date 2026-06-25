@@ -26,6 +26,9 @@ venv/
 approaches-app/node_modules/
 approaches-app/dist/
 
+# --- Browser-preview / Playwright MCP scratch (screenshots, console logs) ---
+.playwright-mcp/
+
 # --- OS / editor cruft ---
 .DS_Store
 Thumbs.db

@@ -20,6 +20,42 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-06-25 — MSL explorables: run complete + published into the site
+
+**Context:** Morning wrap of the overnight run (entry below). It produced **16** interactive
+explorables (the planned set); the final three landed but the session limit truncated the last
+agent's summary, and `dead-reckoning-deck` never launched (classifier briefly down — left out, not
+referenced anywhere). Panda then asked to (1) wrap the explorables in an **overview page** and
+(2) link both the approaches and explorations hubs from the **landing-page MSL card**.
+
+**What shipped:**
+- **All 16 committed.** `explorations/index.html` rewritten into a real overview: top-nav back to the
+  musing + a link to the approaches hub, intro framing, a lineage legend, 16 cards in three tiers.
+- **Published into the site.** MSL's `build-musing.py` now **copies** the repo-root `explorations/`
+  (overview + every folder with an `index.html`; internal `README`/`RUN-LOG`/`_research` skipped) into
+  `site/musings/<slug>/explorations/`. Static HTML — copied, not rendered.
+- **Landing-card sublinks, config-driven.** `build_site.py`'s card generator renders an optional
+  `"links"` array from `MUSING-CONFIG.json`; the MSL entry gained Approaches + Explorations. New
+  `.card-links` rule in `site/style.css`.
+- **Bug found + fixed in QA.** The un-agent-verified `liquidity-deflation-spiral` crashed on boot —
+  `reset()` runs `pause()→render()` before `S = freshState()`, so `render()` dereferenced an undefined
+  `S`. One-line boot guard `if (!S) return;` in `render()`; re-verified (interactive console renders,
+  zero console errors).
+
+**Verification:** full `build_site.py` (incl. the React app) builds clean; served `site/` and
+browser-checked the landing card (both sublinks render), the explorations overview (nav + 16 cards),
+and earlier the marquee pages (solvency-cell, jumpgate-topology, enemy-attack-schedule, glass-cockpit).
+All 16 identity-grepped clean — they're **public now**, so Rule 6/7 matters: no dead name, real last
+name, or local paths; third-party game refs are transformative one-liners.
+
+**Notes:**
+- During the run: an agent edited tracked `.claude/launch.json` (reverted); one agent brushed Rule 1
+  with a single `node -e` (no artifact). `.playwright-mcp/` added to `.gitignore`; QA screenshots removed.
+- **Not pushed** — local commits only; Panda to review and push. On push, CI (Node step) builds the
+  React app and `build-musing.py` copies the explorations, so the whole tree deploys automatically.
+
+---
+
 ## 2026-06-25 — MSL: overnight "explorables" run (interactive HTML technical explorations)
 
 **Context:** Overnight, unattended. Panda flagged mutation M1 (*The Two Ledgers*) as the favorite

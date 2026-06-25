@@ -100,6 +100,9 @@ def build(include_hidden: bool = False, with_frontend: bool = True) -> int:
                 "name": m.get("name", folder),
                 "description": m.get("description", ""),
                 "draft": hidden,
+                # Optional per-musing sublinks (e.g. Approaches / Explorations hubs),
+                # each {"label", "href"} with href relative to the musing dir.
+                "links": m.get("links", []),
             }
         )
 
@@ -202,16 +205,30 @@ _PLACEHOLDER = """        <li class="project-card placeholder">
 
 def _card_html(card: dict) -> str:
     draft = ' <span class="draft">draft</span>' if card["draft"] else ""
+    slug = html.escape(card["slug"], quote=True)
+    links_html = ""
+    links = card.get("links") or []
+    if links:
+        anchors = "\n".join(
+            '            <a href="./musings/{slug}/{href}">{label}</a>'.format(
+                slug=slug,
+                href=html.escape(link.get("href", ""), quote=True),
+                label=html.escape(link.get("label", "")),
+            )
+            for link in links
+        )
+        links_html = '\n          <p class="card-links">\n{anchors}\n          </p>'.format(anchors=anchors)
     return (
         '        <li class="project-card">\n'
         '          <h3><a href="./musings/{slug}/">{name}</a>{draft}</h3>\n'
-        "          <p>{desc}</p>\n"
+        "          <p>{desc}</p>{links}\n"
         "        </li>"
     ).format(
-        slug=html.escape(card["slug"], quote=True),
+        slug=slug,
         name=html.escape(card["name"]),
         draft=draft,
         desc=html.escape(card["description"]),
+        links=links_html,
     )
 
 

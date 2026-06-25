@@ -7,6 +7,10 @@
       "slug": "minimalist-space-logistics",
       "name": "Minimalist Space Logistics",
       "description": "A 4X space game stripped to a single trading ship: out-logistic an unwinnable war until the front can win it for you.",
+      "links": [
+        { "label": "Approaches", "href": "approaches/" },
+        { "label": "Explorations", "href": "explorations/" }
+      ],
       "hidden": false
     }
   ]

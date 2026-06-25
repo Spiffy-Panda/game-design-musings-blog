@@ -126,6 +126,25 @@ main h2 {
   vertical-align: middle;
 }
 
+/* Sublinks under a musing card — e.g. the Approaches / Explorations hubs. */
+.project-card .card-links {
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
+  font-size: 0.92rem;
+}
+
+.project-card .card-links a {
+  font-weight: 600;
+}
+
+.project-card .card-links a::after {
+  content: " \2192"; /* → */
+  color: var(--muted);
+  font-weight: 400;
+}
+
 /* Per-project pages can use .prose for a comfortable reading width. */
 .prose {
   max-width: 42rem;

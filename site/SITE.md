@@ -22,14 +22,17 @@ site/
   style.css       all styling; system-font stack, responsive grid, light/dark. TRACKED (source).
   index.html      landing page: header + <ul class="project-grid"> of cards. GENERATED.
   musings/        one subfolder per musing: musings/<slug>/index.html (+ assets, + optional
-                  sub-pages; some framework-built, e.g. the React approaches/ tree). GENERATED.
+                  sub-pages: the React approaches/ tree and the copied explorations/ gallery
+                  for Minimalist Space Logistics). GENERATED.
 ```
 
 - **`style.css` is the only tracked file the build doesn't touch** — edit it directly for
   site-wide styling.
 - **`index.html` and `musings/` are generated** (and gitignored). Don't hand-edit them;
-  they're overwritten on every build. Change a card via `../MUSING-CONFIG.json`; change a
-  page via that musing's `MUSING.md`.
+  they're overwritten on every build. Change a card via `../MUSING-CONFIG.json` (name,
+  description, and an optional `"links"` array of `{label, href}` sublinks — e.g. MSL's
+  Approaches / Explorations hubs, rendered under the card); change a page via that musing's
+  `MUSING.md`.
 
 ## Hard conventions
 
@@ -64,7 +67,9 @@ Full checklist + the supported Markdown subset: `../musing-tech-notes.md`.
 - `musings/<slug>/` — generated musing pages. Currently: `minimalist-space-logistics/`,
   whose `approaches/` sub-tree mixes a **React-built** hub + three mutation pages
   (`two-ledgers`, `known-war`, `glass-cockpit`) with three **Markdown** approach pages
-  (`the-invisible-hand`, `the-tide-line`, `dead-reckoning`).
+  (`the-invisible-hand`, `the-tide-line`, `dead-reckoning`); plus an `explorations/` sub-tree —
+  a gallery overview + 16 self-contained interactive HTML "explorables", **copied** verbatim
+  (not rendered) from the repo-root `explorations/` by the musing's `build-musing.py`.
 
 ## Build & preview
 

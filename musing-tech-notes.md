@@ -105,9 +105,12 @@ The worked example is *Minimalist Space Logistics*, and it now spans **both** re
 Its `build-musing.py` renders `MUSING.md` at depth 2 and the three *original* Markdown approach
 pages (`the-invisible-hand.md`, `the-tide-line.md`, `dead-reckoning.md`) at depth 4 (back-link
 → the hub). The approaches **hub** and the newer HAND-lineage **mutation** pages are *not*
-Markdown — they're a React app (next section). Keep the per-musing script the only place the
-Markdown layout logic lives; `musing_render.py` stays generic. Markdown sub-pages are still
-bound by the same subset and the Rule 6 gate.
+Markdown — they're a React app (next section). It **also** copies the repo-root `explorations/`
+gallery (a standalone overview + 16 self-contained interactive HTML pages) into `…/explorations/`
+— copied verbatim, **not** rendered; internal docs there (`README.md`, `RUN-LOG.md`, `_research/`,
+none of which have an `index.html`) are skipped, so they never reach the public surface. Keep the
+per-musing script the only place the Markdown layout logic lives; `musing_render.py` stays generic.
+Markdown sub-pages are still bound by the same subset and the Rule 6 gate.
 
 ## Framework-built sub-pages (the approaches app)
 

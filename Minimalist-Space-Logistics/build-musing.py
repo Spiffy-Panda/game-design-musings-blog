@@ -7,6 +7,8 @@ Per-musing build script. Renders ``MUSING.md`` to the musing's main page and, if
     site/musings/<slug>/index.html                     <- MUSING.md           (depth 2)
     site/musings/<slug>/approaches/index.html          <- approaches/APPROACHES.md (depth 3)
     site/musings/<slug>/approaches/<a>/index.html       <- approaches/<a>.md   (depth 4)
+    site/musings/<slug>/explorations/index.html         <- explorations/index.html  (copied)
+    site/musings/<slug>/explorations/<e>/index.html      <- explorations/<e>/index.html (copied)
 
 This is the "bespoke, multi-page musing" case sanctioned in ``musing-tech-notes.md``:
 the shared renderer (``utils/python/musing_render.py``) still does the Markdown→HTML and
@@ -22,6 +24,10 @@ Contract (see ``musing-tech-notes.md``):
   * Renders ``MUSING.md`` -> ``<out>/index.html`` and the optional ``approaches/`` tree.
   * The ``<FOLDER-NAME>.md`` agent-nav file is NOT rendered (internal, not published).
   * Copies an optional ``./assets/`` folder into ``<out>/assets/``.
+  * Copies the repo-root ``explorations/`` gallery (the overview ``index.html`` + each
+    exploration's own ``index.html``) into ``<out>/explorations/``. These are standalone,
+    self-contained interactive HTML — copied, not rendered. Internal docs there
+    (``README.md``, ``RUN-LOG.md``, ``_research/``) lack an ``index.html`` and are skipped.
 
 Anchored to the repo root via ``__file__`` so it runs from any CWD. Standard library only.
 """
@@ -114,6 +120,23 @@ def main() -> int:
                   title=_first_h1(a_md) or md_file.stem.replace("-", " "),
                   back_href="../", back_text="← Approaches")
             built += 1
+
+    # --- explorations sub-tree (static HTML, copied — no render step) ------------
+    # The explorations gallery is standalone, self-contained interactive HTML at the
+    # repo root (explorations/). Copy the overview (index.html) and every exploration
+    # folder that has an index.html; internal docs (README.md, RUN-LOG.md, _research/)
+    # have no index.html and are skipped, so they never reach the public surface.
+    explor_dir = REPO_ROOT / "explorations"
+    if (explor_dir / "index.html").is_file():
+        explor_out = out / "explorations"
+        explor_out.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(explor_dir / "index.html", explor_out / "index.html")
+        n_explor = 0
+        for child in sorted(explor_dir.iterdir()):
+            if child.is_dir() and (child / "index.html").is_file():
+                shutil.copytree(child, explor_out / child.name, dirs_exist_ok=True)
+                n_explor += 1
+        print(f"  explorations: overview + {n_explor} page(s) -> {explor_out}")
 
     # --- assets (copied verbatim) -----------------------------------------------
     assets = MUSING_DIR / "assets"
