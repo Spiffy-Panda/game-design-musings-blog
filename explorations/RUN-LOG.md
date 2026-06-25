@@ -11,54 +11,52 @@ re-invocations. (The *why* is in `../DEV-LOG.md`; the plan is in
   exhausted (quality over clock). Each page QA'd (identity grep + structure) and committed as it lands.
   **Not pushed.**
 
-## Scoreboard — 7 / 12 ready
+## Scoreboard — 9 / 12 ready (Tier A + B fully launched)
 
-- **Ready + committed (7):** `solvency-cell`, `enemy-attack-schedule`, `utility-ai-fit`,
-  `jumpgate-topology`, `market-clearing-cell`, `determinism-harness`, `contract-board`
-  (+ scout `_research/jumpgate-webs.md`).
-- **Building (3):** `glass-cockpit-instruments` (relaunched after an API timeout killed the first try),
-  `front-as-fluid`, `prestige-reseeding`.
-- **Queued (2):** `run-clock-integral`, `endgame-pressure` (+ Tier-C if time/ideas allow).
+- **Ready + committed (7) + ready-uncommitted (2 → committing):**
+  `solvency-cell`, `enemy-attack-schedule`, `utility-ai-fit`, `jumpgate-topology`,
+  `market-clearing-cell`, `determinism-harness`, `contract-board`, `front-as-fluid`,
+  `glass-cockpit-instruments` (+ scout `_research/jumpgate-webs.md`).
+- **Building (3):** `prestige-reseeding`, `run-clock-integral`, `endgame-pressure`.
+- **Queued:** Tier B is fully launched. Next is optional **Tier C** (time + ideas allowing).
 
-Notable: builders have each **caught and fixed a real bug** during headless self-verification
-(enemy-schedule reseed-PRNG determinism; market-cell move-cap erasing thin-vs-deep; solvency-cell
-deflation that didn't deflate). One infra hiccup: the first `glass-cockpit-instruments` agent died on a
-stream idle-timeout with no file written — relaunched clean.
+Every builder has caught + fixed a genuine bug during headless self-verification (reseed-PRNG
+determinism, move-cap erasing thin-vs-deep, deflation-that-didn't-deflate, an unquoted CSS key
+`SyntaxError`, a stray `<Handle>` JSX artifact). Resilience: the first `glass-cockpit` agent died on
+a stream idle-timeout (no file) — relaunched, succeeded.
 
-## Hygiene notes
+## Hygiene / rule notes
 
-- The `contract-board` agent added an `explorables-static` entry to the **tracked** `.claude/launch.json`
-  (it assumed that file was gitignored) to browser-verify its page. **Reverted** — not committed. Later
-  builders were told explicitly not to touch config. If Panda wants a `file://` preview entry for
-  `explorations/`, add one deliberately.
+- `contract-board` agent edited the **tracked** `.claude/launch.json` (assumed gitignored) to verify —
+  **reverted**, not committed. Later prompts forbid config edits explicitly.
+- `front-as-fluid` agent disclosed one `node -e` (with `require`) mid-task — a brush against Rule 1.
+  No artifact, not repeated; later prompts call this out by name and require `node --check <file>` instead.
 
 ## Backlog
 
-**Tier A** — solvency-cell ✅ · enemy-attack-schedule ✅ · utility-ai-fit ✅ · jumpgate-topology ✅
+**Tier A** ✅ — solvency-cell · enemy-attack-schedule · utility-ai-fit · jumpgate-topology
 
 **Tier B**
-- ready — `market-clearing-cell` (amber) · HAND damped tâtonnement
-- ready — `determinism-harness` (violet) · float-vs-i64, fixed order, seed→world, RERUN gate
-- ready — `contract-board` (amber) · the board as a war-solvency readout over a run (12/12 verified)
-- building — `glass-cockpit-instruments` (cyan) · M3 LOD ladder: sprites→ribbons→weather *(retry)*
-- building — `front-as-fluid` (rose) · TIDE graph-Laplacian reaction-diffusion
-- building — `prestige-reseeding` (violet) · loss re-seeds the map; gradients bend; the sideways win
-- queued — `run-clock-integral` (amber) · the endogenous doomsday = ∫ uncovered shortage
-- queued — `endgame-pressure` (rose) · scripted opening vs pure-pressure close
+- ✅ `market-clearing-cell` · ✅ `determinism-harness` · ✅ `contract-board` · ✅ `front-as-fluid` ·
+  ✅ `glass-cockpit-instruments`
+- building — `prestige-reseeding` (violet) · loss re-seeds the map; the sideways equilibrium win
+- building — `run-clock-integral` (amber) · the doomsday as ∫ uncovered shortage
+- building — `endgame-pressure` (rose) · the opening→endgame transition; recall stops working
 
-**Tier C (if clock + backlog allow):** lane-routing A*, twelve-good supply chain, seed-sharing/replay,
-liquidity deflation spiral, risk-vs-reward contract pricing, prestige tree.
+**Tier C — candidate next launches (distinct, high-value):** `twelve-good-supply-chain`,
+`liquidity-deflation-spiral`, `risk-vs-reward-contract`, `seed-sharing-replay`, (maybe) `lane-routing-astar`.
 
 ## Scout outputs
 
-- ready — `_research/jumpgate-webs.md` (X4 / Freelancer / EVE-Niarja / Stellaris / ME relays /
-  Elite contrast + a recommended backbone+local-cluster board). Fed `jumpgate-topology`.
+- ready — `_research/jumpgate-webs.md` (X4 / Freelancer / EVE-Niarja / Stellaris / ME relays / Elite
+  contrast + a recommended backbone+local-cluster board). Fed `jumpgate-topology`.
 
 ## Event log (newest on top)
 
-- ~04:25 PT — `contract-board` completed (12/12 verified); reverted its stray launch.json edit;
-  relaunched `glass-cockpit-instruments` (first try timed out); launched `prestige-reseeding`. 7/12 ready.
-- ~04:10 PT — committed `solvency-cell` + `determinism-harness` + `market-clearing-cell` (commit a2607f5).
-- ~03:50 PT — solvency (favorite), market, determinism completed (each caught+fixed a real bug).
-- ~03:41 PT — committed `utility-ai-fit` + `jumpgate-topology` + `enemy-attack-schedule` (commit d4ea75e).
-- 03:17 PT — branch cut; wave 0 launched; base commit `a226a3f`.
+- ~04:40 PT — `glass-cockpit` (retry) + `front-as-fluid` completed; committing both. Launched
+  `endgame-pressure` (last Tier B). 9/12 ready; Tier A+B fully launched.
+- ~04:25 PT — `contract-board` done (reverted its launch.json edit); `glass-cockpit` relaunched after
+  a timeout; launched `prestige-reseeding` + `run-clock-integral`. Commit 2799923.
+- ~04:10 PT — committed solvency + determinism + market (a2607f5).
+- ~03:41 PT — committed utility-ai-fit + jumpgate-topology + enemy-attack-schedule (d4ea75e).
+- 03:17 PT — branch cut; wave 0 launched; base commit a226a3f.

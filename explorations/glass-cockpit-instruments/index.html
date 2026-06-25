@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Glass Cockpit — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: in Minimalist Space Logistics you never fire — you read. A representation must change KIND, not just scale, as the fleet grows. One LOD ladder — sprite, ribbon, flux — lets one person read a war too big to walk across. Slide the fleet up and watch the ships become a current." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#22d3ee;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* the three semantic channels, fixed by house rule */
+  --player:#22d3ee;     /* cyan — you, the player / your fleet */
+  --machine:#9aa1b6;    /* neutral grey — the friendly war machine */
+  --hazard:#fb7185;     /* rose — the enemy / the front. NEVER used for friendly */
+  --good-cool:#38bdf8;  /* pip family — cryo / volatiles */
+  --good-warm:#fbbf24;  /* pip family — munitions / reactive */
+  --good-med:#34d399;   /* pip family — rations / bio */
+  --good-hot:#f472b6;   /* pip family — exotic */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:70rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:42rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+em{color:var(--fog-100);font-style:italic}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument shell ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.tierbadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.3s}
+.tierbadge.contract{color:#a5f3fc;border-color:#155e75;background:rgba(34,211,238,.12)}
+.tierbadge.corridor{color:#bae6fd;border-color:#1e5b80;background:rgba(56,189,248,.13)}
+.tierbadge.theatre{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.14)}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:1rem}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl.toggle.on{color:var(--ink-950);background:var(--hazard);border-color:var(--hazard);font-weight:700}
+button.ctl[disabled]{opacity:.35;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* altitude ladder (the only camera control) */
+.altrow{display:flex;align-items:stretch;gap:.5rem;margin-top:.8rem}
+.altladder{display:flex;flex:1;gap:.4rem}
+.altstep{flex:1;display:flex;flex-direction:column;gap:.15rem;align-items:flex-start;cursor:pointer;
+  font-family:var(--font-mono);text-align:left;color:var(--fog-400);background:var(--ink-800);border:1px solid var(--line);border-radius:9px;padding:.5rem .65rem;transition:.18s}
+.altstep:hover{border-color:var(--fog-500)}
+.altstep .t{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fog-300);font-weight:700}
+.altstep .d{font-size:.66rem;letter-spacing:.02em;color:var(--fog-500);line-height:1.35}
+.altstep.active{border-color:var(--accent);background:rgba(34,211,238,.1);box-shadow:0 0 0 1px var(--accent) inset}
+.altstep.active .t{color:var(--accent)}
+.altstep.auto{outline:1px dashed var(--good-warm);outline-offset:-3px}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .9rem;margin-top:.85rem}
+@media (max-width:560px){.sliders{grid-template-columns:1fr}}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range].haz::-webkit-slider-thumb{background:var(--hazard)}
+.slider input[type=range].haz::-moz-range-thumb{background:var(--hazard)}
+
+/* canvas host */
+.scopehost{position:relative;width:100%;overflow:hidden;border-radius:9px;background:radial-gradient(120% 90% at 88% 8%,rgba(251,113,133,.05),transparent 55%),var(--ink-950);border:1px solid var(--line)}
+canvas{display:block;width:100%;height:auto}
+.scopehost .hint{position:absolute;left:10px;bottom:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--fog-500);pointer-events:none;background:rgba(7,8,12,.6);padding:.1rem .45rem;border-radius:5px}
+.scopehost .drillbtn{position:absolute;right:10px;bottom:8px}
+
+/* legend / motion grammar */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .9rem;margin-top:.2rem}
+@media (max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .it{display:flex;align-items:flex-start;gap:.45rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.02em;color:var(--fog-400);line-height:1.4}
+.legend .it b{color:var(--fog-100);font-weight:700}
+.legend .gl{flex:none;width:26px;height:16px;margin-top:.05rem}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.34rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums;text-align:right}
+.kv .v.big{color:var(--accent);font-size:1.05rem}
+.kv .v.haz{color:var(--hazard)}
+
+/* band gauges */
+.bands{display:grid;gap:.5rem;margin-top:.1rem}
+.band{display:grid;grid-template-columns:5.4rem 1fr 2.6rem;gap:.55rem;align-items:center;font-family:var(--font-mono);font-size:.72rem}
+.band .nm{color:var(--fog-400);letter-spacing:.04em;text-transform:uppercase;font-size:.66rem}
+.band .track{height:9px;border-radius:5px;background:var(--ink-800);border:1px solid var(--line);overflow:hidden;position:relative}
+.band .track i{display:block;height:100%;border-radius:5px;transition:width .18s ease, background .25s}
+.band .num{color:var(--fog-100);text-align:right;font-variant-numeric:tabular-nums}
+
+/* sparklines */
+.sparks{display:grid;gap:.5rem;margin-top:.2rem}
+.spk{display:grid;grid-template-columns:5.4rem 1fr;gap:.55rem;align-items:center}
+.spk .nm{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.04em;text-transform:uppercase;color:var(--fog-400)}
+.spk canvas{height:26px;border:1px solid var(--line);border-radius:6px;background:var(--ink-950)}
+
+/* "what's drawn" + why one-liner */
+.drawn{border:1px solid var(--accent);background:rgba(34,211,238,.07);border-radius:11px;padding:.7rem .8rem;transition:.25s}
+.drawn .q{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.drawn .msg{font-size:.92rem;color:var(--fog-100);line-height:1.5;margin-top:.25rem}
+.drawn .msg b{color:var(--accent)}
+.why{border:1px dashed var(--line);background:var(--ink-950);border-radius:11px;padding:.6rem .8rem;margin-top:.6rem;min-height:2.6rem}
+.why .wq{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.76rem;color:var(--fog-300);line-height:1.5;margin-top:.2rem}
+.why .wmsg b{color:var(--fog-100)}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+.eqn{font-family:var(--font-mono);font-size:.9rem;color:var(--fog-100);background:var(--ink-900);border:1px solid var(--line);
+  border-radius:10px;padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;line-height:1.8}
+.eqn .c{color:var(--fog-500)} .eqn .k{color:var(--accent)}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+.subtle{color:var(--fog-500)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <span class="chip"><b>M3</b> · design from the screen back</span>
+  <div class="kicker">CYAN lineage · the glass cockpit</div>
+  <h1>The Glass Cockpit</h1>
+  <p class="lede">You never fire a shot. You read. And a war too big to walk across only becomes one person's to hold if the picture changes <em>kind</em> — not just scale — as the fleet under you grows.</p>
+  <p class="spark">Slide the fleet up far enough and the ships you were following <span>stop being ships and become a current</span> — and the strange part is that you still believe it.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one hauler</strong> and an unwinnable war to keep fed. You grow from that single hull into a <strong>combine of dozens</strong> <span class="hand">R.1</span>, across a front that is <em>massive and abstract</em> <span class="hand">R.3</span> — a wall of attrition past the edge of the viewport. The twist of this reading — call it <strong>the Glass Cockpit</strong> — is that you have no guns. <strong>Reading is the verb</strong>: you observe, and you supply. So if you can't read the board, you have <em>nothing to do</em>. That makes the visual abstraction not a skin over the game. It <em>is</em> the game. Design the screen first; the rest is downstream of it.</p>
+
+<p>The page you're about to drive is built around one rule, and it's the load-bearing one: <strong>a representation must change KIND, not just scale, as quantity grows.</strong> Zoom out on a normal map and a ship becomes a smaller ship; a thousand ships become a thousand tiny unreadable ships — glyph soup. That fails both halves of the brief at once. The fix is a <strong>LOD ladder</strong> of three tiers, and <em>altitude is the only camera control</em> <span class="hand">M3.3</span>: there is no free pan-and-zoom, only a discrete climb where each rung draws a deliberately different kind of thing.</p>
+
+<ul class="tight">
+  <li><b>CONTRACT</b> — a single hauler is a <em>discrete sprite</em>: an arrowhead with a heading, towing a cargo pip colored and shaped by its good. You can <em>follow one ship</em>. <span class="hand">M3.2</span></li>
+  <li><b>CORRIDOR</b> — once the fleet is large, individual hulls <em>dissolve into a flow ribbon</em> on the lane. Width is throughput, color is the dominant good, opacity is reliability. You read logistics as a <em>fluid</em>, not a crowd. <span class="hand">M3.2</span></li>
+  <li><b>THEATRE</b> — systems collapse to a node graph, lanes to flux edges, the whole fleet to network brightness. The enemy is an <em>advancing weather front</em> — rose isobars, hatched, creeping inward. No single ship is visible, <em>by design</em>. <span class="hand">M3.4</span></li>
+</ul>
+
+<p class="note">A hard line runs through all three: the enemy is <strong>weather, never a unit</strong> <span class="hand">M3.4</span>. You will never see a countable rose token to shoot at — only pressure, isobars, a displacement number. Drawing the front as ships would invite you to fight it, and you can't.</p>
+
+<h2><span class="eye">how to drive it</span>The one move that matters</h2>
+<p>The instrument has two coupled cameras-that-aren't-cameras. The <strong>fleet-size</strong> slider grows your hulls from 1 toward ~80. The <strong>altitude</strong> ladder climbs Contract → Corridor → Theatre. The thing to watch for: as fleet size crosses a threshold, the <em>same lane</em> visibly transitions sprites → ribbon → flux, with a brief <strong>morph</strong> so it reads as <em>"the ships became a current,"</em> never <em>"the ships vanished."</em> When you don't believe it, hit <strong>Drill in</strong> — the ribbon re-explodes back into its individual hulls on demand. The abstraction has to be <em>falsifiable</em>, or it's a lie.</p>
+<p>Then poke the rest: <strong>throughput</strong> (feed/starve) drives ribbon width &amp; opacity and node brightness; <strong>front intensity</strong> drives the isobars creeping inward and lanes dimming and finally <em>cutting</em>. Read the instrument cluster on the right — three band gauges (rear / midfield / forward stock), two deficit sparklines, and one front-displacement number — and the one-line <em>why</em> under it.</p>
+
+<div class="callout">
+  <div class="lab">the snapshot bus — why this is a VIEW, not the game</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">Everything you see is a <strong>one-way LOD render over deterministic tick snapshots</strong>. The simulation ticks in fixed order and emits an immutable snapshot; the renderer only <em>reads</em> it and chooses how to draw it at the current altitude. Changing tiers, drilling in, dragging fleet size — none of it ever writes back into the sim. Determinism holds <span class="hand">APR.5</span>: a run is a <em>seed</em>, and the picture is a lens you slide along it, never the source of truth.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">LOD LADDER · <b>render "CYAN"</b> · one lane, three altitudes</div>
+    <div class="tierbadge contract" id="tierBadge">CONTRACT TIER</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport + cameras -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">▶ Play</button>
+        <button class="ctl" id="btnStep">⏭ Step</button>
+        <button class="ctl" id="btnReset">⟲ Reset</button>
+        <button class="ctl toggle" id="btnStarve">✋ Starve</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="CYAN-0480" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+
+      <div class="altrow">
+        <div class="altladder" id="altladder">
+          <button class="altstep" data-tier="0"><span class="t">Contract</span><span class="d">one ship = a sprite. follow it.</span></button>
+          <button class="altstep" data-tier="1"><span class="t">Corridor</span><span class="d">hulls = a flow ribbon. read the fluid.</span></button>
+          <button class="altstep" data-tier="2"><span class="t">Theatre</span><span class="d">fleet = brightness. enemy = weather.</span></button>
+        </div>
+      </div>
+
+      <div class="sliders">
+        <div class="slider">
+          <span class="lab">fleet size — hulls in flight</span>
+          <span class="val" id="vFleet">1</span>
+          <input type="range" id="sFleet" min="1" max="80" step="1" value="1" />
+        </div>
+        <div class="slider">
+          <span class="lab">throughput — feed ↔ starve</span>
+          <span class="val" id="vThru">0.78</span>
+          <input type="range" id="sThru" min="0" max="100" step="1" value="78" />
+        </div>
+        <div class="slider">
+          <span class="lab" style="color:var(--hazard)">front intensity — the weather</span>
+          <span class="val" id="vFront" style="color:var(--hazard)">0.30</span>
+          <input type="range" id="sFront" class="haz" min="0" max="100" step="1" value="30" />
+        </div>
+        <div class="slider">
+          <span class="lab">altitude — Contract→Theatre</span>
+          <span class="val" id="vAlt">contract</span>
+          <input type="range" id="sAlt" min="0" max="200" step="1" value="0" />
+        </div>
+      </div>
+      <p class="note" style="margin:.7rem 0 0;font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500)">
+        TIP — drag <b style="color:var(--fog-300)">fleet size</b> up past ~14 and ~40 and watch the lane <b style="color:var(--fog-300)">morph</b> KIND, then hit <b style="color:var(--fog-300)">Drill in</b> to falsify the ribbon. Altitude auto-suggests as the fleet grows (dashed rung) — but you keep the wheel.
+      </p>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the scope -->
+      <div class="panel">
+        <h4>THE SCOPE <span class="sub" id="scopeSub">following hull #1</span></h4>
+        <div class="scopehost" id="scopehost">
+          <canvas id="scope" width="760" height="430"></canvas>
+          <div class="hint" id="scopeHint">contract tier · one sprite</div>
+          <button class="ctl drillbtn" id="btnDrill">⧉ Drill in</button>
+        </div>
+
+        <div class="drawn" id="drawnBox" style="margin-top:.7rem">
+          <div class="q">what's drawn / question answered</div>
+          <div class="msg" id="drawnMsg">A single hauler as a <b>discrete arrowhead</b> with heading + cargo pip. <b>Q:</b> where is <em>this</em> ship and is its cargo at risk?</div>
+        </div>
+        <div class="why" id="whyBox">
+          <div class="wq">why this picture</div>
+          <div class="wmsg" id="whyMsg">One hull is a thing you can follow, so it gets a body.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: instrument cluster -->
+      <div class="panel">
+        <h4>INSTRUMENT CLUSTER <span class="sub">read-only over snapshots</span></h4>
+
+        <div class="bands" id="bands">
+          <div class="band"><span class="nm">rear stock</span><span class="track"><i id="bRear"></i></span><span class="num" id="nRear">—</span></div>
+          <div class="band"><span class="nm">midfield</span><span class="track"><i id="bMid"></i></span><span class="num" id="nMid">—</span></div>
+          <div class="band"><span class="nm">forward</span><span class="track"><i id="bFwd"></i></span><span class="num" id="nFwd">—</span></div>
+        </div>
+
+        <div class="sparks" style="margin-top:.85rem">
+          <div class="spk"><span class="nm">cryo deficit</span><canvas id="spk1" width="320" height="26"></canvas></div>
+          <div class="spk"><span class="nm">munitions def.</span><canvas id="spk2" width="320" height="26"></canvas></div>
+        </div>
+
+        <div class="kv" style="margin-top:.95rem">
+          <span class="k">front displacement</span><span class="v big haz" id="kFront">+0.0</span>
+          <span class="k">fleet on contract</span><span class="v" id="kFleet">1 / 1</span>
+          <span class="k">lane throughput</span><span class="v" id="kThru">—</span>
+          <span class="k">reliability</span><span class="v" id="kRel">—</span>
+          <span class="k">lanes cut</span><span class="v" id="kCut">0 / 6</span>
+        </div>
+
+        <h4 style="margin-top:1rem">MOTION GRAMMAR <span class="sub">how it moves = what it means</span></h4>
+        <div class="legend" id="legend">
+          <div class="it"><canvas class="gl" data-gl="glide" width="26" height="16"></canvas><span><b>steady glide</b> — on contract, delivering</span></div>
+          <div class="it"><canvas class="gl" data-gl="pulse" width="26" height="16"></canvas><span><b>pulsing pip</b> — cargo at risk</span></div>
+          <div class="it"><canvas class="gl" data-gl="shimmer" width="26" height="16"></canvas><span><b>ribbon shimmer</b> — clearing well</span></div>
+          <div class="it"><canvas class="gl" data-gl="fray" width="26" height="16"></canvas><span><b>ribbon fray</b> — throughput dropping</span></div>
+          <div class="it"><canvas class="gl" data-gl="creep" width="26" height="16"></canvas><span><b>isobar creep</b> — front advancing</span></div>
+          <div class="it"><canvas class="gl" data-gl="dim" width="26" height="16"></canvas><span><b>node dim</b> — depot starving</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== back to prose ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">the engine underneath</span>Why "KIND, not scale" is cheap and honest</h2>
+<p>The sim ticks a tiny deterministic world: a chain of <strong>systems in bands</strong> rear→forward, wired by <strong>lanes</strong>, with the front injecting pressure at the forward rim. Each tick emits a <strong>snapshot</strong> — per-lane throughput and reliability, per-band stock, the front's displacement. The renderer reads that one struct and picks a drawing strategy from the altitude and the fleet count. The transition between strategies is the whole trick:</p>
+
+<div class="eqn">
+<span class="c">// the LOD decision — a pure function of (altitude, fleetN), reading a snapshot</span><br>
+tier = ladder( altitude )                 <span class="c"> // 0 Contract · 1 Corridor · 2 Theatre</span><br>
+<span class="k">if</span> tier == CONTRACT : draw each hull as an <b>arrowhead</b> + cargo pip<br>
+<span class="k">if</span> tier == CORRIDOR : draw the lane as a <b>ribbon</b> &nbsp;<span class="c">// w = throughput, α = reliability, hue = dominant good</span><br>
+<span class="k">if</span> tier == THEATRE&nbsp; : draw <b>nodes</b> (brightness = supply) + <b>flux edges</b> + <b>isobars</b> (the weather)<br>
+<span class="c">// morph m ∈ [0,1] cross-fades adjacent strategies so N sprites visibly CONDENSE into one ribbon</span>
+</div>
+
+<p>Because it's a one-way view, the morph is <em>cosmetic</em> — it never perturbs the snapshot. A reseedable <code>mulberry32</code> drives only hauler jitter and the isobar grain; the stock/throughput/front numbers are plain arithmetic over the tick, so the same seed always draws the same war. Slide altitude with the fleet held still and only the <em>kind</em> of mark changes; the underlying quantities are identical. That's the claim made literal: <strong>same data, different kind of picture.</strong></p>
+
+<h2><span class="eye">the aha</span>When the sprites become a current</h2>
+<p>Here is the moment the whole pitch lives or dies. Set altitude to Corridor and walk the fleet slider up. Around a dozen hulls, the arrowheads stop being things you track one-by-one and <strong>condense</strong> into a single flowing ribbon — and you don't experience it as loss. You experience it as <em>resolution</em>: the ribbon <strong>is</strong> those ships, its width <strong>is</strong> their throughput, its shimmer <strong>is</strong> them clearing the lane. One person can now read a flow that was a crowd a second ago. Don't trust it? <strong>Drill in</strong>, and the ribbon coughs the hulls back up. It told the truth.</p>
+
+<h2><span class="eye">risks, named</span>Where this representation could lie to you</h2>
+
+<div class="risk">
+  <div class="rt"><b>Dissolve reads as "they died."</b></div>
+  <div class="mit"><b>Mitigation:</b> never hard-swap. Cross-fade with a <b>morph</b> where sprites visibly travel <em>into</em> the ribbon's spine, and keep <b>Drill in</b> always live so the abstraction is falsifiable on demand. The ribbon must feel like a zoom, not a deletion.</div>
+</div>
+<div class="risk">
+  <div class="rt"><b>Glyph soup at the Theatre tier.</b></div>
+  <div class="mit"><b>Mitigation:</b> hard cap on countable marks. Past Corridor, individual hulls are <em>not allowed</em> on screen — they roll up into node <b>brightness</b> and edge <b>flux</b>. Theatre answers "where is the whole machine winning or losing," not "how many ships are here."</div>
+</div>
+<div class="risk">
+  <div class="rt"><b>Color-channel overload — twelve goods, not twelve hues.</b></div>
+  <div class="mit"><b>Mitigation:</b> never lean on hue alone. Each good carries a <b>pip glyph</b> (shape) as well as a color, and meaning rides <b>shape + motion + color</b> together — so the picture survives a colorblind reader and a dim panel. The ribbon's <em>dominant</em> good is its hue; the mix is in the pips when you drill in.</div>
+</div>
+<div class="risk">
+  <div class="rt"><b>The enemy invites a fight.</b></div>
+  <div class="mit"><b>Mitigation:</b> the front is <b>weather, never a unit</b> <span class="hand">M3.4</span>. It is only ever isobars, a creep, a displacement number — nothing countable, nothing targetable. You can read where it's about to flood; you cannot shoot a cloud.</div>
+</div>
+
+<div class="callout" style="margin-top:2rem">
+  <div class="lab">the bet, in one line</div>
+  <p style="margin:.2rem 0;color:var(--fog-100);font-size:1.05rem">Change the <strong>kind</strong> of mark as quantity grows — sprite, ribbon, flux — and one calm screen can run a war too big to walk across. That single rule is the interface.</p>
+</div>
+
+<hr class="hr" />
+<p class="subtle" style="font-size:.9rem">Designer's note — drag <code>fleet size</code> slowly with altitude on <em>Corridor</em>, then hit <em>Drill in</em> at ~50 hulls. If the ribbon doesn't feel like it <em>contains</em> those ships, the abstraction isn't honest yet and the whole reading is in question.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · reading M3 "The Glass Cockpit" · cyan rendering lineage ·
+  self-contained explorable, no external requests · deterministic snapshot view, seed-driven ·
+  authored by Panda.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   The Glass Cockpit — a one-way LOD render over deterministic tick snapshots.
+   No external requests. ONE reseedable PRNG (mulberry32), used ONLY for
+   cosmetic jitter (hauler wander, isobar grain) — NEVER for sim state.
+   The sim numbers (band stock, throughput, front displacement) are plain
+   deterministic arithmetic over a fixed-step tick, so a run is a seed.
+   The renderer reads a snapshot and chooses HOW to draw it; it never writes
+   back. Changing tiers / drilling in / dragging sliders re-renders the same
+   underlying state — same data, a different KIND of picture.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) — cosmetic only ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hashSeed(str){
+  let h = 2166136261 >>> 0;
+  for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+const lerp  = (a,b,t)=> a + (b-a)*t;
+const smooth= (t)=>{ t=clamp(t,0,1); return t*t*(3-2*t); };
+const easeIO= (t)=>{ t=clamp(t,0,1); return t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; };
+
+/* ---------- goods: a SHAPE per good, never hue alone ---------- */
+const GOODS = [
+  { id:"cryo",  name:"Cryo",      hue:"#38bdf8", shape:"tri"   },
+  { id:"muni",  name:"Munitions", hue:"#fbbf24", shape:"square"},
+  { id:"ratn",  name:"Rations",   hue:"#34d399", shape:"circle"},
+  { id:"exot",  name:"Exotic",    hue:"#f472b6", shape:"diamond"},
+];
+
+/* ---------- the world: a lane of bands, rear -> forward ---------- */
+const BANDS = ["rear","midfield","forward"];
+const NLANE = 6;             // segments along the single highlighted lane
+const TICK_MS = 80;          // wall-clock per sim tick when playing
+const MORPH_MS = 620;        // tier cross-fade duration
+const FLEET_MAX = 80;
+const THRESH_RIBBON = 14;    // fleet count where sprites begin to condense
+const THRESH_THEATRE = 40;   // fleet count where corridor rolls to flux
+
+/* tier indices */
+const T_CONTRACT=0, T_CORRIDOR=1, T_THEATRE=2;
+const TIER_NAMES = ["contract","corridor","theatre"];
+
+/* ---------- state (UI knobs + sim snapshot) ---------- */
+const S = {
+  seedStr:"CYAN-0480", seedNum:0,
+  running:false, raf:0, _last:0, acc:0,
+  t:0,                      // tick counter
+  fleet:1,                  // hulls in flight (knob)
+  thru:0.78,               // throughput knob 0..1
+  front:0.30,              // front intensity knob 0..1
+  alt:0,                   // altitude 0..200 (knob) -> tier
+  starve:false,
+  // morph between tiers
+  tierFrom:T_CONTRACT, tierTo:T_CONTRACT, morphStart:-1,
+  // derived snapshot (recomputed each tick from deterministic arithmetic)
+  snap:null,
+  // cosmetic
+  hulls:[],                 // per-hull jitter phase (cosmetic)
+  drill:0,                  // 0..1 drill-in overlay strength
+  drillUntil:0,
+  hover:false,
+  domGood:0,                // dominant good index (deterministic per seed/tick)
+};
+
+/* ---------- canvas + dpi ---------- */
+const scope = document.getElementById("scope");
+const sctx = scope.getContext("2d");
+let DPR = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+function sizeCanvas(){
+  const host = document.getElementById("scopehost");
+  const cssW = host.clientWidth;
+  const cssH = Math.round(clamp(cssW*0.565, 300, 470));
+  scope.style.height = cssH+"px";
+  scope.width  = Math.round(cssW*DPR);
+  scope.height = Math.round(cssH*DPR);
+  sctx.setTransform(DPR,0,0,DPR,0,0);
+  S._cssW = cssW; S._cssH = cssH;
+}
+
+/* ---------- build / reset ---------- */
+function rebuildHulls(){
+  const rnd = mulberry32(S.seedNum ^ 0x9e3779b9);
+  S.hulls = [];
+  for (let i=0;i<FLEET_MAX;i++){
+    S.hulls.push({
+      phase: rnd()*Math.PI*2,
+      speed: 0.6 + rnd()*0.8,
+      offT:  (rnd()*2-1),       // cosmetic cross-lane offset
+      good:  (rnd()*GOODS.length)|0,
+      prog:  rnd(),             // 0..1 progress along lane
+      wob:   0.4 + rnd()*0.9,
+    });
+  }
+}
+function reset(){
+  S.seedStr = (document.getElementById("seed").value||"CYAN-0480").trim() || "CYAN-0480";
+  S.seedNum = hashSeed(S.seedStr);
+  S.t = 0; S.acc = 0; S._last = 0; S.drill = 0; S.drillUntil = 0;
+  rebuildHulls();
+  computeSnapshot();
+  syncTierFromAlt(true);
+  render();
+}
+
+/* ===================================================================
+   DETERMINISTIC SNAPSHOT — plain arithmetic over the tick. No RNG here.
+   This is the "tick snapshot bus": the sim's truth. The renderer only
+   reads it. (Cosmetic jitter is layered on top at draw time, from the
+   PRNG, and never feeds back in.)
+   =================================================================== */
+function computeSnapshot(){
+  const t = S.t;
+  // a slow deterministic breathing of demand, per band, seeded but float-stable
+  const ph = (S.seedNum % 1000) / 1000 * Math.PI*2;
+  // front pressure pushes inward with intensity; starving accelerates collapse
+  const frontDrive = S.front * (S.starve ? 1.0 : 0.78);
+  // displacement: how far the weather has crept toward the rear (segments)
+  const disp = clamp(frontDrive*NLANE*0.9 + 0.6*Math.sin(t*0.03+ph)*S.front, 0, NLANE);
+
+  // throughput effective: knob, dragged down by front cutting lanes & by starving
+  const cutFrac = clamp(disp/NLANE,0,1);
+  const lanesCut = Math.round(clamp(cutFrac*NLANE - 0.35, 0, NLANE));
+  const thruEff = clamp(S.thru * (S.starve?0.18:1) * (1 - 0.6*cutFrac), 0, 1);
+  // reliability falls as the front bites and as throughput is overdriven thin
+  const reliability = clamp((1-cutFrac)*lerp(0.55,1,thruEff) - (S.starve?0.25:0), 0.04, 1);
+
+  // band stock: rear is fed from your depot (throughput); forward is eaten by front
+  const supplyIn = thruEff;
+  const rear = clamp(0.35 + 0.6*supplyIn + 0.08*Math.sin(t*0.05+ph), 0, 1);
+  const mid  = clamp(0.30 + 0.55*supplyIn*reliability + 0.06*Math.sin(t*0.05+ph+1.3) - 0.18*cutFrac, 0, 1);
+  const fwd  = clamp(0.42*supplyIn*reliability + 0.05*Math.sin(t*0.05+ph+2.6) - 0.5*cutFrac, 0, 1);
+
+  // deficits (for sparklines): demand minus delivered, clamped >=0
+  const demandBase = 0.62 + 0.18*Math.sin(t*0.07+ph);
+  const cryoDef = clamp(demandBase - rear*thruEff, 0, 1);
+  const muniDef = clamp((0.5 + 0.2*Math.sin(t*0.06+ph+2.1)) - mid*reliability, 0, 1);
+
+  // dominant good on the lane — deterministic, drifts slowly
+  const domGood = Math.floor((t*0.013 + ph) % GOODS.length + GOODS.length) % GOODS.length;
+
+  // node brightness for theatre (fleet contributes network brightness)
+  const fleetN = S.fleet;
+  const netBright = clamp(0.18 + 0.6*(fleetN/FLEET_MAX)*reliability*thruEff + 0.12, 0, 1);
+
+  const snap = {
+    t, disp, lanesCut, thruEff, reliability, rear, mid, fwd,
+    cryoDef, muniDef, domGood, netBright, fleetN, frontDrive, cutFrac,
+    onContract: Math.round(fleetN * clamp(reliability*1.05,0,1)),
+  };
+  // push to history for sparklines (renderer-side ring buffer; cosmetic)
+  pushSpark(cryoDef, muniDef);
+  S.snap = snap;
+  S.domGood = domGood;
+  return snap;
+}
+
+/* sparkline ring buffers */
+const SPK_LEN = 96;
+const spk1Hist = new Array(SPK_LEN).fill(0);
+const spk2Hist = new Array(SPK_LEN).fill(0);
+let spkPtr = 0, spkFilled = 0;
+function pushSpark(a,b){
+  spk1Hist[spkPtr]=a; spk2Hist[spkPtr]=b;
+  spkPtr=(spkPtr+1)%SPK_LEN; if(spkFilled<SPK_LEN) spkFilled++;
+}
+
+/* ---------- tier from altitude knob ---------- */
+function tierFromAlt(alt){
+  if (alt < 67) return T_CONTRACT;
+  if (alt < 134) return T_CORRIDOR;
+  return T_THEATRE;
+}
+function setTier(newTier, instant){
+  const cur = currentTierResolved();
+  if (newTier === cur && S.morphStart<0) return;
+  if (instant){ S.tierFrom = newTier; S.tierTo = newTier; S.morphStart = -1; }
+  else { S.tierFrom = cur; S.tierTo = newTier; S.morphStart = performance.now(); }
+  updateTierChrome(newTier);
+}
+function currentTierResolved(){
+  // if mid-morph, the visually-dominant tier is tierTo past 0.5
+  if (S.morphStart<0) return S.tierTo;
+  const m = clamp((performance.now()-S.morphStart)/MORPH_MS,0,1);
+  return m<0.5 ? S.tierFrom : S.tierTo;
+}
+function syncTierFromAlt(instant){
+  const tt = tierFromAlt(S.alt);
+  setTier(tt, instant);
+}
+
+/* ---------- DOM refs ---------- */
+const el = (id)=>document.getElementById(id);
+const refs = {
+  tierBadge:el("tierBadge"), clk:el("clk"),
+  vFleet:el("vFleet"), vThru:el("vThru"), vFront:el("vFront"), vAlt:el("vAlt"),
+  sFleet:el("sFleet"), sThru:el("sThru"), sFront:el("sFront"), sAlt:el("sAlt"),
+  scopeHint:el("scopeHint"), scopeSub:el("scopeSub"),
+  drawnMsg:el("drawnMsg"), whyMsg:el("whyMsg"), drawnBox:el("drawnBox"),
+  bRear:el("bRear"), bMid:el("bMid"), bFwd:el("bFwd"),
+  nRear:el("nRear"), nMid:el("nMid"), nFwd:el("nFwd"),
+  kFront:el("kFront"), kFleet:el("kFleet"), kThru:el("kThru"), kRel:el("kRel"), kCut:el("kCut"),
+  btnPlay:el("btnPlay"), btnStarve:el("btnStarve"),
+};
+
+/* ---------- chrome: badges, ladder highlight, "what's drawn", why ---------- */
+const DRAWN = {
+  0:{ msg:'A single hauler as a <b>discrete arrowhead</b> with heading + cargo pip. <b>Q:</b> where is <em>this</em> ship and is its cargo at risk?',
+      why:'One hull is a thing you can follow, so it gets a body — heading, a glyph for its good, a pip that pulses when the cargo is threatened.' },
+  1:{ msg:'The whole lane as one <b>flow ribbon</b>: width = throughput, opacity = reliability, hue = dominant good. <b>Q:</b> is this corridor clearing, or fraying?',
+      why:'A crowd of hulls is unreadable one-by-one, so they condense into a fluid. You stopped counting ships and started reading the current.' },
+  2:{ msg:'Systems as <b>nodes</b> (brightness = supply), lanes as <b>flux edges</b>, fleet as <b>network glow</b>, enemy as <b>isobars</b>. <b>Q:</b> where is the whole machine losing?',
+      why:'No single ship is drawn, by design. The enemy is weather — isobars and a creep, never a unit you could try to fight.' },
+};
+function updateTierChrome(tier){
+  refs.tierBadge.className = "tierbadge "+TIER_NAMES[tier];
+  refs.tierBadge.textContent = TIER_NAMES[tier].toUpperCase()+" TIER";
+  // ladder buttons
+  document.querySelectorAll(".altstep").forEach(b=>{
+    const ti = +b.dataset.tier;
+    b.classList.toggle("active", ti===tier);
+  });
+  refs.drawnMsg.innerHTML = DRAWN[tier].msg;
+  refs.whyMsg.innerHTML = DRAWN[tier].why;
+  refs.scopeHint.textContent =
+    tier===0 ? "contract tier · discrete sprites" :
+    tier===1 ? "corridor tier · flow ribbon" :
+               "theatre tier · flux + weather";
+  refs.scopeSub.textContent =
+    tier===0 ? ("following hull #1") :
+    tier===1 ? ("reading the corridor as a fluid") :
+               ("the whole theatre, no single hull");
+  // auto-suggest dashed rung based on fleet
+  const suggest = S.fleet>=THRESH_THEATRE ? T_THEATRE : (S.fleet>=THRESH_RIBBON ? T_CORRIDOR : T_CONTRACT);
+  document.querySelectorAll(".altstep").forEach(b=>{
+    b.classList.toggle("auto", (+b.dataset.tier===suggest) && suggest!==tier);
+  });
+}
+
+/* ===================================================================
+   RENDER — read the snapshot, draw the current tier (with morph).
+   =================================================================== */
+function render(){
+  const w=S._cssW, h=S._cssH, snap=S.snap;
+  sctx.clearRect(0,0,w,h);
+  // faint scanline / vignette base
+  sctx.fillStyle = "rgba(255,255,255,0.012)";
+  for(let y=0;y<h;y+=3){ sctx.fillRect(0,y,w,1); }
+
+  // morph factor
+  let m = 1, from = S.tierTo, to = S.tierTo;
+  if (S.morphStart>=0){
+    m = clamp((performance.now()-S.morphStart)/MORPH_MS,0,1);
+    from = S.tierFrom; to = S.tierTo;
+    if (m>=1){ S.morphStart=-1; }
+  }
+  const em = easeIO(m);
+
+  // lane geometry: a gentle S-curve from left (rear depot) to right (forward rim)
+  const padL=46, padR=46, padT=30, padB=42;
+  const x0=padL, x1=w-padR;
+  const laneY = (x)=>{ const u=(x-x0)/(x1-x0); return h*0.52 + Math.sin(u*Math.PI*1.05)* (h*0.13); };
+
+  // draw the lane corridor backdrop (always), then weather, then the tier marks.
+  drawBackdropLane(x0,x1,laneY,h);
+  // weather is part of theatre but a hint of it bleeds earlier when front is high
+  const theatreWeight = (from===T_THEATRE? (1-em):0) + (to===T_THEATRE? em:0);
+  const corridorWeight= (from===T_CORRIDOR?(1-em):0) + (to===T_CORRIDOR?em:0);
+  const contractWeight= (from===T_CONTRACT?(1-em):0) + (to===T_CONTRACT?em:0);
+
+  // Always render the advancing weather front (rose isobars) — strength scales
+  // with theatre weight but a faint band shows at all tiers so the player feels it.
+  drawWeather(x0,x1,laneY,h, snap, Math.max(theatreWeight, 0.22*S.front));
+
+  if (theatreWeight>0.001) drawTheatre(x0,x1,laneY,h, snap, theatreWeight);
+  if (corridorWeight>0.001) drawRibbon(x0,x1,laneY,h, snap, corridorWeight);
+  if (contractWeight>0.001) drawSprites(x0,x1,laneY,h, snap, contractWeight, em);
+
+  // drill-in overlay: re-explode ribbon into hulls regardless of tier
+  if (S.drill>0.001) drawDrillOverlay(x0,x1,laneY,h, snap, S.drill);
+
+  // rim label
+  sctx.font = "600 10px "+mono();
+  sctx.fillStyle = "rgba(118,125,147,.9)";
+  sctx.textAlign="left";
+  sctx.fillText("REAR · your depot", x0, padT-12<0?12:padT-2);
+  sctx.textAlign="right";
+  sctx.fillStyle = "rgba(251,113,133,.9)";
+  sctx.fillText("FORWARD RIM · the front", x1, padT-2);
+  sctx.textAlign="left";
+}
+function mono(){ return 'ui-monospace,"JetBrains Mono","Cascadia Code",Consolas,monospace'; }
+
+/* lane corridor backdrop */
+function drawBackdropLane(x0,x1,laneY,h){
+  sctx.save();
+  sctx.beginPath();
+  for(let x=x0;x<=x1;x+=6){ const y=laneY(x); x===x0?sctx.moveTo(x,y):sctx.lineTo(x,y); }
+  sctx.lineWidth = 2; sctx.strokeStyle="rgba(154,161,182,.12)";
+  sctx.stroke();
+  // band dividers (rear/mid/forward)
+  for(let b=1;b<3;b++){
+    const x = x0 + (x1-x0)*(b/3);
+    sctx.beginPath(); sctx.moveTo(x, laneY(x)-46); sctx.lineTo(x, laneY(x)+46);
+    sctx.strokeStyle="rgba(255,255,255,.05)"; sctx.lineWidth=1; sctx.stroke();
+    sctx.font="9px "+mono(); sctx.fillStyle="rgba(118,125,147,.6)"; sctx.textAlign="center";
+    sctx.fillText(BANDS[b].toUpperCase(), x, laneY(x)+60);
+  }
+  sctx.textAlign="left";
+  sctx.restore();
+}
+
+/* CONTRACT TIER — discrete arrowheads + cargo pips */
+function drawSprites(x0,x1,laneY,h,snap,weight,em){
+  const N = S.fleet;
+  const tnow = performance.now()/1000;
+  const atRiskGlobal = snap.reliability < 0.55;
+  // when morphing OUT to corridor, sprites slide toward the spine and fade
+  const condense = (S.tierTo===T_CORRIDOR || S.tierTo===T_THEATRE) ? em : 0;
+  sctx.save();
+  sctx.globalAlpha = weight;
+  for(let i=0;i<N;i++){
+    const hu = S.hulls[i];
+    // deterministic-ish progress advanced by tick + cosmetic wander
+    let p = (hu.prog + S.t*0.012*hu.speed) % 1;
+    const x = lerp(x0+6, x1-6, p);
+    const baseY = laneY(x);
+    // cosmetic cross-lane wobble (PRNG-seeded phase) — never feeds sim
+    const wob = Math.sin(tnow*hu.wob + hu.phase) * 7 * (1-condense);
+    const condY = baseY; // condense pulls toward spine (offset->0)
+    const y = condY + hu.offT*9*(1-condense) + wob;
+    // heading along the lane tangent
+    const x2=x+6, ang = Math.atan2(laneY(x2)-baseY, 6);
+    const good = GOODS[hu.good];
+    const onContract = i < snap.onContract;
+    // glide vs stalled: stalled hulls (not on contract) drift slower & dim
+    const col = onContract ? "rgba(34,211,238,1)" : "rgba(154,161,182,.85)";
+    drawArrow(x,y,ang, 7.5, col);
+    // cargo pip — shape by good, pulses if cargo at risk
+    const risk = !onContract || atRiskGlobal;
+    const pulse = risk ? (0.55+0.45*Math.sin(tnow*7 + hu.phase)) : 1;
+    const pipX = x - Math.cos(ang)*11, pipY = y - Math.sin(ang)*11;
+    drawPip(pipX,pipY, 3.4*(risk?pulse:1), good.shape, good.hue, risk?pulse:0.92);
+  }
+  // when only a few hulls, label the followed one
+  if (N<=6 && weight>0.6){
+    const hu=S.hulls[0]; let p=(hu.prog+S.t*0.012*hu.speed)%1;
+    const x=lerp(x0+6,x1-6,p), y=laneY(x)+hu.offT*9;
+    sctx.globalAlpha=weight; sctx.strokeStyle="rgba(34,211,238,.5)"; sctx.lineWidth=1;
+    sctx.beginPath(); sctx.arc(x,y,15,0,Math.PI*2); sctx.stroke();
+    sctx.font="9px "+mono(); sctx.fillStyle="rgba(34,211,238,.9)"; sctx.textAlign="center";
+    sctx.fillText("#1", x, y-20);
+    sctx.textAlign="left";
+  }
+  sctx.restore();
+}
+function drawArrow(x,y,ang,r,col){
+  sctx.save(); sctx.translate(x,y); sctx.rotate(ang);
+  sctx.beginPath();
+  sctx.moveTo(r,0); sctx.lineTo(-r*0.8,r*0.7); sctx.lineTo(-r*0.45,0); sctx.lineTo(-r*0.8,-r*0.7);
+  sctx.closePath();
+  sctx.fillStyle=col; sctx.fill();
+  sctx.restore();
+}
+function drawPip(x,y,r,shape,hue,alpha){
+  sctx.save(); sctx.globalAlpha *= alpha; sctx.fillStyle=hue;
+  sctx.strokeStyle="rgba(7,8,12,.9)"; sctx.lineWidth=1;
+  sctx.beginPath();
+  if(shape==="tri"){ sctx.moveTo(x,y-r); sctx.lineTo(x+r,y+r); sctx.lineTo(x-r,y+r); sctx.closePath(); }
+  else if(shape==="square"){ sctx.rect(x-r,y-r,2*r,2*r); }
+  else if(shape==="diamond"){ sctx.moveTo(x,y-r); sctx.lineTo(x+r,y); sctx.lineTo(x,y+r); sctx.lineTo(x-r,y); sctx.closePath(); }
+  else { sctx.arc(x,y,r,0,Math.PI*2); }
+  sctx.fill(); sctx.stroke();
+  sctx.restore();
+}
+
+/* CORRIDOR TIER — one flow ribbon. width=throughput, alpha=reliability, hue=dominant good */
+function drawRibbon(x0,x1,laneY,h,snap,weight){
+  const tnow=performance.now()/1000;
+  const good = GOODS[snap.domGood];
+  const thr = snap.thruEff, rel = snap.reliability;
+  const baseW = lerp(3, 30, thr);             // throughput -> width
+  const alpha = lerp(0.12, 0.92, rel) * weight; // reliability -> opacity
+  const fray = 1 - rel;                        // low reliability -> fray/jitter
+  const cut = snap.cutFrac;                    // where the front has bitten
+
+  // ribbon as a filled band around the lane spine, terminating where front cut it
+  const xEnd = lerp(x1-6, x0 + (x1-x0)*0.32, cut*0.92); // front eats from forward
+  const top=[], bot=[];
+  for(let x=x0+4;x<=xEnd;x+=4){
+    const u=(x-x0)/(x1-x0);
+    const y=laneY(x);
+    // shimmer when clearing well (high rel): a travelling brightness wave
+    const shimmer = Math.sin(u*16 - tnow*4) * 0.5 + 0.5;
+    // fray: edges get noisy as reliability drops (cosmetic PRNG-free wobble)
+    const frayAmp = fray * (2 + 2.6*Math.sin(u*40 + tnow*6));
+    const wHere = baseW*(0.7+0.3*shimmer) * lerp(1,0.5,u*cut) ;
+    top.push([x, y - wHere*0.5 - frayAmp]);
+    bot.push([x, y + wHere*0.5 + frayAmp]);
+  }
+  if(top.length<2){ return; }
+  sctx.save();
+  // glow underlay
+  const grad = sctx.createLinearGradient(x0,0,xEnd,0);
+  grad.addColorStop(0, hexA(good.hue, alpha*0.95));
+  grad.addColorStop(1, hexA(good.hue, alpha*0.35));
+  sctx.beginPath();
+  sctx.moveTo(top[0][0],top[0][1]);
+  for(const p of top) sctx.lineTo(p[0],p[1]);
+  for(let i=bot.length-1;i>=0;i--) sctx.lineTo(bot[i][0],bot[i][1]);
+  sctx.closePath();
+  sctx.fillStyle=grad; sctx.fill();
+  // bright core line (the shimmer)
+  sctx.beginPath();
+  for(let i=0;i<top.length;i++){ const x=top[i][0], y=(top[i][1]+bot[i][1])/2; i===0?sctx.moveTo(x,y):sctx.lineTo(x,y); }
+  sctx.strokeStyle=hexA(good.hue, alpha); sctx.lineWidth=1.6;
+  sctx.stroke();
+  // travelling shimmer dashes when clearing well
+  if(rel>0.5){
+    sctx.setLineDash([6,10]); sctx.lineDashOffset = -(tnow*60)%16;
+    sctx.strokeStyle=hexA("#eaffff", alpha*0.5); sctx.lineWidth=1;
+    sctx.beginPath();
+    for(let i=0;i<top.length;i++){ const x=top[i][0], y=(top[i][1]+bot[i][1])/2; i===0?sctx.moveTo(x,y):sctx.lineTo(x,y); }
+    sctx.stroke(); sctx.setLineDash([]);
+  }
+  // a small dominant-good pip chip at the ribbon mouth
+  drawPip(x0+10, laneY(x0+10), 4, good.shape, good.hue, weight);
+  sctx.restore();
+}
+
+/* THEATRE TIER — node graph + flux edges + network brightness */
+function drawTheatre(x0,x1,laneY,h,snap,weight){
+  const tnow=performance.now()/1000;
+  const bright = snap.netBright;
+  // place 5 nodes across the lane; rear bright (your depot), forward dim (starving)
+  const NN=5;
+  const stocks=[snap.rear, lerp(snap.rear,snap.mid,.5), snap.mid, lerp(snap.mid,snap.fwd,.5), snap.fwd];
+  const pts=[];
+  for(let i=0;i<NN;i++){
+    const x = lerp(x0+18, x1-18, i/(NN-1));
+    const y = laneY(x) + Math.sin(i*1.7)*8;
+    pts.push([x,y,stocks[i]]);
+  }
+  sctx.save(); sctx.globalAlpha=weight;
+  // flux edges
+  for(let i=0;i<NN-1;i++){
+    const a=pts[i], b=pts[i+1];
+    const cut = i >= (NN-1-snap.lanesCut);    // forward edges cut by the front
+    const flux = clamp(snap.thruEff*Math.min(a[2],b[2])*1.4,0,1);
+    sctx.beginPath(); sctx.moveTo(a[0],a[1]); sctx.lineTo(b[0],b[1]);
+    if(cut){
+      sctx.setLineDash([3,5]); sctx.strokeStyle="rgba(251,113,133,.55)"; sctx.lineWidth=1.4;
+    } else {
+      sctx.setLineDash([]); sctx.strokeStyle=hexA("#22d3ee", 0.2+0.6*flux*bright);
+      sctx.lineWidth = 1+4*flux;
+    }
+    sctx.stroke(); sctx.setLineDash([]);
+    // flux packets travelling along live edges (network animation)
+    if(!cut && flux>0.05){
+      const k = ((tnow*0.6*(0.4+flux))%1);
+      const px=lerp(a[0],b[0],k), py=lerp(a[1],b[1],k);
+      drawGlowDot(px,py,2.2, "#aef6ff", flux*bright);
+    }
+  }
+  // nodes
+  for(let i=0;i<NN;i++){
+    const [x,y,st]=pts[i];
+    const cut = i > (NN-1-snap.lanesCut-1) && i>=NN-2;
+    const lit = clamp(st*bright,0,1);
+    drawGlowDot(x,y, 4+5*lit, cut? "#fb7185":"#22d3ee", 0.35+0.65*lit);
+    // node dim = depot starving: a ring that fades as stock drops
+    if(st<0.35){
+      sctx.beginPath(); sctx.arc(x,y, 9+Math.sin(tnow*4+i)*1.5, 0, Math.PI*2);
+      sctx.strokeStyle="rgba(251,113,133,"+(0.5*(1-st/0.35))+")"; sctx.lineWidth=1; sctx.stroke();
+    }
+  }
+  sctx.restore();
+}
+function drawGlowDot(x,y,r,hex,a){
+  sctx.save();
+  const g=sctx.createRadialGradient(x,y,0,x,y,r*2.4);
+  g.addColorStop(0, hexA(hex, a)); g.addColorStop(1, hexA(hex,0));
+  sctx.fillStyle=g; sctx.beginPath(); sctx.arc(x,y,r*2.4,0,Math.PI*2); sctx.fill();
+  sctx.fillStyle=hexA(hex, Math.min(1,a+0.2)); sctx.beginPath(); sctx.arc(x,y,r*0.6,0,Math.PI*2); sctx.fill();
+  sctx.restore();
+}
+
+/* WEATHER — the enemy as advancing isobars (rose, hatched, creeping). Never a unit. */
+function drawWeather(x0,x1,laneY,h,snap,weight){
+  if(weight<=0.001) return;
+  const tnow=performance.now()/1000;
+  const rnd = mulberry32((S.seedNum ^ 0x55aa) >>> 0); // cosmetic grain only
+  // front edge x: comes IN from the forward (right) rim as displacement grows
+  const dispU = snap.disp/NLANE;                       // 0..1
+  const frontX = lerp(x1, x0 + (x1-x0)*0.30, dispU*0.95);
+  sctx.save();
+  sctx.globalAlpha = clamp(weight,0,1);
+  // hatched overrun region to the right of the front edge
+  const hatchStep=9;
+  sctx.beginPath(); sctx.rect(frontX,0,x1+40-frontX,h); sctx.clip();
+  sctx.fillStyle="rgba(251,113,133,.06)"; sctx.fillRect(frontX,0,x1+40-frontX,h);
+  sctx.strokeStyle="rgba(251,113,133,.16)"; sctx.lineWidth=1;
+  for(let d=-h; d<(x1-frontX)+h; d+=hatchStep){
+    sctx.beginPath(); sctx.moveTo(frontX+d,0); sctx.lineTo(frontX+d-h,h); sctx.stroke();
+  }
+  sctx.restore();
+  // isobars: a few creeping arcs, the leading one brightest. creep = slow inward drift.
+  sctx.save();
+  sctx.globalAlpha=clamp(weight,0,1);
+  const bars=4;
+  for(let b=0;b<bars;b++){
+    const off = b*16 + ((tnow*10) % 16);    // creep inward over time
+    const bx = frontX + off;
+    const a = (1 - b/bars) * 0.5;
+    sctx.beginPath();
+    for(let y=-4;y<=h+4;y+=6){
+      // wavy isobar with cosmetic grain
+      const wob = Math.sin(y*0.05 + tnow*1.2 + b)* (6+4*snap.front) + (rnd()*2-1)*1.2;
+      const x = bx + wob;
+      y===-4?sctx.moveTo(x,y):sctx.lineTo(x,y);
+    }
+    sctx.strokeStyle = hexA("#fb7185", a);
+    sctx.lineWidth = b===0? 2 : 1;
+    sctx.stroke();
+  }
+  // leading-edge label
+  sctx.font="9px "+mono(); sctx.fillStyle="rgba(251,113,133,.85)"; sctx.textAlign="left";
+  sctx.fillText("FRONT", clamp(frontX+4,x0,x1-44), 16);
+  sctx.restore();
+}
+
+/* DRILL-IN — re-explode the ribbon into individual hulls (falsify the abstraction) */
+function drawDrillOverlay(x0,x1,laneY,h,snap,strength){
+  const tnow=performance.now()/1000;
+  const N = clamp(S.fleet, 1, FLEET_MAX);
+  sctx.save();
+  sctx.globalAlpha = strength*0.95;
+  // dim the whole scope, then punch a clean rounded "lens" hole over the rear half
+  const lx0=x0+6, lx1=lerp(x0,x1,0.62);
+  const lensY=laneY((lx0+lx1)/2)-58, lensH=116;
+  sctx.fillStyle="rgba(7,8,12,.45)"; sctx.fillRect(0,0,S._cssW,S._cssH);
+  // clear inside the lens so the exploded hulls read against clean ink
+  sctx.save();
+  sctx.globalCompositeOperation="destination-out";
+  roundRect(lx0-6, lensY, (lx1-lx0)+12, lensH, 10); sctx.fillStyle="rgba(0,0,0,1)"; sctx.fill();
+  sctx.restore();
+  sctx.strokeStyle="rgba(34,211,238,.7)"; sctx.lineWidth=1.4;
+  roundRect(lx0-6, lensY, (lx1-lx0)+12, lensH, 10); sctx.stroke();
+  sctx.font="9px "+mono(); sctx.fillStyle="rgba(34,211,238,.9)"; sctx.textAlign="left";
+  sctx.fillText("DRILL-IN · the ribbon is these "+N+" hulls", lx0-2, lensY-6);
+  // draw the hulls exploded out of the spine
+  for(let i=0;i<N;i++){
+    const hu=S.hulls[i];
+    let p=(hu.prog + S.t*0.012*hu.speed)%1;
+    const x=lerp(lx0, lx1, p);
+    const y=laneY(x) + hu.offT*22*strength + Math.sin(tnow*hu.wob+hu.phase)*9*strength;
+    const good=GOODS[hu.good];
+    const x2=x+6, ang=Math.atan2(laneY(x2)-laneY(x),6);
+    drawArrow(x,y,ang,6.5,"rgba(34,211,238,.95)");
+    drawPip(x-Math.cos(ang)*9, y-Math.sin(ang)*9, 2.8, good.shape, good.hue, 0.95);
+  }
+  sctx.restore();
+}
+function roundRect(x,y,w,h,r){
+  sctx.beginPath();
+  sctx.moveTo(x+r,y); sctx.arcTo(x+w,y,x+w,y+h,r); sctx.arcTo(x+w,y+h,x,y+h,r);
+  sctx.arcTo(x,y+h,x,y,r); sctx.arcTo(x,y,x+w,y,r); sctx.closePath();
+}
+
+/* hex + alpha helper (hex like #rrggbb) */
+function hexA(hex, a){
+  a=clamp(a,0,1);
+  const n=parseInt(hex.slice(1),16);
+  const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return "rgba("+r+","+g+","+b+","+a.toFixed(3)+")";
+}
+
+/* ===================================================================
+   READOUTS — the instrument cluster, sparklines, motion-grammar glyphs
+   =================================================================== */
+function band(iEl,nEl,v,goodHue){
+  const pct=clamp(v,0,1);
+  iEl.style.width=(pct*100).toFixed(0)+"%";
+  // color: cyan when healthy, rose-ish as it starves
+  const col = pct>0.5 ? "#22d3ee" : (pct>0.25 ? "#fbbf24" : "#fb7185");
+  iEl.style.background=col;
+  nEl.textContent=(pct*100).toFixed(0)+"%";
+  nEl.style.color = pct<0.25 ? "#fb7185" : "#eef1f8";
+}
+function updateReadouts(){
+  const s=S.snap;
+  band(refs.bRear,refs.nRear,s.rear);
+  band(refs.bMid ,refs.nMid ,s.mid);
+  band(refs.bFwd ,refs.nFwd ,s.fwd);
+  refs.kFront.textContent = "+"+(s.disp).toFixed(1)+" seg";
+  refs.kFront.style.color = s.disp>NLANE*0.6 ? "#fb7185" : (s.disp>NLANE*0.35? "#fda4af":"#fb7185");
+  refs.kFleet.textContent = s.onContract+" / "+S.fleet;
+  refs.kThru.textContent = (s.thruEff*100).toFixed(0)+"%";
+  refs.kThru.style.color = s.thruEff<0.3? "#fb7185":"#eef1f8";
+  refs.kRel.textContent = (s.reliability*100).toFixed(0)+"%";
+  refs.kRel.style.color = s.reliability<0.5? "#fbbf24":"#eef1f8";
+  refs.kCut.textContent = s.lanesCut+" / "+NLANE;
+  refs.kCut.style.color = s.lanesCut>0? "#fb7185":"#eef1f8";
+  refs.clk.textContent = S.t;
+  drawSpark(spk1,spk1Hist,"#38bdf8");
+  drawSpark(spk2,spk2Hist,"#fbbf24");
+}
+const spk1=document.getElementById("spk1"), spk2=document.getElementById("spk2");
+const sp1=spk1.getContext("2d"), sp2=spk2.getContext("2d");
+function fitSpk(cv){ const w=cv.clientWidth||300; cv.width=Math.round(w*DPR); cv.height=Math.round(26*DPR);
+  const c=cv.getContext("2d"); c.setTransform(DPR,0,0,DPR,0,0); return {w, h:26}; }
+let spkDims={spk1:fitSpk(spk1), spk2:fitSpk(spk2)};
+function drawSpark(cv,hist,hex){
+  const c=cv.getContext("2d"); const w=cv.clientWidth||300, h=26;
+  c.clearRect(0,0,w,h);
+  // baseline
+  c.strokeStyle="rgba(255,255,255,.06)"; c.lineWidth=1;
+  c.beginPath(); c.moveTo(0,h-3); c.lineTo(w,h-3); c.stroke();
+  c.beginPath();
+  const n=spkFilled;
+  for(let i=0;i<n;i++){
+    const idx=(spkPtr - n + i + SPK_LEN)%SPK_LEN;
+    const v=hist[idx];
+    const x=(i/(SPK_LEN-1))*w;
+    const y=lerp(h-3, 3, clamp(v,0,1));
+    i===0?c.moveTo(x,y):c.lineTo(x,y);
+  }
+  c.strokeStyle=hex; c.lineWidth=1.4; c.stroke();
+  // fill under
+  c.lineTo((n-1)/(SPK_LEN-1)*w, h-3); c.lineTo(0,h-3); c.closePath();
+  c.fillStyle=hexA(hex,0.14); c.fill();
+}
+
+/* motion-grammar mini-glyphs (live) */
+const glyphCanvases=[...document.querySelectorAll('canvas.gl')].map(cv=>{
+  cv.width=26*DPR; cv.height=16*DPR; const c=cv.getContext("2d"); c.setTransform(DPR,0,0,DPR,0,0);
+  return {cv,c,kind:cv.dataset.gl};
+});
+function drawGlyphs(){
+  const t=performance.now()/1000;
+  for(const g of glyphCanvases){
+    const c=g.c; c.clearRect(0,0,26,16);
+    if(g.kind==="glide"){
+      const x=2+((t*8)%22); c.fillStyle="#22d3ee"; triArrow(c,x,8,4);
+    } else if(g.kind==="pulse"){
+      const p=0.5+0.5*Math.sin(t*7); c.fillStyle=hexA("#f472b6",0.5+0.5*p);
+      c.beginPath(); c.arc(13,8,2+2*p,0,Math.PI*2); c.fill();
+    } else if(g.kind==="shimmer"){
+      c.strokeStyle="#22d3ee"; c.lineWidth=3; c.beginPath(); c.moveTo(2,8); c.lineTo(24,8); c.stroke();
+      c.setLineDash([3,4]); c.lineDashOffset=-(t*30)%14; c.strokeStyle="#eaffff"; c.lineWidth=1;
+      c.beginPath(); c.moveTo(2,8); c.lineTo(24,8); c.stroke(); c.setLineDash([]);
+    } else if(g.kind==="fray"){
+      c.strokeStyle="#9aa1b6"; c.lineWidth=1;
+      c.beginPath();
+      for(let x=2;x<=24;x+=2){ const y=8+Math.sin(x*1.5+t*6)*(2.4); x===2?c.moveTo(x,y):c.lineTo(x,y);} c.stroke();
+    } else if(g.kind==="creep"){
+      const x=2+((t*6)%18); c.strokeStyle="#fb7185"; c.lineWidth=1.6;
+      c.beginPath(); c.moveTo(24-x,1); c.lineTo(24-x,15); c.stroke();
+      c.strokeStyle=hexA("#fb7185",.4); c.beginPath(); c.moveTo(24-x+5,1); c.lineTo(24-x+5,15); c.stroke();
+    } else if(g.kind==="dim"){
+      const p=0.35+0.3*Math.sin(t*3); c.fillStyle=hexA("#fb7185",0.4);
+      const g2=c.createRadialGradient(13,8,0,13,8,7); g2.addColorStop(0,hexA("#22d3ee",p)); g2.addColorStop(1,"rgba(0,0,0,0)");
+      c.fillStyle=g2; c.beginPath(); c.arc(13,8,7,0,Math.PI*2); c.fill();
+    }
+  }
+}
+function triArrow(c,x,y,r){ c.save(); c.translate(x,y); c.beginPath();
+  c.moveTo(r,0); c.lineTo(-r*0.8,r*0.7); c.lineTo(-r*0.4,0); c.lineTo(-r*0.8,-r*0.7); c.closePath(); c.fill(); c.restore(); }
+
+/* ===================================================================
+   LOOP — fixed-step sim tick; render every frame (animation is smooth,
+   the sim is deterministic and stepped).
+   =================================================================== */
+function loop(ts){
+  if(!S._last) S._last=ts;
+  let dt=ts-S._last; S._last=ts;
+  if(dt>250) dt=250; // tab-switch guard
+  if(S.running){
+    S.acc+=dt;
+    while(S.acc>=TICK_MS){ S.acc-=TICK_MS; S.t++; computeSnapshot(); }
+  }
+  // ease drill toward target
+  const drillTarget = (performance.now()<S.drillUntil)?1:0;
+  S.drill += (drillTarget - S.drill)*0.18;
+  if(S.drill<0.002 && drillTarget===0) S.drill=0;
+  render();
+  updateReadouts();
+  drawGlyphs();
+  S.raf=requestAnimationFrame(loop);
+}
+
+/* ---------- controls ---------- */
+function play(){ S.running=true; refs.btnPlay.textContent="❚❚ Pause"; refs.btnPlay.classList.remove("primary"); }
+function pause(){ S.running=false; refs.btnPlay.textContent="▶ Play"; refs.btnPlay.classList.add("primary"); }
+function togglePlay(){ S.running?pause():play(); }
+
+refs.btnPlay.addEventListener("click", togglePlay);
+document.getElementById("btnStep").addEventListener("click", ()=>{ pause(); S.t++; computeSnapshot(); });
+document.getElementById("btnReset").addEventListener("click", ()=>{ pause(); reset(); });
+refs.btnStarve.addEventListener("click", ()=>{
+  S.starve=!S.starve; refs.btnStarve.classList.toggle("on",S.starve);
+  refs.btnStarve.textContent = S.starve? "▶ Resume feed" : "✋ Starve";
+  computeSnapshot();
+});
+document.getElementById("btnDrill").addEventListener("click", ()=>{
+  S.drillUntil = performance.now()+2600;  // re-explode for ~2.6s
+});
+
+/* sliders */
+refs.sFleet.addEventListener("input", e=>{
+  S.fleet=+e.target.value; refs.vFleet.textContent=S.fleet;
+  refs.kFleet && (refs.kFleet.textContent = (S.snap?S.snap.onContract:S.fleet)+" / "+S.fleet);
+  // auto-suggest altitude as fleet crosses thresholds (but don't force it)
+  updateTierChrome(currentTierResolved());
+  computeSnapshot();
+});
+refs.sThru.addEventListener("input", e=>{
+  S.thru=+e.target.value/100; refs.vThru.textContent=S.thru.toFixed(2); computeSnapshot();
+});
+refs.sFront.addEventListener("input", e=>{
+  S.front=+e.target.value/100; refs.vFront.textContent=S.front.toFixed(2); computeSnapshot();
+});
+refs.sAlt.addEventListener("input", e=>{
+  S.alt=+e.target.value;
+  refs.vAlt.textContent = TIER_NAMES[tierFromAlt(S.alt)];
+  syncTierFromAlt(false);
+});
+/* ladder buttons snap altitude + tier */
+document.querySelectorAll(".altstep").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    const ti=+b.dataset.tier;
+    S.alt = ti===0?20:(ti===1?100:175);
+    refs.sAlt.value=S.alt; refs.vAlt.textContent=TIER_NAMES[ti];
+    setTier(ti,false);
+  });
+});
+
+/* seed chips */
+const SEEDS=["CYAN-0480","GLASS-1","M3-LADDER","COMBINE-77","ATTRITION"];
+const seedWrap=document.getElementById("seedchips");
+SEEDS.forEach(s=>{
+  const b=document.createElement("button"); b.className="seedchip"; b.textContent=s;
+  b.addEventListener("click",()=>{ document.getElementById("seed").value=s; pause(); reset(); });
+  seedWrap.appendChild(b);
+});
+document.getElementById("seed").addEventListener("keydown", e=>{ if(e.key==="Enter"){ pause(); reset(); }});
+
+/* resize */
+let rT;
+window.addEventListener("resize", ()=>{
+  clearTimeout(rT);
+  rT=setTimeout(()=>{ DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1)); sizeCanvas();
+    spkDims={spk1:fitSpk(spk1),spk2:fitSpk(spk2)};
+    glyphCanvases.forEach(g=>{ g.cv.width=26*DPR; g.cv.height=16*DPR; g.c.setTransform(DPR,0,0,DPR,0,0); });
+    render(); }, 90);
+});
+
+/* ---------- boot ---------- */
+sizeCanvas();
+reset();
+updateTierChrome(T_CONTRACT);
+S.raf=requestAnimationFrame(loop);
+play(); // start animating so the page is alive on open
+</script>
+</body>
+</html>
