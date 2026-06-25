@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Clearing Cell — HAND · price discovery, one market</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3rem 0 .5rem;padding-top:.4rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+em{color:var(--fog-200,#d7dbe8)}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+
+/* ===== SIM PANEL ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:2rem 0;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .tick{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+.svgwrap{width:100%;border:1px solid var(--line);border-radius:10px;background:radial-gradient(40rem 18rem at 50% -40%,var(--accent-soft),transparent 70%),var(--ink-900);overflow:hidden}
+svg{display:block;width:100%;height:auto}
+
+/* readouts */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.9rem 0}
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:.7rem;margin:.9rem 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1}
+.stat .v.accent{color:var(--accent)}
+.stat .sub{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.15rem}
+
+/* price headline */
+.priceline{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.priceline .big{font-family:var(--font-mono);font-size:2.6rem;font-weight:700;color:var(--accent);line-height:1}
+.priceline .arrow{font-size:1.4rem;line-height:1}
+.priceline .eqnote{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);margin-left:.2rem}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--fog-500)}
+.why{font-family:var(--font-mono);font-size:.8rem;color:var(--fog-400);margin-top:.4rem;min-height:2.2rem;line-height:1.45}
+.why b{color:var(--fog-100)} .why .hot{color:var(--accent)} .why .dn{color:var(--bad)} .why .upc{color:var(--good)}
+
+/* net order-flow signed bar */
+.flowbox{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem .5rem;background:var(--ink-900)}
+.flowbox .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.4rem;display:flex;justify-content:space-between}
+.flowbox .k .rd{color:var(--fog-400)}
+.netbar{position:relative;height:1.5rem;border:1px solid var(--line);border-radius:7px;background:var(--ink-950);overflow:hidden}
+.netbar .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--fog-500);opacity:.6;z-index:3}
+.netbar .seg{position:absolute;top:0;bottom:0;width:0%;transition:width .12s linear,left .12s linear}
+.netbar .seg.short{left:50%;background:linear-gradient(90deg,var(--good-soft),var(--good))}
+.netbar .seg.glut{right:50%;background:linear-gradient(270deg,var(--bad-soft),var(--bad))}
+.netbar .lblL,.netbar .lblR{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;color:var(--fog-500);z-index:4}
+.netbar .lblL{left:.4rem}.netbar .lblR{right:.4rem}
+.flowbox .fnum{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-300);margin-top:.35rem;text-align:center}
+.flowbox .fnum b.s{color:var(--good)} .flowbox .fnum b.g{color:var(--bad)}
+
+/* supply/demand tilt */
+.tilt{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem .55rem;background:var(--ink-900);display:flex;flex-direction:column;gap:.3rem}
+.tilt .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500)}
+.tiltrow{display:flex;align-items:center;gap:.5rem}
+.tiltrow .nm{font-family:var(--font-mono);font-size:.66rem;width:4.6rem;color:var(--fog-400);text-align:right;flex:0 0 auto}
+.tbar{position:relative;height:.85rem;flex:1;border-radius:4px;background:var(--ink-950);border:1px solid var(--line);overflow:hidden}
+.tbar .tf{position:absolute;left:0;top:0;bottom:0;width:0%;transition:width .12s linear}
+.tbar .tf.sup{background:linear-gradient(90deg,color-mix(in oklab,var(--cool) 55%,transparent),var(--cool))}
+.tbar .tf.dem{background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 55%,transparent),var(--accent))}
+.tiltrow .tn{font-family:var(--font-mono);font-size:.66rem;width:2.6rem;color:var(--fog-300);flex:0 0 auto}
+.tilt .verdict{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400);margin-top:.15rem}
+.tilt .verdict b.s{color:var(--good)} .tilt .verdict b.g{color:var(--bad)} .tilt .verdict b.bal{color:var(--fog-100)}
+
+/* chart */
+.chartwrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);margin:.9rem 0 .3rem;padding:.5rem .55rem .35rem}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.68rem;color:var(--fog-400);margin:.1rem .2rem .4rem}
+.legend i{display:inline-block;width:.9rem;height:.16rem;border-radius:2px;vertical-align:middle;margin-right:.3rem}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--fog-400) 0 4px,transparent 4px 7px);height:.12rem}
+.legend i.eq{background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 7px);height:.12rem}
+canvas{display:block;width:100%;height:172px;border-radius:6px}
+
+/* gradient / edge gauge */
+.edge{border:1px solid var(--line);border-radius:10px;background:var(--ink-900);padding:.55rem .7rem .5rem;margin:.6rem 0}
+.edge .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);display:flex;justify-content:space-between;margin-bottom:.32rem}
+.edge .k .ev{color:var(--accent)}
+.edge .track{position:relative;height:.9rem;border:1px solid var(--line);border-radius:6px;background:repeating-linear-gradient(90deg,transparent 0 21px,rgba(255,255,255,.04) 21px 22px),var(--ink-950);overflow:hidden}
+.edge .fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 40%,transparent),var(--accent));transition:width .14s linear}
+.edge .note{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.3rem}
+.edge .note b{color:var(--accent)}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.1rem 0 .4rem}
+@media(max-width:560px){.controls{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.priceline .big{font-size:2.1rem}}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline}
+.ctl label .num{color:var(--accent);font-size:.74rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.actrow{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:.5rem 0 .2rem}
+.actrow .qlabel{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);letter-spacing:.08em}
+button.sell{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+button.sell:hover{background:color-mix(in oklab,var(--bad) 26%,transparent)}
+button.buy{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+button.buy:hover{background:color-mix(in oklab,var(--good) 26%,transparent)}
+.demoZone{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line)}
+.demoZone .lbl{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);width:100%}
+button.demo{border-color:var(--cool);color:var(--cool);background:var(--cool-soft)}
+button.demo:hover{background:color-mix(in oklab,var(--cool) 26%,transparent)}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.7rem 0 0;letter-spacing:.02em;line-height:1.5}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="chip">HAND</div>
+  <p class="eyebrow">the clearing cell · price discovery</p>
+  <h1>The Clearing Cell</h1>
+  <p class="lede">One market, one good, no money — just a price that nobody sets and everybody pushes. This is the cell the whole economy is grown from. If it doesn't feel alive when you poke it, nothing built on top of it will.</p>
+
+  <div class="spark">
+    Nobody hand-places this price. It <b>emerges</b> — a producer adding stock, a starving front pulling it, and you shoving cargo across the counter, all trying to clear at once. You don't trade against a number; you trade against a <b>tendency</b>.
+  </div>
+
+  <p>This is the root of the <strong>amber lineage</strong> — the economic reading of <em>Minimalist Space Logistics</em> that calls itself <em>The Invisible Hand</em>. The pitch is blunt about where to start: build the single-market clearing cell first, because <em>"if this one cell doesn't FEEL like a market reacting to you, nothing scales up."</em> Everything else — multiple systems, your hauler arbitraging between them, the war overhead — is just a mesh of these cells trading with each other.</p>
+
+  <p>Deliberately, there is <strong>no money here</strong>. No treasury, no wallet, no payout. This page is the pure price-discovery base: a market that quotes a price and lets that price move. The sibling cell <span class="handle">solvency-cell</span> clamps what a station can actually pay you by its cash on hand; <strong>here every counterparty is assumed liquid</strong>, so we can watch price alone, with nothing to muddy it. Poke it.</p>
+
+  <!-- ======================= THE SIM ======================= -->
+  <div class="sim" id="sim">
+    <div class="sim-head">
+      <span class="t">CLEARING CELL · one market · one good</span>
+      <span class="tick">TICK <span id="tickN">0</span></span>
+    </div>
+    <div class="sim-body">
+
+      <!-- flow diagram -->
+      <div class="svgwrap" aria-label="goods flow: producer adds inventory, the front and civilians draw it, you buy or sell across the counter; the market quotes one price">
+        <svg viewBox="0 0 700 196" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa1b6"/></marker>
+            <marker id="ahb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#60a5fa"/></marker>
+            <marker id="ahr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f87171"/></marker>
+            <marker id="aha" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b"/></marker>
+          </defs>
+
+          <!-- PRODUCER -->
+          <rect x="20" y="74" width="146" height="48" rx="9" fill="#0e1018" stroke="#60a5fa" stroke-opacity=".55"/>
+          <text x="93" y="94" fill="#60a5fa" font-size="9" letter-spacing="2" text-anchor="middle">PRODUCER</text>
+          <text x="93" y="112" id="svgProd" fill="#c4c9d8" font-size="11" text-anchor="middle">+0 u / tick</text>
+
+          <!-- MARKET (center) -->
+          <rect x="266" y="40" width="174" height="116" rx="11" fill="#0e1018" stroke="#f59e0b" stroke-opacity=".5"/>
+          <text x="353" y="62" fill="#f59e0b" font-size="9" letter-spacing="2.5" text-anchor="middle">THE MARKET</text>
+          <text x="353" y="84" fill="#767d93" font-size="8" letter-spacing="1.4" text-anchor="middle">one quoted price</text>
+          <text x="353" y="116" id="svgPrice" fill="#f59e0b" font-size="26" font-weight="700" text-anchor="middle">—</text>
+          <text x="353" y="140" id="svgInv" fill="#9aa1b6" font-size="10" text-anchor="middle">inventory — u</text>
+
+          <!-- FRONT + CIVILIANS -->
+          <rect x="534" y="20" width="150" height="46" rx="9" fill="#0e1018" stroke="#f87171" stroke-opacity=".55"/>
+          <text x="609" y="38" fill="#f87171" font-size="9" letter-spacing="1.5" text-anchor="middle">THE FRONT (+ civ)</text>
+          <text x="609" y="56" id="svgFront" fill="#c4c9d8" font-size="11" text-anchor="middle">draws — u / tick</text>
+
+          <!-- YOU -->
+          <rect x="534" y="128" width="150" height="46" rx="9" fill="#0e1018" stroke="#f59e0b" stroke-opacity=".55"/>
+          <text x="609" y="146" fill="#f59e0b" font-size="9" letter-spacing="2" text-anchor="middle">YOUR HAULER</text>
+          <text x="609" y="164" id="svgYou" fill="#c4c9d8" font-size="11" text-anchor="middle">idle</text>
+
+          <!-- producer -> market (supply in) -->
+          <path d="M166,98 L264,98" stroke="#60a5fa" stroke-width="1.7" fill="none" marker-end="url(#ahb)"/>
+          <text x="214" y="90" fill="#60a5fa" font-size="8.5" text-anchor="middle">adds stock</text>
+
+          <!-- market -> front (demand pull) -->
+          <path d="M440,74 C486,60 500,46 532,44" stroke="#f87171" stroke-width="1.7" fill="none" marker-end="url(#ahr)"/>
+          <text x="492" y="40" fill="#f87171" font-size="8.5" text-anchor="middle">pulls stock</text>
+
+          <!-- you <-> market (you trade) -->
+          <path d="M532,150 C496,140 470,128 442,122" stroke="#f59e0b" stroke-width="1.7" fill="none" marker-end="url(#aha)" id="svgYouArrow"/>
+          <text x="486" y="150" fill="#f59e0b" font-size="8.5" text-anchor="middle" id="svgYouLbl">you ⇄ market</text>
+        </svg>
+      </div>
+
+      <!-- price headline + net flow -->
+      <div class="grid2" style="margin-top:1rem">
+        <div class="stat">
+          <div class="k">Local price · per unit · orbits a moving equilibrium</div>
+          <div class="priceline">
+            <span class="big" id="priceBig">—</span>
+            <span class="arrow flat" id="priceArrow">•</span>
+            <span class="eqnote" id="eqNote">eq —</span>
+          </div>
+          <div class="why" id="whyLine">awaiting first tick…</div>
+        </div>
+        <div class="flowbox">
+          <div class="k"><span>Net order flow · this tick</span><span class="rd" id="depthRead">depth —</span></div>
+          <div class="netbar">
+            <div class="seg glut" id="segGlut"></div>
+            <div class="seg short" id="segShort"></div>
+            <div class="mid"></div>
+            <span class="lblL">GLUT ◄ sell side</span>
+            <span class="lblR">buy side ► SHORTAGE</span>
+          </div>
+          <div class="fnum" id="flowNum">—</div>
+        </div>
+      </div>
+
+      <!-- core integers -->
+      <div class="grid3">
+        <div class="stat"><div class="k">Inventory on shelf</div><div class="v" id="rInv">—</div><div class="sub" id="rInvSub">units standing</div></div>
+        <div class="stat"><div class="k">Equilibrium price</div><div class="v accent" id="rEq">—</div><div class="sub">the orbit center</div></div>
+        <div class="stat"><div class="k">Gap to equilibrium</div><div class="v" id="rGap">—</div><div class="sub" id="rGapSub">price − eq</div></div>
+      </div>
+
+      <!-- supply/demand tilt -->
+      <div class="tilt">
+        <div class="k">Supply / demand tilt · why the price wants to move</div>
+        <div class="tiltrow"><span class="nm">supply</span><div class="tbar"><div class="tf sup" id="tfSup"></div></div><span class="tn" id="tnSup">—</span></div>
+        <div class="tiltrow"><span class="nm">demand</span><div class="tbar"><div class="tf dem" id="tfDem"></div></div><span class="tn" id="tnDem">—</span></div>
+        <div class="verdict" id="tiltVerdict">—</div>
+      </div>
+
+      <!-- your edge / gradient gauge -->
+      <div class="edge">
+        <div class="k"><span>YOUR EDGE — distance from equilibrium you can still milk</span><span class="ev" id="edgeV">—</span></div>
+        <div class="track"><div class="fill" id="edgeFill" style="width:0%"></div></div>
+        <div class="note" id="edgeNote">the further price sits from eq, the fatter the gradient. <b>Repeat-trade and you flatten it.</b></div>
+      </div>
+
+      <!-- chart -->
+      <div class="chartwrap">
+        <div class="legend">
+          <span><i style="background:#f59e0b"></i>price</span>
+          <span><i class="eq"></i>equilibrium (moving)</span>
+          <span><i style="background:#60a5fa"></i>inventory</span>
+          <span style="color:var(--fog-500)">│ your trades</span>
+          <span style="color:var(--fog-500)">— last <span id="histLen">170</span> ticks</span>
+        </div>
+        <canvas id="chart" width="900" height="172"></canvas>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls">
+        <div class="ctl"><label>Producer rate (supply / tick) <span class="num" id="vProd">6</span></label><input type="range" id="prod" min="0" max="20" step="1" value="6"></div>
+        <div class="ctl"><label>Consumer draw — front + civ <span class="num" id="vFront">7</span></label><input type="range" id="front" min="0" max="20" step="1" value="7"></div>
+        <div class="ctl"><label>Elasticity (price sensitivity) <span class="num" id="vElas">0.45</span></label><input type="range" id="elas" min="0.05" max="1.20" step="0.05" value="0.45"></div>
+        <div class="ctl"><label>Market depth (thin → deep) <span class="num" id="vDepth">40</span></label><input type="range" id="depth" min="6" max="140" step="2" value="40"></div>
+        <div class="ctl"><label>Damping (settle ↔ twitchy) <span class="num" id="vDamp">0.18</span></label><input type="range" id="damp" min="0.02" max="0.60" step="0.02" value="0.18"></div>
+        <div class="ctl"><label>Trade quantity (BUY/SELL n) <span class="num" id="vQty">20</span></label><input type="range" id="qty" min="1" max="60" step="1" value="20"></div>
+      </div>
+
+      <div class="actrow">
+        <span class="qlabel">PLAYER ACTION →</span>
+        <button id="sellBtn" class="sell">SELL <span class="qd">20</span> into market</button>
+        <button id="buyBtn" class="buy">BUY <span class="qd">20</span> from market</button>
+        <span class="qlabel" id="invWarn" style="color:var(--bad);display:none">— shelf can't cover that buy</span>
+      </div>
+
+      <div class="btnrow">
+        <button id="playBtn" class="primary">▶ Play</button>
+        <button id="stepBtn">⏯ Step</button>
+        <button id="resetBtn" class="ghost">↺ Reset (seed 1337)</button>
+        <span class="sep"></span>
+        <span class="qlabel" style="color:var(--fog-500)">speed</span>
+        <button id="speedBtn" class="ghost">1×</button>
+      </div>
+
+      <div class="demoZone">
+        <span class="lbl">one-click scripted demos · watch the three "aha"s</span>
+        <button class="demo" id="demoThin">① Thin vs deep — same trade</button>
+        <button class="demo" id="demoMilk">② Milk a margin → flatten it</button>
+        <button class="demo" id="demoHeal">③ Stop → the heal</button>
+      </div>
+
+      <div class="status" id="status">Ready. Seed 1337. Press <span class="kbd">Play</span>, or run a demo. Keys: <span class="kbd">space</span> play/pause · <span class="kbd">→</span> step · <span class="kbd">s</span> sell · <span class="kbd">b</span> buy.</div>
+
+    </div>
+  </div>
+  <!-- ===================== /THE SIM ===================== -->
+
+  <p class="note">Everything above is computed live by a fixed-timestep <em>integer / fixed-point</em> model, with all randomness drawn from one tiny <code>mulberry32</code> PRNG advanced exactly once per tick. Same seed + same trades on the same ticks reproduces the run byte for byte <span class="handle">(APR.5)</span> — that determinism is load-bearing, not a nicety.</p>
+
+  <hr class="rule">
+
+  <h2>How to read it</h2>
+
+  <h3>HAND.1 · The rule: damped tâtonnement that never quite clears</h3>
+  <p>Each tick, the market totals up what everyone wants. Net excess demand is</p>
+  <div class="card"><p class="tight" style="font-family:var(--font-mono);color:var(--fog-100);font-size:.95rem">net_demand = (consumer_draw + your_buys) − (producer_add + your_sells)</p></div>
+  <p>and the quoted price nudges by a <strong>constant-elasticity rule</strong> on that flow, normalized by depth:</p>
+  <div class="card"><p class="tight" style="font-family:var(--font-mono);color:var(--fog-100);font-size:.95rem">Δprice = k · elasticity · (net_demand / depth)</p></div>
+  <p>then it is <strong>damped toward</strong> that adjustment so it settles instead of ringing. The catch — and the whole point — is that it <em>never reaches</em> the fixed point: the producer keeps adding, the front keeps pulling, so the moment it would land it is shoved off again. Economists call the groping-toward-a-price process <strong>tâtonnement</strong>; in a live game it never converges, and <strong>that permanent not-quite-cleared wobble is the gameplay</strong>. The dashed amber line is where the price <em>would</em> settle given the current producer/consumer balance — the equilibrium it orbits but won't touch.</p>
+
+  <h3>HAND.2 · Thin vs deep — the same trade, two different worlds</h3>
+  <p><strong>Depth</strong> is the denominator. A single hauler's load of cargo barely tilts a <em>deep</em> market (big depth → small Δ) and <em>lurches</em> a thin one (small depth → violent Δ). Drag <em>Market depth</em> to ~12 and SELL 40 — the price craters. Drag it to ~120 and SELL 40 — it barely flinches. Same order, same goods; the only difference is how much water there was to absorb the splash. The thin frontier systems are where one ship moves the price; the deep core is where it doesn't. <em>(Demo ① scripts exactly this contrast.)</em></p>
+
+  <h3>HAND.3 · Self-correction — your success eats your edge</h3>
+  <p>Find a fat shortage and keep selling into it and something quietly cruel happens: <strong>you flatten the very gradient you were living on</strong>. Every unit you dump is supply the market didn't have a moment ago; the price you were beating sinks toward equilibrium with each repeat trade, and your margin thins to nothing. The <em>your edge</em> gauge is literally the distance from equilibrium — watch it collapse as you hammer one side. The lesson the game is built to teach: <strong>you get paid for being EARLY, for filling a gap before the invisible hand does</strong>. Arrive late and there is no gap left, because the earlier you already closed it.</p>
+
+  <h3>HAND.4 · The heal — let go and it relaxes back</h3>
+  <p>Stop trading. With your pressure gone, the producer and consumer reassert their balance and the price <strong>relaxes back toward its moving equilibrium</strong>, orbiting it again. Nothing resets it by fiat; it heals because the underlying flow was never gone, only briefly out-shouted. That reversibility is what makes the market feel like a <em>place</em> rather than a vending machine — your dent fills back in, and the gap can re-open for the next early mover. <em>(Demo ③ milks, then stands back so you can watch the relaxation.)</em></p>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in three moves:</strong></p>
+    <p class="tight">1. <em>Thin vs deep</em> — same SELL of 40, one market shrugs, the other convulses. Depth is the whole difference between a frontier price and a core price.</p>
+    <p class="tight">2. <em>Milk a margin</em> — keep selling into the shortage and the gradient you were harvesting <span style="color:var(--bad)">flattens</span> under you. Your edge gauge drains.</p>
+    <p class="tight">3. <em>Stop</em> — and the price <span style="color:var(--good)">heals</span> back toward the orbiting equilibrium. The gap re-opens for whoever's early next.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>Legibility collapse</h4>
+    <p>Elasticity, depth, damping, net flow, a moving equilibrium — it is easy for the player to stop understanding <em>why</em> a price moved, and then the depth is just noise they can't act on.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> keep depth and elasticity <em>stable</em> within a market so its feel is learnable, and pin one plain-language <em>why</em>-line to every move ("you sold 40 into a thin market → price dropped 14%, gradient flattening"), backed by the signed net-flow bar and the supply/demand tilt. The model stays small enough to hold in your head <span class="handle">(APR.1)</span>.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Oscillation / runaway</h4>
+    <p>A constant-elasticity rule with no brake will ring like a bell or blow up — price ping-ponging tick to tick, or marching off to a rail and pinning there. Either way the market stops being readable.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> the <em>damping</em> slider <em>is</em> the brake — pull it toward "settle" and the wobble tightens around equilibrium; push it toward "twitchy" and you can watch the ringing start. Per-tick Δ is also bounded so a single huge order can't teleport the price across the board.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Determinism rot</h4>
+    <p>If price discovery ever consulted wall-clock time, an unseeded <code>Math.random</code>, floats that drift per-CPU, or a non-fixed iteration order, two runs of the same seed would diverge — and a seed-as-a-run economy quietly stops being reproducible <span class="handle">(APR.5)</span>.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> one reseedable <code>mulberry32</code> advanced exactly once per fixed tick, integer / fixed-point price math, and a fixed evaluation order (produce → consume → your orders → reprice). Same seed and the same trades on the same ticks give the same market, every time.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">This is the <strong>pure market base</strong> — price discovery and nothing else. The sibling cell <span class="handle">solvency-cell</span> stacks money on top: it clamps a station's payout by the cash actually in its till, so a real shortage on a broke counterparty pays you almost nothing. Here every counterparty is liquid by assumption, which is exactly what lets us isolate the one thing this page is about: a price that emerges, drifts, and heals. Build the clearing cell first; the network is just clearing cells that trade with each other <span class="handle">(APR.2)</span>.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · HAND — THE INVISIBLE HAND · market-clearing-cell · the amber lineage (root)<br>
+    deterministic · seeded · self-contained · no network · no money (that's solvency-cell)
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   THE CLEARING CELL — deterministic price-discovery model
+   - one market, one good; NO money (pure price discovery)
+   - producer adds inventory, consumer draws it, you buy/sell
+   - price = damped tâtonnement on net excess demand / depth
+   - fixed-timestep tick; ONE seeded PRNG advanced once per tick
+   - integer / fixed-point price (milli-credits)
+   Evaluation order per tick (fixed, for determinism):
+     1) producer adds   2) consumer draws   3) your queued orders
+     4) reprice on net flow + damp toward equilibrium   5) jitter
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ---- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const els = {
+  tickN:$('tickN'),
+  svgProd:$('svgProd'), svgPrice:$('svgPrice'), svgInv:$('svgInv'),
+  svgFront:$('svgFront'), svgYou:$('svgYou'), svgYouLbl:$('svgYouLbl'),
+  priceBig:$('priceBig'), priceArrow:$('priceArrow'), eqNote:$('eqNote'), whyLine:$('whyLine'),
+  depthRead:$('depthRead'), segGlut:$('segGlut'), segShort:$('segShort'), flowNum:$('flowNum'),
+  rInv:$('rInv'), rInvSub:$('rInvSub'), rEq:$('rEq'), rGap:$('rGap'), rGapSub:$('rGapSub'),
+  tfSup:$('tfSup'), tfDem:$('tfDem'), tnSup:$('tnSup'), tnDem:$('tnDem'), tiltVerdict:$('tiltVerdict'),
+  edgeV:$('edgeV'), edgeFill:$('edgeFill'), edgeNote:$('edgeNote'),
+  prod:$('prod'), front:$('front'), elas:$('elas'), depth:$('depth'), damp:$('damp'), qty:$('qty'),
+  vProd:$('vProd'), vFront:$('vFront'), vElas:$('vElas'), vDepth:$('vDepth'), vDamp:$('vDamp'), vQty:$('vQty'),
+  playBtn:$('playBtn'), stepBtn:$('stepBtn'), resetBtn:$('resetBtn'), speedBtn:$('speedBtn'),
+  sellBtn:$('sellBtn'), buyBtn:$('buyBtn'), invWarn:$('invWarn'),
+  demoThin:$('demoThin'), demoMilk:$('demoMilk'), demoHeal:$('demoHeal'),
+  status:$('status'), chart:$('chart'),
+};
+
+/* ---- fixed-point: price in milli-credits (1000 = 1.000 cr) ---- */
+const PSCALE   = 1000;
+const PRICE_LO = 2*PSCALE;       // hard rails so a fat order can't teleport off-board
+const PRICE_HI = 60*PSCALE;
+const INV_CAP  = 240;            // shelf limit (units) — a glut can't grow unbounded
+const INV0     = 90;             // starting inventory
+const PRICE0   = 14*PSCALE;      // starting quote
+const HIST     = 170;            // ring-buffer length (ticks shown)
+const MAXDELTA = 0.42;           // per-tick fractional price-move cap: a true anti-teleport
+                                 // RAIL, set high enough that a normal trade lands BELOW it
+                                 // so market depth actually shows through (thin lurches, deep
+                                 // shrugs). Too low and every trade clamps to the same move,
+                                 // erasing the thin-vs-deep contrast. (verified headless)
+const K        = 1.0;            // global gain on the elasticity rule
+
+let S, prng, running=false, raf=null, speed=1, acc=0, lastT=0;
+let demo=null;                   // active scripted demo state
+
+function freshState(seed){
+  return {
+    seed, tick:0,
+    inv: INV0,                   // units on the shelf
+    price: PRICE0,               // milli-credits / unit
+    prevPrice: PRICE0,
+    eq: PRICE0,                  // moving equilibrium the price orbits
+    // last-tick order-flow bookkeeping (for readouts + why-line)
+    net:0, supplyT:0, demandT:0, youBuy:0, youSell:0, shortfall:0,
+    // queued player orders applied on the NEXT tick (so flow stays per-tick honest)
+    qBuy:0, qSell:0,
+    // marks: ticks at which the player traded (for the chart axis)
+    marks:[],                    // {i, dir} dir:+1 buy, -1 sell
+    why:'awaiting first tick…',
+    lastTradeBaseline:0,         // price right before the most recent trade burst (edge readout)
+    // history ring buffers
+    hp:[], heq:[], hinv:[],
+  };
+}
+
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+function pct(x){return Math.round(x*100)+'%';}
+
+/* ---- the moving equilibrium ----------------------------------------
+   The price the cell WOULD settle at given the current producer vs
+   consumer balance and the standing inventory. We anchor to PRICE0 and
+   tilt it by the structural supply/demand imbalance and the glut: a
+   chronic shortage (consumer>producer) lifts the orbit center, a glut
+   of standing stock pushes it down. This is a reference the price orbits
+   — never a value it is snapped to. */
+function equilibriumOf(prod, front){
+  const imbalance = front - prod;                 // >0 chronic shortage, <0 chronic glut
+  const glutPush  = (S.inv - INV0) / 18;          // standing stock drags the center down
+  let eq = PRICE0 + imbalance*0.9*PSCALE - glutPush*PSCALE;
+  return clamp(Math.round(eq), PRICE_LO+1*PSCALE, PRICE_HI-2*PSCALE);
+}
+
+/* ---- one fixed tick of the world ---- */
+function step(){
+  const st = S;
+  st.tick++;
+  st.prevPrice = st.price;
+
+  const prod  = +els.prod.value;
+  const front = +els.front.value;
+  const elas  = +els.elas.value;
+  const depth = +els.depth.value;
+  const damp  = +els.damp.value;
+
+  // 1) PRODUCER adds inventory (supply enters the shelf)
+  st.inv += prod;
+  if(st.inv > INV_CAP) st.inv = INV_CAP;
+
+  // 2) CONSUMER (front + civ) draws inventory. It wants `front` units;
+  //    it can only take what's on the shelf. The unmet appetite is a
+  //    shortage signal that still pushes price up (orders that can't fill).
+  const want = front;
+  const took = Math.min(st.inv, want);
+  st.inv -= took;
+  st.shortfall = want - took;                     // unfilled demand (>0 => scarcity)
+
+  // 3) YOUR queued orders resolve this tick (buys pull stock + push up;
+  //    sells add stock + push down). Buys are capped by what's on the shelf.
+  let youBuy = Math.min(st.qBuy, st.inv);
+  let youSell = st.qSell;
+  st.inv -= youBuy;
+  st.inv += youSell;
+  if(st.inv > INV_CAP) st.inv = INV_CAP;
+  st.qBuy = 0; st.qSell = 0;
+  st.youBuy = youBuy; st.youSell = youSell;
+
+  // 4) REPRICE on net excess demand, normalized by depth.
+  //    net_demand = (consumer_draw + your_buys) − (producer_add + your_sells)
+  //    Unfilled consumer appetite (shortfall) counts as live demand pressure.
+  const demandFlow = took + st.shortfall + youBuy; // what the buy side asked for
+  const supplyFlow = prod + youSell;               // what the sell side offered
+  const net = demandFlow - supplyFlow;             // signed net excess demand
+  st.net = net; st.demandT = demandFlow; st.supplyT = supplyFlow;
+
+  // constant-elasticity drive, then DAMP toward the moving equilibrium.
+  st.eq = equilibriumOf(prod, front);
+  const drive = K * elas * (net / depth);          // Δ(fractional) from order flow
+  const toward = (st.eq - st.price) / PSCALE;      // pull back toward orbit center
+  const dampPull = damp * (toward / 14);           // damping term (settles the wobble)
+  let frac = clamp(drive, -MAXDELTA, MAXDELTA) + dampPull;
+  frac = clamp(frac, -MAXDELTA, MAXDELTA);
+  st.price = Math.round(st.price * (1 + frac));
+
+  // 5) tiny seeded jitter — advance the PRNG EXACTLY once per tick (determinism).
+  const j = (prng() - 0.5);
+  st.price += Math.round(j * 40);                  // ±~0.02cr microstructure noise
+  st.price = clamp(st.price, PRICE_LO, PRICE_HI);
+
+  writeWhy(st);
+  pushHist(st);
+
+  // scripted demo driver acts AFTER the world tick, like a player would.
+  if(demo) demo.drive(st);
+}
+
+/* ---- why-line authoring (plain-language causal readout) ---- */
+function writeWhy(st){
+  const d = st.price - st.prevPrice;
+  const dp = d/PSCALE;
+  const dir = d>0?'<span class="upc">▲</span>':d<0?'<span class="dn">▼</span>':'•';
+  let head;
+  if(st.youSell>0 && st.youBuy===0){
+    const drop = st.prevPrice>0 ? (st.prevPrice-st.price)/st.prevPrice : 0;
+    const deep = (+els.depth.value)>=70;
+    head = `you sold <b>${st.youSell}</b> into a ${deep?'<b>deep</b>':'<span class="hot">thin</span>'} market `+
+           (drop>0?`→ price ${dir} <b>${pct(drop)}</b>${deep?' (barely moved)':', gradient flattening'}`
+                  :`→ price ${dir}`);
+  } else if(st.youBuy>0 && st.youSell===0){
+    const rise = st.prevPrice>0 ? (st.price-st.prevPrice)/st.prevPrice : 0;
+    head = `you bought <b>${st.youBuy}</b> from the shelf → you pulled stock and pushed price ${dir} <b>${pct(Math.abs(rise))}</b>`;
+  } else if(st.shortfall>0){
+    head = `front wanted <b>${(+els.front.value)}</b> but only <b>${(+els.front.value)-st.shortfall}</b> on the shelf → unfilled demand drives price ${dir}`;
+  } else if(st.net>0){
+    head = `net <span class="upc">shortage</span> (+${st.net}/tick): demand outruns the producer → price ${dir} toward eq`;
+  } else if(st.net<0){
+    head = `net <span class="dn">glut</span> (${st.net}/tick): ${st.inv}u standing stock outweighs demand → price ${dir}`;
+  } else {
+    head = `near balance: flow ≈ 0, price drifting around equilibrium ${(st.eq/PSCALE).toFixed(2)}cr`;
+  }
+  st.why = head;
+}
+
+/* ---- history ring ---- */
+function pushHist(st){
+  st.hp.push(st.price); st.heq.push(st.eq); st.hinv.push(st.inv);
+  if(st.hp.length>HIST){
+    st.hp.shift(); st.heq.shift(); st.hinv.shift();
+    // shift the absolute tick index on trade marks; drop ones that scrolled off
+    for(const m of st.marks) m.i--;
+    while(st.marks.length && st.marks[0].i<0) st.marks.shift();
+  }
+}
+
+/* ---- player actions: queue an order for the NEXT tick, mark the axis ---- */
+function playerSell(qty){
+  const st=S;
+  qty = clamp(Math.round(qty),0,9999);
+  if(qty<=0) return;
+  st.qSell += qty;
+  st.lastTradeBaseline = st.lastTradeBaseline || st.price;
+  markTrade(-1);
+  flashStatus(`Queued SELL ${qty} → resolves next tick: adds ${qty}u of supply, pushes price down. `+
+              ((+els.depth.value)<25?'Thin market — expect a lurch.':'Deeper market — expect a smaller move.'));
+  // If paused, advance one tick so the action is immediately visible & honest.
+  if(!running){ step(); render(); }
+  else render();
+}
+function playerBuy(qty){
+  const st=S;
+  qty = clamp(Math.round(qty),0,9999);
+  if(qty<=0) return;
+  st.qBuy += qty;
+  st.lastTradeBaseline = st.lastTradeBaseline || st.price;
+  markTrade(+1);
+  flashStatus(`Queued BUY ${qty} → resolves next tick: pulls up to ${qty}u off the shelf, pushes price up.`);
+  if(!running){ step(); render(); }
+  else render();
+}
+function markTrade(dir){
+  const st=S;
+  // mark at the current head of the history (the tick about to be drawn)
+  const i = st.hp.length; // resolves into the next pushed sample
+  st.marks.push({i, dir});
+  if(st.marks.length>40) st.marks.shift();
+}
+
+/* ============================== RENDER ============================== */
+function render(){
+  const st=S;
+  els.tickN.textContent = st.tick;
+
+  const prod=+els.prod.value, front=+els.front.value, depth=+els.depth.value;
+
+  // svg
+  els.svgProd.textContent = '+'+prod+' u / tick';
+  els.svgPrice.textContent = (st.price/PSCALE).toFixed(2);
+  els.svgInv.textContent = 'inventory '+st.inv+' u';
+  els.svgFront.textContent = st.shortfall>0 ? `wants ${front}u, ${st.shortfall} unfilled` : `draws ${front} u / tick`;
+  els.svgYou.textContent = st.youSell>0?`sold ${st.youSell}u`:(st.youBuy>0?`bought ${st.youBuy}u`:'idle');
+  els.svgYouLbl.textContent = st.youSell>0?'you ► sold in':(st.youBuy>0?'you ◄ bought out':'you ⇄ market');
+
+  // price headline
+  els.priceBig.textContent = (st.price/PSCALE).toFixed(2);
+  const d = st.price - st.prevPrice, ar = els.priceArrow;
+  if(d> PSCALE*0.008){ ar.textContent='▲'; ar.className='arrow up'; }
+  else if(d< -PSCALE*0.008){ ar.textContent='▼'; ar.className='arrow down'; }
+  else { ar.textContent='•'; ar.className='arrow flat'; }
+  els.eqNote.textContent = 'eq '+(st.eq/PSCALE).toFixed(2)+'cr';
+  els.whyLine.innerHTML = st.why;
+
+  // core integers
+  els.rInv.textContent = st.inv+'u';
+  els.rInvSub.textContent = st.inv>=INV_CAP?'shelf full (cap)':(st.shortfall>0?'shelf starved':'units standing');
+  els.rEq.textContent = (st.eq/PSCALE).toFixed(2);
+  const gap = (st.price - st.eq)/PSCALE;
+  els.rGap.textContent = (gap>=0?'+':'')+gap.toFixed(2);
+  els.rGap.style.color = gap>0.05?'var(--good)':gap<-0.05?'var(--bad)':'var(--fog-100)';
+  els.rGapSub.textContent = gap>0.05?'above eq · sell-rich':gap<-0.05?'below eq · buy-rich':'sitting on eq';
+
+  // net order-flow signed bar
+  els.depthRead.textContent = 'depth '+depth+(depth<25?' · THIN':depth>90?' · DEEP':'');
+  const net = st.net;
+  const fmax = Math.max(8, prod+front+ (+els.qty.value));   // scale for the bar
+  const mag = Math.min(Math.abs(net)/fmax, 1)*50;           // % of half-bar
+  if(net>=0){ els.segShort.style.width=mag+'%'; els.segGlut.style.width='0%'; }
+  else { els.segGlut.style.width=mag+'%'; els.segShort.style.width='0%'; }
+  els.flowNum.innerHTML = net>0
+    ? `net <b class="s">+${net}</b> excess demand → upward pressure`
+    : net<0 ? `net <b class="g">${net}</b> glut → downward pressure`
+            : `net <b>0</b> · cleared this tick (it won't last)`;
+
+  // supply/demand tilt
+  const tmax = Math.max(st.supplyT, st.demandT, 1);
+  els.tfSup.style.width = (st.supplyT/tmax*100).toFixed(1)+'%';
+  els.tfDem.style.width = (st.demandT/tmax*100).toFixed(1)+'%';
+  els.tnSup.textContent = st.supplyT;
+  els.tnDem.textContent = st.demandT;
+  if(st.demandT>st.supplyT) els.tiltVerdict.innerHTML = `demand &gt; supply → <b class="s">price wants UP</b>`;
+  else if(st.supplyT>st.demandT) els.tiltVerdict.innerHTML = `supply &gt; demand → <b class="g">price wants DOWN</b>`;
+  else els.tiltVerdict.innerHTML = `supply = demand → <b class="bal">momentarily cleared</b>`;
+
+  // your-edge gauge: |price − eq|, the gradient still available to milk
+  const edge = Math.abs(st.price - st.eq)/PSCALE;
+  const EDGE_FULL = 6; // cr considered a "fat" gradient
+  els.edgeV.textContent = edge.toFixed(2)+'cr';
+  els.edgeFill.style.width = clamp(edge/EDGE_FULL,0,1)*100+'%';
+  els.edgeFill.style.background = gap>0
+    ? 'linear-gradient(90deg,color-mix(in oklab,var(--good) 40%,transparent),var(--good))'
+    : 'linear-gradient(90deg,color-mix(in oklab,var(--bad) 40%,transparent),var(--bad))';
+  els.edgeNote.innerHTML = edge<0.4
+    ? `gradient is <b>flat</b> — price sits on equilibrium, no edge left to milk`
+    : `price is <b>${edge.toFixed(2)}cr</b> ${gap>0?'above':'below'} eq — that gap is your margin. Repeat-trade and it flattens.`;
+
+  // qty-dependent labels + buy warning
+  const q=+els.qty.value;
+  document.querySelectorAll('.qd').forEach(e=>e.textContent=q);
+  els.invWarn.style.display = (q>st.inv)?'inline':'none';
+
+  drawChart();
+}
+
+/* ---- canvas time-series: price (amber), moving eq (dashed amber),
+        inventory (cool, own scale), trade marks (ticks on the axis) ---- */
+const ctx = els.chart.getContext('2d');
+function drawChart(){
+  const st=S, c=els.chart, w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+
+  const n=st.hp.length; if(n<1){ return; }
+  // shared price scale (price + eq share it), padded
+  let pmin=Infinity,pmax=-Infinity;
+  for(let i=0;i<n;i++){ const a=st.hp[i],b=st.heq[i]; if(a<pmin)pmin=a; if(a>pmax)pmax=a; if(b<pmin)pmin=b; if(b>pmax)pmax=b; }
+  const pad=(pmax-pmin)*0.18 + 0.5*PSCALE; pmin-=pad; pmax+=pad; if(pmax-pmin<1) pmax=pmin+1;
+  const invMax = Math.max(INV_CAP, ...st.hinv, 1);
+  const X = i => (HIST-1<=0)?0 : i/(HIST-1)*w;
+  const Yp = v => h - (v-pmin)/(pmax-pmin)*h;
+  const Yi = v => h - (v/invMax)*h*0.9 - h*0.02;
+  const off = HIST-n; // right-align the ring buffer
+
+  // inventory (cool, faint) on its own scale
+  ctx.strokeStyle='rgba(96,165,250,.55)'; ctx.lineWidth=1.4; ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i+off), y=Yi(st.hinv[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke();
+
+  // trade marks — vertical ticks at the axis, colored by direction
+  for(const m of st.marks){
+    if(m.i<0||m.i>=n) continue;
+    const x=X(m.i+off);
+    ctx.strokeStyle = m.dir>0 ? 'rgba(52,211,153,.55)' : 'rgba(248,113,113,.6)';
+    ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+    // base nub on the axis
+    ctx.fillStyle = m.dir>0 ? '#34d399' : '#f87171';
+    ctx.fillRect(x-1.5, h-6, 3, 6);
+  }
+
+  // moving equilibrium (dashed amber)
+  ctx.strokeStyle='rgba(245,158,11,.55)'; ctx.setLineDash([5,4]); ctx.lineWidth=1.4; ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i+off), y=Yp(st.heq[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke(); ctx.setLineDash([]);
+
+  // price (amber, bold)
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i+off), y=Yp(st.hp[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke();
+  // live price dot
+  const lx=X(n-1+off), ly=Yp(st.hp[n-1]);
+  ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(lx,ly,2.6,0,Math.PI*2); ctx.fill();
+}
+
+/* ---- status ---- */
+function flashStatus(msg){ els.status.textContent=msg; }
+
+/* ============================== LOOP ============================== */
+const TICK_MS = 110;
+function loop(t){
+  if(!running) return;
+  if(!lastT) lastT=t;
+  acc += (t-lastT); lastT=t;
+  const budget = TICK_MS/speed;
+  let guard=0;
+  while(acc>=budget && guard<8){ step(); acc-=budget; guard++; }
+  render();
+  raf=requestAnimationFrame(loop);
+}
+function play(){ if(running)return; running=true; lastT=0; acc=0; els.playBtn.textContent='⏸ Pause'; els.playBtn.classList.add('primary'); raf=requestAnimationFrame(loop); }
+function pause(){ running=false; if(raf)cancelAnimationFrame(raf); els.playBtn.textContent='▶ Play'; }
+function togglePlay(){ running?pause():play(); }
+
+function reset(seed){
+  pause();
+  demo=null;
+  S = freshState(seed);
+  prng = mulberry32(seed);
+  S.why='reset · seed '+seed+' · press Play or run a demo';
+  flashStatus('Reset to seed '+seed+'. Price '+(PRICE0/PSCALE).toFixed(2)+'cr, inventory '+INV0+'u. Deterministic from here.');
+  render();
+}
+
+/* ============================== SCRIPTED DEMOS ============================== */
+function setSliders(o){
+  if('prod'  in o) els.prod.value=o.prod;
+  if('front' in o) els.front.value=o.front;
+  if('elas'  in o) els.elas.value=o.elas;
+  if('depth' in o) els.depth.value=o.depth;
+  if('damp'  in o) els.damp.value=o.damp;
+  if('qty'   in o) els.qty.value=o.qty;
+  syncLabels();
+}
+
+function startDemo(kind){
+  reset(1337);
+  setSliders({prod:6, front:7, elas:0.5, depth:40, damp:0.18, qty:20});
+
+  if(kind==='thin'){
+    // Phase A: deep market, big sell -> barely moves.
+    // Phase B: thin market, identical sell -> lurch. Same order, two worlds.
+    setSliders({depth:120, qty:40, front:8, prod:6, damp:0.16});
+    demo = { t:0, phase:'deepwarm', p0:0, drive(st){
+      this.t++;
+      if(this.phase==='deepwarm'){
+        if(this.t>=16){ this.phase='deepsell'; this.t=0; this.p0=st.price;
+          playerSell(40);
+          flashStatus('THIN-VS-DEEP · DEEP market (depth 120): selling 40… watch how little it moves.'); }
+      } else if(this.phase==='deepsell'){
+        if(this.t>=18){ this.phase='thinwarm'; this.t=0;
+          const moved=((this.p0-st.price)/this.p0);
+          flashStatus('DEEP: 40 units moved price only '+pct(Math.abs(moved))+'. Now thinning the market to depth 12…');
+          setSliders({depth:12}); }
+      } else if(this.phase==='thinwarm'){
+        if(this.t>=14){ this.phase='thinsell'; this.t=0; this.p0=st.price;
+          playerSell(40);
+          flashStatus('THIN market (depth 12): the SAME sell of 40…'); }
+      } else if(this.phase==='thinsell'){
+        if(this.t>=18){ this.phase='done'; pause();
+          const moved=((this.p0-st.price)/this.p0);
+          flashStatus('Done. Identical 40-unit sell: a shrug in the deep market, a '+pct(Math.abs(moved))+' crater in the thin one. Depth is the whole difference.'); }
+      }
+    }};
+    flashStatus('THIN-VS-DEEP demo: same SELL of 40 into a deep market, then a thin one. Watch the price-move gap.');
+    play();
+  }
+
+  if(kind==='milk'){
+    // Repeat-sell into a standing shortage; watch eq-gap (your edge) collapse.
+    setSliders({front:11, prod:5, depth:34, qty:14, elas:0.55, damp:0.14});
+    demo = { t:0, phase:'build', e0:0, drive(st){
+      this.t++;
+      if(this.phase==='build'){
+        // let a real shortage open up so there's a fat gradient to milk
+        if((st.price-st.eq) > 2.5*PSCALE || this.t>50){
+          this.phase='milk'; this.t=0; this.e0=Math.abs(st.price-st.eq)/PSCALE;
+          flashStatus('MILK: a shortage opened (edge '+this.e0.toFixed(2)+'cr). Now selling 14 every other tick — watch the edge gauge drain.'); }
+      } else if(this.phase==='milk'){
+        if(this.t%2===0) playerSell(14);
+        if(this.t>34){ this.phase='done'; pause();
+          const e1=Math.abs(st.price-st.eq)/PSCALE;
+          flashStatus('Done. You flattened your own gradient: edge fell '+this.e0.toFixed(2)+'cr → '+e1.toFixed(2)+'cr. Your success ate your margin — you get paid for being EARLY.'); }
+      }
+    }};
+    flashStatus('MILK-A-MARGIN demo: open a shortage, then repeat-sell into it. The gradient you live on flattens under you.');
+    play();
+  }
+
+  if(kind==='heal'){
+    // Milk hard, then STOP and let price relax back to the orbiting eq.
+    setSliders({front:11, prod:6, depth:30, qty:16, elas:0.6, damp:0.2});
+    demo = { t:0, phase:'milk', drive(st){
+      this.t++;
+      if(this.phase==='milk'){
+        if(this.t%2===0) playerSell(16);
+        if(this.t>22){ this.phase='let'; this.t=0;
+          flashStatus('THE HEAL: hands off the controls now — no more trades. Watch price relax back toward the dashed equilibrium it orbits.'); }
+      } else if(this.phase==='let'){
+        if(this.t>60){ this.phase='done'; pause();
+          flashStatus('Done. With your pressure gone, producer & consumer reasserted balance and the price healed back to its orbit. The gap can re-open for whoever is early next.'); }
+      }
+    }};
+    flashStatus('HEAL demo: dump cargo to dent the price, then stop. The market relaxes back toward equilibrium on its own.');
+    play();
+  }
+}
+
+/* ---- label sync ---- */
+function syncLabels(){
+  els.vProd.textContent = els.prod.value;
+  els.vFront.textContent = els.front.value;
+  els.vElas.textContent = (+els.elas.value).toFixed(2);
+  els.vDepth.textContent = els.depth.value;
+  els.vDamp.textContent = (+els.damp.value).toFixed(2);
+  els.vQty.textContent = els.qty.value;
+  document.querySelectorAll('.qd').forEach(e=>e.textContent=els.qty.value);
+}
+
+/* ============================== WIRING ============================== */
+['prod','front','elas','depth','damp','qty'].forEach(k=>{
+  els[k].addEventListener('input',()=>{ syncLabels(); if(!running) render(); });
+});
+els.playBtn.addEventListener('click',()=>{ demo=null; togglePlay(); });
+els.stepBtn.addEventListener('click',()=>{ pause(); demo=null; step(); render(); });
+els.resetBtn.addEventListener('click',()=>reset(1337));
+els.speedBtn.addEventListener('click',()=>{ speed = speed===1?2:speed===2?4:1; els.speedBtn.textContent=speed+'×'; });
+els.sellBtn.addEventListener('click',()=>{ demo=null; playerSell(+els.qty.value); });
+els.buyBtn .addEventListener('click',()=>{ demo=null; playerBuy(+els.qty.value); });
+els.demoThin.addEventListener('click',()=>startDemo('thin'));
+els.demoMilk.addEventListener('click',()=>startDemo('milk'));
+els.demoHeal.addEventListener('click',()=>startDemo('heal'));
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); demo=null; togglePlay(); }
+  else if(e.code==='ArrowRight'){ e.preventDefault(); pause(); demo=null; step(); render(); }
+  else if(e.key==='s'||e.key==='S'){ demo=null; playerSell(+els.qty.value); }
+  else if(e.key==='b'||e.key==='B'){ demo=null; playerBuy(+els.qty.value); }
+});
+
+/* ---- boot ---- */
+reset(1337);
+syncLabels();
+</script>
+</body>
+</html>

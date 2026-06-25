@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Solvency Cell — M1 · The Two Ledgers</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3rem 0 .5rem;padding-top:.4rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+
+/* ===== SIM PANEL ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:2rem 0;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .tick{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+/* transport diagram */
+.flowbox{display:grid;grid-template-columns:1fr;gap:.6rem}
+.svgwrap{width:100%;border:1px solid var(--line);border-radius:10px;background:radial-gradient(40rem 18rem at 50% -40%,var(--accent-soft),transparent 70%),var(--ink-900);overflow:hidden}
+svg{display:block;width:100%;height:auto}
+
+/* readouts */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.9rem 0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin:.9rem 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1}
+.stat .v.accent{color:var(--accent)}
+.stat .sub{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.15rem}
+
+/* price headline */
+.priceline{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.priceline .big{font-family:var(--font-mono);font-size:2.5rem;font-weight:700;color:var(--accent);line-height:1}
+.priceline .arrow{font-size:1.4rem;line-height:1}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--fog-500)}
+.why{font-family:var(--font-mono);font-size:.8rem;color:var(--fog-400);margin-top:.35rem;min-height:1.1rem}
+.why b{color:var(--fog-100)}
+
+/* conservation light */
+.cons{display:flex;align-items:center;gap:.55rem;font-family:var(--font-mono);font-size:.82rem;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem;background:var(--ink-900)}
+.dot{width:.7rem;height:.7rem;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px currentColor}
+.dot.ok{background:var(--good);color:var(--good)}
+.dot.rot{background:var(--bad);color:var(--bad)}
+.cons .sum{color:var(--fog-100);font-weight:600}
+.cons .lbl{color:var(--fog-500)}
+
+/* fuel gauge (till) */
+.gauge{margin:.2rem 0 .1rem}
+.gauge .lab{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);margin-bottom:.25rem;letter-spacing:.08em}
+.gauge .track{position:relative;height:1.3rem;border:1px solid var(--line);border-radius:7px;background:repeating-linear-gradient(90deg,transparent,transparent 21px,rgba(255,255,255,.04) 21px,rgba(255,255,255,.04) 22px),var(--ink-950);overflow:hidden}
+.gauge .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,color-mix(in oklab,var(--good) 70%,var(--cool)),var(--good));transition:width .12s linear}
+.gauge .fill.low{background:linear-gradient(90deg,var(--bad),color-mix(in oklab,var(--bad) 60%,var(--accent)))}
+.gauge .thresh{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.gauge .thresh::after{content:"hub";position:absolute;top:-1.05rem;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.58rem;color:var(--accent)}
+.gauge .val{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-100);text-shadow:0 1px 2px #000}
+.hubtag{display:inline-block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;border:1px solid var(--good);color:var(--good);border-radius:5px;padding:.05rem .35rem;background:var(--good-soft);margin-left:.4rem;opacity:0;transition:opacity .2s}
+.hubtag.on{opacity:1}
+
+/* bid clamp viz */
+.clampwrap{border:1px solid var(--line);border-radius:10px;padding:.7rem .8rem .55rem;background:var(--ink-900);margin:.6rem 0}
+.clamp-title{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.45rem}
+.clamprow{display:flex;align-items:center;gap:.6rem;margin:.32rem 0}
+.clamprow .name{font-family:var(--font-mono);font-size:.72rem;width:6.5rem;color:var(--fog-400);flex:0 0 auto;text-align:right}
+.bar{position:relative;height:1.1rem;flex:1;border-radius:5px;background:var(--ink-950);border:1px solid var(--line);overflow:hidden}
+.bar .seg{position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;transition:width .14s linear}
+.seg.market{background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 55%,transparent),var(--accent))}
+.seg.afford{background:linear-gradient(90deg,color-mix(in oklab,var(--cool) 55%,transparent),var(--cool))}
+.seg.paid{background:linear-gradient(90deg,color-mix(in oklab,var(--good) 60%,transparent),var(--good))}
+.clamprow .num{font-family:var(--font-mono);font-size:.72rem;width:4.6rem;color:var(--fog-100);flex:0 0 auto}
+.clipmark{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--bad);box-shadow:0 0 5px var(--bad);z-index:2}
+.clamp-note{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400);margin-top:.4rem}
+.clamp-note b.cut{color:var(--bad)} .clamp-note b.full{color:var(--good)}
+
+/* chart */
+.chartwrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);margin:.9rem 0 .3rem;padding:.5rem .55rem .35rem}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.68rem;color:var(--fog-400);margin:.1rem .2rem .4rem}
+.legend i{display:inline-block;width:.8rem;height:.18rem;border-radius:2px;vertical-align:middle;margin-right:.3rem}
+canvas{display:block;width:100%;height:160px;border-radius:6px}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.1rem 0 .4rem}
+@media(max-width:560px){.controls{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.priceline .big{font-size:2rem}}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline}
+.ctl label .num{color:var(--accent);font-size:.74rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+.toggle{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--accent);width:1rem;height:1rem}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.actrow{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:.5rem 0 .2rem}
+.actrow .qlabel{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);letter-spacing:.08em}
+.demoZone{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line)}
+.demoZone .lbl{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);width:100%}
+button.demo{border-color:var(--cool);color:var(--cool);background:var(--cool-soft)}
+button.demo:hover{background:color-mix(in oklab,var(--cool) 26%,transparent)}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.6rem 0 0;letter-spacing:.02em}
+
+/* ledger flash log */
+.ledger{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400);background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin:.6rem 0 .1rem;height:5.4rem;overflow:hidden;line-height:1.5}
+.ledger .row{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ledger .dr{color:var(--bad)} .ledger .cr{color:var(--good)} .ledger .acc{color:var(--fog-100)}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="chip">M1</div>
+  <p class="eyebrow">HAND lineage · solvency</p>
+  <h1>The Solvency Cell</h1>
+  <p class="lede">A shortage is only worth what someone can actually pay for it. This is the single station where that truth gets enforced — three accounts, double-entry, one tick.</p>
+
+  <div class="spark">
+    The market can scream for cargo all it likes. If the till is empty, <b>demand without solvency is worthless to you</b> — the bid sags to what the books can cover, and you get paid in the gap.
+  </div>
+
+  <p>This is the mutation called <strong>The Two Ledgers</strong> — the money branch of <em>The Invisible Hand</em>. The Hand made prices emerge from order flow. M1 asks a harder question: where does the <em>money</em> come from? In most trading games it's conjured at the point of sale — you sell, coins appear. Here, every credit you earn was already sitting in someone else's account a tick ago. Nothing is minted when you sell. You're moving money that already exists from one ledger to another, and the whole drama is whether the ledger you're selling into has any left.</p>
+
+  <p>Below is the thing the M1 pitch says to build first: <strong>the solvency cell</strong>. One station, one good, three accounts, on a fixed deterministic tick. Poke it.</p>
+
+  <!-- ======================= THE SIM ======================= -->
+  <div class="sim" id="sim">
+    <div class="sim-head">
+      <span class="t">SOLVENCY CELL · single station</span>
+      <span class="tick">TICK <span id="tickN">0</span></span>
+    </div>
+    <div class="sim-body">
+
+      <!-- flow diagram -->
+      <div class="svgwrap" aria-label="money and goods flow between treasury, front, station till, and your wallet">
+        <svg viewBox="0 0 700 188" xmlns="http://www.w3.org/2000/svg" font-family="var(--font-mono)">
+          <defs>
+            <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#9aa1b6"/>
+            </marker>
+            <marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#34d399"/>
+            </marker>
+            <marker id="aha" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b"/>
+            </marker>
+          </defs>
+          <!-- TREASURY -->
+          <rect x="22" y="64" width="150" height="60" rx="9" fill="#0e1018" stroke="#2a3146"/>
+          <text x="97" y="86" fill="#9aa1b6" font-size="9" letter-spacing="2" text-anchor="middle">FACTION TREASURY</text>
+          <text x="97" y="110" id="svgTreasury" fill="#eef1f8" font-size="17" font-weight="700" text-anchor="middle">—</text>
+          <!-- FRONT -->
+          <rect x="22" y="6" width="150" height="42" rx="9" fill="#0e1018" stroke="#2a3146"/>
+          <text x="97" y="24" fill="#9aa1b6" font-size="9" letter-spacing="2" text-anchor="middle">THE FRONT</text>
+          <text x="97" y="40" id="svgFront" fill="#c4c9d8" font-size="11" text-anchor="middle">consumes &amp; burns</text>
+          <!-- STATION TILL -->
+          <rect x="275" y="50" width="170" height="88" rx="10" fill="#0e1018" stroke="#f59e0b" stroke-opacity=".5"/>
+          <text x="360" y="70" fill="#f59e0b" font-size="9" letter-spacing="2" text-anchor="middle">STATION</text>
+          <text x="360" y="92" fill="#9aa1b6" font-size="8" letter-spacing="1.5" text-anchor="middle">TILL (cash on hand)</text>
+          <text x="360" y="116" id="svgTill" fill="#eef1f8" font-size="18" font-weight="700" text-anchor="middle">—</text>
+          <text x="360" y="132" id="svgInv" fill="#767d93" font-size="9" text-anchor="middle">inv —</text>
+          <!-- WALLET -->
+          <rect x="540" y="64" width="142" height="60" rx="9" fill="#0e1018" stroke="#34d399" stroke-opacity=".5"/>
+          <text x="611" y="86" fill="#34d399" font-size="9" letter-spacing="2" text-anchor="middle">YOUR WALLET</text>
+          <text x="611" y="110" id="svgWallet" fill="#eef1f8" font-size="17" font-weight="700" text-anchor="middle">—</text>
+
+          <!-- treasury -> front (funds it) -->
+          <path d="M97,64 L97,50" stroke="#9aa1b6" stroke-width="1.4" fill="none" marker-end="url(#ah)"/>
+          <!-- front -> till (pays station out of treasury) -->
+          <path d="M172,30 C230,30 240,86 273,90" stroke="#34d399" stroke-width="1.6" fill="none" marker-end="url(#ahg)"/>
+          <text x="232" y="52" fill="#34d399" font-size="8.5" text-anchor="middle">pays till</text>
+          <!-- producer -> station inventory -->
+          <path d="M360,150 L360,140" stroke="#60a5fa" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <text x="360" y="168" fill="#60a5fa" font-size="8.5" text-anchor="middle">producer → inventory</text>
+          <!-- station till <-> wallet (you trade) -->
+          <path d="M447,86 L538,86" stroke="#f59e0b" stroke-width="1.6" fill="none" marker-end="url(#aha)" id="svgSellArrow"/>
+          <text x="492" y="80" fill="#f59e0b" font-size="8.5" text-anchor="middle" id="svgTradeLbl">you ⇄ station</text>
+        </svg>
+      </div>
+
+      <!-- price headline + conservation -->
+      <div class="grid2" style="margin-top:1rem">
+        <div class="stat" style="grid-column:span 1">
+          <div class="k">Local price · per unit</div>
+          <div class="priceline">
+            <span class="big" id="priceBig">—</span>
+            <span class="arrow flat" id="priceArrow">•</span>
+          </div>
+          <div class="why" id="whyLine">awaiting first tick…</div>
+        </div>
+        <div class="stat" style="display:flex;flex-direction:column;justify-content:center">
+          <div class="k">Conservation invariant · Σ(treasury+till+wallet)</div>
+          <div class="cons" style="margin-top:.35rem">
+            <span class="dot ok" id="consDot"></span>
+            <span class="sum" id="consSum">—</span>
+            <span class="lbl" id="consLbl">balanced · no mint</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- account integers -->
+      <div class="grid3">
+        <div class="stat"><div class="k">Faction treasury</div><div class="v" id="rTreasury">—</div><div class="sub" id="rTreasurySub">war-bond + floor</div></div>
+        <div class="stat"><div class="k">Station till</div><div class="v accent" id="rTill">—</div><div class="sub" id="rTillSub">cash to pay you</div></div>
+        <div class="stat"><div class="k">Your wallet</div><div class="v" id="rWallet">—</div><div class="sub" id="rWalletSub">banked margin</div></div>
+      </div>
+
+      <!-- till fuel gauge -->
+      <div class="gauge">
+        <div class="lab"><span>STATION TILL — fuel for your bid <span class="hubtag" id="hubTag">HUB · premium ceiling</span></span><span id="gaugePct">—</span></div>
+        <div class="track">
+          <div class="fill" id="gaugeFill" style="width:0%"></div>
+          <div class="thresh" id="gaugeThresh" style="left:60%"></div>
+          <div class="val" id="gaugeVal">—</div>
+        </div>
+      </div>
+
+      <!-- bid clamp viz -->
+      <div class="clampwrap">
+        <div class="clamp-title">If you SELL <span id="clampQ">8</span> units right now &nbsp;·&nbsp; bid = min(price·qty , till)</div>
+        <div class="clamprow">
+          <span class="name">market asks</span>
+          <div class="bar"><div class="seg market" id="segMarket" style="width:0%"></div><div class="clipmark" id="clipMark" style="left:100%;display:none"></div></div>
+          <span class="num" id="numMarket">—</span>
+        </div>
+        <div class="clamprow">
+          <span class="name">till can afford</span>
+          <div class="bar"><div class="seg afford" id="segAfford" style="width:0%"></div></div>
+          <span class="num" id="numAfford">—</span>
+        </div>
+        <div class="clamprow">
+          <span class="name">you’re paid</span>
+          <div class="bar"><div class="seg paid" id="segPaid" style="width:0%"></div></div>
+          <span class="num" id="numPaid">—</span>
+        </div>
+        <div class="clamp-note" id="clampNote">—</div>
+      </div>
+
+      <!-- chart -->
+      <div class="chartwrap">
+        <div class="legend">
+          <span><i style="background:#f59e0b"></i>price</span>
+          <span><i style="background:#34d399"></i>till</span>
+          <span><i style="background:#60a5fa"></i>treasury</span>
+          <span style="color:var(--fog-500)">— last <span id="histLen">160</span> ticks</span>
+        </div>
+        <canvas id="chart" width="900" height="160"></canvas>
+      </div>
+
+      <!-- ledger flash -->
+      <div class="ledger" id="ledger" aria-label="double-entry postings, newest on top"></div>
+
+      <!-- CONTROLS -->
+      <div class="controls">
+        <div class="ctl"><label>Producer rate <span class="num" id="vProd">6</span></label><input type="range" id="prod" min="0" max="20" step="1" value="6"></div>
+        <div class="ctl"><label>Front demand / intensity <span class="num" id="vFront">7</span></label><input type="range" id="front" min="0" max="20" step="1" value="7"></div>
+        <div class="ctl"><label>Elasticity (price sensitivity) <span class="num" id="vElas">0.45</span></label><input type="range" id="elas" min="0.05" max="1.2" step="0.05" value="0.45"></div>
+        <div class="ctl"><label>Market depth (thin → deep) <span class="num" id="vDepth">40</span></label><input type="range" id="depth" min="6" max="120" step="2" value="40"></div>
+        <div class="ctl"><label>War-bond tick (treasury income) <span class="num" id="vBond">120</span></label><input type="range" id="bond" min="0" max="600" step="10" value="120"></div>
+        <div class="ctl"><label>Sell/Buy quantity <span class="num" id="vQty">8</span></label><input type="range" id="qty" min="1" max="40" step="1" value="8"></div>
+        <div class="ctl" style="justify-content:flex-end"><label class="toggle"><input type="checkbox" id="floorOn" checked> Treasury floor guard (won’t dip below 800)</label></div>
+        <div class="ctl" style="justify-content:flex-end"><label class="toggle"><input type="checkbox" id="bondOn" checked> War-bond tick guard (daily income)</label></div>
+      </div>
+
+      <div class="actrow">
+        <span class="qlabel">PLAYER ACTION →</span>
+        <button id="sellBtn" class="primary">SELL <span class="qd">8</span> into station</button>
+        <button id="buyBtn">BUY <span class="qd">8</span> from station</button>
+      </div>
+
+      <div class="btnrow">
+        <button id="playBtn" class="primary">▶ Play</button>
+        <button id="stepBtn">⏯ Step</button>
+        <button id="resetBtn" class="ghost">↺ Reset (seed 1337)</button>
+        <span class="sep"></span>
+        <span class="qlabel" style="font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500)">speed</span>
+        <button id="speedBtn" class="ghost">1×</button>
+      </div>
+
+      <div class="demoZone">
+        <span class="lbl">one-click scripted demos</span>
+        <button class="demo" id="demoDrain">⤓ Drain the till</button>
+        <button class="demo" id="demoFatten">⤒ Fatten the hub</button>
+        <button class="demo ghost" id="demoSpiral" style="border-color:var(--bad);color:var(--bad);background:var(--bad-soft)">☠ Guards off → deflate</button>
+      </div>
+
+      <div class="status" id="status">Ready. Seed 1337. Press <span class="kbd">Play</span>, or run a scripted demo. Keyboard: <span class="kbd">space</span> play/pause · <span class="kbd">→</span> step · <span class="kbd">s</span> sell · <span class="kbd">b</span> buy.</div>
+
+    </div>
+  </div>
+  <!-- ===================== /THE SIM ===================== -->
+
+  <p class="note">Everything above is computed live by a fixed-timestep integer model seeded from a tiny <code>mulberry32</code> PRNG. Same seed + same clicks reproduces the run exactly <span class="handle">(APR.5)</span>. Money is fixed-point; the displayed integers <em>are</em> the state.</p>
+
+  <hr class="rule">
+
+  <h2>How to read it</h2>
+
+  <h3>M1.1 · Two ledgers, one wallet between them</h3>
+  <p>There are exactly three accounts: the faction <strong>treasury</strong>, the station <strong>till</strong>, and your <strong>wallet</strong>. Every money move is <strong>double-entry</strong> — it debits one and credits another in the same tick, the amounts equal, nothing minted at the point of sale. Watch the ledger strip flash <span style="color:var(--bad)">DR</span> / <span style="color:var(--good)">CR</span> pairs. The green <em>conservation light</em> sums all three every frame and checks it against a reference that moves <em>only</em> when the war-bond legitimately mints (the one sanctioned inflow — see M1.2). Trades never change the sum; the light stays green. If it ever drifted on a plain trade, that's <strong>conservation rot</strong>, and the model is lying to you.</p>
+
+  <h3>M1.2 · The faction treasury and the war-bond tick</h3>
+  <p>The <strong>front</strong> is a consumer with a bottomless appetite but a real budget: each tick it buys the station's output and the money comes <em>out of the treasury</em> into the till. The treasury only refills from one place — a periodic <strong>war-bond tick</strong> that credits it. That's the only door new credits legitimately enter through (logged as a <span style="color:var(--good)">MINT</span>, never disguised as a trade), plus a <strong>floor</strong> the treasury refuses to dip below. Without that external income the treasury can't grow, so it can only fund as much demand as the station's upkeep happens to cycle back — and the whole board stagnates. Turn both guards off with the demo and watch the treasury flatten at its reserve while demand starves and price sinks to the floor.</p>
+
+  <h3>M1.3 · Stations go broke, or stations go fat</h3>
+  <p>A till is not a number that only goes up. It carries a cost: every tick it pays a small <strong>upkeep</strong> back to the treasury, proportional to how fat it is — so a rich till bleeds faster and only steady income holds it up. Route demand <em>through</em> the station — keep it stocked so it keeps on-selling to the front, which keeps paying its till faster than upkeep drains it — and the till climbs. Cross the <span style="color:var(--accent)">hub threshold</span> (the amber notch on the gauge) and its <strong>bid ceiling lifts</strong> (22→30 cr): big sells now clear without clipping, and it becomes a reliable premium buyer. Stop feeding it and upkeep bleeds it straight back down past the notch — <strong>fully reversible</strong>. Run <em>Fatten the hub</em>, then <em>Drain the till</em>, back to back.</p>
+
+  <h3>M1.4 · You are paid in the payer-gap</h3>
+  <p>The core inversion. The station's effective bid for what you sell it is <code>bid = min(price · qty, till)</code>. When the till can't cover the market price, the offered price <strong>sags</strong> toward what it can afford — the amber "market asks" bar visibly <span style="color:var(--bad)">clips</span> to the blue "till can afford" line, and the green "you're paid" bar is the shorter of the two. A fat shortage sitting on an empty till pays almost nothing. Your profit isn't the shortage; it's the <em>solvent</em> shortage — the slice where a hungry market and a funded till overlap. <strong>That gap is the whole game.</strong></p>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in three moves:</strong></p>
+    <p class="tight">1. Hit <em>Drain the till</em> — sell hard into the station. Price <span style="color:var(--bad)">collapses</span> even though inventory is scarce and the front is starving. Shortage ≠ payday.</p>
+    <p class="tight">2. Hit <em>Fatten the hub</em> — feed it, let the front refill the till past the notch. The bid ceiling <span style="color:var(--good)">lifts</span>; the same cargo now sells for more.</p>
+    <p class="tight">3. Through all of it, the conservation light stays <span style="color:var(--good)">green</span>. The books always balance to the credit.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>Deflationary spiral</h4>
+    <p>With no external income, the treasury can't grow — it can only re-spend what the station's upkeep cycles back. Demand stays capped below what production needs, inventory piles up, price floors out, the till stagnates, and your sell-bid with it. The board doesn't crash; it quietly <em>stops paying you</em>, which is worse because it looks fine.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> the war-bond tick (a bounded external credit) plus a treasury floor keep money entering the loop. Toggle them off via <em>Guards off → deflate</em> to watch the bid stagnate at the floor, then tick the war-bond back on and watch price, till, and your bid recover — same seed, no reset.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Conservation rot</h4>
+    <p>If any posting credits without an equal debit — money minted at the point of sale — the invariant drifts and every downstream price is built on a leak. It's the kind of bug that hides for months.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> a single double-entry <code>post()</code> primitive that always moves between two accounts, and a Σ light recomputed every frame from the raw account values. Green is a continuous proof. The only deliberate inflow (war-bond) is logged explicitly as a mint, never disguised as a trade.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Legibility collapse</h4>
+    <p>Three accounts, a clamp, elasticity, fattening — easy for the player to stop understanding <em>why</em> a price moved, at which point the depth is just noise.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> every price change writes a plain-language <em>why</em> line ("till can't cover bid → price sagged 38%"), the clamp is drawn as clipping bars rather than left as arithmetic, and the gauge marks the one threshold that matters. The model stays small enough to hold in your head <span class="handle">(APR.1)</span>.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">This is a single-cell prototype. The real game wires a handful of these together across systems and lets your one ship arbitrage the solvent gaps between them — selling into the funded shortage, hauling away from the broke one — while the war stays sovereign overhead <span class="handle">(APR.2)</span>. Build the cell first; the network is just cells that trade.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · M1 — THE TWO LEDGERS · solvency-cell · the amber lineage<br>
+    deterministic · seeded · self-contained · no network
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   THE SOLVENCY CELL — deterministic integer double-entry model
+   - one station, one good, three accounts
+   - fixed-timestep tick; ONE seeded PRNG advanced only on ticks
+   - integer (fixed-point) money; conservation enforced by post()
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ---- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const els = {
+  tickN:$('tickN'),
+  svgTreasury:$('svgTreasury'), svgTill:$('svgTill'), svgWallet:$('svgWallet'),
+  svgInv:$('svgInv'), svgFront:$('svgFront'), svgTradeLbl:$('svgTradeLbl'),
+  priceBig:$('priceBig'), priceArrow:$('priceArrow'), whyLine:$('whyLine'),
+  consDot:$('consDot'), consSum:$('consSum'), consLbl:$('consLbl'),
+  rTreasury:$('rTreasury'), rTill:$('rTill'), rWallet:$('rWallet'),
+  gaugeFill:$('gaugeFill'), gaugeThresh:$('gaugeThresh'), gaugeVal:$('gaugeVal'),
+  gaugePct:$('gaugePct'), hubTag:$('hubTag'),
+  clampQ:$('clampQ'), segMarket:$('segMarket'), segAfford:$('segAfford'),
+  segPaid:$('segPaid'), clipMark:$('clipMark'),
+  numMarket:$('numMarket'), numAfford:$('numAfford'), numPaid:$('numPaid'),
+  clampNote:$('clampNote'),
+  ledger:$('ledger'), status:$('status'),
+  prod:$('prod'), front:$('front'), elas:$('elas'), depth:$('depth'),
+  bond:$('bond'), qty:$('qty'), floorOn:$('floorOn'), bondOn:$('bondOn'),
+  vProd:$('vProd'), vFront:$('vFront'), vElas:$('vElas'), vDepth:$('vDepth'),
+  vBond:$('vBond'), vQty:$('vQty'),
+  playBtn:$('playBtn'), stepBtn:$('stepBtn'), resetBtn:$('resetBtn'), speedBtn:$('speedBtn'),
+  sellBtn:$('sellBtn'), buyBtn:$('buyBtn'),
+  demoDrain:$('demoDrain'), demoFatten:$('demoFatten'), demoSpiral:$('demoSpiral'),
+  chart:$('chart'),
+};
+
+/* ---- fixed-point: prices stored in milli-credits (1000 = 1.000 cr) ---- */
+const PSCALE = 1000;
+const TREASURY_FLOOR = 800;     // credits — floor guard won't let treasury dip below
+const FRONT_RESERVE  = 60;      // credits the front won't spend (its op reserve)
+const HUB_THRESHOLD  = 2200;    // till crosses this -> bid ceiling lifts (becomes hub)
+const HUB_HYST       = 0.72;    // drops out of hub below this fraction of threshold
+const BOND_PERIOD    = 10;      // ticks per "day" (war-bond tick)
+const UPKEEP_BP      = 14;      // per-mille of the till paid back to treasury each tick
+const UPKEEP_MIN     = 6;       // floor on that carrying cost (credits/tick)
+const INV_CAP        = 90;      // a single station's shelf limit (units)
+const HIST = 160;
+// proportional carrying cost: a fat till bleeds faster, so a hub must be actively fed.
+// This is what makes fattening REVERSIBLE and the deflation spiral real.
+function upkeepOf(till){ return Math.max(till>0?UPKEEP_MIN:0, Math.ceil(till*UPKEEP_BP/1000)); }
+
+let S, prng, running=false, raf=null, speed=1, acc=0, lastT=0;
+let demo=null; // active scripted demo state
+
+function freshState(seed){
+  return {
+    seed,
+    tick:0,
+    // money (integer credits)
+    treasury: 5000,
+    till:     900,
+    wallet:   2000,
+    baseSum:  0,        // conservation reference (updated only on sanctioned mint)
+    // goods
+    inv: 12,            // station inventory (units)
+    // market
+    price: 14*PSCALE,   // milli-credits per unit
+    prevPrice: 14*PSCALE,
+    ceiling: 22*PSCALE, // current bid ceiling (lifts when hub)
+    isHub:false,
+    why:'awaiting first tick…',
+    rot:false,
+    // history ring buffers
+    hp:[], ht:[], hr:[],
+    // last-tick bookkeeping for readouts
+    lastNet:0,
+  };
+}
+
+/* ---- THE double-entry primitive: never mint, always move ---- */
+function post(state, from, to, amt, tag){
+  amt = Math.max(0, Math.round(amt));
+  if(amt===0) return 0;
+  // clamp to available funds in `from` (cannot post money that isn't there)
+  if(from!=='_void'){
+    amt = Math.min(amt, state[from]);
+    if(amt<=0) return 0;
+    state[from] -= amt;
+  }
+  state[to] += amt;
+  logPost(from, to, amt, tag);
+  return amt;
+}
+/* sanctioned mint: the ONLY way new credits enter. Updates baseSum so the
+   invariant explicitly accounts for it (logged as MINT, never a trade). */
+function mint(state, to, amt, tag){
+  amt = Math.max(0, Math.round(amt));
+  if(amt===0) return 0;
+  state[to] += amt;
+  state.baseSum += amt;
+  logPost('_mint', to, amt, tag);
+  return amt;
+}
+
+/* ---- ledger flash log ---- */
+let ledgerRows=[];
+function logPost(from,to,amt,tag){
+  let fromTxt = from==='_void'?'∅':(from==='_mint'?'WAR-BOND':accName(from));
+  let cls = from==='_mint' ? 'cr' : 'dr';
+  ledgerRows.unshift(
+    `<div class="row">t${S.tick} · <span class="${cls}">${from==='_mint'?'MINT':'DR '+fromTxt}</span> → <span class="cr">CR ${accName(to)}</span> <span class="acc">${amt} cr</span> <span style="color:var(--fog-500)">${tag||''}</span></div>`
+  );
+  if(ledgerRows.length>14) ledgerRows.length=14;
+}
+function accName(a){return a==='treasury'?'TREASURY':a==='till'?'TILL':a==='wallet'?'WALLET':a;}
+
+/* ---- the elasticity / clamp pricing helpers ---- */
+// effective bid for selling `qty` into the station, clamped by till.
+function bidFor(state, qty){
+  const market = Math.round(state.price/PSCALE * qty);      // what market would pay
+  const afford = state.till;                                 // what till can cover
+  const paid   = Math.min(market, afford);                   // THE inversion
+  return {market, afford, paid, clipped: afford < market};
+}
+
+/* ---- one fixed tick of the world ---- */
+function step(){
+  const st = S;
+  st.tick++;
+  st.prevPrice = st.price;
+
+  const prod  = +els.prod.value;
+  const front = +els.front.value;
+  const elas  = +els.elas.value;
+  const depth = +els.depth.value;
+  const bondSz= +els.bond.value;
+  const bondOn= els.bondOn.checked;
+  const floorOn= els.floorOn.checked;
+
+  // 1) PRODUCER adds inventory
+  st.inv += prod;
+
+  // 2) WAR-BOND tick (sanctioned mint into treasury), periodic
+  if(bondOn && bondSz>0 && (st.tick % BOND_PERIOD === 0)){
+    mint(st, 'treasury', bondSz, '(war-bond)');
+  }
+  // floor guard: top treasury up to floor (also a sanctioned mint)
+  if(floorOn && st.treasury < TREASURY_FLOOR){
+    mint(st, 'treasury', TREASURY_FLOOR - st.treasury, '(floor)');
+  }
+
+  // 3) THE FRONT consumes station output, paying the till OUT OF the treasury.
+  //    units it wants this tick (can't take more than inventory). The front keeps
+  //    a small operating reserve — it will not spend the treasury's last credits.
+  //    With the war-bond off, the treasury sinks to that reserve and the front
+  //    STALLS; upkeep then bleeds the tills dry into a treasury that just hoards.
+  const fundable = Math.max(0, st.treasury - FRONT_RESERVE);
+  const want = Math.min(st.inv, front);
+  if(want>0 && fundable>0){
+    // front pays station's *current* market price per unit, but only as far
+    // as the treasury can fund above its reserve (front funded by treasury — APR.2)
+    const unit = st.price/PSCALE;
+    const desiredPay = Math.min(Math.round(unit * want), fundable);
+    const paid = post(st, 'treasury', 'till', desiredPay, '(front buys)');
+    // it only actually burns the share it could pay for
+    const burned = desiredPay>0 ? Math.round(want * (paid/Math.round(unit*want))) : 0;
+    st.inv -= burned;
+    st.frontPaid = paid; st.frontBurned = burned;
+  } else {
+    st.frontPaid = 0; st.frontBurned = 0;
+  }
+
+  // 3b) STATION UPKEEP — the till's outflow: a carrying cost proportional to how
+  //     fat the till is, paid back to the treasury each tick (double-entry,
+  //     till->treasury). A rich till bleeds faster, so a hub must be ACTIVELY fed.
+  //     This makes fattening reversible, and — with the war-bond off — caps how
+  //     much demand the treasury can fund, which is the deflation/stagnation mode.
+  if(st.till > 0){
+    post(st, 'till', 'treasury', upkeepOf(st.till), '(upkeep)');
+  }
+
+  // 3c) inventory soft-cap — a single station can only shelve so much. Keeps the
+  //     DRAIN demo's price crash about the TILL CLIP, not an infinite glut.
+  if(st.inv > INV_CAP) st.inv = INV_CAP;
+
+  // 4) PRICE adjusts by constant-elasticity on net order flow.
+  //    net demand = front pull (+) minus inventory glut (-), normalized by depth.
+  const glut = st.inv;                       // standing stock pushes price down
+  const pull = front;                        // front appetite pushes price up
+  const net  = pull - glut/4;                // net order flow this tick
+  st.lastNet = net;
+  // Δ(ln price) ∝ elas * net/depth ; damped so it settles but never fixes.
+  const drive = elas * (net/depth);
+  // damping toward a soft anchor keeps it from running away or freezing flat
+  const anchor = 14*PSCALE;
+  const damp = 0.02 * (anchor - st.price)/PSCALE; // pulls gently back
+  let factor = 1 + clamp(drive, -0.18, 0.18)*0.5;
+  st.price = Math.round(st.price * factor + damp*PSCALE*0.5);
+  // small seeded jitter (advance PRNG every tick — determinism)
+  const j = (prng()-0.5);
+  st.price += Math.round(j * 60);            // ±~0.03cr noise
+  st.price = clamp(st.price, 2*PSCALE, 60*PSCALE);
+
+  // 5) FATTENING / hub state from till level
+  const wasHub = st.isHub;
+  if(st.till >= HUB_THRESHOLD){ st.isHub = true; }
+  else if(st.till < HUB_THRESHOLD*HUB_HYST){ st.isHub = false; } // hysteresis
+  st.ceiling = st.isHub ? 30*PSCALE : 22*PSCALE;
+  st.price = Math.min(st.price, st.ceiling);
+
+  // 6) conservation check
+  checkConservation(st);
+
+  // 7) why-line
+  writeWhy(st);
+
+  // history
+  pushHist(st);
+
+  // scripted demo driver (acts AFTER the world tick, like a player would)
+  if(demo) demo.drive(st);
+}
+
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+
+/* ---- conservation invariant ---- */
+function checkConservation(st){
+  const sum = st.treasury + st.till + st.wallet;
+  if(st.baseSum===0) st.baseSum = sum; // first lock-in
+  // baseSum tracks sanctioned mints; a healthy system has sum === baseSum.
+  st.rot = (sum !== st.baseSum);
+  st.curSum = sum;
+}
+
+/* ---- player actions: SELL / BUY into the station (double-entry) ---- */
+function playerSell(qty){
+  const st=S;
+  qty = Math.min(qty, 9999);
+  const {market, afford, paid, clipped} = bidFor(st, qty);
+  if(paid<=0){
+    flashStatus('Till is empty — bid sagged to 0. Demand without solvency pays nothing.');
+    return;
+  }
+  // money: TILL -> WALLET (the station pays you out of its own cash)
+  const got = post(st, 'till', 'wallet', paid, '(you sell)');
+  // goods: you add `qty` units of inventory to the station
+  st.inv += qty;
+  // your selling pressure pushes price DOWN immediately (order flow)
+  const elas=+els.elas.value, depth=+els.depth.value;
+  const push = elas * (qty/depth);
+  st.price = clamp(Math.round(st.price * (1 - clamp(push,0,0.4))), 2*PSCALE, st.ceiling);
+  st.why = clipped
+    ? `you sold ${qty}: till could only cover ${got}/${market} cr → bid sagged ${pct(1-got/market)}`
+    : `you sold ${qty} at full bid (${got} cr); inventory up, price pushed down`;
+  flashStatus(clipped
+    ? `SOLD ${qty}: paid ${got}cr — till clipped the bid (wanted ${market}cr). ${st.till} left in till.`
+    : `SOLD ${qty} for ${got}cr at full market bid.`);
+  render();
+}
+function playerBuy(qty){
+  const st=S;
+  const unit = st.price/PSCALE;
+  let canByInv = Math.min(qty, st.inv);
+  if(canByInv<=0){ flashStatus('Station has no inventory to sell you.'); return; }
+  let cost = Math.round(unit*canByInv);
+  // you can't spend money you don't have
+  if(cost>st.wallet){
+    canByInv = Math.floor(st.wallet/unit);
+    cost = Math.round(unit*canByInv);
+  }
+  if(canByInv<=0){ flashStatus('Your wallet can’t afford a single unit at this price.'); return; }
+  // money: WALLET -> TILL (you pay the station)
+  post(st, 'wallet', 'till', cost, '(you buy)');
+  st.inv -= canByInv;
+  // your buying pressure lifts price
+  const elas=+els.elas.value, depth=+els.depth.value;
+  const push = elas * (canByInv/depth);
+  st.price = clamp(Math.round(st.price*(1+clamp(push,0,0.4))), 2*PSCALE, st.ceiling);
+  st.why = `you bought ${canByInv} for ${cost}cr; you funded the till (+${cost}) and pushed price up`;
+  flashStatus(`BOUGHT ${canByInv} for ${cost}cr — you just funded the till to ${st.till}cr.`);
+  render();
+}
+
+function pct(x){return Math.round(x*100)+'%';}
+
+/* ---- why-line authoring ---- */
+function writeWhy(st){
+  const d = st.price - st.prevPrice;
+  if(st.frontPaid!==undefined && st.frontBurned!==undefined){
+    if(st.till < 200 && d<0){
+      st.why = `till near-dry (${st.till}cr) → bids can't be funded, price sagging`;
+    } else if(d>PSCALE*0.05){
+      st.why = `front pulled ${st.frontBurned}u from a thin shelf (${st.inv}u left) → price climbing`;
+    } else if(d<-PSCALE*0.05){
+      st.why = `glut: ${st.inv}u standing stock outweighs demand → price falling`;
+    } else {
+      st.why = st.isHub
+        ? `hub holding: deep till (${st.till}cr), ceiling ${Math.round(st.ceiling/PSCALE)}cr, price steady`
+        : `near balance: front ${st.frontBurned}u vs stock ${st.inv}u → price drifting`;
+    }
+  }
+}
+
+/* ---- history ring ---- */
+function pushHist(st){
+  st.hp.push(st.price); st.ht.push(st.till); st.hr.push(st.treasury);
+  if(st.hp.length>HIST){ st.hp.shift(); st.ht.shift(); st.hr.shift(); }
+}
+
+/* ============================== RENDER ============================== */
+function render(){
+  const st=S;
+  els.tickN.textContent = st.tick;
+
+  // svg accounts
+  els.svgTreasury.textContent = st.treasury.toLocaleString();
+  els.svgTill.textContent = st.till.toLocaleString();
+  els.svgWallet.textContent = st.wallet.toLocaleString();
+  els.svgInv.textContent = 'inv '+st.inv+'u';
+  els.svgFront.textContent = (st.frontBurned||0)>0 ? `burns ${st.frontBurned}u/t` : 'starved';
+
+  // price headline
+  els.priceBig.textContent = (st.price/PSCALE).toFixed(2);
+  const d = st.price - st.prevPrice;
+  const ar = els.priceArrow;
+  if(d> PSCALE*0.01){ ar.textContent='▲'; ar.className='arrow up'; }
+  else if(d< -PSCALE*0.01){ ar.textContent='▼'; ar.className='arrow down'; }
+  else { ar.textContent='•'; ar.className='arrow flat'; }
+  els.whyLine.innerHTML = st.why;
+
+  // accounts
+  els.rTreasury.textContent = st.treasury.toLocaleString();
+  els.rTill.textContent = st.till.toLocaleString();
+  els.rWallet.textContent = st.wallet.toLocaleString();
+
+  // conservation
+  els.consSum.textContent = 'Σ '+st.curSum.toLocaleString()+' cr';
+  if(st.rot){
+    els.consDot.className='dot rot';
+    els.consLbl.textContent='CONSERVATION ROT — sum drifted!';
+    els.consLbl.style.color='var(--bad)';
+  } else {
+    els.consDot.className='dot ok';
+    els.consLbl.textContent='balanced · no mint at sale';
+    els.consLbl.style.color='var(--good)';
+  }
+
+  // till fuel gauge
+  const gMax = HUB_THRESHOLD*1.7;
+  const gp = clamp(st.till/gMax,0,1);
+  els.gaugeFill.style.width = (gp*100).toFixed(1)+'%';
+  els.gaugeFill.className = 'fill'+(st.till<HUB_THRESHOLD*0.45?' low':'');
+  els.gaugeThresh.style.left = (HUB_THRESHOLD/gMax*100).toFixed(1)+'%';
+  els.gaugeVal.textContent = st.till.toLocaleString()+' cr';
+  els.gaugePct.textContent = st.isHub?'HUB':(Math.round(gp*100)+'%');
+  els.hubTag.className = 'hubtag'+(st.isHub?' on':'');
+
+  // bid clamp viz
+  const q = +els.qty.value;
+  const {market, afford, paid, clipped} = bidFor(st, q);
+  els.clampQ.textContent=q;
+  const scale = Math.max(market, afford, 1)*1.05;
+  els.segMarket.style.width = (market/scale*100).toFixed(1)+'%';
+  els.segAfford.style.width = (Math.min(afford,scale)/scale*100).toFixed(1)+'%';
+  els.segPaid.style.width   = (paid/scale*100).toFixed(1)+'%';
+  els.numMarket.textContent = market+' cr';
+  els.numAfford.textContent = afford+' cr';
+  els.numPaid.innerHTML = '<b style="color:var(--good)">'+paid+' cr</b>';
+  if(clipped){
+    els.clipMark.style.display='block';
+    els.clipMark.style.left = (afford/scale*100).toFixed(1)+'%';
+    els.clampNote.innerHTML = `market wants <b>${market}</b>, till covers <b>${afford}</b> → <b class="cut">CLIPPED, you get ${paid}cr (${pct(1-paid/market)} sag)</b>`;
+  } else {
+    els.clipMark.style.display='none';
+    els.clampNote.innerHTML = `till covers the full ask → <b class="full">you get ${paid}cr, no sag</b>`;
+  }
+  // sync the action button labels with qty
+  document.querySelectorAll('.qd').forEach(e=>e.textContent=q);
+
+  // ledger
+  els.ledger.innerHTML = ledgerRows.join('');
+
+  drawChart();
+}
+
+/* ---- canvas time-series ---- */
+const ctx = els.chart.getContext('2d');
+function drawChart(){
+  const st=S, c=els.chart, w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  const n=st.hp.length; if(n<2){ return; }
+  // hub threshold line (on the till scale)
+  const tillMax = Math.max(HUB_THRESHOLD*1.6, ...st.ht, ...st.hr, 1);
+  const priceMax= Math.max(...st.hp, 30*PSCALE);
+  const X=i=> i/(HIST-1)*w;
+  // hub line
+  const hy = h - (HUB_THRESHOLD/tillMax)*h;
+  ctx.strokeStyle='rgba(245,158,11,.35)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,hy); ctx.lineTo(w,hy); ctx.stroke(); ctx.setLineDash([]);
+  // treasury (cool, faint)
+  line(st.hr, tillMax, '#60a5fa', .5, h, X, w);
+  // till (green)
+  line(st.ht, tillMax, '#34d399', 1.6, h, X, w);
+  // price (amber) on its own scale
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i + (HIST-n)); const y=h-(st.hp[i]/priceMax)*h; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke();
+}
+function line(arr,max,color,wd,h,X,w){
+  const n=arr.length; ctx.strokeStyle=color; ctx.lineWidth=wd; ctx.beginPath();
+  for(let i=0;i<n;i++){ const x=X(i+(HIST-n)); const y=h-(arr[i]/max)*h; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke();
+}
+
+/* ---- status ---- */
+let statusTimer=null;
+function flashStatus(msg){
+  els.status.textContent=msg;
+}
+
+/* ============================== LOOP ============================== */
+const TICK_MS = 110;
+function loop(t){
+  if(!running) return;
+  if(!lastT) lastT=t;
+  acc += (t-lastT); lastT=t;
+  const budget = TICK_MS/speed;
+  let guard=0;
+  while(acc>=budget && guard<8){ step(); acc-=budget; guard++; }
+  render();
+  raf=requestAnimationFrame(loop);
+}
+function play(){ if(running)return; running=true; lastT=0; acc=0; els.playBtn.textContent='⏸ Pause'; els.playBtn.classList.add('primary'); raf=requestAnimationFrame(loop); }
+function pause(){ running=false; if(raf)cancelAnimationFrame(raf); els.playBtn.textContent='▶ Play'; }
+function togglePlay(){ running?pause():play(); }
+
+function reset(seed){
+  pause();
+  demo=null;
+  S = freshState(seed);
+  prng = mulberry32(seed);
+  ledgerRows=[];
+  checkConservation(S);
+  S.why='reset · seed '+seed+' · press Play';
+  flashStatus('Reset to seed '+seed+'. Books locked at Σ '+S.curSum+' cr.');
+  render();
+}
+
+/* ============================== SCRIPTED DEMOS ==============================
+   Parameters + arcs below are verified headlessly (see the model harness):
+   - DRAIN: dumps blocks sized to exceed the till -> bid clips, price craters,
+     till empties to 0 even though the front is genuinely short.
+   - FATTEN: gentle feeding climbs the till past the notch (~tick 19), the hub
+     flag flips and the bid ceiling lifts 22 -> 30. Ends while still a hub.
+   - SPIRAL: guards off -> the treasury can't grow, demand starves, price floors
+     and your sell-bid stagnates. Flip the war-bond back on and it recovers.
+============================================================================ */
+function startDemo(kind){
+  reset(1337);
+  // clean, legible parameter baseline shared by the demos
+  setSliders({prod:6, front:7, elas:0.5, depth:36, bond:160, qty:10, floor:true, bond_on:true});
+
+  if(kind==='drain'){
+    // warm the till a little so the collapse is dramatic, then dump cargo HARD:
+    // each dump is sized to exceed the till, forcing the bid to clip.
+    demo = { t:0, phase:'warm', drive(st){
+      this.t++;
+      if(this.phase==='warm'){
+        if(st.till>1500 || this.t>50){ this.phase='dump'; this.t=0;
+          flashStatus('DRAIN: till primed — now dumping oversized blocks into a real shortage…'); }
+      } else if(this.phase==='dump'){
+        // size the sell so price*qty overwhelms the till -> the clamp bites
+        const q = Math.max(10, Math.ceil(st.till/(st.price/PSCALE)) + 12);
+        playerSell(q);
+        if(this.t>22){ this.phase='done'; pause();
+          flashStatus('DRAIN done: the front is still starving, but you gutted the till — the bid clipped and price collapsed to the floor. A shortage an empty till can’t pay for pays you almost nothing.');
+        }
+      }
+    }};
+    setSliders({front:9}); // hungry front = a genuine shortage to contrast against
+    flashStatus('DRAIN demo: priming the till, then dumping oversized blocks. Watch the bid CLIP and price crater even while the front starves.');
+    play();
+  }
+
+  if(kind==='fatten'){
+    // keep it fed gently so the front keeps paying the till past the notch,
+    // without flooding inventory and flooring the spot price.
+    demo = { t:0, phase:'feed', drive(st){
+      this.t++;
+      if(this.t%5===0 && st.wallet>300) playerBuy(4); // small buys keep stock flowing
+      if(st.isHub && this.phase==='feed'){ this.phase='hub';
+        flashStatus('FATTEN: till crossed the hub notch at tick '+st.tick+' — bid ceiling lifted to '+(st.ceiling/PSCALE)+'cr. Big sells now clear without clipping.');
+      }
+      if(this.t>=85){ pause();
+        flashStatus('FATTEN done: a fat hub (till '+st.till+'cr, ceiling '+(st.ceiling/PSCALE)+'cr). It holds while you keep it fed — stop, and upkeep bleeds it back below the notch.');
+      }
+    }};
+    setSliders({prod:9, front:6, bond:240});
+    flashStatus('FATTEN demo: feeding the station so the front keeps paying its till. Watch the gauge climb across the amber notch and the ceiling rise.');
+    play();
+  }
+
+  if(kind==='spiral'){
+    // guards OFF: with no external income the treasury can't grow, so demand is
+    // capped at what upkeep recycles. Inventory piles up, price floors, the till
+    // and your bid stagnate. This is the deflation failure — recoverable.
+    setSliders({floor:false, bond_on:false, front:11, prod:6, bond:160});
+    demo = { t:0, drive(st){
+      this.t++;
+      if(st.treasury<=FRONT_RESERVE+60 && this.phase!=='warned'){ this.phase='warned';
+        flashStatus('DEFLATION setting in: treasury bled to its reserve, the front is starving, price sinking to the floor. Money pools, nothing grows.');
+      }
+      if(this.t>=140){ pause();
+        flashStatus('GUARDS-OFF result: stagnant board — price floored ('+(st.price/PSCALE).toFixed(2)+'cr), your bid starved. Tick the WAR-BOND guard back on and watch it recover.');
+      }
+    }};
+    flashStatus('GUARDS-OFF demo: no war-bond, no floor. Watch the treasury fail to grow, demand starve, and your sell-bid stagnate.');
+    play();
+  }
+}
+
+/* ---- helpers to set UI + readouts ---- */
+function setSliders(o){
+  if('prod' in o) els.prod.value=o.prod;
+  if('front' in o) els.front.value=o.front;
+  if('elas' in o) els.elas.value=o.elas;
+  if('depth' in o) els.depth.value=o.depth;
+  if('bond' in o) els.bond.value=o.bond;
+  if('qty' in o) els.qty.value=o.qty;
+  if('floor' in o) els.floorOn.checked=o.floor;
+  if('bond_on' in o) els.bondOn.checked=o.bond_on;
+  syncLabels();
+}
+function syncLabels(){
+  els.vProd.textContent=els.prod.value;
+  els.vFront.textContent=els.front.value;
+  els.vElas.textContent=(+els.elas.value).toFixed(2);
+  els.vDepth.textContent=els.depth.value;
+  els.vBond.textContent=els.bond.value;
+  els.vQty.textContent=els.qty.value;
+  document.querySelectorAll('.qd').forEach(e=>e.textContent=els.qty.value);
+}
+
+/* ============================== WIRING ============================== */
+['prod','front','elas','depth','bond','qty'].forEach(k=>{
+  els[k].addEventListener('input',()=>{ syncLabels(); if(!running) render(); });
+});
+els.floorOn.addEventListener('change',()=>{ if(!running) render(); });
+els.bondOn.addEventListener('change',()=>{ if(!running) render(); });
+
+els.playBtn.addEventListener('click',()=>{ demo=null; togglePlay(); });
+els.stepBtn.addEventListener('click',()=>{ pause(); demo=null; step(); render(); });
+els.resetBtn.addEventListener('click',()=>reset(1337));
+els.speedBtn.addEventListener('click',()=>{
+  speed = speed===1?2:speed===2?4:1;
+  els.speedBtn.textContent=speed+'×';
+});
+els.sellBtn.addEventListener('click',()=>{ demo=null; playerSell(+els.qty.value); });
+els.buyBtn .addEventListener('click',()=>{ demo=null; playerBuy(+els.qty.value); });
+els.demoDrain .addEventListener('click',()=>startDemo('drain'));
+els.demoFatten.addEventListener('click',()=>startDemo('fatten'));
+els.demoSpiral.addEventListener('click',()=>startDemo('spiral'));
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); demo=null; togglePlay(); }
+  else if(e.code==='ArrowRight'){ e.preventDefault(); pause(); demo=null; step(); render(); }
+  else if(e.key==='s'||e.key==='S'){ demo=null; playerSell(+els.qty.value); }
+  else if(e.key==='b'||e.key==='B'){ demo=null; playerBuy(+els.qty.value); }
+});
+
+/* ---- boot ---- */
+reset(1337);
+syncLabels();
+</script>
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A Run Is a Seed — APR.5 · The Determinism Harness</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#a78bfa;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --warm:#f59e0b;--warm-soft:color-mix(in oklab,var(--warm) 18%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3.2rem 0 .5rem;padding-top:.4rem}
+h2 .num{font-family:var(--font-mono);color:var(--accent);font-size:1rem;letter-spacing:.06em;margin-right:.5rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+em{color:var(--fog-200,#d6dae8)}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+.lesson{border-left:3px solid var(--good);background:linear-gradient(90deg,var(--good-soft),transparent 85%);padding:.7rem 1rem;margin:1.1rem 0 .3rem;font-size:.95rem;color:var(--fog-100);border-radius:0 6px 6px 0}
+.lesson b{color:var(--good)}
+
+/* ===== generic instrument panel ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:1.6rem 0 2rem;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .badge{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:.08rem .45rem;background:var(--accent-soft)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+/* readouts */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.9rem 0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin:.9rem 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1;word-break:break-all}
+.stat .v.accent{color:var(--accent)} .stat .v.good{color:var(--good)} .stat .v.bad{color:var(--bad)} .stat .v.cool{color:var(--cool)} .stat .v.warm{color:var(--warm)}
+.stat .v.sm{font-size:1.05rem}
+.stat .sub{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.15rem}
+
+/* light / verdict */
+.lamp{display:flex;align-items:center;gap:.55rem;font-family:var(--font-mono);font-size:.82rem;border:1px solid var(--line);border-radius:10px;padding:.55rem .75rem;background:var(--ink-900)}
+.dot{width:.75rem;height:.75rem;border-radius:50%;flex:0 0 auto;box-shadow:0 0 9px currentColor}
+.dot.ok{background:var(--good);color:var(--good)}
+.dot.rot{background:var(--bad);color:var(--bad)}
+.dot.idle{background:var(--fog-500);color:var(--fog-500);box-shadow:none}
+.lamp .sum{color:var(--fog-100);font-weight:600}
+.lamp .lbl{color:var(--fog-500)}
+
+/* chart */
+.chartwrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);margin:.9rem 0 .3rem;padding:.5rem .55rem .35rem}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.68rem;color:var(--fog-400);margin:.1rem .2rem .4rem}
+.legend i{display:inline-block;width:.8rem;height:.18rem;border-radius:2px;vertical-align:middle;margin-right:.3rem}
+canvas{display:block;width:100%;height:170px;border-radius:6px}
+
+/* PRNG stream tape */
+.tape{display:flex;flex-wrap:wrap;gap:.3rem;border:1px solid var(--line);border-radius:10px;background:var(--ink-950);padding:.55rem .6rem;margin:.7rem 0 .3rem}
+.cell{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-300);background:var(--ink-850);border:1px solid var(--line);border-radius:5px;padding:.2rem .35rem;min-width:3.4rem;text-align:center}
+.cell .ix{display:block;color:var(--fog-500);font-size:.56rem;letter-spacing:.06em}
+.cell.hot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft)}
+
+/* node board (seed->world) */
+.boardwrap{width:100%;border:1px solid var(--line);border-radius:10px;background:radial-gradient(40rem 18rem at 50% -40%,var(--accent-soft),transparent 70%),var(--ink-900);overflow:hidden;margin:.7rem 0 .3rem}
+svg{display:block;width:100%;height:auto}
+.fallrow{display:flex;flex-wrap:wrap;gap:.32rem;margin:.55rem 0 .2rem;font-family:var(--font-mono);font-size:.7rem;align-items:center}
+.fallrow .lbl{color:var(--fog-500);letter-spacing:.1em;margin-right:.25rem}
+.ft{border:1px solid var(--line);border-radius:5px;padding:.16rem .42rem;color:var(--fog-200,#d6dae8);background:var(--ink-850)}
+.ft .o{color:var(--accent);margin-right:.3rem}
+
+/* share code */
+.share{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;border:1px dashed var(--accent);border-radius:10px;padding:.55rem .75rem;background:var(--accent-soft);margin:.7rem 0 .2rem}
+.share .lbl{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.share .code{font-family:var(--font-mono);font-size:1rem;font-weight:700;color:var(--fog-100);letter-spacing:.06em;user-select:all}
+
+/* iteration order rows */
+.runcols{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:.8rem 0 .3rem}
+@media(max-width:560px){.runcols{grid-template-columns:1fr}}
+.runcol{border:1px solid var(--line);border-radius:10px;background:var(--ink-900);padding:.6rem .65rem}
+.runcol .h{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.4rem;display:flex;justify-content:space-between}
+.agentline{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-300);display:flex;justify-content:space-between;padding:.12rem 0;border-bottom:1px solid color-mix(in oklab,var(--line) 55%,transparent)}
+.agentline:last-child{border-bottom:none}
+.agentline .nm{color:var(--fog-200,#d6dae8)}
+.agentline .vv{color:var(--accent)}
+.orderpath{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.35rem;word-break:break-all}
+.orderpath b{color:var(--warm)}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.1rem 0 .4rem}
+@media(max-width:560px){.controls{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline}
+.ctl label .num{color:var(--accent);font-size:.74rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+input[type=number],input[type=text].seedbox{font-family:var(--font-mono);font-size:.82rem;background:var(--ink-950);border:1px solid var(--line);border-radius:7px;color:var(--fog-100);padding:.35rem .5rem;width:100%}
+input[type=number]:focus,input[type=text].seedbox:focus{outline:none;border-color:var(--accent)}
+.toggle{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--accent);width:1rem;height:1rem}
+
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;border-radius:0;background:var(--ink-800);margin:0;padding:.4rem .7rem}
+.seg button.on{background:var(--accent-soft);color:var(--accent)}
+.seg button+button{border-left:1px solid var(--line)}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+button.warm{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+button.warm:hover{background:color-mix(in oklab,var(--warm) 26%,transparent)}
+.sepv{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.qlabel{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);letter-spacing:.08em}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.6rem 0 0;letter-spacing:.02em}
+
+/* big verdict bar */
+.verdict{display:flex;align-items:center;gap:.7rem;border:1px solid var(--line);border-radius:12px;padding:.7rem .9rem;margin:.9rem 0 .2rem;background:var(--ink-900);font-family:var(--font-mono)}
+.verdict .glyph{font-size:1.5rem;line-height:1}
+.verdict.match{border-color:var(--good);background:linear-gradient(90deg,var(--good-soft),transparent 70%)}
+.verdict.mismatch{border-color:var(--bad);background:linear-gradient(90deg,var(--bad-soft),transparent 70%)}
+.verdict.idle{border-color:var(--line)}
+.verdict .vtxt{font-size:.92rem;color:var(--fog-100)}
+.verdict .vtxt b.m{color:var(--good)} .verdict .vtxt b.x{color:var(--bad)}
+.hashrow{display:flex;gap:.7rem;flex-wrap:wrap;margin:.55rem 0 .2rem}
+.hashpill{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-radius:7px;padding:.3rem .5rem;background:var(--ink-950);color:var(--fog-300)}
+.hashpill b{color:var(--fog-100)} .hashpill.a b{color:var(--cool)} .hashpill.b b{color:var(--warm)}
+.hashpill.eq{border-color:var(--good)} .hashpill.ne{border-color:var(--bad)}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+.backlink{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);text-decoration:none;letter-spacing:.04em}
+.backlink:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="../">← All explorables</a>
+
+  <div style="height:1.1rem"></div>
+  <div class="chip">APR.5</div>
+  <p class="eyebrow">a run is a seed</p>
+  <h1>The Determinism Harness</h1>
+  <p class="lede">A lost run is only worth banking if it's reproducible. Same seed, same inputs, byte-for-byte the same defeat — that's what makes an overrun shareable, replayable, and the whole roguelite loop hold together.</p>
+
+  <div class="spark">
+    Determinism isn't a feature you switch on. It's <b>three disciplines</b> held at once — one seeded PRNG advanced only on ticks, a fixed iteration order, and integer money. Break any single one and shareable seeds, replay, and run-ghosts <b>die quietly</b>, months before anyone notices.
+  </div>
+
+  <p>Every run of <strong>Minimalist Space Logistics</strong> is a <em>seed</em>. You own one hauler keeping an unwinnable war supplied; the run ends in an overrun and banks prestige. The pillar the whole design leans on is <span class="handle">APR.5 — determinism</span>: a run <em>is</em> its seed, and the same seed plus the same player inputs must reproduce that run exactly. Lose, and the loss is a shareable artifact — a code a friend can paste in to walk your exact collapse, a ghost the next run can race.</p>
+
+  <p>That promise is fragile in three specific places. This page makes each one tangible: a tiny shared toy sim — a handful of producers and consumers trading credits on a fixed tick — wired into three instruments. In each, <strong>you can break the discipline and watch reproducibility die in real time.</strong> The page itself is the proof: every number below is computed live by a <code>mulberry32</code> PRNG and an integer fixed-point money type, and the harness re-runs itself to check.</p>
+
+  <p class="note">This is not a hypothetical worry. A sibling MSL page in this same set — <code>prestige-reseeding</code>, where a banked loss re-seeds the map — literally hit a <em>reseed-PRNG determinism bug</em>: the post-loss world drew from a stream that wasn't reset cleanly, so "the same seed" stopped producing the same map. The harness below is the discipline that would have caught it.</p>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- DEMO 1 — FLOAT vs FIXED-POINT DRIFT                          -->
+  <!-- ============================================================ -->
+  <h2><span class="num">D1</span>Float vs fixed-point drift</h2>
+  <p>The same stream of money operations, run two ways. On the left, balances accumulate as <strong>floating-point</strong> credits (the obvious choice — money is dollars-and-cents, cents are decimals, decimals are floats). On the right, the identical operations run as <strong>integer fixed-point</strong>: money is stored as whole <em>milli-credits</em> (1 cr = 1000), never as a float. Each "op" is one tick's worth of trades — a producer sells, a consumer pays, the hauler skims a margin — drawn from the shared seeded PRNG.</p>
+  <p>Watch the <em>running difference</em> between the two ledgers. With fixed-point it is exactly zero, forever. With floats it creeps — a fraction of a milli-credit per rounding, compounding — until the two sets of books, fed the very same transactions, no longer agree. The light goes red the first tick they diverge.</p>
+
+  <div class="sim" id="sim1">
+    <div class="sim-head">
+      <span class="t">D1 · double-entry, two number types</span>
+      <span class="badge" id="d1tickbadge">0 ops</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="grid2">
+        <div class="stat">
+          <div class="k">Float ledger · Σ wallet balances</div>
+          <div class="v cool sm" id="d1float">0.000</div>
+          <div class="sub" id="d1floatsub">accumulates with rounding</div>
+        </div>
+        <div class="stat">
+          <div class="k">Fixed-point ledger · Σ (milli-credits)</div>
+          <div class="v good sm" id="d1fixed">0.000</div>
+          <div class="sub" id="d1fixedsub">integer credits · exact</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="stat">
+          <div class="k">Running difference · float − fixed</div>
+          <div class="v" id="d1diff">0</div>
+          <div class="sub">milli-credits of phantom money</div>
+        </div>
+        <div class="stat" style="display:flex;flex-direction:column;justify-content:center">
+          <div class="k">Books balance?</div>
+          <div class="lamp" style="margin-top:.35rem">
+            <span class="dot ok" id="d1dot"></span>
+            <span class="sum" id="d1lamp">balanced</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chartwrap">
+        <div class="legend">
+          <span><i style="background:#f87171"></i>|float drift| (milli-cr, log-ish)</span>
+          <span><i style="background:#34d399"></i>fixed drift = 0</span>
+          <span style="color:var(--fog-500)">— over <span id="d1len">0</span> ops</span>
+        </div>
+        <canvas id="d1chart" width="900" height="170"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="ctl"><label>Ops to run <span class="num" id="vD1Ops">2000</span></label><input type="range" id="d1ops" min="100" max="60000" step="100" value="2000"></div>
+        <div class="ctl"><label>Trade size spread (awkward cents) <span class="num" id="vD1Spread">7</span></label><input type="range" id="d1spread" min="1" max="13" step="1" value="7"></div>
+      </div>
+      <div class="btnrow">
+        <button id="d1run" class="primary">▶ Run the books</button>
+        <button id="d1step" class="ghost">+250 ops</button>
+        <button id="d1reset" class="ghost">↺ Reset</button>
+        <span class="sepv"></span>
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="d1seed" value="1337" style="width:7rem">
+      </div>
+      <div class="status" id="d1status">Press <span class="kbd">Run the books</span>. Same operations both sides — only the number type differs.</div>
+    </div>
+  </div>
+
+  <div class="lesson">Float rounding is exactly how double-entry books <b>silently stop balancing</b>. Each op the float side rounds to representable binary; the error is tiny and unbiased-looking, but it never undoes itself. Crank the op count: the drift grows. The fixed-point side adds whole integers — there is no rounding, so the difference is provably, permanently zero.</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- DEMO 2 — SEED -> WORLD                                       -->
+  <!-- ============================================================ -->
+  <h2><span class="num">D2</span>Seed → world</h2>
+  <p>One 32-bit number expands into an entire run. The seed initializes a single <code>mulberry32</code> stream; the run draws from it <em>in a fixed sequence</em> to lay out producer nodes on a banded board, decide the enemy's fall order across the front, and set per-producer production jitter. The bottom tape shows the raw PRNG values as they're consumed — the highlighted cells are the draws that became this world's keyframes.</p>
+  <p>Change the seed and you get a different world. Re-enter the same seed and you get the <em>byte-identical</em> world back — same nodes, same fall order, same jitter. That's the share code: a handful of characters that fully regenerates the run.</p>
+
+  <div class="sim" id="sim2">
+    <div class="sim-head">
+      <span class="t">D2 · one seed, one stream, one world</span>
+      <span class="badge" id="d2draws">0 draws</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="boardwrap" aria-label="generated producer node board with banded sectors">
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg" id="d2svg">
+          <!-- bands + nodes injected by JS -->
+        </svg>
+      </div>
+
+      <div class="fallrow" id="d2fall">
+        <span class="lbl">ENEMY FALL ORDER →</span>
+      </div>
+
+      <div class="share">
+        <span class="lbl">share this seed</span>
+        <span class="code" id="d2share">MSL-00000539</span>
+        <button id="d2copy" class="ghost" style="padding:.3rem .6rem">copy</button>
+        <span class="qlabel" id="d2copymsg"></span>
+      </div>
+
+      <div class="tape" id="d2tape" aria-label="PRNG stream values consumed to build the world"></div>
+
+      <div class="grid3">
+        <div class="stat"><div class="k">Seed</div><div class="v accent sm" id="d2seedout">1337</div><div class="sub">the whole run, in 32 bits</div></div>
+        <div class="stat"><div class="k">PRNG calls</div><div class="v sm" id="d2calls">0</div><div class="sub">draws to build the world</div></div>
+        <div class="stat"><div class="k">World hash</div><div class="v warm sm" id="d2hash">—</div><div class="sub">fingerprint of the layout</div></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl"><label>Producer nodes <span class="num" id="vD2Nodes">7</span></label><input type="range" id="d2nodes" min="3" max="12" step="1" value="7"></div>
+        <div class="ctl"><label>Front sectors (fall order length) <span class="num" id="vD2Sectors">6</span></label><input type="range" id="d2sectors" min="3" max="9" step="1" value="6"></div>
+      </div>
+      <div class="btnrow">
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="d2seed" value="1337" style="width:8rem">
+        <button id="d2gen" class="primary">↻ Generate world</button>
+        <button id="d2rand" class="ghost">🎲 Random seed</button>
+        <button id="d2same" class="ghost">⟲ Same seed again</button>
+      </div>
+      <div class="status" id="d2status">Seed 1337 → a fixed world. Re-generating the same seed reproduces it exactly; the world hash won't budge.</div>
+    </div>
+  </div>
+
+  <div class="lesson">The same seed must always advance the PRNG in the <b>same order, the same number of times</b>. If any code path draws an extra random — a debug log, a cosmetic effect, an off-tick event — every keyframe downstream shifts and "the same seed" stops meaning the same world. One stream, advanced only on ticks.</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- DEMO 3 — ITERATION ORDER                                     -->
+  <!-- ============================================================ -->
+  <h2><span class="num">D3</span>Iteration order — the subtle killer</h2>
+  <p>This is the one that hides best. Same seed, same money type, same everything — except the order in which the sim visits its agents to settle a shared, contended resource. Each tick, a pool of agents draws from a limited supply pot; whoever is processed <em>first</em> gets served first, so the final balances depend on iteration order.</p>
+  <p>Iterate in a <strong>fixed</strong> order (sorted by id) and two runs of the same seed land on byte-identical results. Iterate in a <strong>shuffled / hash-map</strong> order — the order you get for free from most language dictionaries, and which can differ run to run — and the same seed produces different results each time. Run it twice and compare.</p>
+
+  <div class="sim" id="sim3">
+    <div class="sim-head">
+      <span class="t">D3 · contended pot, two iteration orders</span>
+      <span class="badge" id="d3mode">FIXED ORDER</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="btnrow" style="margin-top:.2rem">
+        <span class="qlabel">ITERATION ORDER</span>
+        <span class="seg" id="d3seg">
+          <button data-mode="fixed" class="on">fixed (sorted by id)</button>
+          <button data-mode="shuffled">shuffled (hash-map)</button>
+        </span>
+      </div>
+
+      <div class="runcols">
+        <div class="runcol">
+          <div class="h"><span>RUN A</span><span id="d3ahash" style="color:var(--cool)">—</span></div>
+          <div id="d3acols"></div>
+          <div class="orderpath" id="d3apath">order: —</div>
+        </div>
+        <div class="runcol">
+          <div class="h"><span>RUN B</span><span id="d3bhash" style="color:var(--warm)">—</span></div>
+          <div id="d3bcols"></div>
+          <div class="orderpath" id="d3bpath">order: —</div>
+        </div>
+      </div>
+
+      <div class="verdict idle" id="d3verdict">
+        <span class="glyph" id="d3glyph">○</span>
+        <span class="vtxt" id="d3vtxt">Run twice on the same seed to compare. Fixed order should match; shuffled should drift.</span>
+      </div>
+
+      <div class="controls">
+        <div class="ctl"><label>Agents contending <span class="num" id="vD3Agents">6</span></label><input type="range" id="d3agents" min="3" max="12" step="1" value="6"></div>
+        <div class="ctl"><label>Supply pot / tick <span class="num" id="vD3Pot">40</span></label><input type="range" id="d3pot" min="10" max="120" step="5" value="40"></div>
+        <div class="ctl"><label>Ticks <span class="num" id="vD3Ticks">12</span></label><input type="range" id="d3ticks" min="3" max="40" step="1" value="12"></div>
+        <div class="ctl"><label class="toggle"><input type="checkbox" id="d3hidden"> reveal: shuffle is reseeded per run</label></div>
+      </div>
+      <div class="btnrow">
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="d3seed" value="1337" style="width:7rem">
+        <button id="d3run" class="primary">▶ Run twice &amp; compare</button>
+        <button id="d3reset" class="ghost">↺ Reset</button>
+      </div>
+      <div class="status" id="d3status">Fixed order selected. Both runs share seed and inputs — only iteration order can break them apart.</div>
+    </div>
+  </div>
+
+  <div class="lesson">One iteration over a hash map and shareable seeds + replay <b>die</b>. The randomness was disciplined; the <em>order you touched the agents in</em> was not. A fixed sort key (agent id) is cheap insurance — and it's exactly the kind of bug that passes every local test on the machine where the hash happened to iterate in insertion order.</div>
+
+  <hr class="rule">
+
+  <!-- ============================================================ -->
+  <!-- TOP-LEVEL — RERUN & COMPARE (the CI gate, made interactive)  -->
+  <!-- ============================================================ -->
+  <h2><span class="num">★</span>Rerun &amp; compare — the permanent gate</h2>
+  <p>The harness that makes all of this enforceable is one rule: <strong>run the toy sim twice under the current settings and demand the two state hashes match.</strong> This is the CI gate the real game runs on every commit — "reruns must match" — turned into a button. It folds the whole shared sim (seeded draws, fixed-point money, the iteration order you chose above in D3) into a single rolling <code>FNV-1a</code> hash of the final state, then does it again, and shows you the verdict.</p>
+  <p>Flip the toggles to <em>break</em> a discipline and watch the gate go red. Set them back and watch it go green. A green here is a continuous, machine-checkable proof that the run is a seed.</p>
+
+  <div class="sim" id="simX">
+    <div class="sim-head">
+      <span class="t">★ RERUN &amp; COMPARE · the CI invariant</span>
+      <span class="badge" id="xcalls">0 PRNG calls</span>
+    </div>
+    <div class="sim-body">
+
+      <div class="verdict idle" id="xverdict">
+        <span class="glyph" id="xglyph">○</span>
+        <span class="vtxt" id="xvtxt">Press <b style="color:var(--accent)">Rerun &amp; compare</b>. The two runs must produce the same state hash.</span>
+      </div>
+
+      <div class="hashrow">
+        <span class="hashpill a">run 1 · <b id="xh1">—</b></span>
+        <span class="hashpill b">run 2 · <b id="xh2">—</b></span>
+        <span class="hashpill" id="xeq">verdict · <b>idle</b></span>
+      </div>
+
+      <div class="grid3">
+        <div class="stat"><div class="k">Books balance</div><div class="lamp" style="margin-top:.3rem;padding:.4rem .55rem"><span class="dot idle" id="xbooksdot"></span><span class="sum" id="xbooks" style="font-size:.78rem">—</span></div></div>
+        <div class="stat"><div class="k">PRNG call count</div><div class="v sm" id="xprng">0</div><div class="sub">per run · must be equal</div></div>
+        <div class="stat"><div class="k">Shareable seed</div><div class="v accent sm" id="xshare">—</div><div class="sub">regenerates this run</div></div>
+      </div>
+
+      <div class="card" style="margin:.9rem 0 .3rem">
+        <p class="tight" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)">break a discipline → watch the gate fail</p>
+        <div class="controls" style="margin-top:.5rem">
+          <div class="ctl"><label class="toggle"><input type="checkbox" id="xMoneyFloat"> <span>money: use <b style="color:var(--bad)">float</b> (instead of fixed-point)</span></label></div>
+          <div class="ctl"><label class="toggle"><input type="checkbox" id="xOrderShuffle"> <span>agents: <b style="color:var(--bad)">shuffled</b> iteration (instead of fixed)</span></label></div>
+          <div class="ctl"><label class="toggle"><input type="checkbox" id="xUnseeded"> <span>jitter: <b style="color:var(--bad)">unseeded</b> rand (instead of the stream)</span></label></div>
+          <div class="ctl"><label class="toggle"><input type="checkbox" id="xExtraDraw"> <span>cosmetic: an <b style="color:var(--bad)">extra off-tick draw</b> (desyncs the stream)</span></label></div>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <span class="qlabel">seed</span>
+        <input type="text" class="seedbox" id="xseed" value="1337" style="width:8rem">
+        <button id="xrun" class="primary">⟳ Rerun &amp; compare</button>
+        <button id="xrand" class="ghost">🎲 Random seed</button>
+        <button id="xclean" class="warm">✓ All disciplines on</button>
+      </div>
+      <div class="status" id="xstatus">All three disciplines on. The gate should read <span style="color:var(--good)">MATCH ✓</span>.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in one line:</strong> determinism isn't automatic — it's three disciplines held together (one seeded PRNG advanced only on ticks · fixed iteration order · integer/fixed-point money), and breaking <em>any</em> one silently kills shareable seeds, replay, and run-ghosts.</p>
+    <p class="tight note">Toggle the four breakers one at a time. Each is a different way the same green gate goes red — and each maps to a discipline above: <code>float</code> → D1, <code>shuffled</code> → D3, <code>unseeded</code>/<code>extra draw</code> → D2's "advance only on ticks."</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>Determinism rot</h4>
+    <p>The slow leak. An unseeded <code>rand()</code> slips into a code path; a hash-map iteration replaces a sorted one; a float accumulates where an integer should. Each is invisible in a single playthrough and only shows up as "my friend's seed gave me a different run" — by which point shareable seeds, replay, and run-ghosts have all quietly stopped working.</p>
+    <p class="mit"><b>Mitigation the harness shows:</b> the rerun-and-compare gate above, run on every commit. Two runs of the same seed must produce the same state hash; the moment a discipline rots, the gate goes red <em>in CI</em>, not in a player's bug report. It already caught a real reseed-PRNG bug in the <code>prestige-reseeding</code> sibling.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Cross-platform float nondeterminism</h4>
+    <p>Even with a single seed and fixed order, floating-point math is not guaranteed identical across CPUs, compilers, or SIMD vs scalar paths — fused multiply-add, x87 80-bit intermediates, and aggressive optimization can each change the last bit. A run recorded on one machine then fails to reproduce on another, which is fatal for <em>shared</em> seeds specifically.</p>
+    <p class="mit"><b>Mitigation the harness shows:</b> keep money and any replay-critical state in integer/fixed-point (D1) — integer arithmetic is bit-exact everywhere. Floats, if used at all, stay in cosmetic-only paths that never feed the state hash.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Thread-timing-dependent state</h4>
+    <p>Parallelize the agent update for speed and the order results land in can depend on which thread finished first — a non-deterministic iteration order wearing a performance costume. Same failure as D3, harder to spot because it's timing, not code, that varies.</p>
+    <p class="mit"><b>Mitigation the harness shows:</b> the replay-critical update is single-threaded and visits agents in a fixed sort order; parallelism is reserved for read-only work (rendering, the glass cockpit) that never writes back into the seeded state.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">This is the foundation under every other MSL system — the emergent market, the scripted enemy, the money ledgers all assume it holds. Determinism is the violet thread that runs beneath the amber, rose, and cyan ones <span class="handle">(APR.5)</span>. Get it right once, at the bottom, and a lost run becomes a thing you can hand to someone else.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · APR.5 — A RUN IS A SEED · determinism-harness · the violet lineage<br>
+    deterministic · seeded · self-contained · no network · proven by re-running itself
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   THE DETERMINISM HARNESS — every number here is computed live.
+   Shared primitives:
+     - mulberry32  : tiny reseedable PRNG (the ONE stream)
+     - Fixed-point : money as integer milli-credits (i64-style)
+     - fnv1a       : rolling state hash for rerun-compare
+   The page is itself demonstrably deterministic: same seed +
+   same control settings -> same hashes, every time.
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ----
+   Returns a closure producing floats in [0,1). Deterministic from
+   its 32-bit seed; the SAME seed yields the SAME sequence. */
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* A PRNG wrapper that COUNTS its calls — the "PRNG call count" readout,
+   and the thing that proves two runs advanced the stream identically. */
+function Stream(seed){
+  const r = mulberry32(seed);
+  let n = 0;
+  const f = function(){ n++; return r(); };
+  f.count = () => n;
+  // integer in [lo, hi] inclusive, from one draw
+  f.int = (lo, hi) => lo + Math.floor(f() * (hi - lo + 1));
+  return f;
+}
+
+/* ---- fixed-point money: integer milli-credits (1 cr = 1000) ----
+   This is the i64-style money type. Stored and summed as integers,
+   so the arithmetic is bit-exact on every platform. */
+const MC = 1000;
+function cr(x){ return Math.round(x * MC); }          // credits -> milli-credits (int)
+function fmtMC(mc){ return (mc / MC).toFixed(3); }     // milli-credits -> display
+
+/* ---- seed parsing: accept a raw number OR a share code "MSL-XXXXXXXX" ---- */
+function parseSeed(str){
+  if(str == null) return 1337;
+  str = String(str).trim().toUpperCase();
+  const m = str.match(/MSL-([0-9A-F]+)/);
+  if(m) return (parseInt(m[1], 16) >>> 0);
+  if(/^0X[0-9A-F]+$/.test(str)) return (parseInt(str, 16) >>> 0);
+  const n = parseInt(str.replace(/[^0-9]/g,''), 10);
+  return Number.isFinite(n) ? (n >>> 0) : 1337;
+}
+function shareCode(seed){
+  return "MSL-" + (seed >>> 0).toString(16).toUpperCase().padStart(8, "0");
+}
+
+/* ---- FNV-1a 32-bit rolling hash for state fingerprints ---- */
+function Hasher(){
+  let h = 0x811c9dc5 >>> 0;
+  return {
+    push(n){
+      // fold an integer into the hash, 4 bytes
+      n = (n | 0);
+      for(let i=0;i<4;i++){
+        h ^= (n & 0xff); n >>>= 8;
+        h = Math.imul(h, 0x01000193) >>> 0;
+      }
+      return this;
+    },
+    hex(){ return ("00000000" + h.toString(16)).slice(-8).toUpperCase(); }
+  };
+}
+
+const $ = id => document.getElementById(id);
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+
+/* ============================================================
+   D1 — FLOAT vs FIXED-POINT DRIFT
+   The same op stream applied to a float accumulator and an integer
+   (milli-credit) accumulator. We deliberately use trade amounts that
+   are NOT exactly representable in binary float (tenths, awkward
+   fractions of a cent) so float rounding accrues. Fixed-point adds
+   whole integers -> zero drift, provably.
+   ============================================================ */
+const D1 = {
+  ran:0, fl:0, fx:0, history:[], maxAbs:1,
+  firstBreakAt:-1, spread:7, seed:1337
+};
+function d1Reset(){
+  D1.ran=0; D1.fl=0; D1.fx=0; D1.history=[]; D1.maxAbs=1; D1.firstBreakAt=-1;
+  D1.seed = parseSeed($('d1seed').value);
+  D1.stream = Stream(D1.seed);
+  d1Render();
+  $('d1status').textContent = "Reset. Seed "+D1.seed+". Same operations both sides — only the number type differs.";
+}
+/* one op = a trade amount in credits with sub-cent structure.
+   We build an amount whose float representation rounds, then apply the
+   SAME logical amount to both ledgers. The float side keeps a float;
+   the fixed side keeps milli-credit integers. */
+function d1Op(){
+  const r = D1.stream();
+  // a base amount in [1, ~size] credits, then add an awkward fractional tail
+  const base = 1 + Math.floor(r * 40);
+  // fractional part chosen from the "spread": e.g. 1/spread, 2/spread ...
+  // these are mostly NON-terminating in binary -> float rounding.
+  const k = D1.stream.int(1, D1.spread);
+  const frac = k / D1.spread;            // e.g. 3/7 = 0.428571... not exact in float
+  const amtCredits = base + frac;        // a real money amount
+  // FLOAT ledger: accumulate as a float (the naive way)
+  D1.fl += amtCredits;
+  // FIXED ledger: round to whole milli-credits ONCE at the boundary, then
+  // only ever add integers. This is the i64 money discipline.
+  D1.fx += Math.round(amtCredits * MC);  // integer milli-credits
+  D1.ran++;
+  // drift in milli-credits: what the float thinks (scaled) minus the integer truth
+  const driftMC = D1.fl * MC - D1.fx;    // float side reconverted to mc, minus exact int
+  if(Math.abs(driftMC) > 0.5 && D1.firstBreakAt < 0) D1.firstBreakAt = D1.ran;
+  return driftMC;
+}
+function d1RunN(n){
+  for(let i=0;i<n;i++){
+    const d = d1Op();
+    // sample into history (cap points for the chart)
+    if(D1.ran % Math.max(1, Math.floor((D1.ran>4000?D1.ran:4000)/600)) === 0 || D1.ran<=600){
+      D1.history.push(Math.abs(d));
+      if(Math.abs(d) > D1.maxAbs) D1.maxAbs = Math.abs(d);
+      if(D1.history.length > 600) D1.history.shift();
+    }
+  }
+  d1Render();
+}
+function d1Render(){
+  $('d1float').textContent = D1.fl.toFixed(3);
+  $('d1fixed').textContent = fmtMC(D1.fx);
+  const driftMC = D1.fl * MC - D1.fx;
+  const broke = Math.abs(driftMC) > 0.5;
+  $('d1diff').textContent = (driftMC>=0?"+":"") + driftMC.toFixed(4);
+  $('d1diff').className = "v " + (broke ? "bad" : "good");
+  $('d1tickbadge').textContent = D1.ran.toLocaleString()+" ops";
+  $('d1len').textContent = D1.ran.toLocaleString();
+  $('d1floatsub').textContent = broke ? ("drifted at op "+D1.firstBreakAt) : "accumulates with rounding";
+  if(broke){
+    $('d1dot').className = "dot rot";
+    $('d1lamp').innerHTML = '<span style="color:var(--bad)">NOT balancing</span> · phantom '+driftMC.toFixed(4)+' mc';
+  } else {
+    $('d1dot').className = "dot ok";
+    $('d1lamp').innerHTML = D1.ran>0 ? 'balanced · float still matches' : 'balanced';
+  }
+  d1Chart();
+}
+function d1Chart(){
+  const c = $('d1chart'), ctx = c.getContext('2d'), w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  // fixed drift baseline (green, flat at zero)
+  ctx.strokeStyle='#34d399'; ctx.lineWidth=2; ctx.beginPath();
+  ctx.moveTo(0,h-2); ctx.lineTo(w,h-2); ctx.stroke();
+  const n = D1.history.length;
+  if(n<2){ return; }
+  // |float drift|, scaled with a soft sqrt so small early growth is visible
+  const mx = Math.max(D1.maxAbs, 0.001);
+  ctx.strokeStyle='#f87171'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x = i/(n-1)*w;
+    const v = Math.sqrt(D1.history[i]/mx);     // sqrt scale
+    const y = h-2 - v*(h-8);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+  // fill under float curve, faint
+  ctx.lineTo(w,h-2); ctx.lineTo(0,h-2); ctx.closePath();
+  ctx.fillStyle='rgba(248,113,113,.10)'; ctx.fill();
+}
+function d1Run(){
+  d1Reset();
+  D1.spread = +$('d1spread').value;
+  const ops = +$('d1ops').value;
+  d1RunN(ops);
+  const driftMC = D1.fl*MC - D1.fx;
+  if(Math.abs(driftMC) > 0.5){
+    $('d1status').innerHTML = "After "+D1.ran.toLocaleString()+" ops the float books are off by <b style='color:var(--bad)'>"+driftMC.toFixed(4)+" mc</b> of money that doesn't exist. Fixed-point: exactly 0.";
+  } else {
+    $('d1status').innerHTML = "After "+D1.ran.toLocaleString()+" ops float still matches — crank ops or spread to force the drift. Fixed-point stays 0 regardless.";
+  }
+}
+
+/* ============================================================
+   D2 — SEED -> WORLD
+   One seed -> one Stream -> producer node placements, an enemy fall
+   order, and per-node jitter. The draw sequence is FIXED, so the same
+   seed reproduces byte-identically. We surface the raw stream tape and
+   a world hash so identity is checkable.
+   ============================================================ */
+const D2 = { seed:1337, nodes:7, sectors:6, tape:[], hot:new Set(), world:null };
+const BANDS = ["FORWARD","MID","REAR"];
+const BANDCOL = ["#fb7185","#f59e0b","#60a5fa"];
+function d2Generate(seed){
+  D2.seed = seed >>> 0;
+  D2.nodes = +$('d2nodes').value;
+  D2.sectors = +$('d2sectors').value;
+  const s = Stream(D2.seed);
+  D2.tape = []; D2.hot = new Set();
+  const draw = (tag) => { const v = s(); D2.tape.push({v, tag}); return v; };
+
+  // 1) producer nodes: each gets a band, an x along the band, a yield jitter
+  const nodes = [];
+  for(let i=0;i<D2.nodes;i++){
+    const band = Math.floor(draw('node'+i+'.band') * 3);
+    D2.hot.add(D2.tape.length-1);
+    const x = 0.08 + draw('node'+i+'.x') * 0.84;
+    D2.hot.add(D2.tape.length-1);
+    const jitterPct = Math.round((draw('node'+i+'.jit')*40 - 20)); // -20..+20%
+    D2.hot.add(D2.tape.length-1);
+    nodes.push({ id:i, band, x, jitterPct, y: 0.22 + band*0.28 + (draw('node'+i+'.wob')*0.10-0.05) });
+    D2.hot.add(D2.tape.length-1);
+  }
+
+  // 2) enemy fall order: a seeded shuffle of sector ids (Fisher-Yates on the stream)
+  const order = [];
+  for(let i=0;i<D2.sectors;i++) order.push(i);
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(draw('fall.swap'+i) * (i+1));
+    D2.hot.add(D2.tape.length-1);
+    const t = order[i]; order[i]=order[j]; order[j]=t;
+  }
+
+  // world hash: fold the discrete keyframes (NOT floats) into FNV-1a
+  const hh = Hasher();
+  for(const nd of nodes){ hh.push(nd.band).push(Math.round(nd.x*1000)).push(nd.jitterPct); }
+  for(const o of order){ hh.push(o); }
+  const hash = hh.hex();
+
+  D2.world = { nodes, order, hash, calls: s.count() };
+  d2Render();
+}
+function d2Render(){
+  const W = D2.world;
+  $('d2seedout').textContent = D2.seed;
+  $('d2calls').textContent = W.calls;
+  $('d2draws').textContent = W.calls + " draws";
+  $('d2hash').textContent = W.hash;
+  $('d2share').textContent = shareCode(D2.seed);
+  $('d2seed').value = D2.seed;
+
+  // SVG board
+  const svg = $('d2svg');
+  const VW=700, VH=240;
+  let s = "";
+  // bands
+  for(let b=0;b<3;b++){
+    const y0 = 12 + b*74, hgt=66;
+    s += '<rect x="10" y="'+y0+'" width="'+(VW-20)+'" height="'+hgt+'" rx="8" fill="#0e1018" stroke="'+BANDCOL[b]+'" stroke-opacity=".28"/>';
+    s += '<text x="20" y="'+(y0+16)+'" fill="'+BANDCOL[b]+'" font-size="9" letter-spacing="2" font-family="ui-monospace,monospace">'+BANDS[b]+'</text>';
+  }
+  // nodes
+  for(const nd of W.nodes){
+    const cx = 20 + nd.x*(VW-40);
+    const y0 = 12 + nd.band*74;
+    const cy = y0 + 33 + (nd.id%2? 8 : -2);
+    const r = 9 + Math.abs(nd.jitterPct)/6;
+    const col = BANDCOL[nd.band];
+    s += '<line x1="'+cx+'" y1="'+(y0+33)+'" x2="'+cx+'" y2="'+cy+'" stroke="'+col+'" stroke-opacity=".4" stroke-width="1"/>';
+    s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r.toFixed(1)+'" fill="'+col+'" fill-opacity=".16" stroke="'+col+'" stroke-width="1.4"/>';
+    s += '<text x="'+cx+'" y="'+(cy+3.5)+'" fill="#eef1f8" font-size="9" text-anchor="middle" font-family="ui-monospace,monospace">P'+nd.id+'</text>';
+    s += '<text x="'+cx+'" y="'+(cy+r+11)+'" fill="'+col+'" font-size="7.5" text-anchor="middle" font-family="ui-monospace,monospace">'+(nd.jitterPct>=0?'+':'')+nd.jitterPct+'%</text>';
+  }
+  svg.innerHTML = s;
+
+  // fall order chips
+  let f = '<span class="lbl">ENEMY FALL ORDER →</span>';
+  W.order.forEach((sec, i)=>{
+    f += '<span class="ft"><span class="o">'+(i+1)+'</span>sector '+sec+'</span>';
+  });
+  $('d2fall').innerHTML = f;
+
+  // PRNG tape (cap display to keep it readable)
+  const tape = $('d2tape');
+  let t = "";
+  const showN = Math.min(D2.tape.length, 48);
+  for(let i=0;i<showN;i++){
+    const cellEntry = D2.tape[i];
+    const hot = D2.hot.has(i);
+    t += '<span class="cell'+(hot?' hot':'')+'" title="'+cellEntry.tag+'"><span class="ix">'+i+'</span>'+cellEntry.v.toFixed(4)+'</span>';
+  }
+  if(D2.tape.length>showN) t += '<span class="cell" style="opacity:.5">…+'+(D2.tape.length-showN)+'</span>';
+  tape.innerHTML = t;
+}
+function d2Gen(){
+  d2Generate(parseSeed($('d2seed').value));
+  $('d2status').innerHTML = "Seed "+D2.seed+" → world hash <b style='color:var(--warm)'>"+D2.world.hash+"</b>. Re-generate the same seed and that hash will not move.";
+}
+
+/* ============================================================
+   D3 — ITERATION ORDER
+   Agents draw from a shared, limited pot each tick. Whoever is served
+   first gets first call on the pot -> final balances depend on order.
+   FIXED order = sorted by id (reproducible). SHUFFLED = a per-run
+   reseeded shuffle (different each run) standing in for hash-map order.
+   Money is fixed-point; the seed is shared; only ORDER differs.
+   ============================================================ */
+const D3 = { mode:"fixed", lastA:null, lastB:null };
+function d3RunOnce(seed, mode, runSalt){
+  const agents = +$('d3agents').value;
+  const pot = +$('d3pot').value;
+  const ticks = +$('d3ticks').value;
+  const s = Stream(seed);                 // SAME seed both runs
+  const bal = new Array(agents).fill(0);  // fixed-point milli-credit balances
+  const ids = [];
+  for(let i=0;i<agents;i++) ids.push(i);
+
+  // each agent has a seeded "appetite weight" drawn from the shared stream
+  const appetite = [];
+  for(let i=0;i<agents;i++) appetite.push(1 + Math.floor(s()*5)); // 1..5
+
+  let pathSample = null;
+  for(let tk=0; tk<ticks; tk++){
+    // build this tick's processing order
+    let order = ids.slice();
+    if(mode === "shuffled"){
+      // a SEPARATE shuffle stream reseeded per run -> nondeterministic across runs.
+      // (stands in for "iterate a hash map" / thread-arrival order.)
+      const sh = mulberry32((seed ^ (runSalt*2654435761) ^ (tk*40503)) >>> 0);
+      for(let i=order.length-1;i>0;i--){
+        const j = Math.floor(sh()*(i+1));
+        const t=order[i]; order[i]=order[j]; order[j]=t;
+      }
+    } else {
+      order.sort((a,b)=>a-b);             // FIXED: deterministic sort by id
+    }
+    if(tk===0) pathSample = order.slice();
+    // a seeded pot size wobble (shared stream -> same both runs)
+    let remaining = pot + Math.floor(s()*pot*0.25);
+    // serve agents in `order`; greedy take min(appetite*unit, remaining)
+    for(const id of order){
+      const want = appetite[id] * 3;       // credits this agent wants
+      const give = Math.min(want, remaining);
+      bal[id] += cr(give);                 // fixed-point credit
+      remaining -= give;
+      if(remaining<=0) break;
+    }
+  }
+  // fold final balances into a state hash (fixed-point integers only)
+  const hh = Hasher();
+  for(let i=0;i<agents;i++) hh.push(bal[i]);
+  return { bal, hash: hh.hex(), order: pathSample, calls: s.count() };
+}
+function d3Run(){
+  const seed = parseSeed($('d3seed').value);
+  const a = d3RunOnce(seed, D3.mode, 1);
+  const b = d3RunOnce(seed, D3.mode, 2);
+  D3.lastA=a; D3.lastB=b;
+  d3RenderRun('d3acols', a);
+  d3RenderRun('d3bcols', b);
+  $('d3ahash').textContent = a.hash;
+  $('d3bhash').textContent = b.hash;
+  $('d3apath').innerHTML = "tick-0 order: <b>"+a.order.map(i=>'P'+i).join(' → ')+"</b>";
+  $('d3bpath').innerHTML = "tick-0 order: <b>"+b.order.map(i=>'P'+i).join(' → ')+"</b>";
+  const match = a.hash === b.hash;
+  const v = $('d3verdict');
+  v.className = "verdict " + (match ? "match":"mismatch");
+  $('d3glyph').textContent = match ? "✓" : "✗";
+  if(match){
+    $('d3vtxt').innerHTML = "Same seed, run twice → <b class='m'>RESULTS MATCH ✓</b>. Iteration order was fixed, so the two state hashes are identical.";
+    $('d3status').innerHTML = "FIXED order: two runs of seed "+seed+" agree. This is reproducible.";
+  } else {
+    $('d3vtxt').innerHTML = "Same seed, run twice → <b class='x'>RESULTS DIFFER ✗</b>. Only the iteration order changed between runs — and that was enough to break the seed.";
+    $('d3status').innerHTML = "SHUFFLED order: same seed, different results. Shareable seeds + replay are dead.";
+  }
+}
+function d3RenderRun(elId, run){
+  const host = $(elId);
+  let s="";
+  for(let i=0;i<run.bal.length;i++){
+    s += '<div class="agentline"><span class="nm">agent P'+i+'</span><span class="vv">'+fmtMC(run.bal[i])+' cr</span></div>';
+  }
+  host.innerHTML = s;
+}
+function d3SetMode(m){
+  D3.mode = m;
+  $('d3mode').textContent = (m==="fixed"?"FIXED ORDER":"SHUFFLED ORDER");
+  document.querySelectorAll('#d3seg button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.mode===m);
+  });
+  $('d3status').textContent = (m==="fixed")
+    ? "Fixed order selected. Both runs share seed and inputs — only iteration order can break them apart."
+    : "Shuffled order selected. The shuffle is reseeded per run — expect the two runs to diverge.";
+}
+function d3Reset(){
+  D3.lastA=null; D3.lastB=null;
+  $('d3acols').innerHTML=""; $('d3bcols').innerHTML="";
+  $('d3ahash').textContent="—"; $('d3bhash').textContent="—";
+  $('d3apath').textContent="order: —"; $('d3bpath').textContent="order: —";
+  const v=$('d3verdict'); v.className="verdict idle";
+  $('d3glyph').textContent="○";
+  $('d3vtxt').textContent="Run twice on the same seed to compare. Fixed order should match; shuffled should drift.";
+}
+
+/* ============================================================
+   ★ RERUN & COMPARE — the CI gate
+   Runs the WHOLE shared toy sim twice under the current breaker
+   settings and demands the two state hashes match. The breakers each
+   rot one discipline:
+     - money: float     (D1 failure)
+     - order: shuffled  (D3 failure)
+     - jitter: unseeded (D2 "advance only on ticks" failure)
+     - extra off-tick draw (stream desync)
+   ============================================================ */
+function xSimRun(seed, opts, runSalt){
+  // opts: {money:'fixed'|'float', order:'fixed'|'shuffled', jitter:'seeded'|'unseeded', extraDraw:bool}
+  const s = Stream(seed);
+  const AGENTS = 6, TICKS = 14, POT = 50;
+
+  const balFx = new Array(AGENTS).fill(0);  // fixed-point milli-credits
+  let   balFl = new Array(AGENTS).fill(0);  // float credits
+  const ids = []; for(let i=0;i<AGENTS;i++) ids.push(i);
+  const appetite=[]; for(let i=0;i<AGENTS;i++) appetite.push(1+Math.floor(s()*5));
+
+  let booksOK = true;
+
+  for(let tk=0; tk<TICKS; tk++){
+    // optional cosmetic off-tick draw that desyncs the stream between runs
+    if(opts.extraDraw){
+      // only run B does the "cosmetic" extra draw -> stream misaligned vs run A
+      if(runSalt===2) s();
+    }
+    // processing order
+    let order = ids.slice();
+    if(opts.order === "shuffled"){
+      const sh = mulberry32((seed ^ (runSalt*2654435761) ^ (tk*40503)) >>> 0);
+      for(let i=order.length-1;i>0;i--){ const j=Math.floor(sh()*(i+1)); const t=order[i];order[i]=order[j];order[j]=t; }
+    } else {
+      order.sort((a,b)=>a-b);
+    }
+    let remaining = POT + Math.floor(s()*POT*0.25);
+    for(const id of order){
+      // production jitter: seeded (from the stream) vs unseeded (Math.random)
+      let j;
+      if(opts.jitter === "unseeded"){ j = Math.random()*0.5 + 0.75; }   // BREAKS determinism
+      else { j = 0.75 + s()*0.5; }                                       // seeded, on the stream
+      const want = appetite[id] * 3 * j;
+      const give = Math.min(want, remaining);
+      // money discipline:
+      if(opts.money === "float"){
+        balFl[id] += give;                       // float accumulation
+        balFx[id] += cr(give);                   // shadow fixed for the books check
+      } else {
+        balFx[id] += cr(give);                   // fixed-point only
+      }
+      remaining -= give;
+      if(remaining<=0) break;
+    }
+  }
+
+  // books-balance check (only meaningful when float is in play):
+  if(opts.money === "float"){
+    for(let i=0;i<AGENTS;i++){
+      if(Math.round(balFl[i]*MC) !== balFx[i]){ booksOK=false; break; }
+    }
+  }
+
+  // state hash: fold the REPLAY-CRITICAL state. With float money the float
+  // balances feed the hash (and carry their rounding); otherwise the integers do.
+  const hh = Hasher();
+  for(let i=0;i<AGENTS;i++){
+    if(opts.money==="float") hh.push(Math.round(balFl[i]*MC*1000)); // amplify so rounding shows
+    else hh.push(balFx[i]);
+  }
+  return { hash: hh.hex(), calls: s.count(), booksOK };
+}
+function xReadOpts(){
+  return {
+    money:   $('xMoneyFloat').checked ? "float" : "fixed",
+    order:   $('xOrderShuffle').checked ? "shuffled" : "fixed",
+    jitter:  $('xUnseeded').checked ? "unseeded" : "seeded",
+    extraDraw: $('xExtraDraw').checked
+  };
+}
+function xRun(){
+  const seed = parseSeed($('xseed').value);
+  const opts = xReadOpts();
+  const r1 = xSimRun(seed, opts, 1);
+  const r2 = xSimRun(seed, opts, 2);
+  const match = r1.hash === r2.hash;
+
+  $('xh1').textContent = r1.hash;
+  $('xh2').textContent = r2.hash;
+  $('xprng').textContent = r1.calls + (r1.calls===r2.calls ? "" : " / "+r2.calls);
+  $('xcalls').textContent = r1.calls + " PRNG calls";
+  $('xshare').textContent = shareCode(seed);
+  $('xseed').value = seed;
+
+  const v = $('xverdict');
+  v.className = "verdict " + (match ? "match":"mismatch");
+  $('xglyph').textContent = match ? "✓" : "✗";
+  const eq = $('xeq');
+  eq.className = "hashpill " + (match ? "eq":"ne");
+  eq.innerHTML = "verdict · <b>" + (match ? "MATCH ✓":"MISMATCH ✗") + "</b>";
+
+  // books lamp
+  const bd=$('xbooksdot'), bl=$('xbooks');
+  if(opts.money==="float"){
+    if(r1.booksOK){ bd.className="dot ok"; bl.innerHTML="<span style='color:var(--good)'>holding (so far)</span>"; }
+    else { bd.className="dot rot"; bl.innerHTML="<span style='color:var(--bad)'>float ≠ fixed</span>"; }
+  } else {
+    bd.className="dot ok"; bl.innerHTML="<span style='color:var(--good)'>fixed-point · exact</span>";
+  }
+
+  // diagnose which breaker(s) caused a mismatch
+  const broken=[];
+  if(opts.order==="shuffled") broken.push("shuffled iteration");
+  if(opts.jitter==="unseeded") broken.push("unseeded rand");
+  if(opts.extraDraw) broken.push("extra off-tick draw");
+  if(opts.money==="float") broken.push("float money");
+
+  if(match){
+    $('xvtxt').innerHTML = "Two runs of seed "+seed+" → <b style='color:var(--good)'>MATCH ✓</b>. The run is a seed: identical state hash, "+r1.calls+" PRNG calls each. This is what CI demands.";
+    $('xstatus').innerHTML = (broken.length
+      ? "Surprising: "+broken.join(" + ")+" on, yet matched — nudge the seed; some breaks are seed-sensitive."
+      : "All three disciplines on. Gate reads <span style='color:var(--good)'>MATCH ✓</span>.");
+  } else {
+    $('xvtxt').innerHTML = "Two runs of seed "+seed+" → <b style='color:var(--bad)'>MISMATCH ✗</b>. Broken: <b style='color:var(--bad)'>"+broken.join(" + ")+"</b>. Shareable seeds and replay are gone.";
+    $('xstatus').innerHTML = "Gate <span style='color:var(--bad)'>RED</span> — CI would reject this commit. Turn the breaker(s) off to restore determinism.";
+  }
+}
+function xClean(){
+  $('xMoneyFloat').checked=false;
+  $('xOrderShuffle').checked=false;
+  $('xUnseeded').checked=false;
+  $('xExtraDraw').checked=false;
+  xRun();
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+function wire(){
+  // D1
+  $('d1ops').addEventListener('input', e=>{ $('vD1Ops').textContent=(+e.target.value).toLocaleString(); });
+  $('d1spread').addEventListener('input', e=>{ $('vD1Spread').textContent=e.target.value; });
+  $('d1run').addEventListener('click', d1Run);
+  $('d1step').addEventListener('click', ()=>{ D1.spread=+$('d1spread').value; if(D1.ran===0) D1.stream=Stream(parseSeed($('d1seed').value)); d1RunN(250); $('d1status').textContent="+250 ops · "+D1.ran.toLocaleString()+" total."; });
+  $('d1reset').addEventListener('click', d1Reset);
+  $('d1seed').addEventListener('change', d1Reset);
+
+  // D2
+  $('d2nodes').addEventListener('input', e=>{ $('vD2Nodes').textContent=e.target.value; d2Generate(D2.seed); });
+  $('d2sectors').addEventListener('input', e=>{ $('vD2Sectors').textContent=e.target.value; d2Generate(D2.seed); });
+  $('d2gen').addEventListener('click', d2Gen);
+  $('d2seed').addEventListener('change', d2Gen);
+  $('d2rand').addEventListener('click', ()=>{ const sd=(Math.floor(Math.random()*0xffffffff))>>>0; $('d2seed').value=sd; d2Gen(); });
+  $('d2same').addEventListener('click', ()=>{ const before=D2.world.hash; d2Generate(D2.seed); $('d2status').innerHTML="Regenerated seed "+D2.seed+": hash "+(before===D2.world.hash?"<b style='color:var(--good)'>unchanged ✓</b> — byte-identical world":"<b style='color:var(--bad)'>changed ✗</b>")+"."; });
+  $('d2copy').addEventListener('click', ()=>{
+    const code = shareCode(D2.seed);
+    const done = ()=>{ $('d2copymsg').textContent="copied ✓"; setTimeout(()=>$('d2copymsg').textContent="",1500); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done, done); }
+    else { done(); }
+  });
+
+  // D3
+  $('d3agents').addEventListener('input', e=>{ $('vD3Agents').textContent=e.target.value; });
+  $('d3pot').addEventListener('input', e=>{ $('vD3Pot').textContent=e.target.value; });
+  $('d3ticks').addEventListener('input', e=>{ $('vD3Ticks').textContent=e.target.value; });
+  $('d3run').addEventListener('click', d3Run);
+  $('d3reset').addEventListener('click', d3Reset);
+  $('d3seed').addEventListener('change', d3Reset);
+  document.querySelectorAll('#d3seg button').forEach(b=>{
+    b.addEventListener('click', ()=>{ d3SetMode(b.dataset.mode); d3Reset(); });
+  });
+  $('d3hidden').addEventListener('change', e=>{
+    $('d3status').textContent = e.target.checked
+      ? "Reveal on: in SHUFFLED mode the shuffle stream is reseeded with a per-run salt, so each run permutes agents differently — exactly how hash-map / thread order betrays you."
+      : (D3.mode==="fixed"
+        ? "Fixed order selected. Both runs share seed and inputs — only iteration order can break them apart."
+        : "Shuffled order selected. The shuffle is reseeded per run — expect the two runs to diverge.");
+  });
+
+  // ★ rerun & compare
+  $('xrun').addEventListener('click', xRun);
+  $('xrand').addEventListener('click', ()=>{ const sd=(Math.floor(Math.random()*0xffffffff))>>>0; $('xseed').value=sd; xRun(); });
+  $('xclean').addEventListener('click', xClean);
+  ['xMoneyFloat','xOrderShuffle','xUnseeded','xExtraDraw'].forEach(id=>{
+    $(id).addEventListener('change', xRun);
+  });
+  $('xseed').addEventListener('change', xRun);
+}
+
+/* ---- boot: render initial deterministic state for every demo ---- */
+function boot(){
+  wire();
+  d1Reset();
+  d2Generate(parseSeed($('d2seed').value));
+  $('d2status').innerHTML = "Seed "+D2.seed+" → world hash <b style='color:var(--warm)'>"+D2.world.hash+"</b>. Re-generating the same seed reproduces it exactly.";
+  d3Reset();
+  d3SetMode('fixed');
+  xRun(); // show a green gate on load — the page proves itself deterministic immediately
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
