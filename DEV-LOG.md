@@ -20,6 +20,58 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-06-25 — MSL: overnight "explorables" run (interactive HTML technical explorations)
+
+**Context:** Overnight, unattended. Panda flagged mutation M1 (*The Two Ledgers*) as the favorite
+and added two design seeds — (1) a broad enemy front whose attack *order* is predictable so the
+player learns the firing conditions (time-since-start, time-since-last-op, prior-op failed/succeeded),
+and (2) a jumpgate lane web (X4 / Freelancer / EVE / Stellaris / Mass-Effect-relay lineage). Brief:
+spawn Opus agents to explore *technical aspects of the game*, each producing a web page with strong
+info-visuals; pace the launches; branch + commit for a morning review.
+
+**Options considered:**
+- *Page form:* standalone interactive HTML vs. new React pages in `approaches-app/` vs. Markdown
+  approaches. **Standalone interactive HTML** (chosen with Panda) — lowest merge-risk for parallel
+  autonomous agents, richest fit for "poke the model," opens offline via `file://` with zero build.
+- *Placement:* under the musing / under `approaches-app/` / a new top-level staging dir.
+  **`explorations/`** — the site build does not read it, so nothing deploys to Pages until promoted
+  (Rule 6 conservative).
+- *Orchestration:* one Workflow vs. individual background Agents. **Background Agents** — Panda
+  directed agent-spawning, and the cadence / wall-clock cutoff can't be expressed in a Workflow script.
+- *Cutoff:* the "10am" cutoff read as **10:00 ET = 07:00 PT** (tied to *peak hours*; peak ~09:00 ET,
+  so the Eastern reading serves the stated reason). Run started 03:17 PT.
+
+**Choice:** A curated, tiered backlog of ~12 interactive "explorables," each a self-contained HTML page
+in the console style (tokens copied from `approaches-app/src/styles/index.css` so they match M1/M2/M3
+without the Vite build). A rolling ~3 Opus builders in the background, replace-on-completion; each page
+committed as it lands. Wave 0 = the favorite (`solvency-cell`) + both Panda seeds
+(`enemy-attack-schedule`; a `jumpgate-topology` page fed by a Sonnet net-scout) + an honest
+`utility-ai-fit` audit. `explorations/index.html` is the morning entry point; `explorations/RUN-LOG.md`
+tracks live state; `plans/PLAN-msl-explorations.md` is the plan.
+
+**Why:** Interactive explainers are the highest-value reading of "explore a technical aspect," and
+standalone HTML lets many agents work without touching shared build config. Staging in `explorations/`
+keeps the public surface clean until Panda picks winners. Rolling-3 keeps the session alive on
+background-completion notifications without depending on a timer tool, and naturally paces launches to
+~agent-duration.
+
+**Notes:**
+- Rule 1 passed **verbatim, with a stern warning**, into every subagent prompt; each agent writes
+  exactly one file in its own slug folder (no shared-file contention) and is forbidden servers/installers/builds.
+- Identity gate (Rule 6/7) baked into every prompt: no real names, no local filesystem paths in any
+  page, third-party game refs brief + transformative. The jumpgate scout held to small transformative
+  excerpts (no wiki bulk).
+- `UtilityAi` ("PandasAutonome") used **read-only** as reference; its public, AI-authored utility-AI
+  architecture (response curves, modifiers, disembodied agents issuing *directives* that reshape
+  subordinates' utility landscape) is the spine of the fit-audit page — MSL's contract board reads as
+  exactly such a directive layer.
+- `explorations/` is **intentionally not** wired into `build_site.py` (a deliberate desync, flagged in
+  the plan: it's staging, not deployed). **Not pushed** — local commits only; Panda to review, promote
+  favorites, then push.
+- Results addendum to follow in the morning once the run completes.
+
+---
+
 ## 2026-06-24 — Approaches go React; three HAND-lineage mutations
 
 **Context:** Next pass on *Minimalist Space Logistics*. Two asks: (1) switch the approaches
