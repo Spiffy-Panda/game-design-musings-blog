@@ -6,6 +6,7 @@ Index of plans. One line per slug; the detail lives in `plans/PLAN-<slug>.md`.
 
 - [PLAN-blog-site](plans/PLAN-blog-site.md) — the published directory site: landing page, preview server, Pages deploy, and the musing build framework (`MUSING-CONFIG.json` + per-folder `build-musing.py` + generator), now with multi-page musings (sub-pages) and a React/Tailwind sub-site for the MSL approaches (`approaches-app/`).
 - [PLAN-msl-explorations](plans/PLAN-msl-explorations.md) — overnight gallery of interactive HTML "explorables" for MSL technical aspects (solvency sim, jumpgate topology, enemy schedule, utility-AI fit, …); staged in `explorations/`, **not** wired into the site build, awaiting review + promotion.
+- [PLAN-logical-magic](plans/PLAN-logical-magic.md) — **LoMa**, a magic system built on first/second-order logic (advanced tiers: monads, game semantics, the limit theorems); MDYN-grade grounded calculations without field equations. Lives in `logical-magic/` (pitch page done); registered + on the landing page as an HTML-first musing alongside `thaumodynamics/`. Next: worksheet + application pages.
 
 ## Completed
 

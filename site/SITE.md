@@ -55,21 +55,31 @@ site/
 Authoring happens in a top-level `<MUSE-SLUG>/` folder, not under `site/`. The short version:
 
 1. `<MUSE-SLUG>/MUSING.md` is the content; `<MUSE-SLUG>/build-musing.py` renders it.
+   *(HTML-first variant: no `MUSING.md` — the folder's hand-authored, self-contained
+   `*.html` pages are **copied verbatim**, gallery `index.html` as the entry point.)*
 2. `../MUSING-CONFIG.json` lists the musing (folder, slug, name, description, hidden).
 3. `build_site.py` renders it to `site/musings/<slug>/` and adds its card to `index.html`.
 
-Full checklist + the supported Markdown subset: `../musing-tech-notes.md`.
+Full checklist + the supported Markdown subset + the HTML-first pattern:
+`../musing-tech-notes.md`.
 
 ## Inventory (what exists now)
 
 - `style.css` — base styling (header, card grid, `.prose` for musing pages, `.draft` badge). Tracked.
 - `index.html` — generated landing page (one card per visible musing).
-- `musings/<slug>/` — generated musing pages. Currently: `minimalist-space-logistics/`,
-  whose `approaches/` sub-tree mixes a **React-built** hub + three mutation pages
-  (`two-ledgers`, `known-war`, `glass-cockpit`) with three **Markdown** approach pages
-  (`the-invisible-hand`, `the-tide-line`, `dead-reckoning`); plus an `explorations/` sub-tree —
-  a gallery overview + 16 self-contained interactive HTML "explorables", **copied** verbatim
-  (not rendered) from the repo-root `explorations/` by the musing's `build-musing.py`.
+- `musings/<slug>/` — generated musing pages. Currently:
+  - `minimalist-space-logistics/` — Markdown-rendered main page, whose `approaches/`
+    sub-tree mixes a **React-built** hub + three mutation pages (`two-ledgers`,
+    `known-war`, `glass-cockpit`) with three **Markdown** approach pages
+    (`the-invisible-hand`, `the-tide-line`, `dead-reckoning`); plus an `explorations/`
+    sub-tree — a gallery overview + 16 self-contained interactive HTML "explorables",
+    **copied** verbatim (not rendered) from the repo-root `explorations/` by the musing's
+    `build-musing.py`.
+  - `thaumodynamics/` — **HTML-first**: gallery + monograph + worksheet + duel chronicle,
+    copied verbatim from `../thaumodynamics/`.
+  - `logical-magic/` — **HTML-first**: gallery + the LoMa system-pitch page, copied
+    verbatim from `../logical-magic/`; cross-links `../thaumodynamics/` (slug-relative,
+    works in-repo and on-site).
 
 ## Build & preview
 

@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDYN 101 · Worksheet 3 — The Exchange Laws</title>
+</head>
+<body>
+
+<style>
+  /* ── tokens (course design system) ─────────────────────── */
+  :root{
+    --ground:#e9e7e0; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae; --rule:#cfcaba;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --hand:#31519f; --hand2:#4a66ab;
+    --ember-wash:rgba(176,80,10,.06); --storm-wash:rgba(32,100,159,.06);
+    --violet-wash:rgba(90,79,192,.07);
+    --shadow:0 14px 40px rgba(35,40,51,.12);
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono','Fira Code',monospace;
+    --script:'Segoe Print','Bradley Hand','Chalkboard SE','Comic Sans MS',cursive;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0c0f14; --surface:#151a22; --surface2:#1b212c;
+      --line:#262e3c; --line2:#3a4556; --rule:#333d4e;
+      --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+      --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+      --hand:#a9bdf7; --hand2:#8ea6ea;
+      --ember-wash:rgba(255,160,87,.05); --storm-wash:rgba(130,199,255,.05);
+      --violet-wash:rgba(171,159,252,.08);
+      --shadow:0 14px 40px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#e9e7e0; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae; --rule:#cfcaba;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --hand:#31519f; --hand2:#4a66ab;
+    --ember-wash:rgba(176,80,10,.06); --storm-wash:rgba(32,100,159,.06);
+    --violet-wash:rgba(90,79,192,.07);
+    --shadow:0 14px 40px rgba(35,40,51,.12);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0c0f14; --surface:#151a22; --surface2:#1b212c;
+    --line:#262e3c; --line2:#3a4556; --rule:#333d4e;
+    --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+    --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+    --hand:#a9bdf7; --hand2:#8ea6ea;
+    --ember-wash:rgba(255,160,87,.05); --storm-wash:rgba(130,199,255,.05);
+    --violet-wash:rgba(171,159,252,.08);
+    --shadow:0 14px 40px rgba(0,0,0,.4);
+  }
+
+  /* ── base ───────────────────────────────────────────────── */
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink); font:16.5px/1.65 var(--serif)}
+  a{color:var(--storm)}
+  a:focus-visible,input:focus-visible+label{outline:2px solid var(--storm); outline-offset:2px; border-radius:3px}
+  .vh{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+  .fH{color:var(--ember); font-style:italic; font-weight:700}
+  .fL{color:var(--storm); font-style:italic; font-weight:700}
+  .fA{color:var(--violet); font-style:italic}
+  i.v{font-style:italic}
+  sub,sup{line-height:0}
+
+  /* ── mode visibility ────────────────────────────────────── */
+  #ws[data-mode="blank"]   :is(.m-s,.m-k,.m-sk){display:none !important}
+  #ws[data-mode="student"] :is(.m-b,.m-k){display:none !important}
+  #ws[data-mode="key"]     :is(.m-b,.m-s,.m-bs){display:none !important}
+
+  /* ── mode bar ───────────────────────────────────────────── */
+  .modebar{
+    position:sticky; top:0; z-index:40;
+    background:var(--surface2); border-bottom:1px solid var(--line);
+    box-shadow:0 4px 18px rgba(0,0,0,.06);
+  }
+  .modebar .inner{
+    max-width:960px; margin-inline:auto; padding:10px clamp(14px,4vw,32px);
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px;
+  }
+  .modebar .course{
+    font:600 11.5px/1.4 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink3); margin-right:auto;
+  }
+  .modebar .course b{color:var(--ink2)}
+  .seg{display:flex; border:1px solid var(--line2); border-radius:4px; overflow:hidden; padding:0; margin:0}
+  .seg input{position:absolute; opacity:0; pointer-events:none}
+  .seg label{
+    font:600 11.5px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink3); padding:9px 14px 8px; cursor:pointer; border-left:1px solid var(--line);
+    background:transparent; user-select:none;
+  }
+  .seg label:first-of-type{border-left:0}
+  .seg input:checked+label{background:var(--surface); color:var(--ink); box-shadow:inset 0 -2px 0 var(--ink2)}
+  .seg #m-student:checked+label{box-shadow:inset 0 -2px 0 var(--hand); color:var(--hand)}
+  .seg #m-key:checked+label{box-shadow:inset 0 -2px 0 var(--violet); color:var(--violet)}
+  .modecap{flex-basis:100%; font:italic 13px/1.5 var(--serif); color:var(--ink3); padding:0 2px 2px}
+  .modecap .m-s{color:var(--hand)} .modecap .m-k{color:var(--violet)}
+
+  /* ── the sheet ──────────────────────────────────────────── */
+  .page{padding:34px clamp(10px,3vw,32px) 80px}
+  .sheet{
+    position:relative; max-width:900px; margin-inline:auto;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    box-shadow:var(--shadow); padding:clamp(22px,5vw,56px) clamp(18px,5.4vw,60px) 40px;
+    overflow:hidden;
+  }
+  .wm{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; z-index:0;
+  }
+  .wm span{
+    font:700 clamp(40px,9vw,86px)/1.1 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+    color:var(--violet); opacity:.055; transform:rotate(-24deg); text-align:center; white-space:nowrap;
+  }
+  .sheet>*:not(.wm){position:relative; z-index:1}
+
+  /* header */
+  .inst{font:600 11px/1.6 var(--sans); letter-spacing:.22em; text-transform:uppercase; color:var(--ink3); text-align:center}
+  .course-line{font:600 12.5px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink2); text-align:center; margin-top:4px}
+  h1{font:600 clamp(24px,4.4vw,34px)/1.15 var(--serif); text-align:center; margin:18px 0 6px; letter-spacing:-.01em}
+  .sub{font:italic 14.5px/1.6 var(--serif); color:var(--ink2); text-align:center; margin:0 0 26px}
+  .idrow{
+    display:flex; flex-wrap:wrap; gap:14px 28px; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:14px 2px; margin:0 0 22px; font:13px/1.6 var(--sans); color:var(--ink3);
+  }
+  .idrow .fld{flex:1 1 180px; display:flex; align-items:baseline; gap:8px; white-space:nowrap}
+  .idrow .lab{font-weight:600; letter-spacing:.12em; text-transform:uppercase; font-size:10.5px}
+  .idrow .line{flex:1; border-bottom:1.2px solid var(--line2); min-height:20px; padding:0 4px}
+  .hand{font-family:var(--script); color:var(--hand); font-size:15.5px; line-height:1.5}
+  .idrow .m-k{font:600 11px/1.6 var(--sans); letter-spacing:.14em; color:var(--violet); text-transform:uppercase}
+
+  .boxes{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-bottom:30px}
+  .notebox{border:1px solid var(--line); border-radius:3px; padding:14px 16px; background:var(--surface2)}
+  .notebox h3{font:600 10.5px/1 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 9px}
+  .notebox ol{margin:0; padding-left:18px; font-size:13.5px; color:var(--ink2)}
+  .notebox ol li{margin:3px 0}
+  .datacard{font:12.5px/1.9 var(--mono); color:var(--ink2); overflow-x:auto}
+  .datacard div{white-space:nowrap}
+  .datacard b{color:var(--ink); font-weight:600}
+
+  /* sections & questions */
+  .sec{margin-top:36px}
+  .sec>h2{
+    font:600 12.5px/1.4 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink); border-bottom:2px solid var(--ink2); padding-bottom:8px; margin:0 0 6px;
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  }
+  .sec>h2 .mk{color:var(--ink3); font-weight:600; letter-spacing:.08em}
+  .sec>.dir{font:italic 13.5px/1.6 var(--serif); color:var(--ink3); margin:6px 0 4px}
+  .q{margin:26px 0 30px}
+  .q .qh{display:flex; gap:10px; align-items:baseline}
+  .q .qno{font:700 14px/1.5 var(--sans); color:var(--ink2); min-width:34px}
+  .q .qtext{flex:1; font-size:15.5px}
+  .q .pts{font:600 11px/1.8 var(--mono); color:var(--ink3); white-space:nowrap}
+  .q .qtext .eqline{display:block; margin:8px 0 0; font-size:16px}
+
+  /* multiple choice */
+  .opts{list-style:none; margin:12px 0 0 44px; padding:0}
+  .opts li{position:relative; margin:7px 0; padding-left:34px; font-size:15px; color:var(--ink2)}
+  .opts .letter{
+    position:absolute; left:0; top:0; width:22px; text-align:center;
+    font:600 13px/1.7 var(--sans); color:var(--ink3);
+  }
+  /* student circle around chosen letter */
+  #ws[data-mode="student"] .opts li.st-pick .letter{color:var(--hand)}
+  #ws[data-mode="student"] .opts li.st-pick .letter::after{
+    content:""; position:absolute; inset:-5px -6px -4px -7px;
+    border:2.2px solid var(--hand); border-radius:52% 48% 55% 45% / 46% 56% 44% 54%;
+    transform:rotate(-5deg);
+  }
+  /* key check on correct option */
+  #ws[data-mode="key"] .opts li.key-right{color:var(--ink)}
+  #ws[data-mode="key"] .opts li.key-right::before{
+    content:"✓"; position:absolute; left:-24px; top:-1px;
+    font:700 16px/1.6 var(--sans); color:var(--violet);
+  }
+  #ws[data-mode="key"] .opts li.key-right .letter{color:var(--violet)}
+  .why{margin:10px 0 0 44px; padding:8px 12px; border-left:2px solid var(--violet);
+       background:var(--violet-wash); font-size:13.5px; color:var(--ink2)}
+  .why b{color:var(--violet); font:600 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; margin-right:6px}
+
+  /* ruled answer areas */
+  .rules{
+    margin:12px 0 0 44px; padding:2px 8px 0;
+    background:repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule) 27px 28px);
+    background-origin:content-box;
+  }
+  .r2{min-height:56px} .r3{min-height:84px} .r4{min-height:112px} .r5{min-height:140px} .r6{min-height:168px}
+  .rules .hand{display:block; font-size:15px; line-height:28px; transform:rotate(-.35deg); white-space:pre-line}
+  .rules .hand .x{text-decoration:line-through; text-decoration-thickness:2px; opacity:.75}
+  .rules .hand .mnote{color:var(--hand2); font-size:13.5px}
+  .parts{margin:6px 0 0 44px; padding-left:0; list-style:none}
+  .parts>li{margin:14px 0}
+  .parts .plab{font:600 12.5px/1.7 var(--sans); color:var(--ink2)}
+  .parts .plab .pts{font:600 10.5px/1.7 var(--mono); color:var(--ink3); margin-left:8px}
+  .parts .rules{margin-left:0}
+  .parts .sol{margin-left:0}
+  .parts .why{margin-left:0}
+
+  /* key solutions */
+  .sol{
+    margin:10px 0 0 44px; padding:12px 14px;
+    border-left:2px solid var(--violet); background:var(--violet-wash); border-radius:0 3px 3px 0;
+  }
+  .sol .step{font:13.5px/1.9 var(--mono); color:var(--ink2); display:block}
+  .sol .step b{color:var(--ink)}
+  .sol .final{
+    display:inline-block; margin-top:7px; padding:2px 10px;
+    border:1.4px solid var(--violet); border-radius:3px;
+    font:600 13.5px/1.8 var(--mono); color:var(--ink);
+  }
+  .sol .model{font-size:14.5px; color:var(--ink2); margin:0}
+  .sol .model b{color:var(--ink)}
+  .sol .scheme{display:block; margin-top:8px; font:11.5px/1.7 var(--mono); color:var(--ink3)}
+  .ce{
+    display:block; margin-top:9px; padding-top:8px; border-top:1px dashed var(--line2);
+    font:13px/1.6 var(--sans); color:var(--ink2);
+  }
+  .ce b{color:var(--ember); font:600 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; margin-right:6px}
+
+  /* footer */
+  .sheetfoot{
+    margin-top:44px; border-top:1px solid var(--line); padding-top:14px;
+    display:flex; flex-wrap:wrap; gap:6px 20px; justify-content:space-between;
+    font:11px/1.7 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--ink3);
+  }
+  .colophon{max-width:900px; margin:26px auto 0; font:12.5px/1.9 var(--sans); color:var(--ink3); padding:0 6px}
+  .colophon a{color:var(--ink3)}
+
+  @media (max-width:560px){
+    .opts{margin-left:10px}
+    .rules,.sol,.why{margin-left:10px}
+    .parts{margin-left:10px}
+  }
+  @media print{
+    .modebar,.colophon{display:none}
+    body{background:#fff}
+    .page{padding:0}
+    .sheet{box-shadow:none; border:0; max-width:100%; padding:24px 8px}
+  }
+</style>
+
+<div id="ws" data-mode="blank">
+
+  <!-- ── mode bar ── -->
+  <div class="modebar">
+    <div class="inner">
+      <span class="course"><b>MDYN 101</b> · Worksheet 3 · The Exchange Laws</span>
+      <fieldset class="seg" role="radiogroup" aria-label="Worksheet view">
+        <legend class="vh">Choose which copy of the worksheet to view</legend>
+        <input type="radio" name="mode" id="m-blank" value="blank" checked>
+        <label for="m-blank">Blank</label>
+        <input type="radio" name="mode" id="m-student" value="student">
+        <label for="m-student">Student</label>
+        <input type="radio" name="mode" id="m-key" value="key">
+        <label for="m-key">Answer key</label>
+      </fieldset>
+      <span class="modecap">
+        <span class="m-b">Fresh copy, as handed out — prints cleanly if you need a real one.</span>
+        <span class="m-s">As collected: T.&nbsp;Mully, §2 — Tuesday, first bell. Ungraded.</span>
+        <span class="m-k">Instructor’s copy. Mark for method; deduct once per section for missing units.</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="page">
+  <div class="sheet">
+    <div class="wm m-k" aria-hidden="true"><span>Answer key<br>do not circulate</span></div>
+
+    <!-- ── header ── -->
+    <p class="inst">Candela Polytechnic Institute · Department of Applied Thaumodynamics</p>
+    <p class="course-line">MDYN 101 — Magicaldynamics I · Michaelmas Term 1907 · Prof. A. Okoye</p>
+    <h1>Worksheet 3 — The Exchange Laws</h1>
+    <p class="sub">Text: Vane, <cite>Thaumodynamics</cite>, Vol. I (3rd ed.), §§4–7 &nbsp;·&nbsp; 60 marks &nbsp;·&nbsp; 50 minutes</p>
+
+    <div class="idrow">
+      <span class="fld"><span class="lab">Name</span><span class="line">
+        <span class="hand m-s">T. Mully</span><span class="m-k">Answer key — Okoye</span>
+      </span></span>
+      <span class="fld"><span class="lab">Section</span><span class="line">
+        <span class="hand m-s">§2</span><span class="m-k">—</span>
+      </span></span>
+      <span class="fld"><span class="lab">Date</span><span class="line">
+        <span class="hand m-s">Tues 12 Nov 1907</span><span class="m-k">—</span>
+      </span></span>
+    </div>
+
+    <div class="boxes">
+      <div class="notebox">
+        <h3>Instructions</h3>
+        <ol>
+          <li>Answer all questions in the spaces provided.</li>
+          <li>Show working — marks follow the path, not the arrival.</li>
+          <li>Underline final answers, <em>with units</em>.</li>
+          <li>Constants are on the reference card. Water data provided.</li>
+          <li>Remove copper jewellery before the practical. The eleven-second rule applies to your attention as well. — A.O.</li>
+        </ol>
+      </div>
+      <div class="notebox">
+        <h3>Reference card</h3>
+        <div class="datacard">
+          <div><b>χ<sub>T</sub></b> = 4.19 W·m⁻²·(unit H)⁻¹</div>
+          <div><b>ξ</b> = 0.16 V·s·th⁻¹·m⁻¹ &nbsp; <b>τ<sub>α</sub></b> = 11 s</div>
+          <div><b>c<sub>θ</sub></b> = 299 m·s⁻¹ &nbsp; <b>τ<sub>q</sub></b> = 30 μs (std torc)</div>
+          <div><b>E<sub>bd</sub></b> = 3.0 MV/m dry · 0.35 MV/m threaded</div>
+          <div><b>c<sub>water</sub></b> = 4186 J·kg⁻¹·K⁻¹ &nbsp; 1 kcal = 4.19 kJ</div>
+          <div>autoignition, dry tinder ≈ <b>505 K</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ SECTION A — MULTIPLE CHOICE ════════ -->
+    <section class="sec" aria-label="Section A, multiple choice">
+      <h2><span>Section A — Multiple choice</span><span class="mk">12 marks · 2 each</span></h2>
+      <p class="dir">Circle one letter per question.</p>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A1.</span>
+          <span class="qtext">The law ∇·<span class="fL">Λ</span> = 0 tells us that</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> Loom lines terminate on anima charge.</li>
+          <li class="st-pick key-right"><span class="letter">(b)</span> Loom lines form closed loops — there are no isolated Loom poles.</li>
+          <li><span class="letter">(c)</span> the Loom vanishes in vacuum.</li>
+          <li><span class="letter">(d)</span> the Loom decays with τ<sub>α</sub> = 11 s.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (b)</b> Solenoidal means closed loops — Law II, printed in Maxwell’s hand. (d) confuses the field with the persistence of its <em>charge</em>.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A2.</span>
+          <span class="qtext">A duelist’s circling gesture winds the Loom <em>primarily</em> because</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li class="key-right"><span class="letter">(a)</span> moving anima is a current <span class="fA">J<sub>α</sub></span>, and currents spin the Loom (Law IV).</li>
+          <li class="st-pick"><span class="letter">(b)</span> the changing Hearth term μ<sub>θ</sub>ε<sub>θ</sub>&thinsp;∂<span class="fH">H</span>/∂t dominates.</li>
+          <li><span class="letter">(c)</span> the rhythm of the winding chant drives the field.</li>
+          <li><span class="letter">(d)</span> copper in the torc attracts <span class="fL">Λ</span> of its own accord.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (a)</b> Both terms of Law IV are real, but at duelling tempo the displacement term is negligible: the gesture <em>is</em> the current. Most-picked distractor is (b) — see T.&nbsp;Mully’s paper, and half of §2’s.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A3.</span>
+          <span class="qtext">Kindle famously fails on a glacier because</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> <span class="fH">H</span> cannot form below the freezing point.</li>
+          <li class="st-pick key-right"><span class="letter">(b)</span> Exchange I moves heat but cannot create it — the ambient reservoir is too thin.</li>
+          <li><span class="letter">(c)</span> ice grounds the Loom like cold iron.</li>
+          <li><span class="letter">(d)</span> τ<sub>α</sub> shortens in the cold.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (b)</b> Exchange I is a pump, not a furnace. This is the single most examinable sentence in the course.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A4.</span>
+          <span class="qtext">To collapse an opponent’s standing ward, you throw at their feet a bar of</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li class="st-pick"><span class="letter">(a)</span> copper.</li>
+          <li><span class="letter">(b)</span> silver.</li>
+          <li class="key-right"><span class="letter">(c)</span> cold iron.</li>
+          <li><span class="letter">(d)</span> gold.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (c)</b> Copper <em>stores</em> a winding; iron <em>drains</em> one. Mixing these up is how duelling robes catch fire. Gold does nothing, which is why it is jewellery.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A5.</span>
+          <span class="qtext">Frostlock’s faint violet glow is</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li class="st-pick key-right"><span class="letter">(a)</span> the ejected heat re-radiated as murmur — conservation’s receipt.</li>
+          <li><span class="letter">(b)</span> air ionized by the cold.</li>
+          <li><span class="letter">(c)</span> a reflection of the caster’s aura.</li>
+          <li><span class="letter">(d)</span> a myth; cold-work does not glow.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (a)</b> The pumped-out energy must go somewhere; it leaves as sector radiation. Cold light is a refund.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A6.</span>
+          <span class="qtext">A schooled defender can often dodge a stormneedle because</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li class="st-pick key-right"><span class="letter">(a)</span> the aiming fields travel at c<sub>θ</sub> ≈ 299 m/s and the wind-up is visible — the bolt is instant, the aim is not.</li>
+          <li><span class="letter">(b)</span> bolts are repelled by living tissue.</li>
+          <li><span class="letter">(c)</span> the discharge must follow the ground.</li>
+          <li><span class="letter">(d)</span> an electric field cannot cross a moving body.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (a)</b> Duels are lost in the wind-up (Vane, §7 marginalia). Section B3 makes you prove it.</p>
+      </div>
+    </section>
+
+    <!-- ════════ SECTION B — PROBLEMS ════════ -->
+    <section class="sec" aria-label="Section B, problems">
+      <h2><span>Section B — Problems</span><span class="mk">32 marks</span></h2>
+      <p class="dir">Show all working. State assumptions. Underline final answers with units.</p>
+
+      <!-- B1 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B1.</span>
+          <span class="qtext"><strong>The kettle.</strong> A novice holds a steady Kindle well of uniform strength
+          <span class="fH">H</span> = 2.5 × 10³ units across the copper base (A = 0.020 m²) of a kettle holding
+          0.25 kg of water at 293 K. Neglect losses and the kettle’s own heat capacity.</span>
+          <span class="pts">[10]</span></div>
+        <ol class="parts">
+          <li>
+            <span class="plab">(a) How much heat must reach the water to bring it to the boil (373 K)?<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">Q = mcΔT = 0.25 × 4186 × (373−293) = 0.25 × 4186 × 80
+= 83,720 J ≈ <u>83.7 kJ</u></span></div>
+            <div class="sol m-k">
+              <span class="step">Q = m·c·ΔT = 0.25 kg × 4186 J·kg⁻¹·K⁻¹ × 80 K</span>
+              <span class="final">Q ≈ 83.7 kJ</span>
+              <span class="scheme">[1] formula &amp; ΔT · [1] value with units</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(b) What thermal power does the well deliver through the base? (q = χ<sub>T</sub><span class="fH">H</span>)<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">q = 4.19 × 2500 = 10,475 W/m²
+P = qA = 10,475 × 0.020 = <u>209.5 W ≈ 210 W</u></span></div>
+            <div class="sol m-k">
+              <span class="step">q = χ<sub>T</sub>H = 4.19 × 2.5×10³ = 1.05×10⁴ W·m⁻² ; P = q·A</span>
+              <span class="final">P ≈ 2.1 × 10² W</span>
+              <span class="scheme">[1] flux law · [1] area factor — watch for students quoting q as the power</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(c) How long until it boils? Give minutes.<span class="pts">[3]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">t = Q/P = 83,720 / 209.5 = 399.6 s ≈ <u>400 s ≈ 6.7 min</u> (slow stove!)</span></div>
+            <div class="sol m-k">
+              <span class="step">t = Q/P = 83 720 J ÷ 209.5 W = 4.0×10² s</span>
+              <span class="final">t ≈ 400 s ≈ 6.7 min</span>
+              <span class="scheme">[1] t = Q/P · [1] value · [1] unit conversion</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(d) The novice’s coupling efficiency is 21%. What does the tea cost her metabolism, in kJ and in food-calories? One-phrase comment.<span class="pts">[3]</span></span>
+            <div class="rules r3 m-bs"><span class="hand m-s">E = Q × 0.21 = 83.72 × 0.21 = <u>17.6 kJ ≈ 4.2 kcal</u>
+<span class="mnote">…that’s LESS than the water needs?? cheap tea??
+divide or multiply — ASK IN TUTORIAL</span></span></div>
+            <div class="sol m-k">
+              <span class="step">η = useful/metabolic ⇒ E<sub>met</sub> = Q/η = 83.72 kJ ÷ 0.21</span>
+              <span class="final">E ≈ 4.0 × 10² kJ ≈ 95 kcal — about one biscuit</span>
+              <span class="scheme">[1] divide by η · [1] kJ · [1] kcal + comment</span>
+              <span class="ce"><b>Common error</b> Multiplying by η. If the “cost” comes out <em>below</em> the heat delivered, something in the ledger is screaming: efficiency divides the requirement. (Mully — see me at tutorial; your instinct that 17.6 kJ was suspicious was correct. Trust the suspicion, redo the algebra.)</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- B2 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B2.</span>
+          <span class="qtext"><strong>The quench.</strong> A duelling torc is wound to <span class="fL">Λ</span>₀ = 340 units and
+          quenched with the standard collapse constant, so <span class="fL">Λ</span>(t) = <span class="fL">Λ</span>₀·e<sup>−t/τ<sub>q</sub></sup>
+          and the induced field is
+          <span class="eqline"><i class="v">E</i><sub>ind</sub>(t) = (ξ<span class="fL">Λ</span>₀/τ<sub>q</sub>)·e<sup>−t/τ<sub>q</sub></sup>.</span></span>
+          <span class="pts">[10]</span></div>
+        <ol class="parts">
+          <li>
+            <span class="plab">(a) Compute the peak induced field, in MV/m.<span class="pts">[3]</span></span>
+            <div class="rules r3 m-bs"><span class="hand m-s">E = ξΛ₀/τ = 0.16 × 340 / 30 = 54.4/30
+= <u>1.81 V/m</u> <span class="mnote">(seems small??)</span></span></div>
+            <div class="sol m-k">
+              <span class="step">τ<sub>q</sub> = 30 μs = 3.0×10⁻⁵ s  ← the whole question lives here</span>
+              <span class="step">E<sub>pk</sub> = ξΛ₀/τ<sub>q</sub> = 0.16 × 340 ÷ 3.0×10⁻⁵ = 1.81×10⁶ V/m</span>
+              <span class="final">E<sub>pk</sub> ≈ 1.8 MV/m</span>
+              <span class="scheme">[1] formula · [1] μs→s conversion · [1] value in MV/m</span>
+              <span class="ce"><b>Common error</b> Leaving τ<sub>q</sub> in microseconds — a six-order slip that turns a war-bolt into a static shock. If your duelling field is under a volt per metre, re-read your own margin note.</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(b) Does it arc in dry air? Through a threaded channel? Numbers.<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">1.81 V/m &lt; 3.0 MV/m and &lt; 0.35 MV/m → <u>no arc either way</u></span></div>
+            <div class="sol m-k">
+              <span class="step">1.8 MV/m &lt; 3.0 MV/m → no arc in dry air</span>
+              <span class="step">1.8 MV/m &gt; 0.35 MV/m → arcs through the thread — hence Protocol 02 threads first</span>
+              <span class="final">dry: no · threaded: yes</span>
+              <span class="scheme">[1] each comparison — error carried forward from (a) earns method marks</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(c) How long does the arc window last (E &gt; 0.35 MV/m)?<span class="pts">[3]</span></span>
+            <div class="rules r3 m-bs"><span class="hand m-s">n/a — no arc per (b)</span></div>
+            <div class="sol m-k">
+              <span class="step">t<sub>w</sub> = τ<sub>q</sub>·ln(E<sub>pk</sub>/E<sub>th</sub>) = 3.0×10⁻⁵ × ln(1.81/0.35) = 3.0×10⁻⁵ × 1.645</span>
+              <span class="final">t<sub>w</sub> ≈ 49 μs</span>
+              <span class="scheme">[1] set E(t)=E<sub>th</sub> · [1] solve with ln · [1] value — matches Plate IV of the text</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(d) What minimum winding Λ<sub>min</sub> still arcs through a threaded channel?<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">Λmin = E·τ/ξ = <span class="mnote">— out of time :(</span></span></div>
+            <div class="sol m-k">
+              <span class="step">Λ<sub>min</sub> = E<sub>th</sub>·τ<sub>q</sub>/ξ = 3.5×10⁵ × 3.0×10⁻⁵ ÷ 0.16</span>
+              <span class="final">Λ<sub>min</sub> ≈ 66 units</span>
+              <span class="scheme">[1] rearrangement (Mully: formula written = 1 mark) · [1] value</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- B3 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B3.</span>
+          <span class="qtext"><strong>The duel at dawn.</strong> A stormneedle is cast at range d = 24 m. Threading is
+          murmur-borne (c<sub>θ</sub> = 299 m/s); the wind-up runs 2.00 s from thread-launch to quench; the bolt
+          itself is instantaneous. The defender needs 0.25 s to react and 0.50 s to step off the thread-line.</span>
+          <span class="pts">[8]</span></div>
+        <ol class="parts">
+          <li>
+            <span class="plab">(a) When does the defender first see the shimmer arrive?<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">t = d/c = 24/299 = 0.0803 s ≈ <u>80 ms</u></span></div>
+            <div class="sol m-k">
+              <span class="step">t = d/c<sub>θ</sub> = 24 ÷ 299 = 8.0×10⁻² s</span>
+              <span class="final">t ≈ 80 ms</span>
+              <span class="scheme">[1] t = d/c · [1] value</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(b) How much time remains to dodge, and what is the margin?<span class="pts">[3]</span></span>
+            <div class="rules r3 m-bs"><span class="hand m-s">remaining = 2.00 − 0.08 = 1.92 s
+need = 0.25 + 0.50 = 0.75 s → margin = 1.92 − 0.75 = <u>1.17 s</u> <span class="mnote">(finally an easy one)</span></span></div>
+            <div class="sol m-k">
+              <span class="step">t<sub>rem</sub> = 2.00 − 0.080 = 1.92 s ; t<sub>need</sub> = 0.25 + 0.50 = 0.75 s</span>
+              <span class="final">margin ≈ 1.17 s — the defender strolls</span>
+              <span class="scheme">[1] remaining · [1] need · [1] margin</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(c) At what range would the margin vanish? One sentence: what does this say about duelling?<span class="pts">[3]</span></span>
+            <div class="rules r3 m-bs"><span class="hand m-s">2.00 − d/299 = 0.75 → d/299 = 1.25 → d = <u>374 m</u>
+so inside any real duel you can ALWAYS step off — that’s why
+casters feint + hide the wind-up.</span></div>
+            <div class="sol m-k">
+              <span class="step">2.00 − d/c<sub>θ</sub> = 0.75 ⇒ d = 299 × 1.25</span>
+              <span class="final">d ≈ 374 m</span>
+              <span class="step"><b>Sentence:</b> no honest duel happens at 374 m — within practical range the defender always has time, which is why duels are won by feints and hidden wind-ups, not by faster bolts. You dodge the wind-up, not the bolt.</span>
+              <span class="scheme">[2] range · [1] any sentence touching “the aim, not the bolt”</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- B4 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B4.</span>
+          <span class="qtext"><strong>Ward upkeep.</strong> A Loomshell decays as e<sup>−t/τ<sub>α</sub></sup> and stops
+          turning bolts below 40% of full strength.</span>
+          <span class="pts">[4]</span></div>
+        <ol class="parts">
+          <li>
+            <span class="plab">(a) Refresh interval?<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">e^(−t/11) = 0.40 → t = 11 ln(1/0.4) = 11 × 0.916 = <u>10.1 s</u></span></div>
+            <div class="sol m-k">
+              <span class="step">t = τ<sub>α</sub>·ln(1/0.40) = 11 × 0.916</span>
+              <span class="final">t ≈ 10.1 s</span>
+              <span class="scheme">[1] ln setup · [1] value — re-comb roughly every breath</span>
+            </div>
+          </li>
+          <li>
+            <span class="plab">(b) Copper-hemmed robes double the effective τ<sub>α</sub>. New interval?<span class="pts">[2]</span></span>
+            <div class="rules r2 m-bs"><span class="hand m-s">t = 22 × 0.916 = <u>20.2 s</u> — buy the robes</span></div>
+            <div class="sol m-k">
+              <span class="step">t = 22 × ln(2.5)</span>
+              <span class="final">t ≈ 20.2 s</span>
+              <span class="scheme">[1] scaling · [1] value — the robes are a component, not a costume</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ════════ SECTION C — SHORT ANSWER ════════ -->
+    <section class="sec" aria-label="Section C, short answer">
+      <h2><span>Section C — Short answer</span><span class="mk">16 marks · 4 each</span></h2>
+      <p class="dir">Two to four sentences each. Cite a law where one applies.</p>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C1.</span>
+          <span class="qtext">State the eleven-second rule and use it to explain why there are no enchanted swords.</span>
+          <span class="pts">[4]</span></div>
+        <div class="rules r4 m-bs"><span class="hand m-s">Anima fades outside living tissue with τ_α = 11 s (Law V), so
+whatever the smith puts into the blade is gone in about a breath
+after they let go. So a sword can’t stay magic on its own.</span></div>
+        <div class="sol m-k">
+          <p class="model"><b>Model.</b> By Law V, anima decays outside living tissue with τ<sub>α</sub> ≈ 11 s — no free
+          charge outlives a breath. A smith’s charge is gone before the blade cools, so objects cannot <em>store</em>
+          magic; they can only <em>shape</em> a living caster’s fields. Artifacts are lenses, never batteries — the torc
+          aims what you pour through it and does nothing on a shelf.</p>
+          <span class="scheme">[1] rule stated with τ · [1] applies outside living tissue · [2] lens-vs-battery distinction</span>
+          <span class="ce"><b>Typical 2/4</b> Stops at “the charge fades” without the lens/battery half — the question asks why the <em>sword</em> is impossible, not why the charge is brief.</span>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C2.</span>
+          <span class="qtext">Why are fire and frost “one discipline”?</span>
+          <span class="pts">[4]</span></div>
+        <div class="rules r4 m-bs"><span class="hand m-s">Same Exchange I well with the sign flipped — H converging pumps
+heat IN (fire), inverted pumps it OUT (frost). And the heat that
+leaves has to go somewhere, so it comes out as the violet murmur
+glow — the books balance either way.</span></div>
+        <div class="sol m-k">
+          <p class="model"><b>Model.</b> Exchange I makes heat flow <em>along</em> <span class="fH">H</span>; the same well
+          geometry with inverted phase reverses the flux. Kindle and Frostlock differ by a sign, not a subject — and
+          conservation holds in both directions, frost’s exported heat leaving as murmur.</p>
+          <span class="scheme">[2] sign inversion of the same well · [2] conservation both ways</span>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C3.</span>
+          <span class="qtext">Every Loomshell has at least two weak points. Name them, and the theorem that guarantees them.</span>
+          <span class="pts">[4]</span></div>
+        <div class="rules r4 m-bs"><span class="hand m-s">It’s the hairy-ball thing — you can’t comb a sphere flat, so
+there are two bald whorls (top of the head + under the feet).
+Duelists aim at the crown one.</span></div>
+        <div class="sol m-k">
+          <p class="model"><b>Model.</b> The polar whorls — index defects where the combed tangent field must vanish.
+          Poincaré–Hopf: any tangent vector field on a sphere has zeroes of total index 2, so no combing removes
+          them; every shell carries two, and the crown whorl is the classic target.</p>
+          <span class="scheme">[1] names the whorls/defects · [2] Poincaré–Hopf (accept “hairy-ball theorem”) · [1] tactical consequence</span>
+          <span class="ce"><b>Note</b> “The hairy-ball thing” earns the idea mark but not the theorem mark. Names matter; they are how you find the literature before the literature finds you.</span>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C4.</span>
+          <span class="qtext">A first-year claims: “the chant pours energy into the bolt.” Give the correct account of what
+          words do, and where the energy actually comes from.</span>
+          <span class="pts">[4]</span></div>
+        <div class="rules r4 m-bs"><span class="hand m-s">Words don’t add any energy — the energy is metabolic (you eat
+for your bolts). Pretty sure the words are just tradition.</span></div>
+        <div class="sol m-k">
+          <p class="model"><b>Model.</b> No syllable couples to the fields. Words are the <em>clock</em>: the caster
+          phase-locks the drive to their own pulse, and a chant is a metronome you can carry into fear — a gagged
+          caster still casts, only raggedly. The energy ledger is metabolic, spent through the anima the gesture and
+          focus deploy (gesture writes the current, focus sets the boundary, word keeps time).</p>
+          <span class="scheme">[2] words = timing/phase-lock, not energy · [2] metabolic ledger via anima</span>
+          <span class="ce"><b>Typical 2/4</b> “Words do nothing” is half the story — they do nothing <em>to the fields</em>, and something essential to the caster. Tradition that survives four centuries of duelling is rarely decoration.</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="sheetfoot">
+      <span>MDYN 101 · Worksheet 3 · Page 1 of 1</span>
+      <span>Total: 60 marks</span>
+      <span class="m-k">Key checked: A.O. · 9 Nov 1907</span>
+    </footer>
+  </div>
+
+  <p class="colophon">Companion text: <a href="thaumodynamics.html">Thaumodynamics — A Field Theory of Fire &amp; Lightning</a> (course reader). A fictional problem set for a fictional physics; the pedagogy, alas, is real. Set without webfonts or external assets; the student’s handwriting is your system’s, and both themes were mixed by hand.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var ws = document.getElementById('ws');
+  if (!ws) return;
+  var radios = document.querySelectorAll('input[name="mode"]');
+  for (var i=0;i<radios.length;i++){
+    radios[i].addEventListener('change', function(){
+      if (this.checked) ws.dataset.mode = this.value;
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

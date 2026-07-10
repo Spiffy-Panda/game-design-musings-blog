@@ -1,0 +1,48 @@
+# PLAN — logical-magic (LoMa)
+
+**Goal:** design **[Lo]gical [Ma]gic (LoMa)** — a magic system grounded in first- and
+second-order logic, with advanced practice dipping into monads and other abstract
+CS/math (game semantics, fixed points, categoricity, the classical limit theorems).
+LoMa produces the classic magic effects (fire, wishes, wards, scrying) *by fiat* —
+unlike MDYN/thaumodynamics it owes nothing to field equations — but it must mirror
+MDYN's **detailed, grounded calculations**: costs are countable, proofs are shown,
+numbers agree across pages.
+
+**Core conceit (v1):** the world is a first-order model; a spell is a sentence the
+world does not yet satisfy; casting = supplying a consistency **warrant** (a proof,
+paid in *strokes*) after which the world **settles** into a nearest model of the
+sentence (paid in *flips* of atomic facts, drawn from local *grace*). The world
+picks among minimal settlements adversarially ("the Miser's Law") — the monkey's
+paw as a theorem, not a trope.
+
+**Folder pattern:** mirrors `thaumodynamics/` — a top-level `logical-magic/`
+folder of self-contained HTML pages + gallery `index.html` + `README.md`.
+Started as unregistered staging (2026-07-10, morning); **promoted the same day**
+to a registered **HTML-first musing**: verbatim-copy `build-musing.py`, nav spec
+`LOGICAL-MAGIC.md`, registry row + landing-page card. Every `*.html` deploys —
+Rule 6 applies. Mnemonic (Rule 8): **`LOMA`**.
+
+## Checklist
+
+- [x] `logical-magic/pitch.html` — the pitch page: premise, quantifier ladder,
+      three fully-worked pleas (Emberfield / the Long Wish / the Quarter-Day
+      Breach), vessels (monads), the Mint (second order), the six Limits,
+      design payoffs (`LOMA.1`–`LOMA.7`), tuning constants, roadmap.
+- [x] `logical-magic/index.html` — gallery card + planned-page ghosts.
+- [x] `logical-magic/README.md` — staging note, mnemonic, page table.
+- [ ] Page II — "LOMA 101, Problem Set One" (worksheet w/ blank/attempt/key
+      toggle, mirroring MDYN 101 Worksheet 3).
+- [ ] Page III — the application (a breach or duel chronicled as derivations —
+      candidate: "The Assize of Bells").
+- [x] Decide promotion: **done 2026-07-10** — registered as an HTML-first musing
+      (verbatim-copy `build-musing.py`, gallery `index.html` as entry, nav spec
+      `LOGICAL-MAGIC.md`), same day as `thaumodynamics/`, when the landing page
+      grew cards for all projects. Pattern: `musing-tech-notes.md`.
+
+## Open questions
+
+- Tuning constants (stroke rate, grace tide, creation flip-cost) are declared
+  placeholders on the pitch page — one table to change, numbers must stay
+  consistent across future pages (MDYN discipline).
+- Whether the duel page uses game semantics (∀ = falsifier's move) as its
+  scoring spine — current lean: yes.

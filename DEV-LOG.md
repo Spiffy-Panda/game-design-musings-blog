@@ -20,6 +20,141 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-10 — Landing page links every project: THAU + LoMa promoted as HTML-first musings
+
+**Context:** Panda asked for the Game Design Musings landing page to link the other
+projects (the `thaumodynamics/` and `logical-magic/` sets, until now staging-only and
+invisible to the site build).
+**Options considered:** (A) hand-edit `site/index.html` — dead on arrival, it's generated;
+(B) teach the landing generator "link-only cards" pointing at unbuilt folders — broken on
+Pages, where unregistered folders don't deploy; (C) promote both sets to registered
+musings with verbatim-copy `build-musing.py` scripts, the path both READMEs anticipated.
+**Choice:** C — a new sanctioned musing variant, the **HTML-first musing**: no `MUSING.md`;
+the hand-authored gallery `index.html` is the published entry; `build-musing.py` copies
+every top-level `*.html` verbatim (the MSL-explorations treatment); the Rule-2 pair
+becomes `index.html` + `<FOLDER-NAME>.md` (nav specs added for both). Registered both in
+`MUSING-CONFIG.json` with card sublinks (THAU: Monograph/Worksheet/Bout; LoMa: The Pitch).
+Pattern documented in `musing-tech-notes.md`; SITE.md inventory + plan files synced.
+**Why:** the registry is the only honest way onto the landing page — anything else forks
+the generator or ships dead links; and the copy-script promotion was designed for exactly
+this moment.
+**Notes:** (1) cross-musing links between the sets use `../<slug>/<page>.html`, which
+resolves identically in-repo and under `site/musings/` — that only works because these
+folders are lowercase == slug; keep that invariant. (2) HTML-first pages carry no site
+chrome, hence no back-link to the landing page — deliberate, they must stay
+`file://`-openable (precedent: copied explorations pages). (3) Registration flips these
+folders from "committed" to "published on next push" — Rule 6 was re-checked on all six
+HTML pages this session. Verified locally: full build clean (3 musings), all seven routes
+200, LoMa→THAU cross-link lands on the copied gallery.
+
+## 2026-07-10 — LoMa (Logical Magic) staged: the "casting is proving" pitch page
+
+**Context:** Panda pitched a new system — **[Lo]gical [Ma]gic (LoMa)**: magic built on
+first/second-order logic, advanced tiers dipping into monads and abstract CS/math. Classic
+magical effects arrive *by fiat* (explicitly unlike MDYN's field equations), but it must keep
+MDYN's detailed-grounded-calculation discipline. First deliverable: a graphical pitch page.
+**Options considered:** (A) register a full musing now; (B) a top-level staging folder like
+`thaumodynamics/`; (C) park it inside `explorations/` (rejected — that gallery is MSL-only).
+**Choice:** B — `logical-magic/` with `pitch.html` (the deliverable), a THAU-style gallery
+`index.html` with ghost cards for planned pages, and `README.md` declaring mnemonic **LOMA**;
+plus `plans/PLAN-logical-magic.md` + a `PLAN.md` line. Unregistered; nothing deploys.
+**Why:** mirrors the thaumodynamics precedent exactly (HTML-first set; promotion to a musing
+is a later, deliberate hub-page step), and the two systems now read as deliberate siblings —
+field equations vs. metamathematics, same grounded-calculation bet.
+**Notes:** core design decisions worth not re-deriving: (1) two-currency cost model —
+**strokes** (proof labor, caster-side) vs **flips** of **grace** (facts changed at settlement,
+world-side); (2) **the Miser's Law** — settlement is minimal-model revision, which makes the
+monkey's paw a *theorem* (Plea 02 audits it in a table); (3) spell circles = quantifier
+alternation depth (the arithmetical hierarchy), with induction-vs-instantiation as the whole
+economics of ∀ (Plea 01's 13-strokes-vs-904,779 punchline); (4) duels = game semantics (foes
+buy the falsifier's seat on your ∀); (5) rituals = monads, skinned as **vessels/pouring**,
+with the monad laws as "the Three Duties" and Writer-residue as forensics; (6) the six limit
+theorems (Gödel/Tarski/Löb/Rice/compactness/Löwenheim–Skolem) as unpatchable physics.
+`pitch.html` §8 is the tuning table — future LoMa pages cite or amend it, never fork numbers.
+Gotcha for the next session: staging folders are invisible on the normal preview server
+(`serve_site.py` serves `site/` only) — preview via a repo-root static server or open the
+file directly. Also: SVG `font-size` attributes lose to the CSS `font` shorthand in utility
+classes — size SVG text with an inline `style` when it matters.
+
+## 2026-07-10 — Thaumodynamics set imported as a top-level staging folder
+
+**Context:** Panda built a three-page fictional-physics set in a Claude Code session scoped to
+the Builder-Research workspace — a field-theory magic monograph, a worksheet with a
+blank/student/answer-key toggle, and a duel-chronicle slide deck — then realized game-design
+material belongs here. Asked to move it into a subfolder as real files.
+**Options considered:** (A) `explorations/<slug>/` — matches the self-contained-HTML staging
+convention, but that gallery is explicitly MSL-only; (B) a new top-level `thaumodynamics/`
+staging folder, musing-shaped but unregistered; (C) register it as a full musing now
+(`MUSING.md` + `build-musing.py` + `MUSING-CONFIG.json` row).
+**Choice:** B. Three standalone `file://`-openable pages + a small gallery `index.html` +
+`README.md`; companion cross-links rewritten from artifact URLs to relative hrefs; **not**
+registered, so nothing deploys.
+**Why:** keeps `explorations/` single-universe; mirrors its staging precedent; promotion to a
+published musing is a later, deliberate step — and this set is HTML-first, so it would publish
+via a hub page rather than the Markdown pipeline.
+**Notes:** authored under the Rule 6/7 gate (all names fictional). Each page also exists as a
+private claude.ai artifact (URLs in the folder README) — repo copies are canonical. The three
+pages share one token system and one set of in-world constants; the worksheet's numbers match
+the monograph's plates deliberately.
+
+## 2026-06-27 — Exploration explainer videos: a zero-pip slide+narration pipeline
+
+**Context:** Panda asked for a narrated 60–90s explainer video (visuals + audio) for each
+of the 16 MSL explorations. No video skill exists locally (confirmed via web search; third-party
+Claude Code video toolkits exist but need paid APIs / installs). Decided to build it in-repo.
+
+**Options considered:**
+- *Visuals:* (A) screenshot the live pages and pan, (B) author purpose-built slides, (C) hybrid.
+  Chose **C (hybrid)** per Panda.
+- *TTS:* MCP voice gateway vs. Windows SAPI directly. The gateway turned out to be **the same
+  three SAPI desktop voices** (David/Zira/Haruka), so calling SAPI directly via a `.ps1` keeps the
+  util self-contained (no MCP dependency).
+- *HTML→PNG:* headless Edge/Chrome (present on the box) vs. a pip rasterizer. Chose **headless Edge**
+  (`--headless=new --screenshot`) — zero pip.
+
+**Choice:** `utils/python/build_exploration_video.py` + `utils/powershell/tts_sapi.ps1`, driven by a
+per-exploration scene script at `explorations/_video/scenes/<slug>.json`. Output → `explorations/_video/out/<slug>.mp4`.
+Building blocks: SAPI (audio) + headless Edge (stills) + `ffmpeg` (Ken-Burns clips + concat). All zero-pip.
+
+**Why / the surprise that shaped it:** the live JS **instruments do not paint in one-shot headless
+capture** — `--screenshot` runs zero animation frames, so the canvases/SVGs come out blank (and
+`--virtual-time-budget` freezes rAF, making it worse). *Static* page content (hero/prose) captures
+perfectly. So the pipeline screenshots only the static page parts and **re-draws the key diagrams
+(circulation loop, phase plot) as static SVG inside the slides** — which also reads better at video
+scale. Capturing real running-simulation footage would need an interactive browser driver (e.g. the
+Playwright MCP) and can't be fully batch-automated without extra setup; left as an optional upgrade.
+
+**Notes:**
+- Headless gotcha: capture reliably with `Start-Process -Wait` + a **fresh `--user-data-dir`** per
+  shot + `--run-all-compositor-stages-before-draw`; too-short a wait yields no file.
+- Duration is governed by narration length × SAPI `rate`; the pilot landed 129s→91s by trimming
+  copy, `rate:1`, and a 0.4s per-scene tail. Tune `rate`/copy per page to stay in band.
+- **Pilot:** `liquidity-deflation-spiral` (91.1s, 1080p, 22 MB). Other 15 pending Panda's review.
+- **Git/disk:** 16 × ~20 MB ≈ 320 MB of binaries. Decided: **gitignore** `explorations/_video/{out,build}/`
+  and track only the pipeline + per-page scene scripts (anyone can re-render).
+
+**Update (same day) — Piper backend, speed knob, two more pilots:** Panda found SAPI's pacing slow
+(consumes content at ~2×) and wanted denser narration + a "how to use the tool" beat, plus a
+**SAPI-vs-Piper** voice comparison across the next two ideas. Added: a `piper` TTS backend (free local
+neural voice `en_US-amy-medium`, installed to `%LOCALAPPDATA%\piper`, resolved with no hardcoded path),
+a uniform `speed` knob (`ffmpeg atempo`, decoupled from the TTS engine so it's comparable across both),
+and `--tts`/`--speed` CLI overrides. Two new bespoke pilots: **solvency-cell** (SAPI Zira, 1.6×, 89 s)
+and **enemy-attack-schedule** (Piper amy, 1.8×, 87 s), each with re-drawn SVG diagrams (payer-gap clamp,
+hub threshold; opening-book timeline, fog map) and a controls "how to poke it" slide. Piper's base pace
+is slower than SAPI, so it needs a higher `speed` to hit the same band. Three pilots now await Panda's
+voice pick before the bespoke batch of the remaining 13.
+
+**Update — full batch done (16/16):** Panda picked Piper, ~1.6–1.8×, and a louder binaural bed
+(gain 0.10→0.16). Authored the 13 remaining bespoke scene scripts via a parallel subagent fan-out
+(one agent per page, each reading its page and writing `explorations/_video/scenes/<slug>.json` to the
+schema; 6 produced clean inline-SVG diagrams — all spot-checked in-bounds). Added inline-SVG support
+(`scene.svg`) so per-page diagrams live in the data, not the engine. All 16 render to **62–88 s**
+(avg 76 s, 339 MB total, gitignored). **`speed` had to be tuned per page** because Piper's pace and each
+script's word count vary: most sit at 1.7–1.9×, but the wordiest (utility-ai-fit, market-clearing-cell)
+needed 2.2× to fit the 60–90 s band — pick `speed` from the first render's duration rather than guessing.
+One render run was interrupted at a session boundary and left a truncated `solvency-cell.mp4` (moov atom
+missing); re-rendering fixed it — the batch is restartable since each slug is independent.
+
 ## 2026-06-25 — MSL explorables: run complete + published into the site
 
 **Context:** Morning wrap of the overnight run (entry below). It produced **16** interactive

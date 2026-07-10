@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thaumodynamics — the Coupled Sector set</title>
+<style>
+  :root{
+    --ground:#e9e7e0; --surface:#f6f5f0; --line:#d8d4c8; --line2:#c2bdae;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --ember-wash:rgba(176,80,10,.07); --storm-wash:rgba(32,100,159,.07);
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0c0f14; --surface:#151a22; --line:#262e3c; --line2:#3a4556;
+      --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+      --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+      --ember-wash:rgba(255,160,87,.06); --storm-wash:rgba(130,199,255,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(44% 40% at 86% 6%, var(--storm-wash), transparent 70%),
+      radial-gradient(48% 44% at 8% 100%, var(--ember-wash), transparent 70%);
+  }
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(48px,10vh,110px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(34px,6.5vw,58px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-style:italic; font-size:clamp(16px,2.2vw,19px); color:var(--ink2); max-width:58ch; margin:0 0 40px}
+  .fire{color:var(--ember)} .bolt{color:var(--storm)}
+  .cards{display:grid; gap:16px}
+  a.card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease;
+  }
+  a.card:hover{border-color:var(--line2); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--storm); outline-offset:3px}
+  .card .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .card h2{font:600 24px/1.25 var(--serif); margin:8px 0 6px}
+  .card h2 .arrow{color:var(--ink3); font-weight:400}
+  .card p{margin:0; font-size:15px; color:var(--ink2); max-width:64ch}
+  .card.m{border-top:3px solid var(--ember)}
+  .card.w{border-top:3px solid var(--violet)}
+  .card.b{border-top:3px solid var(--storm)}
+  .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:70ch}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">The Coupled Sector · three pages · self-contained, no build</p>
+    <h1>Thaumodynamics</h1>
+    <p class="sub">An invented field theory of <span class="fire">fire</span> &amp;
+    <span class="bolt">lightning</span> — two Maxwell-mirror fields coupled to heat and charge —
+    and what a world does with it: a textbook, a problem set, a duel.</p>
+
+    <div class="cards">
+      <a class="card m" href="thaumodynamics.html">
+        <span class="no">I · The system</span>
+        <h2>A Field Theory of Fire &amp; Lightning <span class="arrow">→</span></h2>
+        <p>The monograph. Hearth and Loom fields, the four sector laws, the two Exchange couplings,
+        anima and its eleven-second fade, worked spell protocols, materials, constants — with plates
+        and an interactive quench chart.</p>
+      </a>
+      <a class="card w" href="mdyn101-worksheet3.html">
+        <span class="no">II · The pedagogy</span>
+        <h2>MDYN 101 · Worksheet 3 — The Exchange Laws <span class="arrow">→</span></h2>
+        <p>The problem set the system implies: multiple choice, calculation word problems, short-answer
+        theory. Toggle between the blank handout, T.&nbsp;Mully’s imperfect attempt, and the instructor’s
+        worked answer key.</p>
+      </a>
+      <a class="card b" href="ashfield-bout.html">
+        <span class="no">III · The application</span>
+        <h2>The Ashfield Bout — a duel in seven exchanges <span class="arrow">→</span></h2>
+        <p>Cinderwork against needlework under an invented dueling code (seals, ferns, no iron, bout to
+        three). A slideshow chronicle: in-world commentary on every exchange, the marshals’ physics in
+        the margin, and a tactical map per slide.</p>
+      </a>
+    </div>
+
+    <p class="foot">Reading order is the card order, but each page stands alone. Every page opens
+    straight from disk — no server, no dependencies — and carries its own light and dark themes.
+    Fictional physics throughout; the constants agree across all three pages.</p>
+  </div>
+</body>
+</html>

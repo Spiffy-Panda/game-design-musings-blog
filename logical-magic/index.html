@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logical Magic — the LoMa set</title>
+<style>
+  :root{
+    --ground:#ece8dd; --surface:#f8f6ef; --line:#d9d3c2; --line2:#bfb7a2;
+    --ink:#262330; --ink2:#4e4a5c; --ink3:#767084;
+    --wax:#9c2f2f; --teal:#1e6e63; --violet:#5a4fc0;
+    --wax-wash:rgba(156,47,47,.07); --teal-wash:rgba(30,110,99,.08);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0d0f13; --surface:#161921; --line:#272d3a; --line2:#3d4557;
+      --ink:#e0e3ec; --ink2:#a8afc0; --ink3:#868da0;
+      --wax:#ff9082; --teal:#5ed2bc; --violet:#ab9ffc;
+      --wax-wash:rgba(255,144,130,.06); --teal-wash:rgba(94,210,188,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(44% 40% at 88% 4%, var(--teal-wash), transparent 70%),
+      radial-gradient(48% 44% at 6% 100%, var(--wax-wash), transparent 70%);
+  }
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(48px,10vh,110px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(34px,6.5vw,58px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  h1 .brk{color:var(--ink3); font-weight:400}
+  .sub{font-style:italic; font-size:clamp(16px,2.2vw,19px); color:var(--ink2); max-width:60ch; margin:0 0 40px}
+  .qa{color:var(--teal)} .qe{color:var(--wax)}
+  .cards{display:grid; gap:16px}
+  a.card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease;
+  }
+  a.card:hover{border-color:var(--line2); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+  .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .card h2{font:600 24px/1.25 var(--serif); margin:8px 0 6px}
+  .card h2 .arrow{color:var(--ink3); font-weight:400}
+  .card p{margin:0; font-size:15px; color:var(--ink2); max-width:64ch}
+  a.card.p{border-top:3px solid var(--teal)}
+  .ghost{border:1.5px dashed var(--line2); border-radius:4px; padding:20px 24px 18px; color:var(--ink3)}
+  .ghost h2{font:600 21px/1.25 var(--serif); margin:8px 0 6px; color:var(--ink2)}
+  .ghost p{margin:0; font-size:14.5px; max-width:64ch}
+  .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:70ch}
+  .foot a{color:var(--ink2)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">The LoMa set · one page so far · self-contained, no build</p>
+    <h1><span class="brk">[</span>Lo<span class="brk">]</span>gical <span class="brk">[</span>Ma<span class="brk">]</span>gic</h1>
+    <p class="sub">An invented magic system built on first- and second-order logic —
+    <span class="qa">∀</span> is a ward, <span class="qe">∃</span> is a wish, a proof is a
+    spell, and every miracle is audited to the stroke. Field-equation-free, calculation-heavy:
+    the metamathematical sibling of Thaumodynamics.</p>
+
+    <div class="cards">
+      <a class="card p" href="pitch.html">
+        <span class="no">I · The pitch</span>
+        <h2>Casting Is Proving — the system in one page <span class="arrow">→</span></h2>
+        <p>The premise (world = model, spell = sentence, warrant + settlement), the quantifier
+        ladder, three fully-audited pleas — the fireball, the monkey's-paw wish, a ward breached
+        by contradiction — vessels (monads) for ritual magic, second-order enchantment, and the
+        six theorem-hard Limits. With costs, derivations, and a tuning table.</p>
+      </a>
+      <div class="ghost">
+        <span class="no">II · planned — the pedagogy</span>
+        <h2>LOMA 101 · Problem Set One</h2>
+        <p>Draft riders for a cursed wish, price two warrants, find the quarter-day in a
+        provided writ — blank / student's attempt / answer key, mirroring MDYN 101.</p>
+      </div>
+      <div class="ghost">
+        <span class="no">III · planned — the application</span>
+        <h2>The Assize of Bells</h2>
+        <p>A warded-manor breach tried in court and chronicled as the duel of derivations it
+        was, with the marshals' strokes-and-flips audit in the margin.</p>
+      </div>
+    </div>
+
+    <p class="foot">Every page opens straight from disk — no server, no dependencies — and
+    carries its own light and dark themes. The mathematics is real; the world is fiction.
+    Sibling system: <a href="../thaumodynamics/index.html">Thaumodynamics (MDYN)</a>, the
+    field-theory counterpart. Constants and handles (<code>LOMA.n</code>) stay consistent
+    across pages.</p>
+  </div>
+</body>
+</html>

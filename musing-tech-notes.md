@@ -29,6 +29,10 @@ musing folder only holds its own "what."
 `MUSING.md` is the content/human entry point, `<FOLDER-NAME>.md` is the agent map. Only
 `MUSING.md` is rendered into the site — the nav file stays internal.
 
+> **Variant:** an *HTML-first musing* has no `MUSING.md` at all — its pages are
+> hand-authored, self-contained `.html` files copied verbatim by its `build-musing.py`.
+> The nav spec is still required. See "HTML-first musings" below.
+
 ## The build pipeline
 
 ```
@@ -143,6 +147,40 @@ How the two builds compose into one site:
 Gotcha learned the hard way: `background-attachment: fixed` and `backdrop-filter`/`backdrop-blur`
 can stall headless screenshot capture (and hurt paint perf). Avoid them on these pages.
 
+## HTML-first musings (verbatim-copy sets)
+
+Some musings are authored directly as **self-contained HTML pages** rather than Markdown —
+design-system-heavy sets where the page *is* the deliverable. Worked examples:
+`thaumodynamics/` (gallery + monograph + worksheet + duel chronicle) and `logical-magic/`
+(gallery + system-pitch page). The pattern:
+
+- **No `MUSING.md`.** The published entry point is a hand-authored gallery `index.html`
+  (the "hub"), with one card per content page. The Rule 2 pair becomes
+  `index.html` + `<FOLDER-NAME>.md` — the agent-nav spec is **still required** (it's where
+  the Rule 8 mnemonic lives); a human-facing `README.md` is conventional too. Neither is
+  published.
+- **`build-musing.py` copies, it doesn't render.** Every top-level `*.html` is copied
+  verbatim to `site/musings/<slug>/` (same treatment as the MSL `explorations/` gallery);
+  `.md` files are never copied. The contract is otherwise unchanged: `--out`, repo-root
+  anchoring via `__file__`, non-zero exit on failure.
+- **Pages must stay self-contained and `file://`-openable** — inline CSS/JS, no external
+  assets, light + dark themes carried per page. They don't use `site/style.css` and take
+  no chrome from `musing_render.py`, so there's no depth bookkeeping — but that also means
+  **no back-link to the landing page** (deliberate: the pages must work from disk, where
+  `../../index.html` doesn't exist; precedent: the copied explorations pages).
+- **Cross-musing links** use the shape `../<other-slug>/<page>.html`. That resolves
+  identically in the repo (folder beside folder) and on the site (slug beside slug under
+  `site/musings/`) — keep folder name == slug (lowercase) for these musings so the
+  equivalence holds.
+- **Landing-page sublinks:** list card sublinks in `MUSING-CONFIG.json` `links` with hrefs
+  relative to the musing dir (e.g. `"pitch.html"`, `"mdyn101-worksheet3.html"`).
+- **Rule 6 with teeth:** registering the musing is the moment "committed" becomes
+  "published" — every `*.html` in the folder deploys on the next Pages build. Gate any
+  edit accordingly.
+- **SVG text gotcha:** a CSS `font:` shorthand in a shared utility class overrides SVG
+  `font-size` presentation attributes. Size one-off SVG text with an inline
+  `style="font:…"` instead.
+
 ## Markdown the renderer supports
 
 `utils/python/musing_render.py` is a small, pure-stdlib renderer (no `pip install`, so the
@@ -179,10 +217,13 @@ musing folder just because it's hidden.
 
 ## Adding a new musing (checklist)
 
-1. `mkdir <MUSE-SLUG>/` at the repo root (PascalCase-with-hyphens, e.g. `Trade-Wind-Economy`).
-2. Write `<MUSE-SLUG>/MUSING.md` (the content) and `<MUSE-SLUG>/<FOLDER-NAME>.md` (agent nav).
+1. `mkdir <MUSE-SLUG>/` at the repo root (PascalCase-with-hyphens, e.g. `Trade-Wind-Economy`;
+   HTML-first musings use lowercase == slug, e.g. `logical-magic/`).
+2. Write `<MUSE-SLUG>/MUSING.md` (the content) and `<MUSE-SLUG>/<FOLDER-NAME>.md` (agent nav)
+   — or, for an HTML-first musing, the gallery `index.html` + pages instead of `MUSING.md`.
 3. Copy an existing `build-musing.py` into the folder (the default one needs no edits — it
-   derives its slug from the folder name).
+   derives its slug from the folder name; HTML-first musings copy the verbatim-copy variant
+   from `thaumodynamics/` or `logical-magic/`).
 4. Add an entry to `MUSING-CONFIG.json` (`folder`, `slug`, `name`, `description`, `hidden`).
 5. Preview: `python utils/python/serve_site.py` (builds on startup) and open the page.
 6. Public-surface check (Rule 6), DEV-LOG entry (Rule 5), then commit.

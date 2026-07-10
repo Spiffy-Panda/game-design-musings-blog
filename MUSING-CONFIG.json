@@ -12,6 +12,28 @@
         { "label": "Explorations", "href": "explorations/" }
       ],
       "hidden": false
+    },
+    {
+      "folder": "thaumodynamics",
+      "slug": "thaumodynamics",
+      "name": "Thaumodynamics",
+      "description": "An invented field theory of fire and lightning — two Maxwell-mirror fields coupled to heat and charge — worked out three ways: a monograph, a problem set, and a duel chronicled exchange by exchange.",
+      "links": [
+        { "label": "Monograph", "href": "thaumodynamics.html" },
+        { "label": "Worksheet", "href": "mdyn101-worksheet3.html" },
+        { "label": "The Bout", "href": "ashfield-bout.html" }
+      ],
+      "hidden": false
+    },
+    {
+      "folder": "logical-magic",
+      "slug": "logical-magic",
+      "name": "Logical Magic (LoMa)",
+      "description": "A magic system where casting is proving: the world is a model, spells are sentences it does not yet satisfy, and every miracle is audited in proof-strokes and fact-flips. The metamathematical sibling of Thaumodynamics.",
+      "links": [
+        { "label": "The Pitch", "href": "pitch.html" }
+      ],
+      "hidden": false
     }
   ]
 }
