@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Does a Utility AI Fit? — Minimalist Space Logistics · technique audit</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#34d399;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --warn:#f0a35e;--warn-soft:color-mix(in oklab,var(--warn) 16%,transparent);
+  --bad:#f0617a;--bad-soft:color-mix(in oklab,var(--bad) 16%,transparent);
+  --mil:#7aa7ff;--mil-soft:color-mix(in oklab,var(--mil) 16%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0}
+h1{font-size:clamp(2.1rem,5vw,3.1rem);line-height:1.05;letter-spacing:-.02em;margin:.6rem 0 .4rem;font-weight:800}
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3.2rem 0 .4rem;font-weight:700;scroll-margin-top:1rem}
+h3{font-size:1.06rem;margin:1.8rem 0 .3rem;font-weight:650;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--accent) 40%,transparent)}
+em{color:var(--fog-100)}
+strong{color:var(--fog-100);font-weight:650}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:4px;padding:.06em .36em;color:var(--fog-100)}
+.lede{font-size:1.18rem;font-style:italic;color:var(--fog-300);margin:.9rem 0 1.4rem;max-width:44rem}
+.hero{padding:3.6rem 0 1rem}
+.spark{margin:1.6rem 0;padding:.9rem 1.2rem;border-left:2px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);
+  font-size:1.06rem;color:var(--fog-100);font-style:italic;border-radius:0 6px 6px 0}
+.spark b{font-style:normal;color:var(--accent)}
+.lineage-foot{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);text-transform:uppercase;letter-spacing:.16em;margin-top:2.2rem;border-top:1px solid var(--line);padding-top:1.1rem}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+hr.rule{border:0;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:var(--ink-850);border-radius:10px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.card.tight{padding:.85rem 1rem}
+.lab{border:1px solid var(--line);background:linear-gradient(180deg,var(--ink-850),var(--ink-900));border-radius:12px;padding:1rem;margin:1.6rem 0;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+.labhead{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.4rem}
+.labtitle{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.16em;font-size:.74rem;color:var(--fog-400)}
+.labtitle b{color:var(--accent)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.grid-curves{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+@media(max-width:680px){.grid2{grid-template-columns:1fr}}
+
+.bigfig{font-family:var(--font-mono);font-size:2.2rem;font-weight:700;line-height:1;color:var(--accent);letter-spacing:-.01em}
+.figlabel{font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--fog-500);margin-top:.25rem}
+
+/* controls */
+.ctrlrow{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.5rem 0}
+.ctrlrow label{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-400);text-transform:uppercase;letter-spacing:.08em;min-width:7.2rem}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--ink-700);border-radius:3px;outline:none;flex:1;min-width:90px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+.valbox{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);min-width:3.1rem;text-align:right}
+button.btn{font-family:var(--font-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;background:var(--ink-800);color:var(--fog-100);border:1px solid var(--line);border-radius:6px;padding:.42rem .7rem;cursor:pointer;transition:border-color .15s,background .15s}
+button.btn:hover{border-color:var(--accent);background:var(--ink-700)}
+button.btn:active{transform:translateY(1px)}
+
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--ink-900)}
+.toggle button{font-family:var(--font-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;background:transparent;color:var(--fog-400);border:0;padding:.45rem .8rem;cursor:pointer}
+.toggle button.on{background:var(--accent);color:var(--ink-950);font-weight:650}
+.toggle.alt button.on{background:var(--warn);color:var(--ink-950)}
+
+/* curve editor cells */
+.curvecell{border:1px solid var(--line);background:var(--ink-900);border-radius:8px;padding:.5rem .55rem}
+.curvecell .cname{font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--fog-300);display:flex;justify-content:space-between;align-items:center;gap:.3rem}
+.curvecell .cmag{color:var(--accent)}
+.curvecell svg{display:block;width:100%;height:74px;margin-top:.3rem;touch-action:none}
+.curvecell .chint{font-size:.6rem;color:var(--fog-500);font-family:var(--font-mono);margin-top:.18rem;letter-spacing:.04em}
+.curvecell.dom{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft)}
+.magrow{display:flex;align-items:center;gap:.4rem;margin-top:.3rem}
+.magrow input[type=range]{height:3px}
+
+/* board */
+.board{display:flex;flex-direction:column;gap:.4rem;margin-top:.3rem}
+.contract{border:1px solid var(--line);background:var(--ink-900);border-radius:8px;padding:.55rem .65rem;cursor:pointer;transition:border-color .12s,background .12s}
+.contract:hover{border-color:var(--fog-500)}
+.contract.sel{border-color:var(--accent)}
+.contract.posted{background:linear-gradient(90deg,var(--accent-soft),transparent 60%)}
+.contract.posted.greedyonly{background:linear-gradient(90deg,var(--warn-soft),transparent 60%)}
+.crow{display:flex;align-items:center;gap:.55rem}
+.rank{font-family:var(--font-mono);font-weight:700;font-size:.92rem;color:var(--fog-400);min-width:1.5rem;text-align:center}
+.contract.posted .rank{color:var(--accent)}
+.cmeta{flex:1;min-width:0}
+.cname2{font-family:var(--font-mono);font-size:.82rem;color:var(--fog-100);display:flex;align-items:center;gap:.4rem}
+.csub{font-size:.68rem;color:var(--fog-500);font-family:var(--font-mono);letter-spacing:.02em;margin-top:.1rem}
+.score{font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--accent);min-width:3rem;text-align:right}
+.contract:not(.posted) .score{color:var(--fog-400)}
+.tag{font-family:var(--font-mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;padding:.06em .34em;border-radius:3px;border:1px solid currentColor}
+.tag.mil{color:var(--mil)}
+.tag.gen{color:var(--fog-500)}
+.tag.post{color:var(--accent)}
+.tag.disagree{color:var(--warn)}
+.statusdot{width:7px;height:7px;border-radius:50%;flex:none}
+
+/* bar viz inside contract breakdown */
+.bd{margin-top:.5rem;border-top:1px dashed var(--line);padding-top:.5rem}
+.bdrow{display:grid;grid-template-columns:8.5rem 1fr 2.6rem;gap:.5rem;align-items:center;margin:.18rem 0;font-family:var(--font-mono);font-size:.68rem}
+.bdrow .bn{color:var(--fog-400);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdrow .bv{color:var(--fog-200);text-align:right}
+.bartrack{height:9px;background:var(--ink-800);border-radius:5px;overflow:hidden;position:relative}
+.barfill{height:100%;border-radius:5px;background:var(--accent)}
+.barfill.neg{background:var(--bad)}
+.bdtotal{margin-top:.35rem;font-family:var(--font-mono);font-size:.72rem;color:var(--fog-300);display:flex;justify-content:space-between}
+.bdtotal b{color:var(--accent)}
+.bdwhy{font-size:.74rem;color:var(--fog-300);margin-top:.4rem;line-height:1.45}
+.bdwhy b{color:var(--fog-100)}
+
+/* agreement meter */
+.meter{margin-top:.5rem}
+.metertrack{height:12px;border-radius:7px;background:linear-gradient(90deg,var(--bad),var(--warn) 45%,var(--accent) 75%);position:relative;border:1px solid var(--line)}
+.meterknob{position:absolute;top:50%;width:3px;height:20px;background:var(--fog-100);transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 0 2px var(--ink-950)}
+.meterscale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.62rem;color:var(--fog-500);margin-top:.25rem}
+
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400);margin-top:.55rem;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:.32rem}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+.readout{font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);background:var(--ink-900);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;padding:.6rem .75rem;margin-top:.6rem;line-height:1.5}
+.readout b{color:var(--accent)}
+
+/* scorecard */
+.tablewrap{overflow-x:auto}
+.score-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:.6rem;font-size:.9rem}
+.score-table th{text-align:left;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--fog-500);padding:.4rem .6rem;border-bottom:1px solid var(--line);font-weight:500}
+.score-table td{padding:.7rem .6rem;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fog-300)}
+.score-table tr:last-child td{border-bottom:0}
+.verdict{font-family:var(--font-mono);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;padding:.2rem .5rem;border-radius:5px;display:inline-block;white-space:nowrap}
+.verdict.strong{color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in oklab,var(--accent) 45%,transparent)}
+.verdict.poor{color:var(--bad);background:var(--bad-soft);border:1px solid color-mix(in oklab,var(--bad) 45%,transparent)}
+.verdict.mod{color:var(--warn);background:var(--warn-soft);border:1px solid color-mix(in oklab,var(--warn) 45%,transparent)}
+.tname{font-family:var(--font-mono);color:var(--fog-100);font-weight:600;font-size:.86rem}
+.tsub{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.15rem}
+
+.costnote{display:grid;grid-template-columns:auto 1fr;gap:.5rem .8rem;font-size:.86rem;margin-top:.4rem}
+.costnote .ic{font-family:var(--font-mono);color:var(--accent);font-weight:700}
+.costnote .ic.warn{color:var(--warn)}
+.costnote .ic.bad{color:var(--bad)}
+
+.footnote{font-size:.82rem;color:var(--fog-500)}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.04em .3em;background:var(--ink-800);color:var(--fog-300)}
+ul.clean{list-style:none;padding-left:0;margin:.6rem 0}
+ul.clean li{position:relative;padding-left:1.25rem;margin:.4rem 0;color:var(--fog-300)}
+ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--accent);font-size:.8rem;top:.1rem}
+.mh{color:var(--mil)}
+.warnh{color:var(--warn)}
+.badh{color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">Does a Utility AI Fit?</span></li>
+    </ol>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">technique audit · utility AI</p>
+    <h1>Does a Utility&nbsp;AI Fit?</h1>
+    <p class="lede">Score each candidate action by passing weighted considerations through response curves, then take the argmax. A clean engine — but clean for what? This is a fit audit of utility AI across the three decision-makers in <strong>Minimalist Space Logistics</strong>, and it says plainly where the answer is <em>no</em>.</p>
+    <div class="spark">A posted bounty is not a command. It is a <b>dent in the player's utility landscape</b> — and a thing that only ever dents landscapes is exactly what utility AI was built to be.</div>
+  </header>
+
+  <p>MSL is one hauler keeping an unwinnable war supplied across ~14–20 systems, rear to forward. You buy cheap, haul, sell into the shortage at the front, bank the margin, get overrun, bank prestige, repeat. Three pieces of the sim make decisions, and the temptation — once you have a nice utility-AI hammer — is to drive all three with it. Resist that. Below, each decision-maker gets weighed on its own merits.</p>
+
+  <p>The reference architecture here is the designer's own public, AI-authored utility-AI project, <strong>PandasAutonome</strong>. Its load-bearing ideas, summarized transformatively:</p>
+
+  <ul class="clean">
+    <li><strong>Considerations &amp; response curves.</strong> A score is <code>Σ curve(property) × magnitude</code> over a handful of considerations. Each consideration reads one game property, bends it through a curve (rising, falling, a cliff, a gate, a step), and contributes a weighted vote.</li>
+    <li><strong>Modifiers.</strong> Memories, directives, and passive effects are one mechanism: anything that additively reshapes an agent's scoring — an <code>actionBonus</code> on a specific action, possibly with a <code>completionReward</code>.</li>
+    <li><strong>The embodied / disembodied split.</strong> Embodied agents physically act. <em>Disembodied</em> agents realize goals only by issuing <strong>directives</strong> that reshape the utility landscape of the agents beneath them. They never haul anything. They change what hauling is worth.</li>
+  </ul>
+
+  <p>Hold that last bullet. It is the whole verdict.</p>
+
+  <!-- =========================== THE LAB =========================== -->
+  <h2 id="lab">The faction poster, as a tunable scorer</h2>
+  <p>The friendly faction posts <strong>contracts</strong> (R.4): Euro-Truck-Sim-style job postings that say "haul this good to that system for this bounty." Today it is specced as a <strong>budget-constrained greedy knapsack</strong> — rank unmet front deficits by raw urgency, post bounties down the list until the treasury's spendable slice runs dry. The lab below rebuilds that poster as a <em>utility scorer</em> and lets you tune it against the greedy baseline on identical inputs.</p>
+
+  <div class="lab" id="lab-faction">
+    <div class="labhead">
+      <span class="labtitle">interactive · <b>faction contract scorer</b></span>
+      <span class="labtitle" id="seedlabel">seed —</span>
+    </div>
+
+    <!-- top controls -->
+    <div class="ctrlrow">
+      <span class="toggle" id="engineToggle" role="group" aria-label="decision engine">
+        <button data-engine="utility" class="on">Utility AI</button>
+        <button data-engine="greedy">Greedy baseline</button>
+      </span>
+      <button class="btn" id="reseedBtn">⟲ Reseed contracts</button>
+      <button class="btn" id="resetCurvesBtn">Reset curves</button>
+    </div>
+
+    <div class="ctrlrow">
+      <label for="budget">Treasury budget</label>
+      <input type="range" id="budget" min="20" max="110" step="2" value="60">
+      <span class="valbox" id="budgetVal">60k</span>
+    </div>
+    <div class="ctrlrow">
+      <label for="postk">Board capacity</label>
+      <input type="range" id="postk" min="2" max="8" step="1" value="5">
+      <span class="valbox" id="postkVal">5</span>
+    </div>
+
+    <!-- the curve editors -->
+    <h3 style="margin:1rem 0 .2rem;font-size:.92rem;color:var(--fog-300)">Considerations &amp; response curves <span style="color:var(--fog-500);font-weight:400;font-size:.8rem">— drag the dots; the magnitude slider is the weight</span></h3>
+    <div class="grid-curves" id="curveGrid"><!-- curve cells injected --></div>
+    <div class="readout" id="curveReadout">Drag any control point to reshape a consideration. The board re-ranks live.</div>
+
+    <!-- the board + breakdown -->
+    <div class="grid2" style="margin-top:1rem;align-items:start">
+      <div>
+        <div class="labtitle" style="margin-bottom:.35rem">ranked board <span id="boardEngineTag" style="color:var(--accent)">· utility</span></div>
+        <div class="board" id="board"><!-- contracts injected --></div>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--accent)"></span>posted (this engine)</span>
+          <span><span class="sw" style="background:var(--warn)"></span>greedy-only pick</span>
+          <span><span class="tag mil" style="border:none;padding:0">MIL</span> military good</span>
+        </div>
+      </div>
+      <div>
+        <div class="labtitle" style="margin-bottom:.35rem">why this contract <span id="selName" style="color:var(--accent)"></span></div>
+        <div id="breakdown" class="card tight" style="margin:0"><!-- breakdown injected --></div>
+      </div>
+    </div>
+
+    <!-- agreement meter -->
+    <div class="card tight" style="margin-top:1rem">
+      <div class="labtitle">utility ↔ greedy agreement on the posted set</div>
+      <div class="meter">
+        <div class="metertrack"><div class="meterknob" id="meterKnob" style="left:50%"></div></div>
+        <div class="meterscale"><span>0% — totally different boards</span><span id="agreePct" style="color:var(--fog-100)">—</span><span>100% — identical</span></div>
+      </div>
+      <div class="readout" id="agreeReadout" style="margin-top:.55rem">—</div>
+    </div>
+  </div>
+
+  <p class="footnote">Every number above is computed in-page from the seeded contract set — no canned data. Reseed to draw a fresh batch of front deficits; flip the engine toggle to post the same inputs two ways. Where the two boards agree, the curves are doing no work the knapsack wasn't already doing. Where they diverge is the only place utility AI is earning its tuning cost — watch <em>which</em> consideration moved the contract.</p>
+
+  <hr class="rule">
+
+  <!-- =========================== THE STRONG FIT =========================== -->
+  <h2 id="strong">Why the faction is the strong fit</h2>
+  <p>Map the faction onto the reference architecture and it lands in exactly one slot: it is a <strong>disembodied agent</strong>. It owns no ship. It cannot move ore. Its only verb is to <em>issue directives</em> — and a posted bounty <em>is</em> a directive in the PandasAutonome sense: an <code>actionBonus</code> attached to "haul good X to system Y," carrying a <code>completionReward</code> (the payout) and a lifetime (the contract expiry).</p>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>The board is a utility landscape, and the faction is the thing that dents it.</strong> The player is the embodied agent below. The player already scores hauls on their own private considerations — buy price, sell price, distance, overrun risk, hold space. The faction cannot reach into that scoring and command a route. What it <em>can</em> do is post a bounty, which raises the player-visible utility of one specific haul. The player still takes their own argmax. The faction just changed the terrain it runs over.</p>
+    <p style="margin-bottom:0">That is the textbook disembodied-utility-agent loop, and MSL gets it <em>for free</em> from the fiction. No contortion. The contract board was always going to exist (R.4); modeling its author as a utility scorer is not adding a system, it is naming the one already implied.</p>
+  </div>
+
+  <p>And the fit pays rent in concrete places the greedy knapsack struggles with — each visible in the lab:</p>
+
+  <ul class="clean">
+    <li><strong>The overrun cliff.</strong> Greedy ranks by deficit, so it cheerfully posts the juiciest bounty at a drop-off that will be enemy-held in two ticks — luring your one hauler into a crater. A <span class="badh">cliff curve</span> on overrun-risk lets the faction <em>stop</em> wanting deliveries it can't expect to see fulfilled, without hand-coded "if risk &gt; X skip" branches. Tune the cliff in the lab and watch a high-deficit forward contract drop off the board.</li>
+    <li><strong>Treasury confidence as a gate.</strong> A <span class="warnh">gate curve</span> on treasury state lets the faction get pickier when broke and spammier when flush — a smooth policy, not a step function bolted on after the fact.</li>
+    <li><strong>Military priority as a step.</strong> A <span class="mh">step curve</span> on good-category encodes "munitions outrank rations at the front" as one tunable lever instead of a special case threaded through the ranking code.</li>
+    <li><strong>Legibility through curve shapes.</strong> "Why was this posted?" answers as a <em>bar chart of considerations</em> (the breakdown panel) — which is arguably <em>more</em> legible to a designer than a knapsack's opaque sort key, because each lever is named and visible.</li>
+  </ul>
+
+  <div class="spark">The faction never hauls. It only changes what hauling is worth. That is the one job description utility AI was born for — so here, the answer is an unforced <b>yes</b>.</div>
+
+  <hr class="rule">
+
+  <!-- =========================== THE WEAK FIT =========================== -->
+  <h2 id="weak"><span class="badh">Why the enemy is the wrong tool</span></h2>
+  <p>The enemy offensive planner is currently a keyframed <strong>schedule + threshold automaton</strong> — a deliberately dumb thing that advances on a timetable and trips a few thresholds. Reaching for utility AI here is the textbook "solution looking for a problem." It is worse than unnecessary; it actively dismantles three things MSL is built on.</p>
+
+  <div class="card" style="border-color:color-mix(in oklab,var(--bad) 35%,var(--line))">
+    <div class="costnote">
+      <span class="ic bad">1</span><span><strong>It erases the asymmetry that is the whole game.</strong> The core fantasy is that <em>you cannot out-trade a thing that does not trade</em>. The enemy's refusal to optimize is what makes your optimization meaningful and your loss inevitable. Give the enemy a utility scorer and it starts <em>responding</em> to your routes — now it's a trading partner in a negotiation, and the "small competent person inside a catastrophe" tone collapses into a symmetric duel.</span>
+      <span class="ic bad">2</span><span><strong>It destroys legibility.</strong> A keyframed schedule is <em>readable</em>: the player can learn the war's rhythm, anticipate the next push, and feel clever for routing around it. A utility argmax over the enemy's situation is opaque — the front lurches for reasons the player can't reconstruct, and "the war has a pattern you can master" becomes "the war is noise."</span>
+      <span class="ic bad">3</span><span><strong>It spends the determinism and tuning budget for nothing.</strong> Every consideration and curve is state you must keep deterministic (APR.5) and a knob you must tune and balance. The schedule needs none of that. You'd be buying opacity, fragility, and weeks of curve-balancing in exchange for behavior the keyframes already deliver — and deliver <em>better</em>, because "dumb and predictable" is the spec, not a limitation.</span>
+    </div>
+  </div>
+
+  <p>This is the honest core of the audit: a technique fitting one decision-maker beautifully is <em>not</em> evidence it fits the next one. The enemy's dumbness is a designed feature. Utility AI's job is to make an agent <em>responsive</em> — which is precisely the property the enemy must not have.</p>
+
+  <hr class="rule">
+
+  <!-- =========================== THE MODERATE FIT =========================== -->
+  <h2 id="moderate"><span class="warnh">Rival haulers — moderate, but shelved</span></h2>
+  <p>Rival haulers (R.2) are the one place utility AI would fit <em>naturally and embodied</em>: a rival is an agent that scores routes on buy/sell/distance/risk and takes its own argmax — the same scorer the player reasons about, pointed at an NPC. It would even reuse the player's mental model of "what's a good haul." That is a clean moderate fit.</p>
+  <p>But rivals are <strong>shelved</strong>, and the audit respects scope: the moment they're real, this is the second place to deploy the engine — <em>after</em> the considerations and curve library already exist from the faction poster, so the marginal cost is low. Until then it's a hypothetical, and we rate it as one. Embodied-but-deferred, not strong-and-now.</p>
+
+  <hr class="rule">
+
+  <!-- =========================== SCORECARD =========================== -->
+  <h2 id="verdict">Verdict scorecard</h2>
+  <p>Utility AI is not a verdict on the game; it's a verdict per decision-maker. It earns its keep in exactly one slot.</p>
+
+  <div class="card" style="padding:.4rem .5rem">
+  <div class="tablewrap">
+  <table class="score-table">
+    <thead><tr><th>Decision-maker</th><th>Fit</th><th>Why — and the honest cost</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tname">Faction poster</span><div class="tsub">R.4 · disembodied</div></td>
+        <td><span class="verdict strong">Strong</span></td>
+        <td>The contract board <em>is</em> a directive layer reshaping the player's utility landscape — the disembodied-agent loop, free from the fiction. Cliff/gate/step curves express overrun-risk, treasury caution, and military priority as named, legible levers. <span style="color:var(--fog-400)"><strong>Cost:</strong> curve tuning is real, recurring work; deterministic only if curves are fixed-point and evaluation order is pinned.</span></td>
+      </tr>
+      <tr>
+        <td><span class="tname badh">Enemy planner</span><div class="tsub">schedule + thresholds</div></td>
+        <td><span class="verdict poor">Poor</span></td>
+        <td>Making the enemy <em>responsive</em> kills the asymmetry, legibility, and predictability that make the war work. <span style="color:var(--fog-400)"><strong>Cost:</strong> all downside — opacity, determinism surface, and a balancing burden, bought to replace keyframes that already do the job better. A solution looking for a problem.</span></td>
+      </tr>
+      <tr>
+        <td><span class="tname warnh">Rival haulers</span><div class="tsub">R.2 · shelved</div></td>
+        <td><span class="verdict mod">Moderate</span></td>
+        <td>The natural embodied fit: a rival scores routes like the player does. Reuses the faction's curve library at low marginal cost. <span style="color:var(--fog-400)"><strong>Cost:</strong> hypothetical until R.2 ships; rate it when it's real, not before.</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  </div>
+
+  <h3>The one-line takeaway</h3>
+  <div class="spark" style="font-size:1.1rem">Utility AI earns its keep in <b>exactly one place</b>: the faction as a disembodied directive-issuer whose contract board is a utility landscape it reshapes. It is the <b>wrong tool</b> for the enemy, whose dumbness is the design. A fair <em>yes here, no there</em>.</div>
+
+  <h3>Determinism footnote (APR.5)</h3>
+  <p class="footnote">Utility AI is compatible with MSL's hard determinism constraint <em>only</em> under discipline: response curves evaluated in fixed-point (no float drift across platforms), considerations summed in a <strong>fixed iteration order</strong>, ties in the argmax broken by a stable key (contract id), and any reseed driven by the one seeded PRNG. The lab here uses JavaScript floats for display convenience; a shipping implementation would quantize every curve output to a fixed integer scale before summing. Get that wrong and "deterministic" quietly becomes "deterministic on my machine."</p>
+
+  <div class="lineage-foot">
+    emerald lineage · technique audit (cross-cutting) &nbsp;·&nbsp; Minimalist Space Logistics &nbsp;·&nbsp; slug: utility-ai-fit<br>
+    reference: PandasAutonome (public, AI-authored hierarchical utility AI) · summarized transformatively
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   Minimalist Space Logistics — "Does a Utility AI Fit?"
+   Self-contained. No deps. Deterministic contract gen via mulberry32.
+   ============================================================ */
+
+/* ---------- tiny seeded PRNG (mulberry32) ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- response curve model ----------
+   Each consideration owns a curve defined by control points in [0,1]x[0,1].
+   We evaluate by piecewise-linear interpolation between the (sorted) points.
+   Points are draggable in Y (and inner points in X). This keeps the model
+   honest and visible — exactly the "named lever" legibility argument. */
+
+function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+function curveEval(pts, x){
+  x = clamp01(x);
+  // pts sorted by px ascending, endpoints fixed at x=0 and x=1
+  for(let i=0;i<pts.length-1;i++){
+    const a = pts[i], b = pts[i+1];
+    if(x >= a.x && x <= b.x){
+      const span = (b.x - a.x) || 1e-6;
+      const t = (x - a.x) / span;
+      return a.y + (b.y - a.y) * t;
+    }
+  }
+  return pts[pts.length-1].y;
+}
+
+/* Consideration definitions. `feat` names which contract feature [0,1] feeds in.
+   `magnitude` is the editable weight. `pts` is the editable curve.
+   Default shapes chosen to match the brief's archetypes. */
+function defaultConsiderations(){
+  return [
+    { id:"deficit", name:"Deficit urgency", feat:"deficit", magnitude:1.00,
+      hint:"rising — bigger shortage, more want",
+      pts:[{x:0,y:0.05,fx:false},{x:0.5,y:0.45,fx:false},{x:1,y:1.0,fx:false}] },
+    { id:"distance", name:"Distance falloff", feat:"distance", magnitude:0.70,
+      hint:"falling — far drops cost more to fill",
+      pts:[{x:0,y:1.0,fx:false},{x:0.5,y:0.55,fx:false},{x:1,y:0.12,fx:false}] },
+    { id:"overrun", name:"Overrun risk", feat:"risk", magnitude:0.95,
+      hint:"cliff — don't fund a doomed drop-off",
+      pts:[{x:0,y:1.0,fx:false},{x:0.55,y:0.82,fx:false},{x:0.7,y:0.12,fx:false},{x:1,y:0.02,fx:false}] },
+    { id:"treasury", name:"Treasury confidence", feat:"treasury", magnitude:0.55,
+      hint:"gate — get pickier when broke",
+      pts:[{x:0,y:0.08,fx:false},{x:0.4,y:0.25,fx:false},{x:0.6,y:0.85,fx:false},{x:1,y:1.0,fx:false}] },
+    { id:"military", name:"Military priority", feat:"mil", magnitude:0.60,
+      hint:"step — munitions outrank rations",
+      pts:[{x:0,y:0.15,fx:false},{x:0.49,y:0.18,fx:false},{x:0.51,y:0.9,fx:false},{x:1,y:1.0,fx:false}] },
+  ];
+}
+
+/* ---------- contract generation (deterministic from seed) ---------- */
+const GOODS = [
+  {k:"ore",       mil:false},
+  {k:"fuel",      mil:false},
+  {k:"rations",   mil:false},
+  {k:"munitions", mil:true},
+  {k:"medkits",   mil:true},
+  {k:"alloy",     mil:false},
+  {k:"warheads",  mil:true},
+  {k:"coolant",   mil:false},
+];
+const SYSTEMS = ["Kessar","Tamo","Brann-9","Vell","Ordsk","Pylos","Hade-Reach","Vortis","Cinder Gate","Lowmark"];
+const BANDS = ["rear","midfield","forward"];
+
+function genContracts(seed, n){
+  const rng = mulberry32(seed ^ 0x9e3779b9);
+  const out = [];
+  const usedSys = new Set();
+  for(let i=0;i<n;i++){
+    // band biases the features
+    const bandR = rng();
+    const band = bandR < 0.33 ? 0 : bandR < 0.66 ? 1 : 2; // rear/mid/forward
+    const good = GOODS[(rng()*GOODS.length)|0];
+    let sysName;
+    let guard=0;
+    do { sysName = SYSTEMS[(rng()*SYSTEMS.length)|0]; guard++; } while(usedSys.has(sysName) && guard<12);
+    usedSys.add(sysName);
+
+    // deficit: forward systems run hotter shortages
+    const deficit = clamp01(0.25 + band*0.22 + (rng()-0.5)*0.5);
+    // distance: forward is farther from rear staging
+    const distance = clamp01(0.15 + band*0.30 + (rng()-0.5)*0.35);
+    // overrun risk: rises sharply toward the front
+    const risk = clamp01(band===2 ? 0.55 + rng()*0.42 : band===1 ? 0.2 + rng()*0.4 : rng()*0.22);
+    const mil = good.mil ? 1 : 0;
+    // bounty (in "k") the faction would pay scales with deficit + distance + a little noise.
+    // Kept small relative to the budget slider so a mid budget posts most of the board
+    // and the capacity (K) + agreement meter are both meaningful.
+    const bounty = Math.round( (5 + deficit*9 + distance*5 + mil*2 + rng()*3) );
+
+    out.push({
+      id:"C"+i,
+      good:good.k, mil, sys:sysName, band:BANDS[band],
+      feat:{ deficit, distance, risk, mil, treasury:0.5 /* filled per-eval */ },
+      bounty
+    });
+  }
+  return out;
+}
+
+/* ---------- scoring ---------- */
+function scoreContract(c, considerations, treasuryNorm){
+  let total = 0;
+  const parts = [];
+  for(const con of considerations){
+    let x;
+    if(con.feat === "treasury") x = treasuryNorm;
+    else x = c.feat[con.feat];
+    const cv = curveEval(con.pts, x);
+    const contrib = cv * con.magnitude;
+    total += contrib;
+    parts.push({ id:con.id, name:con.name, feat:con.feat, x, curveOut:cv, magnitude:con.magnitude, contrib });
+  }
+  return { total, parts };
+}
+
+/* Greedy knapsack baseline: rank by raw deficit urgency (the spec'd sort key),
+   tie-break by bounty asc (cheaper first = more coverage), post down the list
+   until budget exhausted or board full. Deliberately ignores risk/distance. */
+function rankGreedy(contracts, budget, K){
+  const ranked = contracts.map(c => ({ c, key: c.feat.deficit })).sort((a,b)=>{
+    if(b.key !== a.key) return b.key - a.key;
+    if(a.c.bounty !== b.c.bounty) return a.c.bounty - b.c.bounty;
+    return a.c.id < b.c.id ? -1 : 1; // stable
+  });
+  let spent = 0; const posted = new Set();
+  for(const r of ranked){
+    if(posted.size >= K) break;
+    if(spent + r.c.bounty <= budget){ posted.add(r.c.id); spent += r.c.bounty; }
+  }
+  return { order: ranked.map(r=>r.c.id), posted, spent };
+}
+
+/* Utility ranking: by score desc; post down list within budget + capacity.
+   Stable tie-break by id for determinism. */
+function rankUtility(contracts, considerations, treasuryNorm, budget, K){
+  const scored = contracts.map(c => ({ c, s: scoreContract(c, considerations, treasuryNorm) }));
+  scored.sort((a,b)=>{
+    if(b.s.total !== a.s.total) return b.s.total - a.s.total;
+    return a.c.id < b.c.id ? -1 : 1;
+  });
+  let spent = 0; const posted = new Set();
+  for(const r of scored){
+    if(posted.size >= K) break;
+    if(spent + r.c.bounty <= budget){ posted.add(r.c.id); spent += r.c.bounty; }
+  }
+  const scoreMap = {}; scored.forEach(r => scoreMap[r.c.id] = r.s);
+  return { order: scored.map(r=>r.c.id), posted, spent, scoreMap };
+}
+
+/* ============================================================
+   STATE + WIRING
+   ============================================================ */
+const state = {
+  // 1009 opens on a teaching board: partial (~60%) overlap with greedy, and a
+  // high-risk forward contract greedy posts on raw deficit but the overrun cliff vetoes.
+  seed: 1009,
+  budget: 60,
+  K: 5,
+  engine: "utility",
+  considerations: defaultConsiderations(),
+  contracts: [],
+  selectedId: null,
+};
+
+const N_CONTRACTS = 8;
+
+const $ = sel => document.querySelector(sel);
+const elBoard = $("#board");
+const elBreakdown = $("#breakdown");
+const elCurveGrid = $("#curveGrid");
+
+function regenContracts(){
+  state.contracts = genContracts(state.seed, N_CONTRACTS);
+  if(!state.contracts.find(c=>c.id===state.selectedId)){
+    state.selectedId = state.contracts[0].id;
+  }
+}
+
+function treasuryNorm(){ return clamp01((state.budget - 20) / (110 - 20)); }
+
+/* ---------- compute both engines ---------- */
+function compute(){
+  const tn = treasuryNorm();
+  const util = rankUtility(state.contracts, state.considerations, tn, state.budget, state.K);
+  const greedy = rankGreedy(state.contracts, state.budget, state.K);
+  return { util, greedy, tn };
+}
+
+/* ---------- curve editors ---------- */
+const CURVE_W = 150, CURVE_H = 74, PADX = 8, PADY = 9;
+function cx(x){ return PADX + x * (CURVE_W - 2*PADX); }
+function cy(y){ return (CURVE_H - PADY) - y * (CURVE_H - 2*PADY); }
+function ux(px){ return clamp01((px - PADX) / (CURVE_W - 2*PADX)); }
+function uy(py){ return clamp01(((CURVE_H - PADY) - py) / (CURVE_H - 2*PADY)); }
+
+function buildCurveCells(){
+  elCurveGrid.innerHTML = "";
+  state.considerations.forEach((con, ci) => {
+    const cell = document.createElement("div");
+    cell.className = "curvecell";
+    cell.dataset.con = con.id;
+    cell.innerHTML = `
+      <div class="cname"><span>${con.name}</span><span class="cmag" id="mag-${con.id}">×${con.magnitude.toFixed(2)}</span></div>
+      <svg viewBox="0 0 ${CURVE_W} ${CURVE_H}" id="svg-${con.id}" aria-label="${con.name} response curve"></svg>
+      <div class="chint">${con.hint}</div>
+      <div class="magrow">
+        <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--fog-500)">wt</span>
+        <input type="range" min="0" max="1.5" step="0.05" value="${con.magnitude}" id="magr-${con.id}" aria-label="${con.name} magnitude">
+      </div>`;
+    elCurveGrid.appendChild(cell);
+    drawCurve(con);
+    // magnitude slider
+    cell.querySelector("#magr-"+con.id).addEventListener("input", e => {
+      con.magnitude = parseFloat(e.target.value);
+      $("#mag-"+con.id).textContent = "×"+con.magnitude.toFixed(2);
+      render();
+    });
+    attachCurveDrag(con);
+  });
+}
+
+function drawCurve(con){
+  const svg = $("#svg-"+con.id);
+  if(!svg) return;
+  // sample the piecewise line densely so the rendered path == evaluated curve
+  let d = "";
+  const SAMP = 40;
+  for(let i=0;i<=SAMP;i++){
+    const x = i/SAMP;
+    const y = curveEval(con.pts, x);
+    d += (i===0?"M":"L") + cx(x).toFixed(1) + " " + cy(y).toFixed(1) + " ";
+  }
+  // baseline + fill area
+  let area = d + "L" + cx(1).toFixed(1) + " " + cy(0).toFixed(1) + " L" + cx(0).toFixed(1) + " " + cy(0).toFixed(1) + " Z";
+  const dots = con.pts.map((p,i)=>{
+    const movableX = (i!==0 && i!==con.pts.length-1);
+    return `<circle class="cp" data-i="${i}" cx="${cx(p.x).toFixed(1)}" cy="${cy(p.y).toFixed(1)}" r="4.5"
+      fill="var(--accent)" stroke="var(--ink-950)" stroke-width="1.5"
+      style="cursor:${movableX?'move':'ns-resize'}"></circle>`;
+  }).join("");
+  svg.innerHTML = `
+    <line x1="${cx(0)}" y1="${cy(0)}" x2="${cx(1)}" y2="${cy(0)}" stroke="var(--line)" stroke-width="1"/>
+    <path d="${area}" fill="var(--accent-soft)" stroke="none"/>
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/>
+    ${dots}`;
+}
+
+let drag = null; // {con, i, svg}
+function attachCurveDrag(con){
+  const svg = $("#svg-"+con.id);
+  svg.querySelectorAll("circle.cp").forEach(c=>{
+    c.addEventListener("pointerdown", ev=>{
+      ev.preventDefault();
+      drag = { con, i: parseInt(c.dataset.i,10), svg };
+      try{ svg.setPointerCapture(ev.pointerId); }catch(e){}
+    });
+  });
+}
+function svgPoint(svg, ev){
+  const r = svg.getBoundingClientRect();
+  // map client coords into the viewBox coordinate space
+  const vx = (ev.clientX - r.left) / r.width * CURVE_W;
+  const vy = (ev.clientY - r.top) / r.height * CURVE_H;
+  return { vx, vy };
+}
+document.addEventListener("pointermove", ev=>{
+  if(!drag) return;
+  const { con, i, svg } = drag;
+  const { vx, vy } = svgPoint(svg, ev);
+  const pt = con.pts[i];
+  const isEnd = (i===0 || i===con.pts.length-1);
+  pt.y = uy(vy);
+  if(!isEnd){
+    // constrain X to strictly between neighbors so the piecewise stays sorted
+    const lo = con.pts[i-1].x + 0.02;
+    const hi = con.pts[i+1].x - 0.02;
+    pt.x = Math.min(hi, Math.max(lo, ux(vx)));
+  }
+  drawCurve(con);
+  render();
+});
+document.addEventListener("pointerup", ()=>{ drag = null; });
+
+/* ---------- board rendering ---------- */
+const STATUS = {
+  rear:    {c:"var(--accent)", t:"rear"},
+  midfield:{c:"var(--warn)",   t:"mid"},
+  forward: {c:"var(--bad)",    t:"fwd"},
+};
+
+function render(){
+  const { util, greedy, tn } = compute();
+  const active = state.engine === "utility" ? util : greedy;
+  const other  = state.engine === "utility" ? greedy : util;
+
+  // tags
+  $("#boardEngineTag").textContent = state.engine === "utility" ? "· utility" : "· greedy";
+  $("#boardEngineTag").style.color = state.engine === "utility" ? "var(--accent)" : "var(--warn)";
+
+  // board list in active engine order
+  elBoard.innerHTML = "";
+  active.order.forEach((id, idx)=>{
+    const c = state.contracts.find(x=>x.id===id);
+    const postedHere = active.posted.has(id);
+    const postedOther = other.posted.has(id);
+    const disagree = postedHere !== postedOther;
+    const sc = util.scoreMap[id];
+    const st = STATUS[c.band];
+
+    const div = document.createElement("div");
+    div.className = "contract" + (postedHere?" posted":"") + (id===state.selectedId?" sel":"");
+    if(state.engine==="greedy" && postedHere && !util.posted.has(id)) div.className += " greedyonly";
+    div.dataset.id = id;
+
+    const scoreShown = state.engine === "utility"
+      ? sc.total.toFixed(2)
+      : c.feat.deficit.toFixed(2);
+
+    div.innerHTML = `
+      <div class="crow">
+        <div class="rank">${idx+1}</div>
+        <span class="statusdot" style="background:${st.c}" title="${c.band}"></span>
+        <div class="cmeta">
+          <div class="cname2">${c.good} → ${c.sys}
+            ${c.mil?'<span class="tag mil">MIL</span>':''}
+            ${postedHere?'<span class="tag post">POSTED</span>':''}
+            ${disagree?'<span class="tag disagree">≠ '+(state.engine==='utility'?'greedy':'utility')+'</span>':''}
+          </div>
+          <div class="csub">${st.t} · bounty ${c.bounty}k · deficit ${(c.feat.deficit*100|0)}% · risk ${(c.feat.risk*100|0)}% · ${Math.round(c.feat.distance*18)} jumps</div>
+        </div>
+        <div class="score">${scoreShown}</div>
+      </div>`;
+    div.addEventListener("click", ()=>{ state.selectedId = id; render(); });
+    elBoard.appendChild(div);
+  });
+
+  // agreement meter (Jaccard over posted sets)
+  const A = util.posted, B = greedy.posted;
+  let inter=0; A.forEach(x=>{ if(B.has(x)) inter++; });
+  const uni = new Set([...A,...B]).size || 1;
+  const jacc = inter / uni;
+  const pct = Math.round(jacc*100);
+  $("#meterKnob").style.left = pct + "%";
+  $("#agreePct").textContent = pct + "%";
+
+  const onlyUtil = [...A].filter(x=>!B.has(x)).map(idToName);
+  const onlyGreedy = [...B].filter(x=>!A.has(x)).map(idToName);
+  let ar;
+  if(pct === 100){
+    ar = `<b>Identical boards.</b> On this seed + these curves, utility AI posts exactly what the greedy knapsack does — the curves are doing no work the sort key wasn't. (This is honest: much of the time they agree. The value shows up at the margins.)`;
+  } else {
+    const ps = [];
+    if(onlyUtil.length) ps.push(`Utility AI alone posts <b>${onlyUtil.join(", ")}</b>`);
+    if(onlyGreedy.length) ps.push(`greedy alone posts <b>${onlyGreedy.join(", ")}</b>`);
+    ar = `<b>${pct}% agreement.</b> ${ps.join("; ")}. Click those rows to see which consideration caused the split — usually the overrun cliff vetoing a high-deficit forward drop, or the distance falloff demoting a far haul greedy ranked on raw deficit.`;
+  }
+  $("#agreeReadout").innerHTML = ar;
+
+  // curve readout — name the currently dominant consideration on the selected contract
+  renderBreakdown(util);
+  updateCurveDomHighlight(util);
+}
+
+function idToName(id){
+  const c = state.contracts.find(x=>x.id===id);
+  return c ? (c.good+"→"+c.sys) : id;
+}
+
+/* ---------- breakdown panel (the "why") ---------- */
+function renderBreakdown(util){
+  const id = state.selectedId;
+  const c = state.contracts.find(x=>x.id===id);
+  if(!c){ elBreakdown.innerHTML = "<p style='color:var(--fog-500);font-size:.8rem;margin:0'>Select a contract.</p>"; return; }
+  const sc = util.scoreMap[id];
+  $("#selName").textContent = "· " + c.good + " → " + c.sys;
+
+  // bars per consideration, scaled to max |contrib|
+  const maxC = Math.max(0.0001, ...sc.parts.map(p=>Math.abs(p.contrib)));
+  let dominant = sc.parts[0];
+  sc.parts.forEach(p=>{ if(Math.abs(p.contrib) > Math.abs(dominant.contrib)) dominant = p; });
+
+  let rows = sc.parts.map(p=>{
+    const w = Math.abs(p.contrib)/maxC*100;
+    const isDom = p.id === dominant.id;
+    return `<div class="bdrow">
+      <span class="bn" style="${isDom?'color:var(--accent)':''}">${p.name}</span>
+      <span class="bartrack"><span class="barfill" style="width:${w.toFixed(0)}%;${isDom?'':'opacity:.65'}"></span></span>
+      <span class="bv">${p.contrib.toFixed(2)}</span>
+    </div>`;
+  }).join("");
+
+  const postedUtil = util.posted.has(id);
+  const rankPos = util.order.indexOf(id)+1;
+
+  // narrative "why won/lost"
+  let why;
+  const domName = dominant.name.toLowerCase();
+  if(postedUtil){
+    why = `<b>Posted (rank ${rankPos}).</b> The score is carried by <b>${dominant.name.toLowerCase()}</b> (${dominant.contrib.toFixed(2)} of ${sc.total.toFixed(2)}). `;
+    if(c.feat.risk > 0.65) why += `Its overrun risk is high, but the other considerations outweighed the cliff — drop the risk magnitude or steepen the cliff and watch it fall off.`;
+    else why += `It clears the board comfortably; nothing is vetoing it.`;
+  } else {
+    why = `<b>Not posted (rank ${rankPos}).</b> `;
+    if(c.feat.risk > 0.6 && dominant.id==="overrun")
+      why += `The <span style="color:var(--bad)">overrun cliff</span> collapsed its score — the faction won't fund a delivery to a drop-off about to be overrun, even at a fat ${(c.feat.deficit*100|0)}% deficit. This is the signature win over greedy, which would post it on deficit alone.`;
+    else if(c.feat.distance > 0.6)
+      why += `The <b>distance falloff</b> demoted it — a far haul the faction discounts because filling it costs the supply chain more. Greedy, ranking on raw deficit, ignores this.`;
+    else if(rankPos > state.K)
+      why += `It scored below the board capacity (top ${state.K}). Raise board capacity or budget, or boost a consideration it scores well on, to lift it in.`;
+    else
+      why += `It scored on the board but the treasury budget ran out before reaching it — a cheaper higher-ranked contract took the slot.`;
+  }
+
+  elBreakdown.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500);margin-bottom:.35rem">
+      ${c.band} · bounty ${c.bounty}k · ${Math.round(c.feat.distance*18)} jumps · ${c.mil?'<span style="color:var(--mil)">military</span>':'general'} good
+    </div>
+    <div class="bd" style="border-top:none;padding-top:0">${rows}</div>
+    <div class="bdtotal"><span>score = Σ curve(feature) × magnitude</span><b>${sc.total.toFixed(2)}</b></div>
+    <div class="bdwhy">${why}</div>`;
+
+  // top-of-lab curve readout names the dominant lever
+  $("#curveReadout").innerHTML = `On <b>${c.good} → ${c.sys}</b>, the dominant consideration is <b>${dominant.name}</b> (${dominant.contrib.toFixed(2)}). Reshape its curve below to see this contract's rank move.`;
+}
+
+function updateCurveDomHighlight(util){
+  const id = state.selectedId;
+  const sc = util.scoreMap[id];
+  if(!sc) return;
+  let dominant = sc.parts[0];
+  sc.parts.forEach(p=>{ if(Math.abs(p.contrib) > Math.abs(dominant.contrib)) dominant = p; });
+  document.querySelectorAll(".curvecell").forEach(cell=>{
+    cell.classList.toggle("dom", cell.dataset.con === dominant.id);
+  });
+}
+
+/* ---------- control wiring ---------- */
+function wire(){
+  // engine toggle
+  $("#engineToggle").querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      state.engine = b.dataset.engine;
+      $("#engineToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("on", x===b));
+      $("#engineToggle").classList.toggle("alt", state.engine==="greedy");
+      render();
+    });
+  });
+  // budget
+  $("#budget").addEventListener("input", e=>{
+    state.budget = parseInt(e.target.value,10);
+    $("#budgetVal").textContent = state.budget + "k";
+    render();
+  });
+  // capacity
+  $("#postk").addEventListener("input", e=>{
+    state.K = parseInt(e.target.value,10);
+    $("#postkVal").textContent = state.K;
+    render();
+  });
+  // reseed
+  $("#reseedBtn").addEventListener("click", ()=>{
+    // advance seed via the PRNG itself so reseeds are themselves deterministic from origin
+    const r = mulberry32(state.seed)();
+    state.seed = (Math.floor(r * 1e9) ^ (state.seed << 1)) >>> 0;
+    regenContracts();
+    $("#seedlabel").textContent = "seed " + state.seed.toString(16);
+    render();
+  });
+  // reset curves
+  $("#resetCurvesBtn").addEventListener("click", ()=>{
+    state.considerations = defaultConsiderations();
+    buildCurveCells();
+    render();
+  });
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  regenContracts();
+  $("#seedlabel").textContent = "seed " + state.seed.toString(16);
+  $("#budgetVal").textContent = state.budget + "k";
+  $("#postkVal").textContent = state.K;
+  buildCurveCells();
+  wire();
+  render();
+}
+boot();
+</script>
+</body>
+</html>

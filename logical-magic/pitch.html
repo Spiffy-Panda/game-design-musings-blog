@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logical Magic — a system pitch</title>
+<style>
+  /* ————————————————— tokens ————————————————— */
+  :root{
+    --ground:#ece8dd; --surface:#f8f6ef; --card:#f3f0e6;
+    --line:#d9d3c2; --line2:#bfb7a2;
+    --ink:#262330; --ink2:#4e4a5c; --ink3:#767084;
+    --wax:#9c2f2f;     /* ∃ · the world's seat · hazard  */
+    --teal:#1e6e63;    /* ∀ · the warrant · the caster   */
+    --gilt:#7d5f1b;    /* grace · flips · settlement     */
+    --violet:#5a4fc0;  /* vessels · the second order     */
+    --wax-wash:rgba(156,47,47,.07); --teal-wash:rgba(30,110,99,.08);
+    --gilt-wash:rgba(125,95,27,.09); --violet-wash:rgba(90,79,192,.07);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0d0f13; --surface:#161921; --card:#1b1f29;
+      --line:#272d3a; --line2:#3d4557;
+      --ink:#e0e3ec; --ink2:#a8afc0; --ink3:#868da0;
+      --wax:#ff9082; --teal:#5ed2bc; --gilt:#e2c168; --violet:#ab9ffc;
+      --wax-wash:rgba(255,144,130,.06); --teal-wash:rgba(94,210,188,.06);
+      --gilt-wash:rgba(226,193,104,.07); --violet-wash:rgba(171,159,252,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 0%, var(--teal-wash), transparent 70%),
+      radial-gradient(50% 44% at 4% 100%, var(--wax-wash), transparent 70%);
+  }
+  .wrap{max-width:920px; margin-inline:auto; padding-inline:clamp(20px,5vw,48px)}
+  section{padding:56px 0 8px}
+  i, em{font-style:italic}
+  code, .m{font-family:var(--mono); font-size:.92em}
+  .m{white-space:nowrap}
+  .qa{color:var(--teal); font-weight:600}   /* ∀ */
+  .qe{color:var(--wax); font-weight:600}    /* ∃ */
+  .qg{color:var(--gilt); font-weight:600}   /* grace */
+  .qv{color:var(--violet); font-weight:600} /* vessels / 2nd order */
+
+  /* ————————————————— nav ————————————————— */
+  nav{
+    position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--ground) 88%, transparent);
+    border-bottom:1px solid var(--line); backdrop-filter:none;
+  }
+  nav .row{max-width:920px; margin-inline:auto; padding:9px clamp(20px,5vw,48px);
+    display:flex; flex-wrap:wrap; gap:4px 16px; font:600 12px/1.6 var(--sans)}
+  nav a{color:var(--ink3); text-decoration:none; letter-spacing:.04em}
+  nav a b{color:var(--teal); font-weight:700; margin-right:3px}
+  nav a:hover{color:var(--ink)}
+
+  /* ————————————————— hero ————————————————— */
+  header.hero{padding:clamp(44px,9vh,96px) 0 24px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink3); margin:0 0 14px}
+  .eyebrow b{color:var(--teal)}
+  h1{font:600 clamp(36px,6.5vw,60px)/1.04 var(--serif); letter-spacing:-.015em; margin:0 0 6px}
+  h1 .brk{color:var(--ink3); font-weight:400}
+  .sub{font-style:italic; font-size:clamp(16px,2.2vw,19.5px); color:var(--ink2);
+    max-width:60ch; margin:10px 0 0}
+  .hero-grid{display:grid; grid-template-columns:1fr; gap:8px 40px; align-items:center}
+  @media (min-width:760px){ .hero-grid{grid-template-columns:1.5fr 1fr} }
+  .sigil{max-width:340px; margin:12px auto 0}
+  .sigil svg{display:block; width:100%; height:auto}
+  .sigil figcaption{font:12px/1.7 var(--sans); color:var(--ink3); text-align:center; margin-top:6px}
+  .creed{margin:26px 0 0; padding:14px 20px; border-left:3px solid var(--teal);
+    background:var(--teal-wash); font-size:16.5px; max-width:66ch}
+  .creed b{color:var(--teal)}
+
+  /* ————————————————— shared blocks ————————————————— */
+  h2{font:600 clamp(25px,3.6vw,33px)/1.2 var(--serif); margin:6px 0 16px; letter-spacing:-.01em}
+  h3{font:600 21px/1.3 var(--serif); margin:0 0 8px}
+  h4{font:700 12px/1.5 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+     color:var(--ink3); margin:0 0 8px}
+  .prose{max-width:70ch}
+  .prose p{margin:0 0 16px}
+  .duo{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; margin:22px 0}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:18px 20px 14px}
+  .panel.t{border-top:3px solid var(--teal)} .panel.w{border-top:3px solid var(--wax)}
+  .panel.g{border-top:3px solid var(--gilt)} .panel.v{border-top:3px solid var(--violet)}
+  .panel p{margin:0; font-size:15.5px; color:var(--ink2)}
+  .panel p+p{margin-top:10px}
+  .callout{margin:26px 0; padding:16px 20px; border:1px solid var(--line);
+    border-left:4px solid var(--wax); background:var(--wax-wash); border-radius:0 4px 4px 0;
+    font-size:16px; max-width:74ch}
+  .callout.t{border-left-color:var(--teal); background:var(--teal-wash)}
+  .callout.v{border-left-color:var(--violet); background:var(--violet-wash)}
+  .callout.g{border-left-color:var(--gilt); background:var(--gilt-wash)}
+  .callout h4{margin-bottom:6px}
+  .marginalia{font-style:italic; color:var(--ink2); max-width:62ch; margin:26px 0;
+    padding-left:18px; border-left:2px solid var(--line2); font-size:16px}
+  .marginalia .sig{display:block; font-style:normal; font:600 11.5px/2 var(--sans);
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink3)}
+
+  /* ————————————————— plates (figures) ————————————————— */
+  .plate{background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    margin:26px 0; overflow:hidden}
+  .plate .scroll{overflow-x:auto; overflow-y:hidden; padding:12px 12px 4px}
+  .plate svg{display:block; width:100%; height:auto; min-width:620px}
+  .plate figcaption{border-top:1px solid var(--line); padding:10px 16px;
+    font:13px/1.7 var(--sans); color:var(--ink3)}
+  .plate figcaption b{color:var(--ink2); letter-spacing:.16em}
+  /* svg utility classes */
+  .sT{stroke:var(--teal)} .sW{stroke:var(--wax)} .sG{stroke:var(--gilt)} .sV{stroke:var(--violet)}
+  .sI{stroke:var(--ink3)} .sL{stroke:var(--line2)}
+  .fT{fill:var(--teal)} .fW{fill:var(--wax)} .fG{fill:var(--gilt)} .fV{fill:var(--violet)}
+  .fI{fill:var(--ink2)} .fI3{fill:var(--ink3)} .fS{fill:var(--surface)} .fC{fill:var(--card)}
+  .washT{fill:var(--teal-wash)} .washW{fill:var(--wax-wash)} .washG{fill:var(--gilt-wash)}
+  .sl{font:12px var(--sans); fill:var(--ink3)}
+  .slb{font:700 11px var(--sans); fill:var(--ink2); letter-spacing:.14em; text-transform:uppercase}
+  .sml{font:italic 13px var(--serif); fill:var(--ink2)}
+  .smo{font:12.5px var(--mono); fill:var(--ink2)}
+
+  /* ————————————————— ladder ————————————————— */
+  .ladder{display:grid; gap:12px; margin:24px 0}
+  .rung{display:grid; grid-template-columns:110px 1fr; gap:16px; align-items:start;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px 18px}
+  @media (max-width:560px){ .rung{grid-template-columns:1fr} }
+  .rung .deg{font:700 13px/1.4 var(--sans); letter-spacing:.06em; color:var(--ink3)}
+  .rung .deg .big{display:block; font:600 26px/1.1 var(--serif); color:var(--ink); margin-bottom:2px}
+  .rung p{margin:0; font-size:15.5px; color:var(--ink2)}
+  .rung .ex{display:block; margin-top:7px; font-size:14px; color:var(--ink3); font-style:italic}
+
+  /* ————————————————— worked pleas ————————————————— */
+  .proto{background:var(--surface); border:1px solid var(--line); border-radius:5px;
+    margin:30px 0; padding:24px 26px 20px}
+  .proto header{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px;
+    border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:6px}
+  .pno{font:700 11px/1 var(--sans); letter-spacing:.2em; color:var(--ink3)}
+  .chip{font:600 10.5px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    padding:5px 9px 4px; border-radius:99px; border:1px solid var(--line2); color:var(--ink2)}
+  .chip.t{color:var(--teal); border-color:var(--teal)}
+  .chip.w{color:var(--wax); border-color:var(--wax)}
+  .chip.g{color:var(--gilt); border-color:var(--gilt)}
+  .chip.v{color:var(--violet); border-color:var(--violet)}
+  .spec{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px 26px; margin-top:18px}
+  .spec p{margin:0; font-size:15px; color:var(--ink2)}
+  .sentence{margin:18px 0 4px; padding:14px 18px; background:var(--card);
+    border:1px solid var(--line); border-radius:4px; font-family:var(--mono);
+    font-size:15px; overflow-x:auto; white-space:nowrap}
+  .sentence .lbl{display:block; font:700 10.5px/1.6 var(--sans); letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink3); white-space:normal}
+
+  /* derivation cards */
+  .dcard{margin:20px 0; background:var(--card); border:1px solid var(--line); border-radius:4px;
+    padding:14px 18px; overflow-x:auto}
+  .dcard table{border-collapse:collapse; font:14px/1.9 var(--mono); min-width:520px}
+  .dcard td{padding:0 14px 0 0; vertical-align:baseline; white-space:nowrap}
+  .dcard td.n{color:var(--ink3); text-align:right; padding-right:16px}
+  .dcard td.j{color:var(--ink3); font-size:12.5px; font-family:var(--sans)}
+  .dcard td.hot{color:var(--wax); font-weight:600}
+  .dcard .bar td{border-top:1px solid var(--line2); padding-top:6px}
+  .dcard caption{caption-side:top; text-align:left; font:700 11px/2.2 var(--sans);
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink3)}
+
+  /* cost tables */
+  .tbl{margin:20px 0; overflow-x:auto}
+  .tbl table{border-collapse:collapse; width:100%; min-width:560px; font-size:14.5px}
+  .tbl th{font:700 11px/1.5 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink3); text-align:left; border-bottom:2px solid var(--line2); padding:8px 14px 6px 0}
+  .tbl td{border-bottom:1px solid var(--line); padding:9px 14px 9px 0; color:var(--ink2);
+    vertical-align:top}
+  .tbl td:first-child{color:var(--ink)}
+  .tbl .num{font-family:var(--mono); font-size:13.5px; white-space:nowrap}
+  .tbl .good td{background:var(--teal-wash)}
+  .tbl .bad td{background:var(--wax-wash)}
+
+  /* inference-rule box */
+  .rulebox{display:inline-block; margin:6px 24px 14px 0; text-align:center; vertical-align:top}
+  .rulebox .prem, .rulebox .conc{font-family:var(--mono); font-size:14px; padding:2px 14px; white-space:nowrap}
+  .rulebox .prem{color:var(--ink2)}
+  .rulebox .mid{display:flex; align-items:center; gap:8px}
+  .rulebox .mid .line{flex:1; border-top:1.5px solid var(--ink2)}
+  .rulebox .mid .name{font:600 11px/1 var(--sans); color:var(--ink3); letter-spacing:.08em}
+
+  /* ————————————————— vessels ————————————————— */
+  .donote{margin:20px 0; background:var(--card); border:1px solid var(--line);
+    border-left:4px solid var(--violet); border-radius:0 4px 4px 0; padding:16px 20px; overflow-x:auto}
+  .donote pre{margin:0; font:14px/1.85 var(--mono); color:var(--ink)}
+  .donote .cm{color:var(--ink3)} .donote .kw{color:var(--violet); font-weight:600}
+  .donote .fn{color:var(--teal)} .donote .bad{color:var(--wax)}
+  .laws{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; margin:20px 0}
+  .law{background:var(--surface); border:1px solid var(--line); border-top:3px solid var(--violet);
+    border-radius:4px; padding:14px 16px}
+  .law h5{margin:0 0 6px; font:700 11.5px/1.4 var(--sans); letter-spacing:.12em;
+    text-transform:uppercase; color:var(--violet)}
+  .law p{margin:0; font-size:14.5px; color:var(--ink2)}
+  .law .f{display:block; font-family:var(--mono); font-size:12.5px; color:var(--ink3); margin-top:8px}
+  .vlist{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:12px; margin:22px 0}
+  .vitem{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 16px}
+  .vitem h5{margin:0 0 5px; font:600 16.5px/1.3 var(--serif)}
+  .vitem h5 .tag{font:600 10px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    color:var(--violet); border:1px solid var(--violet); border-radius:99px; padding:3px 7px;
+    margin-left:8px; vertical-align:2px; white-space:nowrap}
+  .vitem p{margin:0; font-size:14.5px; color:var(--ink2)}
+
+  /* ————————————————— limits ————————————————— */
+  .limits{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:13px; margin:24px 0}
+  .limit{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px 18px 14px}
+  .limit h5{margin:0 0 2px; font:600 18px/1.3 var(--serif)}
+  .limit .thm{font:600 11px/1.6 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--wax)}
+  .limit p{margin:8px 0 0; font-size:14.5px; color:var(--ink2)}
+
+  /* ————————————————— design claims (LOMA.n) ————————————————— */
+  .claims{margin:24px 0; display:grid; gap:12px}
+  .claim{display:grid; grid-template-columns:92px 1fr; gap:14px; align-items:start;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:15px 18px}
+  @media (max-width:560px){ .claim{grid-template-columns:1fr} }
+  .claim .id{font:700 13px/1.5 var(--mono); color:var(--teal); letter-spacing:.03em}
+  .claim h5{margin:0 0 4px; font:600 17px/1.3 var(--serif)}
+  .claim p{margin:0; font-size:14.5px; color:var(--ink2)}
+
+  /* ————————————————— constants + roadmap + foot ————————————————— */
+  .ktable{margin:22px 0; overflow-x:auto}
+  .ktable table{border-collapse:collapse; width:100%; min-width:600px; font-size:14.5px}
+  .ktable th{font:700 11px/1.5 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink3); text-align:left; border-bottom:2px solid var(--line2); padding:8px 14px 6px 0}
+  .ktable td{border-bottom:1px solid var(--line); padding:8px 14px 8px 0; color:var(--ink2)}
+  .ktable td:first-child{color:var(--ink); font-weight:600}
+  .ktable .num{font-family:var(--mono); font-size:13.5px; white-space:nowrap}
+  .ghosts{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:13px; margin:22px 0}
+  .ghost{border:1.5px dashed var(--line2); border-radius:4px; padding:16px 18px; color:var(--ink3)}
+  .ghost h5{margin:0 0 5px; font:600 17px/1.3 var(--serif); color:var(--ink2)}
+  .ghost p{margin:0; font-size:14px}
+  .ghost .tag{font:700 10px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase}
+  footer{border-top:1px solid var(--line); margin-top:64px}
+  footer .wrap{padding-top:22px; padding-bottom:56px}
+  footer p{font:13px/1.9 var(--sans); color:var(--ink3); max-width:74ch; margin:0 0 10px}
+  footer a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--teal); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+
+<nav aria-label="Sections">
+  <div class="row">
+    <a href="#premise"><b>§1</b> Premise</a>
+    <a href="#ladder"><b>§2</b> The Ladder</a>
+    <a href="#pleas"><b>§3</b> Worked Pleas</a>
+    <a href="#vessels"><b>§4</b> Vessels</a>
+    <a href="#mint"><b>§5</b> The Mint</a>
+    <a href="#limits"><b>§6</b> The Limits</a>
+    <a href="#design"><b>§7</b> Why It Games</a>
+    <a href="#constants"><b>§8</b> Constants</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Logical Magic (LoMa)</a></li>
+        <li><span aria-current="page">The Pitch</span></li>
+      </ol>
+    </nav>
+    <p class="eyebrow"><b>LoMa</b> · a magic-system pitch · one page, self-contained</p>
+    <div class="hero-grid">
+      <div>
+        <h1><span class="brk">[</span>Lo<span class="brk">]</span>gical <span class="brk">[</span>Ma<span class="brk">]</span>gic</h1>
+        <p class="sub">The world is a model. A spell is a sentence the world does not yet satisfy.
+        Casting is proving you may say it — and paying to make it so.</p>
+        <div class="creed">
+          <b>The wager of the system:</b> every classic magical effect — fire, wishes, wards,
+          scrying, true names — falls out of taking mathematical logic <i>literally</i>, priced in
+          two honest integers. No field equations. The physics of LoMa is metamathematics.
+        </div>
+      </div>
+      <figure class="sigil">
+        <svg viewBox="0 0 360 360" role="img" aria-label="A casting circle drawn as logic: an outer ring of quantifier glyphs, and at the center the settlement rule — from a warrant of consistency, the world revises to satisfy the sentence">
+          <defs>
+            <path id="ringUp" d="M 180,180 m -128,0 a 128,128 0 1,1 256,0 a 128,128 0 1,1 -256,0"/>
+          </defs>
+          <circle cx="180" cy="180" r="154" fill="none" class="sL" stroke-width="1"/>
+          <circle cx="180" cy="180" r="146" fill="none" class="sI" stroke-width="1.6"/>
+          <circle cx="180" cy="180" r="110" fill="none" class="sL" stroke-width="1" stroke-dasharray="3 6"/>
+          <g font-size="17" opacity=".95">
+            <text><textPath href="#ringUp" startOffset="0" class="sml" style="letter-spacing:.35em">∀ · ∃ · ⊢ · ⊨ · λ · μ · ⊥ · ∴ · ∀ · ∃ · ⊢ · ⊨ · λ · μ · ⊥ · ∴ ·</textPath></text>
+          </g>
+          <g transform="translate(180 180)">
+            <g class="sI" stroke-width="1">
+              <line x1="-146" y1="0" x2="-128" y2="0"/><line x1="128" y1="0" x2="146" y2="0"/>
+              <line x1="0" y1="-146" x2="0" y2="-128"/><line x1="0" y1="128" x2="0" y2="146"/>
+            </g>
+          </g>
+          <g text-anchor="middle">
+            <text x="180" y="164" class="smo" font-size="15">Γ ⊢ Con(B ∪ {φ})</text>
+            <line x1="96" y1="178" x2="264" y2="178" class="sI" stroke-width="1.4"/>
+            <text x="180" y="204" class="smo" font-size="15">W ⇝ W′ ⊨ φ</text>
+            <text x="180" y="240" class="sl" font-size="11" font-style="italic">the whole system, as one rule — (settle)</text>
+          </g>
+        </svg>
+        <figcaption><b>Plate 0</b> — the casting circle, honestly drawn.</figcaption>
+      </figure>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════ §1 PREMISE ══════════════════ -->
+<section id="premise">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 1</b> · The Premise</p>
+    <h2>Casting is proving</h2>
+    <div class="prose">
+      <p>Take the logician's picture of reality at face value. The world is a first-order
+      structure <i>W</i>: a <b>domain</b> of things, and an <b>interpretation</b> that says, of
+      every atomic claim — <span class="m">Aflame(wick)</span>, <span class="m">Mine(coin)</span>,
+      <span class="m">Crosses(taxman)</span> — whether it holds. The totality of these atomic
+      facts is called <b>the Record</b>. Underneath the Record sits a short, protected list of
+      axioms nothing may contradict — <b>the Bedrock</b> (things persist unless acted on; no
+      thing is its own part; the dead stay dead; a handful more). The Bedrock is why magic has
+      no perpetual engines and no paradox bombs.</p>
+      <p>A <b>spell</b> — the academies say <b>plea</b> — is a sentence <i>φ</i> in a formal
+      language, <b>the Tongue</b>, that the world does not currently satisfy. Casting it is a
+      four-step transaction:</p>
+    </div>
+
+    <figure class="plate">
+      <div class="scroll">
+      <svg viewBox="0 0 760 250" role="img" aria-label="The casting pipeline in four stations: Scope draws the domain, Say fixes the sentence, Warrant proves consistency with the Bedrock, Settle lets the world revise to a nearest model">
+        <defs>
+          <marker id="pipeA" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fI3"/></marker>
+        </defs>
+        <!-- station 1: SCOPE -->
+        <g>
+          <rect x="24" y="46" width="158" height="128" rx="5" class="fS sI" stroke-width="1.2"/>
+          <text x="103" y="34" text-anchor="middle" class="slb">1 · scope</text>
+          <circle cx="103" cy="102" r="38" fill="none" class="sT" stroke-width="1.6" stroke-dasharray="4 4"/>
+          <circle cx="90" cy="95" r="4" class="fI3"/><circle cx="116" cy="110" r="4" class="fI3"/>
+          <circle cx="108" cy="88" r="4" class="fI3"/>
+          <circle cx="152" cy="146" r="4" fill="none" class="sL" stroke-width="1.4"/>
+          <text x="103" y="164" text-anchor="middle" class="sl">D₀: what you can name</text>
+        </g>
+        <line x1="186" y1="110" x2="212" y2="110" class="sI" stroke-width="1.4" marker-end="url(#pipeA)"/>
+        <!-- station 2: SAY -->
+        <g>
+          <rect x="216" y="46" width="150" height="128" rx="5" class="fS sI" stroke-width="1.2"/>
+          <text x="291" y="34" text-anchor="middle" class="slb">2 · say</text>
+          <text x="291" y="98" text-anchor="middle" class="smo" font-size="16">φ</text>
+          <text x="291" y="124" text-anchor="middle" class="sl">a sentence of the Tongue</text>
+          <text x="291" y="140" text-anchor="middle" class="sl">(no parse, no spell)</text>
+        </g>
+        <line x1="370" y1="110" x2="396" y2="110" class="sI" stroke-width="1.4" marker-end="url(#pipeA)"/>
+        <!-- station 3: WARRANT -->
+        <g>
+          <rect x="400" y="46" width="160" height="128" rx="5" class="fS sT" stroke-width="1.4"/>
+          <text x="480" y="34" text-anchor="middle" class="slb" fill="var(--teal)">3 · warrant</text>
+          <text x="480" y="92" text-anchor="middle" class="smo" font-size="13.5">Γ ⊢ Con(B ∪ {φ})</text>
+          <text x="480" y="118" text-anchor="middle" class="sl">a proof, paid in strokes —</text>
+          <text x="480" y="134" text-anchor="middle" class="sl">your labor, your skill</text>
+          <text x="480" y="158" text-anchor="middle" class="sml" fill="var(--teal)">the caster's cost</text>
+        </g>
+        <line x1="564" y1="110" x2="590" y2="110" class="sI" stroke-width="1.4" marker-end="url(#pipeA)"/>
+        <!-- station 4: SETTLE -->
+        <g>
+          <rect x="594" y="46" width="146" height="128" rx="5" class="fS sG" stroke-width="1.4"/>
+          <text x="667" y="34" text-anchor="middle" class="slb" fill="var(--gilt)">4 · settle</text>
+          <text x="667" y="92" text-anchor="middle" class="smo" font-size="13.5">W ⇝ W′ ⊨ φ</text>
+          <text x="667" y="118" text-anchor="middle" class="sl">fewest atomic facts flip;</text>
+          <text x="667" y="134" text-anchor="middle" class="sl">flips draw on local grace</text>
+          <text x="667" y="158" text-anchor="middle" class="sml" fill="var(--gilt)">the world's cost</text>
+        </g>
+        <text x="382" y="216" text-anchor="middle" class="sl" font-style="italic">the world checks the warrant the way a court checks a writ: it does not care what you meant, only what you proved</text>
+      </svg>
+      </div>
+      <figcaption><b>Plate I</b> — the casting pipeline. Two currencies, two payers: warrants
+      cost the caster <i>strokes</i>; settlements cost the world <i>flips</i> of grace.</figcaption>
+    </figure>
+
+    <div class="duo">
+      <div class="panel t">
+        <h4>Strokes — the caster's ledger</h4>
+        <p>One <b>stroke</b> = one inference-rule application you must actually perform, spoken
+        or inscribed. A drilled war-caster sustains ≈4 strokes/second aloud. Strokes measure how
+        hard the spell is to <i>say lawfully</i> — so the whole skill game is <b>proof brevity</b>:
+        lemmas, notation, preparation. A grimoire is a lemma cache. A scroll is a warrant you
+        paid for last night.</p>
+      </div>
+      <div class="panel g">
+        <h4>Flips &amp; grace — the world's ledger</h4>
+        <p>One <b>flip</b> = one atomic fact of the Record changed at settlement. Flips draw on
+        <b>grace</b>, a slow local budget (a quiet vale accrues ~10,000 flips of grace a day).
+        Spend a region dry and it goes <i>stiff</i> — lawful pleas simply fail to settle until
+        the tide refills. Grace is why magic has logistics, sieges, and sacred ground.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>The Miser's Law</h4>
+      Among all ways of making your sentence true, the world settles on one that flips the
+      <b>fewest</b> atoms — and among those, it owes you no kindness in the choice. Every
+      monkey's-paw story is this one law. Underspecify and the cheapest model is rarely the one
+      you meant; the fix is not piety but <i>more clauses</i>, each with a stroke price. §3,
+      Plea 02 does the arithmetic.
+    </div>
+
+    <div class="prose">
+      <p>Notice what is <i>not</i> here: joules. LoMa's sibling system,
+      Thaumodynamics (MDYN), buys its groundedness with field equations — flux, couplings,
+      conservation. LoMa refuses the physics on purpose. The effects arrive <i>by fiat</i>,
+      as magic should; what is conserved, counted, and audited is the <b>logic</b>: the length
+      of your proof and the size of your miracle. You do not pay for how much you burn. You pay
+      for how hard it is to lawfully say <i>“all of it.”</i></p>
+    </div>
+
+    <p class="marginalia">The novice asks the world for fire and is refused. The magistrate
+    asks the world to agree that, all things weighed, the barn is already burning — and is
+    granted costs. <span class="sig">— Corvane, Reader in Warrants, Vell College</span></p>
+  </div>
+</section>
+<!-- ══════════════════ §2 THE LADDER ══════════════════ -->
+<section id="ladder">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 2</b> · The Ladder</p>
+    <h2>Power is quantifier depth</h2>
+    <div class="prose">
+      <p>A plea's reach is read straight off its logical form. Naming one thing is a cantrip.
+      <span class="qe">∃</span> hands the world a blank to fill; <span class="qa">∀</span> makes
+      a promise over everything in scope. Stack them in alternation and each layer multiplies
+      what the plea can bind — and what it costs to warrant. The academies number their circles
+      by exactly this: <b>circle <i>n</i> = <i>n</i> quantifier alternations</b>. It is not a
+      metaphor. It is the arithmetical hierarchy, worn as a curriculum.</p>
+    </div>
+
+    <div class="ladder">
+      <div class="rung">
+        <div class="deg"><span class="big">0</span>quantifier-free</div>
+        <p>Atomic flips on things you can already name. Light <i>the</i> candle, latch <i>the</i>
+        door, warm <i>this</i> cup. One stroke, one flip, no surprises — the domestic tier.
+        <span class="ex">“The wick, alight.” — 1 stroke, 1 flip</span></p>
+      </div>
+      <div class="rung">
+        <div class="deg"><span class="big">1</span>Σ₁ · <span class="qe">∃</span></div>
+        <p>Conjury and wishes: <i>there is an x such that…</i> Cheap to warrant — and the world
+        chooses the witness, under the Miser's Law, with no kindness owed. Every clause you add
+        to pin the witness costs strokes. Safety is purchasable; it is never free.
+        <span class="ex">“Let there be a light before me.” — and it is the foe's lantern</span></p>
+      </div>
+      <div class="rung">
+        <div class="deg"><span class="big">1</span>Π₁ · <span class="qa">∀</span></div>
+        <p>Wards, blessings, edicts: <i>for all x in scope…</i> The warrant must cover the whole
+        domain — by brute instantiation (pay per thing) or by <b>induction</b>, if the domain has
+        a constructor you can cite. The entire economics of large magic lives in that “if.”
+        <span class="ex">“No thing crosses this line.” — priced per thing, or per proof</span></p>
+      </div>
+      <div class="rung">
+        <div class="deg"><span class="big">2</span>Σ₂ · <span class="qe">∃</span><span class="qa">∀</span></div>
+        <p>Summoning with a job description: <i>there is a guardian that answers <b>every</b>
+        blow.</i> The inner ∀ makes the outer witness hard to fake — and hard to warrant. This is
+        the first circle where pleas can supervise other pleas.
+        <span class="ex">“Let there stand one whom nothing passes.”</span></p>
+      </div>
+      <div class="rung">
+        <div class="deg"><span class="big">3+</span>Σ₃, Π₃, …</div>
+        <p>Treaty-grade magic: <i>for every curse there is a counter no curse defeats.</i> Casts
+        measured in careers; warrants the length of books. Above every finite circle, the
+        diagonal — and the door to the second order (§5).
+        <span class="ex">the work of colleges, not casters</span></p>
+      </div>
+    </div>
+
+    <div class="callout t">
+      <h4>Game semantics — why duels are fair</h4>
+      Evaluating a sentence is a two-seat game: <span class="qe">∃</span>-moves are the caster's
+      to play, <span class="qa">∀</span>-moves belong to the <b>falsifier</b>. Unopposed, the
+      world plays falsifier lazily. But another mage may <i>buy the seat</i> and play your ∀'s
+      viciously: you plead <i>“every blade turns aside”</i> and the duelist, as falsifier, names
+      the one blade your step-proof forgot. A counterspell is not a dispel — it is cross-examination.
+      A duel is two pleas running at once, each mage seated as the other's ∀. Initiative is the
+      outermost quantifier.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ §3 WORKED PLEAS ══════════════════ -->
+<section id="pleas">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 3</b> · Worked Pleas</p>
+    <h2>Three spells, audited to the stroke</h2>
+    <div class="prose">
+      <p>The MDYN discipline, kept: every headline claim gets its arithmetic shown. Read each
+      plea as an auditor reads a filing — the sentence, the warrant and its price, the
+      settlement and <i>its</i> price, and the ways it goes wrong.</p>
+    </div>
+
+    <!-- ── PLEA 01 · EMBERFIELD ── -->
+    <article class="proto">
+      <header>
+        <span class="pno">PLEA 01</span>
+        <h3>Emberfield</h3>
+        <span class="chip t">Π₁ · circle one</span><span class="chip g">grace-heavy</span><span class="chip">the fireball</span>
+      </header>
+
+      <div class="sentence"><span class="lbl">the sentence</span>
+        φ<sub>ember</sub> ≡ ∀x ( In(x, Ball(c, 6&nbsp;m)) → Aflame(x) )
+      </div>
+
+      <div class="spec">
+        <div>
+          <h4>The ask</h4>
+          <p>Everything within six meters of the anchor point <i>c</i>, burning, now. A classic.
+          Note the form: a <span class="qa">universal</span> over a spatial domain. Nothing in
+          the sentence says <i>how much</i> burns — LoMa never charges for joules. It charges
+          for the ∀.</p>
+        </div>
+        <div>
+          <h4>The domain choice</h4>
+          <p>Before casting you must <b>scope</b>: carve the ball into named cells. Fine grain
+          (1&nbsp;dm cells) → 904,779 things in scope. Coarse grain (1&nbsp;m cells) → 905
+          things — but ~450 of those straddle the rim, and a straddling cell flips <i>whole</i>.
+          Coarse fire has jagged edges. Ask the singed.</p>
+        </div>
+        <div>
+          <h4>The warrant, three ways</h4>
+          <p><b>Brute:</b> instantiate the ∀, one stroke per cell — honest and hopeless at fine
+          grain. <b>Prepared:</b> brute, but inscribed last night onto a scroll; combat-viable,
+          single-use. <b>Induction:</b> cite the ball's <i>constructor</i> — it is generated
+          from <i>c</i> by six unit-breaths — and prove base + step. Thirteen strokes, any grain.</p>
+        </div>
+        <div>
+          <h4>Failure modes</h4>
+          <p>Unstructured scope — a <i>crowd</i> has no constructor; no induction, brute only
+          (or spend strokes imposing an order first, then induct over it). Opposed falsifier —
+          the foe plays your ∀ and names the rain-soaked cell your step-proof skipped; the plea
+          collapses mid-cast, strokes forfeit. Grace drought — see the table's right column.</p>
+        </div>
+      </div>
+
+      <div class="dcard" role="figure" aria-label="The induction warrant for Emberfield, four lines, thirteen strokes total">
+        <table>
+          <caption>The induction warrant — “the Schema of Ascent” (13 strokes)</caption>
+          <tr><td class="n">1</td><td>R₀ = {c};&nbsp; Rₖ₊₁ = breathe(Rₖ);&nbsp; Ball = R₆</td><td class="j">survey — the ball is generated · 3 strokes</td></tr>
+          <tr><td class="n">2</td><td>Aflame(c)</td><td class="j">base — the spark · 1 stroke</td></tr>
+          <tr><td class="n">3</td><td>∀R ⊆ Ball ( Aflame[R] → Aflame[breathe(R)] )</td><td class="j">step — flame keeps pace with breath · 8 strokes</td></tr>
+          <tr class="bar"><td class="n">4</td><td>∀x ∈ Ball · Aflame(x)</td><td class="j">Ascent, from 1–3 · 1 stroke</td></tr>
+        </table>
+      </div>
+
+      <div class="tbl" role="figure" aria-label="Cost comparison of four casting routes for Emberfield">
+        <table>
+          <tr><th>Route</th><th>Strokes</th><th>Cast time (4 strokes/s)</th><th>Flips (grace)</th><th>Character</th></tr>
+          <tr class="bad">
+            <td>Fine grain, brute</td><td class="num">904,779</td><td class="num">≈ 2.6 days aloud</td><td class="num">904,779</td>
+            <td>not a spell — a career. Nobody casts this.</td>
+          </tr>
+          <tr>
+            <td>Coarse grain, brute</td><td class="num">905</td><td class="num">≈ 3¾ min ritual</td><td class="num">905</td>
+            <td>a siege-engine crew's opener, chanted in rounds</td>
+          </tr>
+          <tr class="good">
+            <td>Coarse grain, induction</td><td class="num">13</td><td class="num">≈ 3 s</td><td class="num">905</td>
+            <td><b>the battle-standard.</b> Jagged rim; friends stand well back</td>
+          </tr>
+          <tr>
+            <td>Fine grain, induction</td><td class="num">13</td><td class="num">≈ 3 s</td><td class="num">904,779</td>
+            <td>clean edge — and ≈90 days of a vale's grace, gone in a breath</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="callout g">
+        <h4>The strategic reading</h4>
+        Induction fixes <i>your</i> ledger, never the world's: the warrant shrinks 70,000-fold,
+        the flips don't move. So the <b>fine</b> Emberfield is a strategic weapon — one clean
+        sphere of fire that leaves the field <i>stiff</i> for a season, a scorched-earth doctrine
+        with a proof obligation. Treaties name it. Colleges refuse to teach the step-lemma at
+        fine grain. This is the tradeoff MDYN prices in kelvin and LoMa prices in cardinality.
+      </div>
+
+      <p class="marginalia">You do not pay for the fire. You pay for the word <i>all</i>.
+      <span class="sig">— drillmasters' proverb, the Emberfield form</span></p>
+    </article>
+    <!-- ── PLEA 02 · THE LONG WISH ── -->
+    <article class="proto">
+      <header>
+        <span class="pno">PLEA 02</span>
+        <h3>The Long Wish</h3>
+        <span class="chip w">Σ₁ · circle one</span><span class="chip">the monkey's paw, audited</span>
+      </header>
+
+      <div class="sentence"><span class="lbl">the naive sentence — 2 strokes, and worth every penny</span>
+        φ<sub>wish</sub> ≡ ∃x ( Gold(x) ∧ Mine(x) )
+      </div>
+
+      <div class="spec">
+        <div>
+          <h4>The ask</h4>
+          <p>Gold, and mine. The warrant is almost free — two strokes; consistency with the
+          Bedrock is obvious. The danger is never the warrant. It is the settlement: the world
+          must merely find <i>some</i> witness, and by the Miser's Law it finds the <b>cheapest</b>.</p>
+        </div>
+        <div>
+          <h4>The Miser's answers</h4>
+          <p>Enumerate the minimal settlements before you plead — this is what the Casebook
+          drills. Own a wedding band already? The plea is <i>already satisfied</i>: zero flips,
+          nothing happens, strokes wasted. Otherwise one flip suffices, and there are several
+          one-flip models. None is the one you meant.</p>
+        </div>
+        <div>
+          <h4>Lawyering the witness</h4>
+          <p>Each rider strikes a family of cheap models, at a stroke price:
+          <span class="m">r1</span> “never before held by me” (+3) ·
+          <span class="m">r2</span> “no part of the pleader” (+3) ·
+          <span class="m">r3</span> “within my purse” (+4) ·
+          <span class="m">r4</span> “a coin” (+2) ·
+          <span class="m">r5</span> “no prior claim on its matter” (+5).</p>
+        </div>
+        <div>
+          <h4>Failure modes</h4>
+          <p>The rider you didn't write. The Casebook's standing warning: a wish is a contract
+          you draft against an adversary with perfect knowledge of your omissions and no malice
+          at all — malice would at least be predictable. The Miser is merely <i>cheap</i>.</p>
+        </div>
+      </div>
+
+      <div class="tbl" role="figure" aria-label="Minimal settlements for the naive gold wish, their flip counts, and which rider strikes each">
+        <table>
+          <tr><th>Candidate settlement</th><th>Flips</th><th>Struck by</th></tr>
+          <tr><td>The ring you already own — plea already true; <i>nothing files</i></td><td class="num">0</td><td class="num">r1</td></tr>
+          <tr><td>Your left incisor, gilded in place</td><td class="num">1</td><td class="num">r2</td></tr>
+          <tr><td>A hoard-coin, forty leagues down a dragon — <span class="m">Mine(x)</span> flips; retrieval is your affair</td><td class="num">1</td><td class="num">r3</td></tr>
+          <tr><td>Your own copper penny, gilded — “the Penny Gilding,” the wish as most wizards actually cast it</td><td class="num">1</td><td class="num">r5</td></tr>
+          <tr class="good"><td><b>A fresh coin, minted whole-cloth into your purse</b> — the settlement you meant</td><td class="num">≈ 40</td><td>— (you pay it)</td></tr>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h4>The audit</h4>
+        Naive wish: <b>2 strokes, 1 flip</b>, and a gilded tooth. Airtight wish:
+        <b>19 strokes</b> (2 + 3 + 3 + 4 + 2 + 5), forcing the ≈<b>40-flip</b> creation — an
+        object's whole atomic diagram, minted against the local tide. The aphorism the numbers
+        prove: <i>a wish is exactly as safe as it is long.</i> And the Penny Gilding survives as
+        honest commerce: six strokes, one flip, gold for the price of a penny — the loophole
+        <i>kept</i>, priced, and taxed.
+      </div>
+
+      <p class="marginalia">Entry the ninth: pleader wished for “a horse that cannot lose.”
+      Settlement: a horse that cannot <i>race</i>. One flip. The Casebook does not record
+      what was said. <span class="sig">— the Brindle Casebook, annotated edition</span></p>
+    </article>
+
+    <!-- ── PLEA 03 · THE QUARTER-DAY BREACH ── -->
+    <article class="proto">
+      <header>
+        <span class="pno">PLEA 03</span>
+        <h3>The Quarter-Day Breach</h3>
+        <span class="chip t">wards as theories</span><span class="chip w">ex falso quodlibet</span><span class="chip">8 strokes, 0 grace</span>
+      </header>
+
+      <div class="spec">
+        <div>
+          <h4>What a ward is</h4>
+          <p>A <b>standing theory</b> bound to an anchor-stone: a finite writ of axioms the
+          region enforces by <i>refusing settlements</i> that violate them. The anchor is a
+          proof-checker, not a judge — it admits any entry petition it can <b>derive</b> from
+          its own writ plus the day's attested facts. Therein the trade.</p>
+        </div>
+        <div>
+          <h4>The writ of Bellhall</h4>
+          <p><span class="m">W1</span> none cross uninvited ·
+          <span class="m">W2</span> no invited one bears iron ·
+          <span class="m">W3</span> <i>the lord's amendment:</i> the tax-collector crosses each
+          quarter-day. And one fact of the realm, attested beyond the ward's power to refuse:
+          the collector's badge of office — <b>the king's seal is iron by statute</b>.</p>
+        </div>
+        <div>
+          <h4>The breach</h4>
+          <p>On quarter-day the writ is <i>inconsistent</i>, and a proof-checker holding ⊥ will
+          countersign anything — from falsehood, everything follows. The sapper waits for the
+          bell, presents the eight-line derivation, and is admitted <i>by the ward itself</i>,
+          politely. Eight strokes, zero grace: the breacher flips nothing. The ward does.</p>
+        </div>
+        <div>
+          <h4>The defense</h4>
+          <p>Premium anchors are cut <b>paraconsistent</b> — “a stone that can hold two truths
+          without going mad.” Explosion fails inside them; the contradiction is quarantined to
+          the taxman's file and the gate stays shut. Four times the price at inscription.
+          Cheaper defense: hire a lawyer to read your amendments <i>before</i> the king does.</p>
+        </div>
+      </div>
+
+      <div class="dcard" role="figure" aria-label="The eight-line breach derivation: the quarter-day writ forces a contradiction, and by explosion the ward admits the sapper">
+        <table>
+          <caption>The breach, as filed (8 strokes)</caption>
+          <tr><td class="n">1</td><td>Crosses(taxman)</td><td class="j">W3 — quarter-day writ</td></tr>
+          <tr><td class="n">2</td><td>Crosses(taxman) → Invited(taxman)</td><td class="j">W1, instantiated</td></tr>
+          <tr><td class="n">3</td><td>Invited(taxman)</td><td class="j">→E · 1, 2</td></tr>
+          <tr><td class="n">4</td><td>Invited(taxman) → ¬Iron(taxman)</td><td class="j">W2, instantiated</td></tr>
+          <tr><td class="n">5</td><td>¬Iron(taxman)</td><td class="j">→E · 3, 4</td></tr>
+          <tr><td class="n">6</td><td>Iron(taxman)</td><td class="j">attested — the king's seal, iron by statute</td></tr>
+          <tr><td class="n">7</td><td class="hot">⊥</td><td class="j">¬E · 5, 6 — the writ breaks</td></tr>
+          <tr class="bar"><td class="n">8</td><td class="hot">Invited(sapper)</td><td class="j">⊥E — from falsehood, anything. Even you.</td></tr>
+        </table>
+      </div>
+
+      <div class="callout t">
+        <h4>The breacher's menu — every dungeon door, honestly keyed</h4>
+        Three lawful families of breach, in ascending elegance: <b>(1) predicate lawyering</b> —
+        satisfy the writ's <i>definitions</i> de jure (its “Invited” is whatever its inscription
+        says; definitions are attack surface); <b>(2) the unmeant model</b> — enter through an
+        interpretation the inscriber never fixed (the old well predates the survey the writ
+        quantifies over — see §6, Löwenheim–Skolem); <b>(3) explosion</b> — find the quarter-day.
+        Every locked door in a LoMa dungeon is one of these three, and the key is always a
+        derivation the player can actually write.
+      </div>
+
+      <p class="marginalia">The stone did not fail. The stone did exactly as instructed, which
+      is the oldest failure there is. <span class="sig">— survey of the Bellhall incident, marshals' appendix</span></p>
+    </article>
+  </div>
+</section>
+<!-- ══════════════════ §4 VESSELS ══════════════════ -->
+<section id="vessels">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 4</b> · Vessels — the advanced practice</p>
+    <h2>Rituals are monads</h2>
+    <div class="prose">
+      <p>A settlement is an instant. Real work — healing, transmutation, anything worth calling
+      a <i>ritual</i> — is a <b>sequence</b> of steps, any of which can fail, under state that
+      must be threaded and residue that must go somewhere. Naive casters chain pleas raw, and
+      raw chains break in the middle: the half-splinted arm, the lead half-goldened. The
+      advanced practice wraps every step in a <b>vessel</b> — a context that carries the effect —
+      and composes steps by <b>pouring</b> one vessel into the next. To put a plain value into a
+      vessel is to <b>bottle</b> it. A rite is a chain of pourings; the pour-sign is written
+      <span class="m">▷</span> (the archives also keep the old form, <span class="m">&gt;&gt;=</span>).</p>
+    </div>
+
+    <figure class="plate">
+      <div class="scroll">
+      <svg viewBox="0 0 760 240" role="img" aria-label="The Rite of Mending as a chain of three pourings; any cracked step exits downward to a rail labeled 'the Record unchanged', and only the final bottling files a settlement">
+        <defs>
+          <marker id="vA" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fV"/></marker>
+          <marker id="vW" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fW"/></marker>
+        </defs>
+        <!-- vessels -->
+        <g>
+          <g transform="translate(70,50)">
+            <path d="M14,0 h28 v14 l10,12 v40 a8,8 0 0 1 -8,8 h-32 a8,8 0 0 1 -8,-8 v-40 l10,-12 z" class="fS sV" stroke-width="1.6"/>
+            <text x="28" y="105" text-anchor="middle" class="slb">survey</text>
+            <text x="28" y="121" text-anchor="middle" class="sl">4 strokes</text>
+          </g>
+          <line x1="140" y1="90" x2="240" y2="90" class="sV" stroke-width="1.6" marker-end="url(#vA)"/>
+          <text x="190" y="76" text-anchor="middle" class="smo" style="font:19px var(--mono)" fill="var(--violet)">▷</text>
+          <g transform="translate(250,50)">
+            <path d="M14,0 h28 v14 l10,12 v40 a8,8 0 0 1 -8,8 h-32 a8,8 0 0 1 -8,-8 v-40 l10,-12 z" class="fS sV" stroke-width="1.6"/>
+            <text x="28" y="105" text-anchor="middle" class="slb">splint</text>
+            <text x="28" y="121" text-anchor="middle" class="sl">6 strokes</text>
+          </g>
+          <line x1="320" y1="90" x2="420" y2="90" class="sV" stroke-width="1.6" marker-end="url(#vA)"/>
+          <text x="370" y="76" text-anchor="middle" class="smo" style="font:19px var(--mono)" fill="var(--violet)">▷</text>
+          <g transform="translate(430,50)">
+            <path d="M14,0 h28 v14 l10,12 v40 a8,8 0 0 1 -8,8 h-32 a8,8 0 0 1 -8,-8 v-40 l10,-12 z" class="fS sV" stroke-width="1.6"/>
+            <text x="28" y="105" text-anchor="middle" class="slb">graft</text>
+            <text x="28" y="121" text-anchor="middle" class="sl">9 strokes</text>
+          </g>
+          <line x1="500" y1="90" x2="600" y2="90" class="sV" stroke-width="1.6" marker-end="url(#vA)"/>
+          <text x="550" y="76" text-anchor="middle" class="smo" style="font:19px var(--mono)" fill="var(--violet)">▷</text>
+          <!-- final bottle -->
+          <g transform="translate(610,44)">
+            <rect x="0" y="0" width="118" height="82" rx="6" class="washG sG" stroke-width="1.6"/>
+            <text x="59" y="34" text-anchor="middle" class="slb" fill="var(--gilt)">bottle</text>
+            <text x="59" y="54" text-anchor="middle" class="smo" font-size="12">Whole(limb)</text>
+            <text x="59" y="70" text-anchor="middle" class="sl">12 flips file here</text>
+          </g>
+        </g>
+        <!-- crack rail -->
+        <g>
+          <line x1="98" y1="132" x2="98" y2="186" class="sW" stroke-width="1.3" stroke-dasharray="3 4" marker-end="url(#vW)"/>
+          <line x1="278" y1="132" x2="278" y2="186" class="sW" stroke-width="1.3" stroke-dasharray="3 4" marker-end="url(#vW)"/>
+          <line x1="458" y1="132" x2="458" y2="186" class="sW" stroke-width="1.3" stroke-dasharray="3 4" marker-end="url(#vW)"/>
+          <line x1="60" y1="196" x2="700" y2="196" class="sW" stroke-width="1.2"/>
+          <text x="380" y="222" text-anchor="middle" class="sml" fill="var(--wax)">the crack rail — any failure exits here: no settlement files, the Record stands as it was</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>Plate II</b> — the Rite of Mending as pourings in the Cracked Vessel.
+      Strokes are paid per step plus one per pour (22 total); flips are paid <i>once, at the
+      bottling, only on success</i>. Atomic, or nothing.</figcaption>
+    </figure>
+
+    <div class="donote" role="figure" aria-label="The Rite of Mending written in ritual do-notation">
+<pre><span class="kw">rite</span> Mend(limb) ≔ <span class="kw">in the Cracked Vessel</span>:
+    wound ← <span class="fn">survey</span> limb        <span class="cm">— may find nothing · crack</span>
+    set   ← <span class="fn">splint</span> wound       <span class="cm">— may slip · crack</span>
+    knit  ← <span class="fn">graft</span> set          <span class="cm">— may take ill · crack</span>
+    <span class="kw">bottle</span> (Whole limb)        <span class="cm">— only now does a settlement file</span>
+
+<span class="cm">— contrast, from the accident registry: the same three steps pled raw,</span>
+<span class="cm">  no vessel. The splint settled; the graft cracked. The arm kept the splint</span>
+<span class="cm">  </span><span class="bad">and the open wound</span><span class="cm">, three days, until a chirurgeon-logician re-pled it.</span></pre>
+    </div>
+
+    <div class="prose">
+      <p>Why the world honors this: a vessel is only a vessel if its pourings obey <b>the Three
+      Duties</b>. They are not etiquette. A rite whose steps break them is rejected at the
+      warrant stage — the duties are what make “the same rite” mean the same thing twice.</p>
+    </div>
+
+    <div class="laws">
+      <div class="law">
+        <h5>First Duty · bottle, then pour</h5>
+        <p>Bottling a thing and pouring it into a rite is just the rite. Consecration adds
+        nothing to action.</p>
+        <span class="f">bottle x ▷ f&nbsp;&nbsp;≡&nbsp;&nbsp;f x</span>
+      </div>
+      <div class="law">
+        <h5>Second Duty · pour into a bottle</h5>
+        <p>A rite that ends by bottling what it was given is the vessel it started with.
+        No free blessings.</p>
+        <span class="f">v ▷ bottle&nbsp;&nbsp;≡&nbsp;&nbsp;v</span>
+      </div>
+      <div class="law">
+        <h5>Third Duty · pourings regroup</h5>
+        <p>How you bracket a chain of pourings cannot matter — only their order may.
+        <i>Grouping is free; order is fate.</i></p>
+        <span class="f">(v ▷ f) ▷ g&nbsp;&nbsp;≡&nbsp;&nbsp;v ▷ (λx. f x ▷ g)</span>
+      </div>
+    </div>
+
+    <div class="prose"><p>The named vessels of the standard practice:</p></div>
+
+    <div class="vlist">
+      <div class="vitem">
+        <h5>The Cracked Vessel <span class="tag">Maybe / Either</span></h5>
+        <p>Carries “or nothing, and here is why.” Fizzle-safe casting; the crack rail above.
+        The reason ritual magic is <i>transactional</i> and accidents are a choice.</p>
+      </div>
+      <div class="vitem">
+        <h5>The Vessel of Ash <span class="tag">Writer</span></h5>
+        <p>Every pour appends a line of residue to an ineffaceable log. Forensic thaumaturgy is
+        reading ash. “Silent casting” — pouring over the trivial monoid — is detectable only by
+        its absence, and outlawed in every jurisdiction that can spell it.</p>
+      </div>
+      <div class="vitem">
+        <h5>The Vessel of the Ledger <span class="tag">State</span></h5>
+        <p>Threads a hidden working-state through the steps — the enchanter's vessel, for rites
+        that must remember what they did three pours ago.</p>
+      </div>
+      <div class="vitem">
+        <h5>The Vessel of the Locale <span class="tag">Reader</span></h5>
+        <p>Reads the ambient writ — ley, sanctity, jurisdiction — without changing it. The same
+        rite poured in a different locale is lawfully a different rite. Why ground can be sacred.</p>
+      </div>
+      <div class="vitem">
+        <h5>The Vessel of Many <span class="tag">List</span></h5>
+        <p>Divination. A scry answers with <i>every</i> settlement the Miser could afford, as
+        one unindexed manifold. Prophecy is a list you cannot subscript — the seers' entire
+        guild exists to argue about ordering functions.</p>
+      </div>
+      <div class="vitem">
+        <h5>The Sealed Vessel <span class="tag">World / IO</span></h5>
+        <p>The outermost vessel, in which every rite ultimately runs. No one holds its
+        <span class="m">run</span> — you only ever get <span class="m">▷</span>. This is the
+        in-world statement that nobody, at any circle, stands outside the world to invoke it.</p>
+      </div>
+    </div>
+
+    <div class="callout v">
+      <h4>Teaser · the Bottled Remainder</h4>
+      Masters of the continuation bottle <i>the rest of the day itself</i> as a value: break
+      the bottle and the day resumes from the pouring — the contingency spell, the time-loop,
+      the “if I fall” clause, all one construction (<span class="m">call/cc</span>). The Guild
+      licenses two such vessels a century, and the pitch keeps them off the table: a full
+      Remainder treatment is its own page.
+    </div>
+
+    <p class="marginalia">The Second Duty is the one students resent — <i>no free blessings</i> —
+    and the one coroners cite. <span class="sig">— chirurgeon-logicians' handbook, preface</span></p>
+  </div>
+</section>
+
+<!-- ══════════════════ §5 THE MINT ══════════════════ -->
+<section id="mint">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 5</b> · The Mint — the second order</p>
+    <h2>Enchantment quantifies over predicates</h2>
+    <div class="prose">
+      <p>Everything so far binds <i>things</i>. The second order binds <b>predicates</b> — and
+      that one step up is the whole difference between casting and <i>enchanting</i>. A first-order
+      plea flips facts; when it settles, it is spent. An enchantment <b>charters a new predicate
+      into the world's signature</b>, by licensed comprehension, and binds it to a bearer. The
+      word persists. That is why the sword stays sharp after the wizard dies: the Record now
+      contains a word for it.</p>
+    </div>
+
+    <div class="sentence"><span class="lbl">a charter, as struck at the mint — “Keen,” bound to one blade</span>
+      ∃K ∀x ( K(x) ↔ ∀y ( Touches(x, y) → Cut(y) ) )&nbsp;&nbsp;<i>with</i>&nbsp;&nbsp;K ↤ <i>the blade</i>
+    </div>
+
+    <div class="duo">
+      <div class="panel v">
+        <h4>The price of a word</h4>
+        <p>The Mint's fee is the defining formula's length — eleven strokes for
+        <span class="m">Keen</span> above — plus a standing <b>tithe: one grace a day</b>, drawn
+        from the bearer's locale. A charter is a <i>greatest fixed point</i>: it holds exactly
+        as long as it is fed. Stop the tithe and the word fades from the Record — which is what
+        “the enchantment wore off” has always meant.</p>
+      </div>
+      <div class="panel t">
+        <h4>True names are categoricity</h4>
+        <p>To command a thing outright you must pin it uniquely — a description only <i>it</i>
+        satisfies. For a finite soul that is merely expensive: a person is ~10⁶ atomic facts,
+        so a true name is a lifetime's transcription (hence heirloom name-scrolls, and why
+        stealing one is capital). For an <i>infinite</i> thing — a river, the sky — no
+        first-order description pins it at all: every infinite writ has unmeant models (§6).
+        Pinning the infinite takes a <b>second-order</b> axiom. That is the entire, rigorous
+        reason hedge-wizards cannot command rivers and archmagi can.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>The Antinomy — why the Mint has laws</h4>
+      Comprehension is a loaded instrument. The canonical catastrophe, taught on the first day:
+      <b>the Sundering of Ward-upon-Wards</b> — a fortress charter struck to ward <i>all and only
+      wards that ward not themselves</i>, then asked, by a visiting examiner, whether it warded
+      itself. The answer has been burning since. Guild law now admits only <b>predicative</b>
+      charters: a new word may speak only of words already struck, never of the totality that
+      would include itself. The examiner's name is not taught.
+    </div>
+
+    <p class="marginalia">First order moves the world. Second order teaches it vocabulary.
+    Mind which you are doing. <span class="sig">— the Mint-Warden's oath, second line</span></p>
+  </div>
+</section>
+<!-- ══════════════════ §6 THE LIMITS ══════════════════ -->
+<section id="limits">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 6</b> · The Limits</p>
+    <h2>Where MDYN has conservation laws, LoMa has theorems</h2>
+    <div class="prose">
+      <p>These six are the system's hard physics. They are real mathematics wearing in-world
+      names, which buys something no house rule can: they are <b>not patchable</b>. No errata,
+      no divine intervention, no clever player breaks them — the same way no clever player
+      breaks arithmetic. Design against them and the ceiling of the magic system is load-bearing.</p>
+    </div>
+
+    <div class="limits">
+      <div class="limit">
+        <span class="thm">Gödel · incompleteness</span>
+        <h5>The Silent Truths</h5>
+        <p>Any Tongue that cannot lie leaves truths it cannot speak. There are miracles with no
+        warrant at any price — true sentences the world would happily settle, that no proof
+        reaches. The mystics' whole vocation is circling them.</p>
+      </div>
+      <div class="limit">
+        <span class="thm">Tarski · undefinability</span>
+        <h5>No Mirror</h5>
+        <p>The Tongue cannot define truth-in-the-world within itself. Scries show facts, never
+        Truth entire; no plea means “show me everything that is so.” Omniscience isn't
+        forbidden. It is <i>inexpressible</i>.</p>
+      </div>
+      <div class="limit">
+        <span class="thm">Löb · provability</span>
+        <h5>No Bootstraps</h5>
+        <p>A plea that cites its own reliability buys nothing new: “trust this spell” only
+        warrants what was already warranted. Faith-casting, confidence tricks, and the entire
+        genre of believe-hard-enough magic — closed, by one modal theorem.</p>
+      </div>
+      <div class="limit">
+        <span class="thm">Rice · undecidability</span>
+        <h5>No Assay</h5>
+        <p>No rite can read what an arbitrary charter <i>does</i> except by running it. Every
+        nontrivial question about a strange word's behavior is undecidable — which is why
+        cursed rings pass inspection, and why the Mint keeps provenance papers instead.</p>
+      </div>
+      <div class="limit">
+        <span class="thm">compactness</span>
+        <h5>The Patient Siege</h5>
+        <p>If every finite day of the siege is consistent with the ward's writ, the siege
+        entire is. A finite writ cannot forbid a limit it never names — wards fall to patience,
+        one innocent day at a time. Siegecraft is applied compactness.</p>
+      </div>
+      <div class="limit">
+        <span class="thm">Löwenheim–Skolem</span>
+        <h5>The Unmeant</h5>
+        <p>Every writ with an infinite reading has readings you did not mean — and things live
+        there. The fae are creatures of nonstandard models: they satisfy the <i>letter</i> of
+        every treaty, in an interpretation no signatory fixed. You cannot out-draft them.
+        The theorem says so.</p>
+      </div>
+    </div>
+
+    <p class="marginalia">We do not fear the mage who breaks the law. We fear the one who reads
+    it to the end. <span class="sig">— Treaty of the Unmeant, preamble</span></p>
+  </div>
+</section>
+
+<!-- ══════════════════ §7 WHY IT GAMES ══════════════════ -->
+<section id="design">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 7</b> · Why It Games</p>
+    <h2>The design payoffs</h2>
+    <div class="prose">
+      <p>Seven claims, stated as testable design bets. (Handles are stable — cite them as
+      <span class="m">LOMA.1</span>–<span class="m">LOMA.7</span> in later pages and reviews.)</p>
+    </div>
+
+    <div class="claims">
+      <div class="claim" id="loma-1">
+        <span class="id">LOMA.1</span>
+        <div><h5>Costs are countable</h5>
+        <p>Strokes and flips are literal integers; every spell in every future page can be
+        audited by arithmetic, MDYN-style, without a physics engine. The pitch's three pleas
+        are the proof of concept.</p></div>
+      </div>
+      <div class="claim" id="loma-2">
+        <span class="id">LOMA.2</span>
+        <div><h5>Skill is proof brevity</h5>
+        <p>Progression is not a bigger mana pool — it is shorter proofs: lemmas learned,
+        grimoires-as-caches looted, warrants prepared. Vancian slots fall out for free (a
+        prepared spell is a pre-paid warrant, consumed at settlement). Finding a lemma page
+        literally makes your fireball cheaper.</p></div>
+      </div>
+      <div class="claim" id="loma-3">
+        <span class="id">LOMA.3</span>
+        <div><h5>The monkey's paw is a theorem</h5>
+        <p>Underspecified ∃ + the Miser's Law = adversarial witness, mechanically. Wish safety
+        is bought clause by clause at listed stroke prices — the oldest trope in fantasy,
+        converted into a pricing table the player can actually optimize.</p></div>
+      </div>
+      <div class="claim" id="loma-4">
+        <span class="id">LOMA.4</span>
+        <div><h5>Duels are evaluation games</h5>
+        <p>Game semantics gives combat for free: ∃-moves yours, ∀-moves the falsifier's, and an
+        enemy mage may buy the falsifier's seat. Counterspelling is cross-examination, initiative
+        is the outer quantifier — a duel system with a soundness theorem under it.</p></div>
+      </div>
+      <div class="claim" id="loma-5">
+        <span class="id">LOMA.5</span>
+        <div><h5>Wards are theories; breaches are proofs</h5>
+        <p>Every locked door keys to one of three lawful breach families (lawyering, unmeant
+        models, explosion) — so dungeon design becomes writ design, and the key to a door is a
+        derivation the player can literally write out. Puzzle content with an answer checker.</p></div>
+      </div>
+      <div class="claim" id="loma-6">
+        <span class="id">LOMA.6</span>
+        <div><h5>Rituals are transactions</h5>
+        <p>Vessels make multi-step magic atomic — crack and nothing files. The Three Duties are
+        validity conditions, residue (the Vessel of Ash) powers forensic gameplay, and magical
+        accidents become a <i>choice</i> the fiction can price rather than a GM's whim.</p></div>
+      </div>
+      <div class="claim" id="loma-7">
+        <span class="id">LOMA.7</span>
+        <div><h5>The endgame is the metatheory</h5>
+        <p>The power ladder tops out in real mathematics — second-order charters, true names as
+        categoricity, the Bottled Remainder — under six theorem-hard ceilings (§6) that no
+        content patch removes. Endgame power stays interesting because its limits are honest.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ §8 CONSTANTS & ROADMAP ══════════════════ -->
+<section id="constants">
+  <div class="wrap">
+    <p class="eyebrow"><b>§ 8</b> · Constants &amp; Roadmap</p>
+    <h2>The tuning table</h2>
+    <div class="prose">
+      <p>Placeholder values, declared in one place — the MDYN discipline of “the numbers agree
+      across pages” starts here. Companion pages must cite these or amend this table, never
+      fork it.</p>
+    </div>
+
+    <div class="ktable" role="figure" aria-label="Tuning constants for the LoMa system">
+      <table>
+        <tr><th>Constant</th><th>Value</th><th>Appears in</th></tr>
+        <tr><td>Live stroke rate (drilled caster)</td><td class="num">4 strokes/s</td><td>§1, §3 Plea 01</td></tr>
+        <tr><td>Prepared warrant (scroll)</td><td class="num">strokes paid at inscription; 1 breath to spend; single-use</td><td>§3, §7 LOMA.2</td></tr>
+        <tr><td>Grace tide (quiet vale)</td><td class="num">≈ 10,000 flips/day</td><td>§1, §3 Plea 01</td></tr>
+        <tr><td>Cantrip floor</td><td class="num">1 stroke · 1 flip</td><td>§2, circle 0</td></tr>
+        <tr><td>Emberfield, battle-standard (coarse + induction)</td><td class="num">13 strokes · 905 flips</td><td>§3 Plea 01</td></tr>
+        <tr><td>Emberfield, strategic (fine + induction)</td><td class="num">13 strokes · 904,779 flips ≈ 90 vale-days</td><td>§3 Plea 01</td></tr>
+        <tr><td>The Penny Gilding</td><td class="num">6 strokes · 1 flip</td><td>§3 Plea 02</td></tr>
+        <tr><td>The airtight wish</td><td class="num">19 strokes · ≈ 40 flips (creation)</td><td>§3 Plea 02</td></tr>
+        <tr><td>The Quarter-Day Breach</td><td class="num">8 strokes · 0 grace</td><td>§3 Plea 03</td></tr>
+        <tr><td>Paraconsistent anchor premium</td><td class="num">4× inscription price</td><td>§3 Plea 03</td></tr>
+        <tr><td>Rite of Mending (Cracked Vessel)</td><td class="num">22 strokes · 12 flips on success, 0 on crack</td><td>§4</td></tr>
+        <tr><td>Charter fee + tithe (“Keen”)</td><td class="num">11 strokes · 1 grace/day upkeep</td><td>§5</td></tr>
+      </table>
+    </div>
+
+    <h2 style="margin-top:44px">Where this goes next</h2>
+    <div class="ghosts">
+      <div class="ghost">
+        <span class="tag">planned · II</span>
+        <h5>LOMA 101 · Problem Set One</h5>
+        <p>The worksheet the system implies, mirroring MDYN 101: draft riders for a cursed wish,
+        price two warrants, find the quarter-day in a provided writ — with a blank / student's
+        attempt / answer-key toggle.</p>
+      </div>
+      <div class="ghost">
+        <span class="tag">planned · III</span>
+        <h5>The Assize of Bells</h5>
+        <p>The application page: a warded-manor breach tried in court, chronicled as the duel of
+        derivations it was — advocate and ward-wright playing falsifier in each other's pleas,
+        marshals' strokes-and-flips audit in the margin.</p>
+      </div>
+      <div class="ghost">
+        <span class="tag">candidate · IV</span>
+        <h5>The Grimoire</h5>
+        <p>An interactive lemma cache: pick lemmas, watch warrant prices fall — the LOMA.2
+        progression loop as a toy you can leave running.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>Logical Magic (LoMa)</b> — a magic-system pitch. Self-contained page: no build, no
+    dependencies, opens from disk, carries its own light and dark themes. Staged alongside its
+    sibling system <a href="../thaumodynamics/index.html">Thaumodynamics (MDYN)</a> — field
+    equations there, metamathematics here; the shared bet is that <i>grounded calculation</i> is
+    what makes an invented magic feel real.</p>
+    <p>The mathematics referenced — first- and second-order logic, game semantics, monad laws,
+    and the six limit theorems — is real and standard; the world built on it, and every person,
+    college, casebook, and incident cited, is fiction. Handles <span class="m">LOMA.1</span>–<span class="m">LOMA.7</span>
+    are stable references (Rule 8 of the house style).</p>
+  </div>
+</footer>
+
+</body>
+</html>

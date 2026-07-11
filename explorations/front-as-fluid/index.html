@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Tide Line — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: the MSL front is not a schedule, it is a fluid. A reaction-diffusion field on a graph that you bend with cargo. Stop bailing and the tide floods; a starved sector ruptures and cuts the lanes behind you." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#fb7185;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* field heat ramp: cool (well-supplied) -> hot (about to rupture) */
+  --cool:#22d3ee;      /* cyan — deep surplus */
+  --calm:#34d399;      /* green — held */
+  --warm:#fbbf24;      /* amber — tightening */
+  --hot:#fb7185;       /* rose — at the threshold */
+  --overrun:#7f1d2b;   /* dried blood — overrun node */
+  --supply:#38bdf8;    /* the cargo you drop */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:66rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:42rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.holding{color:#a7f3d0;border-color:#2c6b54;background:rgba(52,211,153,.12)}
+.phasebadge.rising{color:#fde68a;border-color:#7a5e1f;background:rgba(251,191,36,.12)}
+.phasebadge.flooding{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.14)}
+.phasebadge.lost{color:var(--fog-100);border-color:var(--accent);background:var(--accent)}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:1rem}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport bar */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl.toggle.on{color:var(--ink-950);background:var(--warm);border-color:var(--warm);font-weight:700}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:.55rem .9rem;margin-top:.2rem}
+@media (max-width:560px){.sliders{grid-template-columns:1fr}}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+
+/* field host */
+.fieldhost{width:100%;overflow:hidden;border-radius:9px;background:radial-gradient(120% 90% at 85% 10%,rgba(251,113,133,.05),transparent 55%),var(--ink-950);border:1px solid var(--line);position:relative;cursor:crosshair}
+svg{display:block;max-width:100%}
+.svg-tip{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;fill:var(--fog-500)}
+.fieldhost .hint{position:absolute;left:10px;bottom:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--fog-500);pointer-events:none;background:rgba(7,8,12,.6);padding:.1rem .4rem;border-radius:5px}
+
+/* legend / heat ramp */
+.legend{display:flex;flex-wrap:wrap;gap:.6rem .9rem;margin-top:.6rem;align-items:center}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400)}
+.legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.ramp{height:11px;width:140px;border-radius:3px;border:1px solid var(--line);
+  background:linear-gradient(90deg,var(--cool),var(--calm),var(--warm),var(--hot))}
+.ramplab{display:flex;justify-content:space-between;width:140px;font-family:var(--font-mono);font-size:.6rem;color:var(--fog-500);letter-spacing:.04em}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums}
+.kv .v.big{color:var(--accent);font-size:1.05rem}
+
+/* "why" one-liner */
+.why{border:1px solid var(--accent);background:rgba(251,113,133,.08);border-radius:11px;padding:.7rem .8rem;margin-top:.2rem;transition:.2s;min-height:3.2rem}
+.why.idle{border-color:var(--line);background:var(--ink-900)}
+.why .wq{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.78rem;color:var(--fog-100);line-height:1.5;margin-top:.25rem}
+.why .wmsg b{color:var(--accent)}
+
+/* at-risk list */
+.risklist{display:grid;gap:.3rem}
+.riskrow{display:grid;grid-template-columns:auto 1fr auto;gap:.5rem;align-items:center;font-family:var(--font-mono);font-size:.74rem;
+  padding:.26rem .5rem;border:1px solid var(--line);border-radius:7px;background:var(--ink-950)}
+.riskrow .nm{color:var(--fog-100)} .riskrow .meta{color:var(--fog-500);font-size:.68rem}
+.riskrow .bar{height:6px;border-radius:4px;background:var(--ink-700);overflow:hidden;min-width:60px}
+.riskrow .bar i{display:block;height:100%;border-radius:4px}
+.riskrow.none{color:var(--fog-500);grid-template-columns:1fr;text-align:center}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:9.4rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .rupt{color:var(--hot)} .log .drop{color:var(--supply)} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)} .log .hold{color:var(--calm)}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+.eqn{font-family:var(--font-mono);font-size:.92rem;color:var(--fog-100);background:var(--ink-900);border:1px solid var(--line);
+  border-radius:10px;padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;line-height:1.8}
+.eqn .c{color:var(--fog-500)} .eqn .k{color:var(--accent)}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">The Tide Line</span></li>
+    </ol>
+  </nav>
+<header class="hero">
+  <span class="chip"><b>TIDE</b> · enemy / front lineage</span>
+  <div class="kicker">ROSE lineage · the front as a fluid</div>
+  <h1>The Tide Line</h1>
+  <p class="lede">The front isn't a schedule and it isn't a market. It's a <em>pressure field</em> that flows across the graph — and your cargo is the only thing holding it back. Stop bailing, and it floods where you stopped.</p>
+  <p class="spark">A starved sector doesn't just fall. It <span>ruptures, and cuts the lanes behind you</span> — the ground gone from under your own supply line.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one hauler</strong> and an unwinnable war to keep fed across a graph of a dozen-odd systems. The front is sovereign <span class="hand">APR.2</span>: you never fire a shot, you only move goods into the shortage it makes. This page takes one reading of that front — call it <strong>the Tide</strong> — and makes it physical. Not an opening book, not a price curve. A <strong>fluid</strong>.</p>
+
+<p>Concretely: enemy <strong>pressure</strong> is a scalar that <em>diffuses</em> across the lanes, seeping inward from the forward edge like water finding the low ground. Your <strong>supply</strong> is a second scalar that diffuses too — and where the two meet, supply <em>consumes</em> pressure. That's the whole fiction in two fields and one reaction: <strong>you bend the tide with cargo</strong>. The engine underneath is <strong>reaction-diffusion on a graph</strong> — a graph-Laplacian — the cheap, legible core the Tide reading is named for.</p>
+
+<h2><span class="eye">the model</span>Two scalars, one Laplacian, a threshold</h2>
+
+<p>Lay the war out as ~14 systems in bands, rear to forward, wired by lanes. Each system holds two numbers: <strong>supply</strong> <span class="hand">s</span> and enemy <strong>pressure</strong> <span class="hand">p</span>. Every fixed tick, in a fixed order, in integer arithmetic, three things happen:</p>
+
+<ul class="tight">
+  <li><b>Diffusion.</b> Both fields spread to their lane-neighbours by a discrete graph-Laplacian step — each node nudges toward the average of its neighbours. This is the heat equation on a graph, <em>not</em> particles bouncing around.</li>
+  <li><b>Reaction.</b> The front injects fresh pressure at the forward edge each tick. Where supply and pressure coexist on a node, supply burns down pressure (and is spent doing it). Your cargo is the reaction term.</li>
+  <li><b>Rupture.</b> Net local state is <code>p − s</code>. When a node's net crosses the <strong>threshold</strong>, it <strong>ruptures</strong>: it flips to overrun, its lanes are cut from the graph, and its pressure dumps into its surviving neighbours — which can tip <em>them</em> over. A cascade.</li>
+</ul>
+
+<div class="eqn">
+<span class="c">// diffusion, per node i, each tick — a graph-Laplacian step</span><br>
+s<sub>i</sub> <span class="k">+=</span> D · Σ<sub>j ∈ neighbours(i)</sub> ( s<sub>j</sub> − s<sub>i</sub> )<span class="c"> &nbsp; // supply spreads</span><br>
+p<sub>i</sub> <span class="k">+=</span> D · Σ<sub>j ∈ neighbours(i)</sub> ( p<sub>j</sub> − p<sub>i</sub> )<span class="c"> &nbsp; // pressure spreads</span><br>
+<span class="c">// reaction + rupture</span><br>
+p<sub>frontier</sub> <span class="k">+=</span> intensity <span class="c">// front injects at the rim + every shore a rupture exposes</span><br>
+burn = min(s<sub>i</sub>, p<sub>i</sub> · k) ; &nbsp; p<sub>i</sub> <span class="k">−=</span> burn ; &nbsp; s<sub>i</sub> <span class="k">−=</span> burn<br>
+p<sub>i</sub> <span class="k">−=</span> p<sub>i</sub> ≫ 6 <span class="c"> // pressure dissipates inland — keeps the front a sharp line, not a fill</span><br>
+<span class="k">if</span> ( p<sub>i</sub> − s<sub>i</sub> > threshold ) <span class="k">rupture</span>(i) <span class="c"> // cut lanes, dump ¾ of its pressure to neighbours (≤ 1 hop / tick)</span>
+</div>
+
+<p>The coefficient <code>D</code> is a slider — turn it up and the field smears fast and even; turn it down and gradients stay sharp and local. Because every term is <strong>fixed-point i64</strong> (we scale each scalar by a constant and only ever add, subtract, and floor-divide integers), the field is <strong>bit-for-bit deterministic</strong>: a run is a seed <span class="hand">APR.5</span>, and no float ever smears the same two runs apart.</p>
+
+<div class="callout">
+  <div class="lab">how to drive the instrument</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">Press <strong>Play</strong> and watch pressure (rose, hot) seep inward from the forward edge while nodes cool toward cyan only where supply reaches them. <strong>Click any node to drop cargo there</strong> — you're the hauler — and watch the supply diffuse outward and push the tide back locally. The lanes show <em>flux</em>: which way, and how hard, each field is flowing. Mis-time it and a node ruptures, its lanes flash and cut, and the breach can cascade behind you. Flip <strong>stop supplying</strong> to take your hands off and watch the tide take the whole graph.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">TIDE FIELD · <b>front "ROSE"</b> · graph-Laplacian reaction-diffusion</div>
+    <div class="phasebadge holding" id="phaseBadge">LINE HOLDING</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">▶ Play</button>
+        <button class="ctl" id="btnStep">⏭ Step</button>
+        <button class="ctl" id="btnReset">⟲ Reset</button>
+        <button class="ctl toggle" id="btnStarve">✋ Stop supplying</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="ROSE-1207" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:.8rem">
+        <div class="slider">
+          <span class="lab">D — diffusion coefficient</span>
+          <span class="val" id="vD">0.100</span>
+          <input type="range" id="sD" min="20" max="240" step="2" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">front intensity — pressure injected / tick</span>
+          <span class="val" id="vInt">0.100</span>
+          <input type="range" id="sInt" min="10" max="180" step="2" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">rupture threshold — net p−s to break</span>
+          <span class="val" id="vThr">1.50</span>
+          <input type="range" id="sThr" min="60" max="320" step="5" value="150" />
+        </div>
+        <div class="slider">
+          <span class="lab">cargo drop size — supply per click</span>
+          <span class="val" id="vDrop">2.40</span>
+          <input type="range" id="sDrop" min="40" max="600" step="10" value="240" />
+        </div>
+      </div>
+      <div class="note" style="margin-top:.55rem">All four reshape the <em>field</em> live. <code>D</code> sets how fast/smooth it flows; intensity is the tide's strength; threshold is how brittle a sector is; drop size is how much one cargo run buys you. Determinism holds across any setting — same seed, same field.</div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the live heat field -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="panel">
+          <h4>The field <span class="sub">click a node to drop cargo · lanes show flux</span></h4>
+          <div class="fieldhost">
+            <svg id="field" viewBox="0 0 660 440" role="img" aria-label="Live reaction-diffusion field over the system graph; nodes coloured by net pressure"></svg>
+            <div class="hint">click any live node ▸ drop cargo</div>
+          </div>
+          <div class="legend">
+            <div style="display:flex;flex-direction:column;gap:.15rem">
+              <div class="ramp"></div>
+              <div class="ramplab"><span>surplus</span><span>net p−s</span><span>rupture</span></div>
+            </div>
+            <span class="it"><span class="sw" style="background:var(--supply)"></span>cargo / supply pulse</span>
+            <span class="it"><span class="sw" style="background:var(--overrun);border:1px solid #b14a58"></span>overrun (lanes cut)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: readouts + why + at-risk + log -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        <div class="panel">
+          <h4>Front state</h4>
+          <div class="kv">
+            <span class="k">overrun nodes</span><span class="v big" id="kvOver">0 / 14</span>
+            <span class="k">front displacement</span><span class="v" id="kvDisp">band 5 (rim)</span>
+            <span class="k">live supply (Σ)</span><span class="v" id="kvSupply">0.0</span>
+            <span class="k">live pressure (Σ)</span><span class="v" id="kvPress">0.0</span>
+            <span class="k">cargo dropped</span><span class="v" id="kvDrops">0</span>
+          </div>
+        </div>
+
+        <div class="why idle" id="why">
+          <div class="wq">why — last field event</div>
+          <div class="wmsg" id="whyMsg">Press Play. Pressure will seep inward from the rim; click nodes to hold the line. The "why" of every rupture lands here.</div>
+        </div>
+
+        <div class="panel">
+          <h4>Nodes at risk <span class="sub">net p−s near threshold</span></h4>
+          <div class="risklist" id="risklist"></div>
+        </div>
+
+        <div class="panel">
+          <h4>Field log <span class="sub">drops · ruptures · cascades</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just did</span>You weren't fighting a clock — you were bailing a boat</h2>
+
+<p>The first thing the field teaches is that nothing here is scheduled. There's no list of attacks, no timestamps to memorise. There's a <em>flow</em>, and a leak. Pressure pours in at the forward rim every tick; left alone it dissipates inland, so the tide only advances where it can keep crossing the threshold — at the rim, and at every fresh shore a rupture exposes. <strong>Supply is the only thing holding that line</strong>, and the instant you flip <em>stop supplying</em> you can watch the front eat inward band by band — rim to home — until the whole graph has gone rose and ruptured.</p>
+
+<p>The second thing it teaches is why a loss <em>hurts</em>. When a node ruptures, its lanes are cut from the Laplacian and its pressure dumps into the neighbours behind it. A sector you'd written off as "the front's problem" suddenly severs the path your own cargo was taking — and the pressure it was holding back floods <em>inward</em>, toward the rear you thought was safe. That's the line that matters: <strong>a starved sector ruptures and cuts the lanes behind you</strong>. You don't just lose ground; you lose the ground under your supply line, and the breach can cascade.</p>
+
+<p>So the skill the Tide asks for isn't recall, it's <strong>triage under diffusion</strong>. Cargo dropped early, in the right node, spreads to cover several neighbours before they tighten — bend the field while it's still soft. Cargo dropped late, after a node's net has already crossed, is a bucket against a broken dam. Watch the <strong>nodes-at-risk</strong> readout: it's telling you where the gradient is about to win, one tick before the <strong>why</strong> line tells you it did.</p>
+
+<p>Turn <code>D</code> up and the war becomes one smooth sheet — easy to read, hard to hold locally, because your cargo smears thin the instant it lands. Turn <code>D</code> down and the field clots into sharp pockets — your drops stay potent and local, but a single starved node can spike past the threshold before its neighbours feel a thing. The whole game lives in that tuning, and it's all the same three rules running on a fixed tick.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">one fiction, two engines</span>The Tide vs. the opening book</h2>
+
+<p>This is the same war, the same front, the same rose — read a different way. The sibling page, <code>enemy-attack-schedule</code>, makes the enemy a <strong>scripted-yet-reactive opening book</strong>: discrete keyframes you memorise, firing from gates, with the front advancing on accumulated pressure only once the script runs out. There the antagonist is a <em>timeline you learn</em>. Here it's a <em>fluid you bend</em> — no keyframes, no book, just a continuous field that floods wherever you stop bailing. Same fiction, a reaction-diffusion engine in place of an opening book; pick the reading that makes the front feel most alive at the table.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <div class="rt"><b>The field smears to mush.</b> A continuous diffusion field's failure mode is illegibility: crank <code>D</code> and every node converges to the same lukewarm grey, the gradient flattens, and the player can't see where to drop cargo or why anything ruptured. A war you can't read is a war you can't play.</div>
+  <div class="mit"><b>Mitigations, all in the model:</b> keep the substrate <em>discrete</em> — a dozen-odd named nodes, never a pixel fluid, so there's always a countable "this system" to point at — and <em>tune <code>D</code> into the band where gradients stay readable</em> (the slider's default sits there; the extremes are shown precisely so the failure is visible, not hidden). Back it with a coarse, always-legible readout: <strong>nodes-at-risk</strong> and a single net-pressure tilt, so even mid-smear the player has a discrete signal of where the tide is winning. Legibility is a tuned property, not a hope.</div>
+</div>
+
+<div class="risk">
+  <div class="rt"><b>Determinism rot.</b> The promise is "a run is a seed." A continuous field is the easiest place to break it — one float that rounds differently on another machine, one <code>Math.random</code> in the jitter, one neighbour set iterated in hash order, and two runs of the same seed drift apart. For a field, drift compounds: a sub-pixel difference on tick 1 is a different rupture on tick 200.</div>
+  <div class="mit"><b>Mitigation:</b> the field is <strong>fixed-point i64</strong> — every scalar is an integer scaled by a constant, and the Laplacian uses only add / subtract / floored integer divide, so there is <em>no float in the field at all</em>. Iteration over nodes and lanes is in fixed index order; the only randomness is a single reseedable <code>mulberry32</code> used for cosmetic jitter, never for state. Determinism is a property you test — replay the seed in CI and diff the field hash, tick by tick.</div>
+</div>
+
+<p class="note" style="margin-top:1.6rem">Model + page by Panda. The field here is illustrative of the Tide reading of the ROSE lineage — node count, band geometry, and the reaction constants are tuned for legibility over balance. The diffusion is a real graph-Laplacian step in fixed-point; the rupture cascade is the reaction term made consequential.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · ROSE lineage — "The Tide Line" · explorable explanation · runs offline from a single file.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   The Tide Line — deterministic reaction-diffusion field on a graph.
+   No external requests. One reseedable PRNG (mulberry32), used ONLY for
+   cosmetic jitter — never for field state. The field itself is FIXED-POINT
+   integer arithmetic (i64-style): every scalar is scaled by FP_ONE and the
+   graph-Laplacian uses add / subtract / floored-integer-divide only, so two
+   runs of one seed are bit-for-bit identical (no float smear). APR.5.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) — cosmetic jitter only ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* stable string -> uint32 hash so seed text maps deterministically */
+function hashSeed(str){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+
+/* ---------- fixed-point helpers ----------
+   FP_ONE = 1.0 in fixed point. Values stay small (a few × FP_ONE), neighbour
+   counts <= ~5, so every intermediate is well within JS's exact-integer range
+   (2^53); we treat them as i64. Math.trunc gives round-toward-zero division,
+   which is symmetric for signed deltas — the key to deterministic diffusion. */
+const FP_BITS = 16;
+const FP_ONE  = 1 << FP_BITS;                 // 65536
+const toFP    = x => Math.round(x * FP_ONE);  // float param -> fixed (setup/UI only)
+const fromFP  = x => x / FP_ONE;              // fixed -> float (display only)
+/* signed fixed multiply: (a * b) >> FP_BITS, truncated toward zero, integer-exact */
+function fpmul(a, b){ return Math.trunc((a * b) / FP_ONE); }
+
+/* ---------- static graph: ~14 systems, banded rear -> forward ----------
+   bands 0..4 (0 = rear/home, 4 = forward rim). x grows forward, y spreads.
+   Lanes connect within a band and to the next band forward. FIXED topology;
+   the seed only perturbs node positions cosmetically and seeds jitter.        */
+const BANDS = 5;
+const NODE_DEFS = [
+  // id, band, label, x, y  (x,y in viewBox 0..660 / 0..440)
+  {b:0, name:"HOME",  x:70,  y:220},
+  {b:1, name:"KESTREL",x:185, y:120},
+  {b:1, name:"MARLOW", x:185, y:320},
+  {b:2, name:"VELA",   x:300, y:80 },
+  {b:2, name:"CORVID", x:300, y:220},
+  {b:2, name:"DRACO",  x:300, y:360},
+  {b:3, name:"SABLE",  x:430, y:130},
+  {b:3, name:"ORRERY", x:430, y:260},
+  {b:3, name:"PLUME",  x:430, y:380},
+  {b:4, name:"ASH",    x:560, y:80 },
+  {b:4, name:"CINDER", x:560, y:190},
+  {b:4, name:"EMBER",  x:560, y:300},
+  {b:4, name:"SCORIA", x:560, y:400},
+  {b:2, name:"WREN",   x:300, y:300} // extra cross-link node, 14 total
+];
+/* undirected lanes, by node index into NODE_DEFS. Fixed order = deterministic. */
+const LANE_DEFS = [
+  [0,1],[0,2],
+  [1,3],[1,4],[2,4],[2,5],[2,13],
+  [3,6],[4,6],[4,7],[4,13],[5,7],[5,8],[13,7],
+  [6,9],[6,10],[7,10],[7,11],[8,11],[8,12],
+  [9,10],[10,11],[11,12],   // lateral links along the rim
+  [3,4],[4,5],[6,7],[7,8]   // lateral links mid-graph
+];
+
+/* ---------- simulation state ---------- */
+const S = {
+  seedNum:0, seedStr:"",
+  tick:0, running:false,
+  nodes:[],            // {id,b,name,x,y, s,p (fixed), alive, rupturedAt, pulse, jx,jy}
+  lanes:[],            // {a,b, alive, flux (display, fixed)}
+  adj:[],              // adjacency: adj[i] = [neighbour ids] (live only, rebuilt on rupture)
+  drops:0, overrun:0,
+  starving:false,      // "stop supplying" — but injection always happens; this gates auto-help only
+  injectQueue:[],      // node ids the player clicked this tick (drop cargo)
+  // sliders (fixed-point where they enter the field)
+  D: toFP(0.10), intensity: toFP(0.10), threshold: toFP(1.50), drop: toFP(2.40),
+  log:[], why:{cls:"idle", msg:""},
+  raf:null, _last:0,
+};
+
+const TICK_MS = 60;                 // wall-clock per tick when playing
+const REACT_K = toFP(0.5);          // reaction rate: pressure burned per unit supply meeting it
+const LEAK_SHIFT = 6;               // pressure dissipates p>>6 per tick (~1.5%/tick) — keeps the front a moving line, not a uniform fill
+const PEAK_P  = toFP(3.0);          // pressure scale used to normalise the heat ramp
+const N = NODE_DEFS.length;
+
+/* ---------- build / reset ---------- */
+function buildGraph(){
+  const rnd = mulberry32(S.seedNum);
+  S.nodes = NODE_DEFS.map((d,i)=>({
+    id:i, b:d.b, name:d.name, x:d.x, y:d.y,
+    s:0, p:0, alive:true, rupturedAt:-1, pulse:0,
+    // cosmetic position jitter (seeded) — never touches field state
+    jx:(rnd()-0.5)*16, jy:(rnd()-0.5)*16
+  }));
+  S.lanes = LANE_DEFS.map(([a,b])=>({a, b, alive:true, flux:0}));
+  rebuildAdj();
+}
+/* adjacency over LIVE lanes & LIVE nodes — rebuilt whenever a node ruptures */
+function rebuildAdj(){
+  S.adj = S.nodes.map(()=>[]);
+  for (const L of S.lanes){
+    if (!L.alive) continue;
+    if (!S.nodes[L.a].alive || !S.nodes[L.b].alive) continue;
+    S.adj[L.a].push(L.b);
+    S.adj[L.b].push(L.a);
+  }
+}
+
+function reseed(seedStr){
+  S.seedStr = seedStr;
+  S.seedNum = hashSeed(seedStr);
+  S.tick = 0; S.drops = 0; S.overrun = 0;
+  S.injectQueue = [];
+  S.log = [];
+  S.why = {cls:"idle", msg:"Field seeded. Pressure builds at the forward rim — click nodes to hold the line."};
+  buildGraph();
+  // seed a little starting supply in the rear so HOME isn't bone-dry (deterministic, fixed)
+  S.nodes[0].s = toFP(1.2);
+  S.nodes[1].s = toFP(0.5);
+  S.nodes[2].s = toFP(0.5);
+  stop();
+  pushLog("sys", 0, "Front ROSE seeded — tide field initialised. 14 systems, fixed-point.");
+  render();
+}
+
+/* ---------- core tick: fixed order, integer field ---------- */
+function stepTick(){
+  if (S.overrun >= N){ return; }
+  S.tick++;
+
+  // (1) FRONT INJECTION at the LIVE FRONTIER. The tide's source term enters at the
+  //     forward rim (band 4) every tick AND at any live node that now borders an
+  //     overrun node — the water laps at each newly-exposed shore. This is what lets
+  //     the front keep advancing inward after it severs the rim, all the way to HOME.
+  const deadNbr = new Array(N).fill(false);
+  for (const L of LANE_DEFS){
+    if (S.nodes[L[0]].alive && !S.nodes[L[1]].alive) deadNbr[L[0]] = true;
+    if (S.nodes[L[1]].alive && !S.nodes[L[0]].alive) deadNbr[L[1]] = true;
+  }
+  for (const nd of S.nodes){
+    if (!nd.alive) continue;
+    if (nd.b === BANDS-1) nd.p += S.intensity;            // the forward rim
+    else if (deadNbr[nd.id]) nd.p += S.intensity;          // exposed frontier
+    else if (nd.b === BANDS-2) nd.p += Math.trunc(S.intensity/2); // near-rim bleed
+  }
+
+  // (2) PLAYER SUPPLY INJECTION (queued clicks this tick) — your cargo drops.
+  if (S.injectQueue.length){
+    for (const id of S.injectQueue){
+      const nd = S.nodes[id];
+      if (nd && nd.alive){ nd.s += S.drop; nd.pulse = 1; }
+    }
+    S.injectQueue = [];
+  }
+
+  // (3) DIFFUSION — graph-Laplacian step for BOTH fields, computed from a
+  //     snapshot so the update is simultaneous (Jacobi), integer & order-stable.
+  const sOld = S.nodes.map(n=>n.s);
+  const pOld = S.nodes.map(n=>n.p);
+  for (let i=0;i<N;i++){
+    const nd = S.nodes[i];
+    if (!nd.alive) continue;
+    const nbrs = S.adj[i];
+    if (nbrs.length === 0) continue;
+    let sumS = 0, sumP = 0;
+    for (let k=0;k<nbrs.length;k++){
+      const j = nbrs[k];
+      sumS += (sOld[j] - sOld[i]);
+      sumP += (pOld[j] - pOld[i]);
+    }
+    // s_i += D * sum(neighbours)  — fixed-point, truncated toward zero
+    nd.s += fpmul(S.D, sumS);
+    nd.p += fpmul(S.D, sumP);
+    if (nd.s < 0) nd.s = 0;     // supply can't go negative
+    if (nd.p < 0) nd.p = 0;     // pressure can't go negative
+  }
+
+  // (4) REACTION — where supply & pressure share a node, supply burns pressure.
+  //     burn = min(s, p*k); both decrement. This is the cargo holding the line.
+  for (let i=0;i<N;i++){
+    const nd = S.nodes[i];
+    if (!nd.alive) continue;
+    if (nd.s > 0 && nd.p > 0){
+      let burn = fpmul(nd.p, REACT_K);
+      if (burn > nd.s) burn = nd.s;     // limited by supply on hand
+      if (burn > nd.p) burn = nd.p;     // can't burn more pressure than exists
+      nd.p -= burn;
+      nd.s -= burn;
+    }
+    // supply slowly self-consumes (upkeep) so old drops don't hoard forever
+    if (nd.s > 0){ nd.s -= Math.trunc(nd.s / 64); }
+    // pressure DISSIPATES a little everywhere (it can't hold itself up far from the
+    // source). This is what keeps the interior cool until the front actually reaches
+    // it — without it the whole graph fills uniformly and ruptures all at once (mush).
+    if (nd.p > 0){ nd.p -= (nd.p >> LEAK_SHIFT); }
+  }
+
+  // (5) RUPTURE — fixed-point compare, fixed node order. The cascade advances at most
+  //     ONE HOP inward per tick: every node already over threshold THIS tick ruptures
+  //     now; the pressure it dumps PRIMES its neighbours but does NOT rupture them this
+  //     tick (we scan a fixed snapshot, never re-queue). A primed neighbour ruptures on
+  //     a LATER tick once injection + dump truly carry it over. That rate-limit is what
+  //     turns the cascade into a visible traveling line, eating the graph band by band.
+  const ruptured = [];
+  const overNow = [];
+  for (let i=0;i<N;i++){
+    const nd = S.nodes[i];
+    if (nd.alive && (nd.p - nd.s) > S.threshold) overNow.push(i);
+  }
+  for (const i of overNow){
+    const nd = S.nodes[i];
+    if (!nd.alive) continue;
+    const net = nd.p - nd.s;
+    if (net <= S.threshold) continue;          // a drop may have saved it since the scan
+    // capture its true pre-rupture net & the rearmost live neighbour (the path inward
+    // this rupture severs) BEFORE we zero the node and cut its lanes.
+    const liveNbrs = S.adj[i].filter(j=>S.nodes[j].alive);
+    let exposed = null, exposedBand = 99;
+    for (const j of liveNbrs){
+      if (S.nodes[j].b < exposedBand){ exposedBand = S.nodes[j].b; exposed = S.nodes[j].name; }
+    }
+    nd.alive = false;
+    nd.rupturedAt = S.tick;
+    S.overrun++;
+    ruptured.push({i, name:nd.name, net, exposed});
+    const dump = Math.trunc(nd.p * 3 / 4);     // 3/4 of its pressure floods outward
+    nd.p = 0; nd.s = 0;
+    // cut every lane touching i
+    for (const L of S.lanes){ if (L.a===i || L.b===i) L.alive = false; }
+    if (liveNbrs.length){
+      const share = Math.trunc(dump / liveNbrs.length);
+      for (const j of liveNbrs){ if (S.nodes[j].alive) S.nodes[j].p += share; }  // prime only
+    }
+    rebuildAdj();                  // graph shrank — recompute neighbours
+  }
+
+  // (6) report ruptures (the one-line "why")
+  if (ruptured.length){
+    const r0 = ruptured[0];
+    const why = "Node <b>"+r0.name+"</b> ruptured: pressure net "+fmt(r0.net)+
+      " &gt; threshold "+fmt(S.threshold)+
+      (r0.exposed!=null ? (", lane "+r0.name+"–"+r0.exposed+" cut, "+r0.exposed+" now exposed") : ", lanes cut behind it")+
+      (ruptured.length>1 ? " — and the breach cascaded to "+ruptured.length+" systems." : ".");
+    S.why = {cls:"hot", msg:why};
+    if (ruptured.length>1)
+      pushLog("rupt", S.tick, "CASCADE — "+ruptured.map(r=>r.name).join(" → ")+" ruptured ("+ruptured.length+" systems). Lanes cut behind the breach.");
+    else
+      pushLog("rupt", S.tick, "RUPTURE — "+r0.name+" overrun (net "+fmt(r0.net)+" > "+fmt(S.threshold)+"). Lanes cut; pressure dumped inward.");
+  }
+
+  if (S.overrun >= N){
+    S.running = false; stopRAF();
+    S.why = {cls:"hot", msg:"The tide took the whole graph. <b>Every system overrun.</b> (In MSL the loss banks prestige toward a better start.)"};
+    pushLog("sys", S.tick, "FRONT FULLY OVERRUN — the run ends.");
+  }
+
+  render();
+}
+/* ---------- display helpers ---------- */
+function fmt(fp){ return (fromFP(fp)).toFixed(2); }
+function pushLog(cls, t, msg){
+  S.log.unshift({cls, t, msg});
+  if (S.log.length > 70) S.log.pop();
+}
+
+/* net pressure (p - s) of a live node, clamped for the colour ramp 0..1 */
+function netNorm(nd){
+  const net = nd.p - nd.s;                 // fixed
+  // map [-PEAK_P .. +threshold] -> [0 .. 1] for the heat ramp
+  const lo = -PEAK_P, hi = S.threshold;
+  let t = (net - lo) / (hi - lo);
+  if (t<0) t=0; if (t>1) t=1;
+  return t;
+}
+/* heat ramp: cyan -> green -> amber -> rose across t in [0,1] */
+function heatColor(t){
+  // piecewise lerp through 4 stops
+  const stops = [
+    [0.00, [34,211,238]],   // --cool
+    [0.45, [52,211,153]],   // --calm
+    [0.78, [251,191,36]],   // --warm
+    [1.00, [251,113,133]]   // --hot
+  ];
+  for (let i=0;i<stops.length-1;i++){
+    const [t0,c0]=stops[i], [t1,c1]=stops[i+1];
+    if (t<=t1){
+      const f=(t-t0)/(t1-t0||1);
+      const r=Math.round(c0[0]+(c1[0]-c0[0])*f);
+      const g=Math.round(c0[1]+(c1[1]-c0[1])*f);
+      const b=Math.round(c0[2]+(c1[2]-c0[2])*f);
+      return "rgb("+r+","+g+","+b+")";
+    }
+  }
+  return "rgb(251,113,133)";
+}
+
+/* ====================== RENDERING ====================== */
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function render(){
+  $("clk").textContent = S.tick;
+
+  // phase badge from global field tilt
+  const phase = computePhase();
+  const pb = $("phaseBadge");
+  pb.className = "phasebadge " + phase.cls;
+  pb.textContent = phase.label;
+
+  renderField();
+  renderReadouts();
+  renderRisk();
+  renderWhy();
+  renderLog();
+
+  $("btnPlay").textContent = S.running ? "⏸ Pause" : "▶ Play";
+  $("btnStarve").classList.toggle("on", S.starving);
+  $("btnStarve").textContent = S.starving ? "✋ Supplying off" : "✋ Stop supplying";
+  const done = S.overrun >= N;
+  $("btnStep").disabled = done;
+  $("btnPlay").disabled = done;
+}
+
+function computePhase(){
+  if (S.overrun >= N) return {cls:"lost", label:"FRONT OVERRUN"};
+  // tilt = mean net over live nodes, normalised
+  let live=0, sumNet=0;
+  for (const nd of S.nodes){ if(nd.alive){ live++; sumNet += (nd.p - nd.s); } }
+  if (S.overrun > 0 || (live && sumNet/live > S.threshold*0.45))
+    return {cls:"flooding", label:"TIDE FLOODING"};
+  const meanNet = live ? sumNet/live : 0;
+  if (meanNet > 0) return {cls:"rising", label:"TIDE RISING"};
+  return {cls:"holding", label:"LINE HOLDING"};
+}
+
+/* ---- the field (graph) ---- */
+function renderField(){
+  const svg = $("field"); svg.innerHTML = "";
+
+  // defs: soft glow for hot nodes
+  const defs = el("defs",{},svg);
+  const glow = el("filter",{id:"nodeGlow",x:"-60%",y:"-60%",width:"220%",height:"220%"},defs);
+  el("feGaussianBlur",{stdDeviation:"4",result:"b"},glow);
+  const mrg = el("feMerge",{},glow);
+  el("feMergeNode",{in:"b"},mrg); el("feMergeNode",{in:"SourceGraphic"},mrg);
+
+  // --- lanes first (under nodes) ---
+  for (const L of S.lanes){
+    const a=S.nodes[L.a], b=S.nodes[L.b];
+    const ax=a.x+a.jx, ay=a.y+a.jy, bx=b.x+b.jx, by=b.y+b.jy;
+    if (!L.alive){
+      // cut lane: faint dashed scar
+      el("line",{x1:ax,y1:ay,x2:bx,y2:by,stroke:"#3a1722","stroke-width":1.2,
+        "stroke-dasharray":"2 6",opacity:.5},svg);
+      continue;
+    }
+    // live lane coloured by mean heat of endpoints; width hints supply throughput
+    const tA=netNorm(a), tB=netNorm(b);
+    const tm=(tA+tB)/2;
+    const supplyFlow = fromFP(Math.min(a.s,b.s));
+    const w = 1.4 + Math.min(3.2, supplyFlow*1.1);
+    el("line",{x1:ax,y1:ay,x2:bx,y2:by,stroke:heatColor(tm),
+      "stroke-width":w,opacity:.32,"stroke-linecap":"round"},svg);
+
+    // FLUX glyph: a small arrow-ish tick showing net field flow direction along lane.
+    // flux = D * (net_a - net_b): positive => flowing a->b. Shown as a moving dot.
+    const netA=a.p-a.s, netB=b.p-b.s;
+    const flux = netA - netB;                    // fixed
+    const mag = Math.min(1, Math.abs(fromFP(flux))/2);
+    if (mag > 0.06){
+      // dot position oscillates along lane to suggest flow; phase from tick (deterministic-ish display)
+      const dir = flux>0 ? 1 : -1;               // a->b if pressure higher at a
+      const ph = ((S.tick*0.06*(0.5+mag)) % 1);
+      const f = dir>0 ? ph : (1-ph);
+      const dx=ax+(bx-ax)*f, dy=ay+(by-ay)*f;
+      el("circle",{cx:dx,cy:dy,r:1.6+mag*1.6,fill: flux>0 ? "var(--hot)":"var(--cool)",opacity:.7},svg);
+    }
+  }
+
+  // band guide labels (rear -> forward) along the top
+  const bandNames=["REAR","","","","RIM"];
+  for(let bnd=0;bnd<BANDS;bnd++){
+    if(!bandNames[bnd]) continue;
+    const xs=NODE_DEFS.filter(d=>d.b===bnd).map(d=>d.x);
+    const mx=xs.reduce((a,c)=>a+c,0)/xs.length;
+    const tx=el("text",{x:mx,y:24,"text-anchor":"middle",class:"svg-tip"},svg);
+    tx.textContent=bandNames[bnd];
+  }
+  // forward-rim source marker
+  el("text",{x:560,y:432,"text-anchor":"middle",class:"svg-tip",fill:"var(--hot)"},svg)
+    .textContent="▲ pressure source";
+
+  // --- nodes ---
+  for (const nd of S.nodes){
+    const cx=nd.x+nd.jx, cy=nd.y+nd.jy;
+    const g = el("g",{},svg);
+    if (!nd.alive){
+      // overrun node: dark broken hex
+      el("circle",{cx,cy,r:13,fill:"var(--overrun)",stroke:"#b14a58","stroke-width":1.4,opacity:.9},g);
+      el("line",{x1:cx-6,y1:cy-6,x2:cx+6,y2:cy+6,stroke:"#e88","stroke-width":1.4,opacity:.8},g);
+      el("line",{x1:cx-6,y1:cy+6,x2:cx+6,y2:cy-6,stroke:"#e88","stroke-width":1.4,opacity:.8},g);
+      const tnm=el("text",{x:cx,y:cy+24,"text-anchor":"middle",class:"svg-tip",fill:"#7a5560","font-size":8},g);
+      tnm.textContent=nd.name;
+      // recent rupture flash ring
+      if (S.tick - nd.rupturedAt < 4){
+        el("circle",{cx,cy,r:13+(S.tick-nd.rupturedAt)*5,fill:"none",stroke:"var(--hot)",
+          "stroke-width":2,opacity:Math.max(0,.7-(S.tick-nd.rupturedAt)*0.18)},g);
+      }
+      continue;
+    }
+    const t=netNorm(nd);
+    const col=heatColor(t);
+    const hot = t>0.8;
+    // base disc
+    const r = 11 + Math.min(5, fromFP(nd.s)*1.4);   // grows a touch with stored supply
+    const c = el("circle",{cx,cy,r,fill:col,stroke:"var(--ink-950)","stroke-width":2,
+      opacity:.92, cursor:"pointer"},g);
+    if (hot){ c.setAttribute("filter","url(#nodeGlow)"); }
+    // at-risk ring
+    if (t>0.7 && t<=1){
+      el("circle",{cx,cy,r:r+4,fill:"none",stroke:"var(--hot)","stroke-width":1.2,
+        "stroke-dasharray":"3 3",opacity:.6+0.4*Math.sin(S.tick*0.4)},g);
+    }
+    // supply pulse ring (just dropped)
+    if (nd.pulse>0){
+      el("circle",{cx,cy,r:r+6+ (1-nd.pulse)*10,fill:"none",stroke:"var(--supply)",
+        "stroke-width":2.2,opacity:nd.pulse*0.9},g);
+    }
+    // supply core dot (cyan) sized by supply on hand
+    if (nd.s>0){
+      const sr=Math.min(6, 1+fromFP(nd.s)*1.3);
+      el("circle",{cx,cy,r:sr,fill:"var(--supply)",opacity:.85},g);
+    }
+    // label
+    const tnm=el("text",{x:cx,y:cy+r+11,"text-anchor":"middle",class:"svg-tip",
+      fill: hot?"var(--hot)":"var(--fog-500)","font-size":8.5},g);
+    tnm.textContent=nd.name;
+
+    // hit target (slightly larger, transparent) for easy clicking
+    const hit=el("circle",{cx,cy,r:r+8,fill:"transparent",cursor:"pointer"},g);
+    hit.addEventListener("click",(ev)=>{ ev.stopPropagation(); dropCargo(nd.id); });
+    c.addEventListener("click",(ev)=>{ ev.stopPropagation(); dropCargo(nd.id); });
+
+    // decay pulse for next frame
+    if (nd.pulse>0) nd.pulse = Math.max(0, nd.pulse-0.12);
+  }
+}
+
+/* ---- numeric readouts ---- */
+function renderReadouts(){
+  let sumS=0,sumP=0;
+  for(const nd of S.nodes){ if(nd.alive){ sumS+=nd.s; sumP+=nd.p; } }
+  $("kvOver").textContent = S.overrun + " / " + N;
+  $("kvSupply").textContent = fromFP(sumS).toFixed(1);
+  $("kvPress").textContent = fromFP(sumP).toFixed(1);
+  $("kvDrops").textContent = S.drops;
+
+  // front displacement = the rearmost band that has ANY rupture, i.e. how far
+  // inward the tide has eaten (rim is band 4; HOME is band 0).
+  let rear = BANDS; // none yet
+  for (const nd of S.nodes){ if(!nd.alive && nd.b < rear) rear = nd.b; }
+  if (rear===BANDS) $("kvDisp").textContent = "band "+(BANDS)+" (rim intact)";
+  else {
+    const depthIn = (BANDS-1) - rear;
+    $("kvDisp").textContent = "to band "+rear+(rear===0?" (HOME!)":"")+" — "+depthIn+" deep";
+  }
+}
+
+/* ---- nodes at risk ---- */
+function renderRisk(){
+  const host=$("risklist"); host.innerHTML="";
+  const live = S.nodes.filter(n=>n.alive).map(nd=>({nd, t:netNorm(nd), net:nd.p-nd.s}));
+  const atRisk = live.filter(o=>o.t>0.55).sort((a,b)=>b.t-a.t).slice(0,5);
+  if (!atRisk.length){
+    const r=document.createElement("div"); r.className="riskrow none";
+    r.textContent = S.overrun>=N ? "— all systems overrun —" : "line holding — no node near threshold";
+    host.appendChild(r); return;
+  }
+  for (const o of atRisk){
+    const row=document.createElement("div"); row.className="riskrow";
+    const nm=document.createElement("span"); nm.className="nm"; nm.textContent=o.nd.name;
+    const barWrap=document.createElement("span"); barWrap.className="bar";
+    const fill=document.createElement("i");
+    fill.style.width=Math.round(o.t*100)+"%";
+    fill.style.background=heatColor(o.t);
+    barWrap.appendChild(fill);
+    const meta=document.createElement("span"); meta.className="meta";
+    meta.textContent="net "+fromFP(o.net).toFixed(2)+" / "+fromFP(S.threshold).toFixed(2);
+    row.appendChild(nm); row.appendChild(barWrap); row.appendChild(meta);
+    host.appendChild(row);
+  }
+}
+
+function renderWhy(){
+  const w=$("why");
+  w.className = "why " + (S.why.cls==="idle"?"idle":"");
+  $("whyMsg").innerHTML = S.why.msg;
+}
+
+function renderLog(){
+  const host=$("log"); host.innerHTML="";
+  S.log.forEach(l=>{
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML="<span class='t'>T+"+String(l.t).padStart(3," ")+"</span> <span class='"+l.cls+"'>"+l.msg+"</span>";
+    host.appendChild(ln);
+  });
+}
+
+/* ====================== INTERACTION ====================== */
+function dropCargo(id){
+  const nd=S.nodes[id];
+  if (!nd || !nd.alive) return;
+  if (S.starving){
+    // hands off the controls — you've stopped supplying; watch the tide take it.
+    S.why = {cls:"idle", msg:"Supplying is OFF — cargo held in the hold. Toggle it back on to drop on <b>"+nd.name+"</b>."};
+    render(); return;
+  }
+  S.drops++;
+  if (S.running){
+    // queue the drop so it lands in the next tick's injection phase, in fixed order.
+    S.injectQueue.push(id);
+  } else {
+    // paused: apply the drop now so the pulse is visible, but don't advance the field.
+    nd.s += S.drop; nd.pulse = 1;
+  }
+  pushLog("drop", S.tick, "CARGO → "+nd.name+" (+"+fromFP(S.drop).toFixed(2)+" supply). Diffusing to "+S.adj[id].length+" neighbours.");
+  S.why = {cls:"idle", msg:"Cargo dropped on <b>"+nd.name+"</b>. It will diffuse outward and burn down pressure where it spreads."};
+  render();
+}
+
+/* ====================== TRANSPORT / LOOP ====================== */
+function loop(ts){
+  if (!S.running){ S.raf=null; return; }
+  if (!S._last) S._last=ts;
+  const dt = ts - S._last;
+  if (dt >= TICK_MS){
+    S._last = ts;
+    stepTick();
+    if (S.overrun >= N){ S.running=false; stopRAF(); render(); return; }
+  }
+  S.raf = requestAnimationFrame(loop);
+}
+function play(){
+  if (S.overrun >= N) return;
+  S.running=true; S._last=0;
+  if (!S.raf) S.raf=requestAnimationFrame(loop);
+  render();
+}
+function stop(){ S.running=false; stopRAF(); }
+function stopRAF(){ if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; } }
+
+/* ====================== WIRING ====================== */
+function wire(){
+  $("btnPlay").addEventListener("click", ()=>{ S.running ? (stop(),render()) : play(); });
+  $("btnStep").addEventListener("click", ()=>{ stop(); stepTick(); });
+  $("btnReset").addEventListener("click", ()=>{ reseed(($("seed").value.trim())||"ROSE-1207"); });
+  $("btnStarve").addEventListener("click", ()=>{ S.starving=!S.starving; render(); });
+
+  $("seed").addEventListener("change", ()=>{ reseed(($("seed").value.trim())||"ROSE-1207"); });
+
+  // seed chips
+  const chips=["ROSE-1207","ROSE-0044","ROSE-1984","ROSE-7777","ROSE-0512"];
+  const cwrap=$("seedchips");
+  chips.forEach(c=>{
+    const b=document.createElement("span"); b.className="seedchip"; b.textContent=c;
+    b.addEventListener("click", ()=>{ $("seed").value=c; reseed(c); });
+    cwrap.appendChild(b);
+  });
+
+  // sliders -> fixed-point where they enter the field
+  $("sD").addEventListener("input", e=>{ const v=(+e.target.value)/1000; S.D=toFP(v); $("vD").textContent=v.toFixed(3); render(); });
+  $("sInt").addEventListener("input", e=>{ const v=(+e.target.value)/1000; S.intensity=toFP(v); $("vInt").textContent=v.toFixed(3); render(); });
+  $("sThr").addEventListener("input", e=>{ const v=(+e.target.value)/100; S.threshold=toFP(v); $("vThr").textContent=v.toFixed(2); render(); });
+  $("sDrop").addEventListener("input", e=>{ const v=(+e.target.value)/100; S.drop=toFP(v); $("vDrop").textContent=v.toFixed(2); render(); });
+
+  // click empty field = no-op (nodes have their own handlers); keyboard niceties
+  document.addEventListener("keydown", e=>{
+    if (e.target.tagName==="INPUT") return;
+    if (e.code==="Space"){ e.preventDefault(); S.running?(stop(),render()):play(); }
+    else if (e.key==="s"||e.key==="S"){ stop(); stepTick(); }
+    else if (e.key==="r"||e.key==="R"){ reseed(($("seed").value.trim())||"ROSE-1207"); }
+    else if (e.key==="x"||e.key==="X"){ S.starving=!S.starving; render(); }
+  });
+}
+
+/* ---------- boot ---------- */
+wire();
+reseed("ROSE-1207");
+</script>
+</body>
+</html>

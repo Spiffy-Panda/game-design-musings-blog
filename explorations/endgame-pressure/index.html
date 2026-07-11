@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>When the Script Runs Out — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: the MSL front has a scripted opening you can memorise and a pure-pressure endgame you cannot. Watch a memorised map predict perfectly, then go blind the instant the keyframes run out." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#fb7185;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* phase + signal palette (all legible on dark) */
+  --open:#60a5fa;       /* OPENING band — blue (scripted, knowable) */
+  --open-soft:rgba(96,165,250,.12);
+  --endg:#fb7185;        /* ENDGAME band — rose (live pressure) */
+  --endg-soft:rgba(251,113,133,.12);
+  --map:#c4b5fd;         /* memorised-map prediction — violet (what you recall) */
+  --held:#34d399;        /* fed / held — green */
+  --fell:#f87171;        /* lost / overrun — red */
+  --ghost:#fbbf24;       /* second player ghost — amber */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:66rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:43rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards / callouts ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+.callout p{margin:.2rem 0;color:var(--fog-300)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.opening{color:#bfdbfe;border-color:#3b5b8c;background:var(--open-soft)}
+.phasebadge.endgame{color:#fecdd3;border-color:#7f3b46;background:var(--endg-soft)}
+.phasebadge.over{color:var(--ink-950);border-color:var(--accent);background:var(--accent);font-weight:700}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:1rem}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+button.ctl.on{border-color:var(--ghost);color:var(--ghost);background:rgba(251,191,36,.1)}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr;gap:.55rem;margin-top:.2rem}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.15rem 0}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+
+/* per-segment coverage rows */
+.covrow{display:grid;grid-template-columns:4.6rem 1fr 2.5rem;gap:.5rem;align-items:center;margin:.32rem 0}
+.covrow .nm{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.04em;color:var(--fog-300);text-transform:uppercase;text-align:right}
+.covrow input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;outline:none;background:linear-gradient(90deg,var(--fell),var(--ink-700) 50%,var(--held))}
+.covrow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--fog-100);border:2px solid var(--ink-950);cursor:pointer}
+.covrow input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--fog-100);border:2px solid var(--ink-950);cursor:pointer}
+.covrow .cv{font-family:var(--font-mono);font-size:.74rem;color:var(--fog-300);font-variant-numeric:tabular-nums;text-align:right}
+
+/* SVG host */
+.svghost{width:100%;overflow-x:auto;border-radius:9px}
+svg{display:block;max-width:100%}
+.svg-tip{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;fill:var(--fog-500)}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:.55rem .9rem;margin-top:.6rem}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.02em;color:var(--fog-400)}
+.legend .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.legend .ln{width:18px;height:0;border-top:2px dashed var(--map);display:inline-block}
+
+/* big readouts */
+.bigrow{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.big{background:var(--ink-950);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem}
+.big .bk{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500)}
+.big .bv{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;margin-top:.15rem}
+.big .bv.lg{font-size:1.7rem}
+.big .bsub{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);margin-top:.1rem}
+
+/* recall meter */
+.meter{height:12px;border-radius:6px;background:var(--ink-800);border:1px solid var(--line);overflow:hidden;position:relative;margin-top:.3rem}
+.meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--fell),var(--ghost) 55%,var(--held));transition:width .18s linear}
+
+/* kv block */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums}
+.kv .v.open{color:#bfdbfe} .kv .v.endg{color:#fecdd3}
+
+/* driver readout */
+.driver{font-family:var(--font-mono);font-size:.78rem;line-height:1.55;color:var(--fog-300);background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem}
+.driver b{color:var(--fog-100)}
+.driver .tag{display:inline-block;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;padding:.08rem .4rem;border-radius:5px;margin-right:.4rem;vertical-align:middle}
+.driver .tag.open{color:#bfdbfe;border:1px solid #3b5b8c;background:var(--open-soft)}
+.driver .tag.endg{color:#fecdd3;border:1px solid #7f3b46;background:var(--endg-soft)}
+.why{font-family:var(--font-mono);font-size:.74rem;color:var(--fog-400);line-height:1.5;margin-top:.45rem;border-top:1px solid rgba(255,255,255,.05);padding-top:.4rem}
+.why b{color:var(--accent)}
+
+/* pressure bars (per segment, endgame driver) */
+.pmap{display:grid;gap:.34rem}
+.pseg{display:grid;grid-template-columns:4.6rem 1fr;gap:.5rem;align-items:center}
+.pseg .nm{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400);text-align:right;text-transform:uppercase}
+.pbar{height:15px;border-radius:4px;background:var(--ink-800);border:1px solid var(--line);overflow:hidden;position:relative}
+.pbar > i{display:block;height:100%;background:var(--endg);opacity:.85;transition:width .2s linear}
+.pbar.lead{box-shadow:0 0 0 1.5px var(--accent) inset}
+.pbar .ov{position:absolute;inset:0;font-family:var(--font-mono);font-size:.62rem;color:var(--fog-100);display:flex;align-items:center;justify-content:flex-end;padding-right:.3rem;mix-blend-mode:difference}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:9rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .open{color:#9ec5fb} .log .endg{color:#fda4af} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)} .log .ghost{color:var(--ghost)}
+
+/* risks */
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">When the Script Runs Out</span></li>
+    </ol>
+  </nav>
+<header class="hero">
+  <span class="chip"><b>M2</b> · enemy / front lineage</span>
+  <div class="kicker">when the script runs out</div>
+  <h1>When the Script Runs Out</h1>
+  <p class="lede">The opening is a heist you've already cased — every system falls on a beat you memorised. Then the keyframes run dry, and the front stops reciting and starts <em>reacting</em>. Recall carries you to the exhaustion point and not one tick further.</p>
+  <p class="spark">Memorisation gets you through the opening. <span>Skill gets you through the endgame.</span></p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one hauler</strong> and an unwinnable war to keep supplied. In the "Known War" reading <span class="hand">M2</span>, the enemy isn't a rival trader — it's a <strong>schedule that eats the map</strong>. Its opening is scripted: a near-fixed order of which systems fall when, so a veteran reads the front like an opening book. A sibling page, <strong>enemy-attack-schedule</strong>, already builds that branching book — the Gantt and the decision tree of which operation fires under which condition. <em>This</em> page is about the seam the book hits: the moment the script <strong>runs out</strong> and live pressure takes over.</p>
+
+<p>Here is the design tension in one line: a scripted opening risks collapsing the whole game into rote recall — <strong>memorisation &gt; mastery</strong>. The fix is structural. The script has a <strong>length</strong>. Past it there are no more keyframes, and the front advances purely on the <strong>accumulated pressure</strong> you let build, segment by segment. The memorised map keeps drawing its old predictions; they stop coming true. The back half is always live.</p>
+
+<h2><span class="eye">the model</span>One clock, two phases</h2>
+
+<p>The instrument runs a hauler's-eye view of a <strong>band of forward segments</strong> over a single deterministic clock <span class="hand">APR.5</span>. Fixed ticks, fixed order, one reseedable PRNG. Two phases share that clock:</p>
+
+<ul class="tight">
+  <li><b style="color:var(--open)">OPENING — scripted.</b> The first <b>K</b> system-falls are <b>keyframes</b> <code>(target, scheduled_tick)</code> expanded from the seed. Each keyframe is also <em>gated by pressure</em>, so your coverage perturbs its timing: <b>feed a segment → push its fall later; abandon it → it lurches earlier</b>. But the <em>order is fixed and learnable</em>. A <b style="color:var(--map)">memorised-map</b> overlay predicts each fall — and in the opening, prediction <b>matches</b>. You've cased this.</li>
+  <li><b style="color:var(--endg)">ENDGAME — pure pressure.</b> After the K keyframes exhaust, there are no more scripts. The front advances wherever <b>accumulated pressure</b> (the deficit you let build, per segment) is highest. The memorised map keeps drawing its old reference predictions, but they now <b>diverge</b> from what actually happens. Recall stops working.</li>
+</ul>
+
+<p>The unknowns in the opening aren't random — they're <strong>unobserved keyframes</strong>. The schedule is fully determined from the seed; a fresh player simply hasn't <em>seen</em> it yet. That's what makes the opening learnable at all. After exhaustion it's not random either: it's <strong>emergent pressure</strong>, deterministic given your coverage — just not <em>memorisable</em>, because it depends on choices that differ every run.</p>
+
+<div class="callout">
+  <div class="lab">how to read the instrument</div>
+  <p>Set <strong>coverage per segment</strong> (left of zero = starving it, right = feeding it), choose a <strong>script length K</strong> and a <strong>front intensity</strong>, then press <strong>Play</strong> (or scrub). The timeline runs left-to-right across an <span style="color:#9ec5fb">OPENING band</span> and a <span style="color:#fda4af">ENDGAME band</span> with the <strong>EXHAUSTION POINT</strong> marked. Watch the <span style="color:var(--map)">dashed memorised-map prediction</span> ride right on top of the rose <strong>actual falls</strong> through the opening — then split after exhaustion. The <strong>recall-accuracy</strong> meter sits near 100% in the opening and decays once the script is spent. Flip on the <span style="color:var(--ghost)">second player</span> to prove it: same memorised opening, different coverage, divergent endgame.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">FRONT SCOPE · <b>band "ROSE"</b> · opening → endgame</div>
+    <div class="phasebadge opening" id="phaseBadge">OPENING · SCRIPTED</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport + global controls -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">&#9654; Play</button>
+        <button class="ctl" id="btnStep">&#9197; Step</button>
+        <button class="ctl" id="btnReset">&#8635; Reset (seed)</button>
+        <button class="ctl" id="btnGhost">&#9676; 2nd player: off</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="ROSE-1207" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:.85rem">
+        <div class="slider">
+          <span class="lab">script length K — keyframes before pure pressure</span>
+          <span class="val" id="vK">7 keyframes</span>
+          <input type="range" id="sK" min="3" max="11" step="1" value="7" />
+        </div>
+        <div class="slider">
+          <span class="lab">front intensity — endgame pressure rate</span>
+          <span class="val" id="vInt">1.00&times;</span>
+          <input type="range" id="sInt" min="50" max="220" step="5" value="100" />
+        </div>
+        <div class="note" style="margin-top:.1rem">K only moves the <em>exhaustion point</em> (longer script = more of the run is recallable). Intensity only bites <em>after</em> the script runs out. Coverage (below) perturbs opening timing a little and drives the endgame a lot. Any change re-runs the deterministic plan from the new settings.</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the run timeline -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="panel">
+          <h4>Run timeline <span class="sub">rows = segments · &#9670; actual fall · <span style="color:var(--map)">- - map prediction</span></span></h4>
+          <div class="svghost"><svg id="timeline" viewBox="0 0 660 300" role="img" aria-label="Run timeline showing opening and endgame bands, actual falls, and the memorised-map prediction overlay"></svg></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="panel">
+          <h4>Recall vs. reality <span class="sub">why the map predicts, then goes blind</span></h4>
+          <div class="svghost"><svg id="accChart" viewBox="0 0 660 150" role="img" aria-label="Recall accuracy over time: near 100 percent in the opening, decaying after exhaustion"></svg></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: coverage + readouts -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        <div class="panel">
+          <h4>Coverage per segment <span class="sub">starve &#9668; &#9658; feed</span></h4>
+          <div id="covrows"></div>
+          <div class="note" style="margin-top:.35rem">Feeding a segment delays its scripted fall and bleeds off its deficit. Starving it pulls the fall early and lets pressure pile up — which is exactly what decides the endgame.</div>
+        </div>
+
+        <div class="bigrow">
+          <div class="big">
+            <div class="bk">phase</div>
+            <div class="bv lg" id="bvPhase" style="color:var(--open);font-size:1.15rem">OPENING</div>
+            <div class="bsub" id="bvPhaseSub">scripted &middot; recallable</div>
+          </div>
+          <div class="big">
+            <div class="bk">recall accuracy</div>
+            <div class="bv lg" id="bvRecall" style="color:var(--held)">100%</div>
+            <div class="meter"><i id="recallBar" style="width:100%"></i></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Active driver <span class="sub">what is deciding the next fall</span></h4>
+          <div class="driver" id="driver">
+            <span class="tag open">opening</span><b>Press Play.</b> The next fall is the next scripted keyframe.
+          </div>
+          <div class="why" id="why">The opening is a sequence you can memorise: each fall is keyframe <code>n/K</code>, gated by tick and by how starved its segment is.</div>
+          <div class="kv" style="margin-top:.6rem">
+            <span class="k">ticks to exhaustion</span><span class="v" id="kvExh">&mdash;</span>
+            <span class="k">keyframes spent</span><span class="v" id="kvKF">0 / 7</span>
+            <span class="k">map hits / misses</span><span class="v" id="kvHM">0 / 0</span>
+            <span class="k">segments overrun</span><span class="v" id="kvOver">0 / 5</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Accumulated pressure <span class="sub">drives the endgame · &#9733; = current lead</span></h4>
+          <div class="pmap" id="pmap"></div>
+        </div>
+
+        <div class="panel">
+          <h4>Event log <span class="sub">in-world, newest on top</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just saw</span>The opening matches; the endgame splits</h2>
+
+<p>Through the <span style="color:#9ec5fb">opening band</span>, the dashed <span style="color:var(--map)">memorised map</span> rides on top of the rose actual falls. Your coverage nudges each fall a few ticks early or late — the keyframe is pressure-gated — but the <strong>order is fixed</strong>, so the map still calls every target correctly. Recall accuracy sits at ~100%. This is the cased heist: on your tenth run you know what falls next before it does.</p>
+
+<p>At the <strong>exhaustion point</strong> the keyframes run out. The map keeps drawing the predictions it learned from a reference run — keyframes that, past K, were never real to begin with — but the front has stopped following any script. It now falls wherever your <strong>accumulated pressure</strong> is highest, and that depends on coverage choices the reference run never made. The dashed line and the rose falls <strong>split</strong>. The recall meter decays. The driver readout flips from <code>keyframe n/K</code> to <code>pure pressure: VELA highest deficit</code>. No amount of memorising closes that gap — the only thing that helps now is having fed the right segments on the way in.</p>
+
+<p>Turn on the <span style="color:var(--ghost)">second player</span>. The ghost shares your exact memorised opening — identical seed, identical reference predictions, so through the opening the two of you are indistinguishable. But the ghost covered the band differently in the lead-up, so it arrives at exhaustion with a <em>different</em> pressure profile. From that tick on, the two runs diverge. That divergence is the proof: the back half was never on rails. <strong>The same seed's opening is a cased heist; its endgame is always live.</strong></p>
+
+<div class="callout">
+  <div class="lab">the aha</div>
+  <p>Recall is a <em>finite resource with a known expiry</em>. It pays out perfectly right up to the exhaustion point — and is worth exactly nothing one tick past it. The scripted opening isn't the game; it's the <em>price of admission</em> to the part that is.</p>
+</div>
+
+<hr class="hr"/>
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <div class="rt"><b>Memorisation &gt; mastery.</b> A scripted opening invites pure rote: if the whole front is a fixed recital, run ten plays itself and the game stops asking anything of you.</div>
+  <div class="mit"><b>Mitigation — this page is that mitigation, made visible.</b> The script has a <em>length</em>. Past the K keyframes the front advances on accumulated pressure with no more keyframes to recite, so the back half is always skill. Drag <code>K</code> down and watch the recallable opening shrink and the live endgame swell; the seam between recall and play is a tuning knob, not an accident. Memorisation is the cost of entry to the real fight, not the fight.</div>
+</div>
+
+<div class="risk">
+  <div class="rt"><b>Determinism.</b> The promise is "a run is a seed" <span class="hand">APR.5</span>. One stray <code>Math.random</code>, one float that rounds differently elsewhere, one set walked in hash order, and the memorised opening stops matching the run — the cased heist desyncs and trust evaporates.</div>
+  <div class="mit"><b>Mitigation.</b> The opening is <em>seed-stable</em>: same seed ⇒ same keyframes, same order, same scheduled ticks. The endgame is <em>deterministic given coverage</em> — fixed-timestep ticks over one reseedable <code>mulberry32</code>, integer/fixed-point pressure thresholds, segments walked in fixed explicit order — just not <em>memorisable</em>, because it's a function of choices that change run to run. Determinism is a property you replay-test in CI, not one you hope holds; "not memorisable" and "not deterministic" are deliberately different things.</div>
+</div>
+
+<p class="note" style="margin-top:1.6rem">Model + page by Panda. The sibling <strong>enemy-attack-schedule</strong> owns the branching opening book (which op fires under which condition); this page owns only the opening→endgame transition. Segment count, keyframe expansion, and pressure tuning here are illustrative of the lineage, tuned for legibility over balance.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics &middot; HAND lineage — M2 "The Known War" &middot; explorable explanation &middot; runs offline from a single file.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   When the Script Runs Out — deterministic opening→endgame transition sim.
+   No external requests. One reseedable PRNG (mulberry32). Integer-tick clock,
+   fixed-point (x1000) pressure thresholds, fixed iteration order over segments.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* stable string -> uint32 hash so seed text maps deterministically */
+function hashSeed(str){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+
+/* ---------- static world: a band of forward segments ---------- */
+const SEGMENTS = [
+  {id:0, name:"VELA"},
+  {id:1, name:"CORVUS"},
+  {id:2, name:"DRACO"},
+  {id:3, name:"LYRA"},
+  {id:4, name:"ARA"}
+];
+const NSEG = SEGMENTS.length;
+
+/* tuning constants (fixed; legibility over balance) */
+const TICK_MS       = 70;     // wall-clock per tick when playing
+const FIRST_TICK    = 26;     // earliest the first keyframe can fire
+const KF_SPACING    = 22;     // nominal ticks between scheduled keyframes
+const COVER_SHIFT   = 16;     // max tick shift on a keyframe from coverage (+/-)
+const PRESS_PER_TICK = 70;    // base deficit accrual per tick per segment (fixed-pt, /1000 later)
+const PRESS_RELIEF  = 120;    // how much full coverage offsets accrual
+const ENDGAME_GAP_BASE = 17;  // nominal ticks between endgame falls at 1.0x
+const PRESS_FILL    = 9000;   // pressure (fixed-pt) shown as a "full" bar
+const SEG_DEPTH     = 3;      // systems per segment: a fall removes ONE; overrun = all gone.
+                              // Depth gives the endgame room to spread across the band so the
+                              // "two players diverge" split is many falls long, not one.
+
+/* coverage: per-segment in [-1 .. +1]; 0 = neutral (reference). Defaults vary so
+   the opening is a touch perturbed and the endgame has a clear leader to find. */
+const DEFAULT_COVER = [0.55, -0.35, 0.15, -0.6, 0.3];
+
+/* =========================================================================
+   THE OPENING BOOK (keyframes)
+   buildKeyframes(seed, K): deterministic list of {seg, schedTick} in fixed order.
+   - schedTick: the bare scheduled tick a player MEMORISES (reference run, neutral cover).
+   - The target order is fixed per seed; the memorised map = exactly this list.
+   The ACTUAL fall tick is schedTick perturbed by live coverage at sim time, so the
+   map (schedTick) and reality (perturbed) coincide in the opening (small bounded shift,
+   same order) and the map simply STOPS past index K (no more keyframes).
+   ========================================================================= */
+function buildKeyframes(seedNum, K){
+  const rnd = mulberry32(seedNum);
+  const kfs = [];
+  // a seeded "bag" walk over segments gives a fixed, learnable order with repeats
+  let t = FIRST_TICK;
+  let prevSeg = -1;
+  for (let i=0;i<K;i++){
+    // pick a segment deterministically, avoid immediate repeat for legibility
+    let seg = Math.floor(rnd()*NSEG);
+    if (seg===prevSeg) seg = (seg+1+Math.floor(rnd()*(NSEG-1)))%NSEG;
+    prevSeg = seg;
+    // spacing jitter is seeded + integer
+    const jitter = Math.round((rnd()*2-1)*5);
+    if (i>0) t += KF_SPACING + jitter;
+    kfs.push({idx:i, seg, schedTick: t});
+  }
+  return kfs;
+}
+
+/* =========================================================================
+   SIM STATE
+   ========================================================================= */
+const S = {
+  seedStr:"ROSE-1207", seedNum:0,
+  K:7, intensity:1.0,
+  cover: DEFAULT_COVER.slice(),
+  // run state:
+  tick:0, running:false, phase:"opening",  // opening | endgame | over
+  kfs:[], kfPtr:0,            // pointer into keyframes (next to fire)
+  exhaustTick:null,           // tick at which opening ended (script ran out)
+  press:new Array(NSEG).fill(0),     // accumulated pressure (fixed-pt) per segment
+  depth:new Array(NSEG).fill(0),     // systems lost per segment (overrun when == SEG_DEPTH)
+  actualFalls:[],             // {tick, seg, kind:'keyframe'|'pressure', kfIdx?}
+  mapHits:0, mapMiss:0,
+  accSamples:[],              // {tick, acc} recall-accuracy trace for the chart
+  endgameRnd:null,            // lazily-created endgame PRNG (run state -> reset on reseed)
+  nextEndgameTick:null,       // scheduled tick of next pressure fall
+  log:[],
+  // ghost (second player): identical opening recall, different coverage
+  ghostOn:false,
+  ghostCover:[-0.5, 0.45, -0.2, 0.5, -0.4],
+  ghostFalls:[],              // {tick, seg, kind}
+  ghostDepth:new Array(NSEG).fill(0),
+  ghostPress:new Array(NSEG).fill(0),
+  ghostRnd:null,
+  ghostNextTick:null,
+  ghostExhaust:null,
+  raf:null, _last:0,
+};
+
+/* schedTick perturbed by coverage of its segment: fed -> later, starved -> earlier */
+function perturbedFallTick(kf, coverVec){
+  const c = coverVec[kf.seg];                 // [-1..1]
+  const shift = Math.round(c * COVER_SHIFT);  // fed (c>0) -> +later ; starved -> -earlier
+  return Math.max(FIRST_TICK, kf.schedTick + shift);
+}
+
+/* total ticks the opening will occupy given current coverage (for exhaustion estimate) */
+function predictExhaustTick(coverVec){
+  if (S.kfs.length===0) return FIRST_TICK;
+  const last = S.kfs[S.kfs.length-1];
+  return perturbedFallTick(last, coverVec) + 2; // small settle margin
+}
+
+/* =========================================================================
+   RESEED / REPLAN  (any control change re-derives deterministically)
+   ========================================================================= */
+function reseed(seedStr, keepTick){
+  S.seedStr = seedStr;
+  S.seedNum = hashSeed(seedStr);
+  S.kfs = buildKeyframes(S.seedNum, S.K);
+  S.tick = keepTick ? 0 : 0;            // reseed always restarts the clock
+  S.phase = "opening";
+  S.kfPtr = 0; S.exhaustTick = null;
+  S.press = new Array(NSEG).fill(0);
+  S.depth = new Array(NSEG).fill(0);
+  S.actualFalls = [];
+  S.mapHits = 0; S.mapMiss = 0;
+  S.accSamples = [{tick:0, acc:1}];
+  S.endgameRnd = null;                  // determinism: endgame PRNG is run state
+  S.nextEndgameTick = null;
+  // ghost run state
+  S.ghostFalls = [];
+  S.ghostDepth = new Array(NSEG).fill(0);
+  S.ghostPress = new Array(NSEG).fill(0);
+  S.ghostRnd = null; S.ghostNextTick = null; S.ghostExhaust = null;
+  S.log = [];
+  stop();
+  pushLog("sys", 0, "Band ROSE seeded — opening book loaded: " + S.K + " keyframes. Order is fixed; timing flexes with coverage.");
+  render();
+}
+
+/* lightweight re-plan when only sliders/coverage change mid-rest:
+   keyframes depend on seed+K only; coverage changes are read live each tick, so
+   we just rebuild keyframes if K changed and re-render. Restart clock for a clean
+   deterministic read (the opening is meant to be replayed from t0). */
+function replan(){
+  const wasRunning = S.running;
+  stop();
+  reseed(S.seedStr, false);
+  if (wasRunning) play();
+}
+
+/* =========================================================================
+   CORE TICK
+   ========================================================================= */
+function stepTick(){
+  if (S.phase === "over") return;
+  S.tick++;
+
+  // accrue pressure on every non-overrun segment, relieved by coverage (fixed-pt)
+  accruePressure(S.press, S.cover, S.depth);
+  if (S.ghostOn) accruePressure(S.ghostPress, S.ghostCover, S.ghostDepth);
+
+  if (S.phase === "opening") stepOpening();
+  if (S.phase === "endgame") stepEndgame();
+
+  // ghost advances on the same clock (its own phase, derived from same K)
+  if (S.ghostOn) stepGhost();
+
+  sampleRecall();
+  checkOver();
+  render();
+}
+
+function accruePressure(arr, coverVec, depthVec){
+  for (let i=0;i<NSEG;i++){
+    if (depthVec[i] >= SEG_DEPTH) continue;     // segment fully overrun -> no more deficit
+    // starved segments accrue fast; fed segments can even shed a little.
+    // already-wounded segments (depth>0) accrue faster — the front leans on the gap.
+    const relief = Math.round(coverVec[i] * PRESS_RELIEF); // c>0 reduces accrual
+    const woundBonus = depthVec[i] * Math.round(PRESS_PER_TICK*0.5);
+    let d = PRESS_PER_TICK + woundBonus - relief;
+    arr[i] += d;
+    if (arr[i] < 0) arr[i] = 0;
+  }
+}
+
+/* OPENING: fire the next keyframe when the clock reaches its (coverage-perturbed)
+   fall tick. The MAP predicted schedTick (bare); we record hit/miss of target. */
+function stepOpening(){
+  if (S.kfPtr >= S.kfs.length){ enterEndgame(); return; }
+  const kf = S.kfs[S.kfPtr];
+  const fireT = perturbedFallTick(kf, S.cover);
+  if (S.tick >= fireT){
+    // the fall happens on this segment
+    fireKeyframe(kf, fireT);
+    S.kfPtr++;
+    if (S.kfPtr >= S.kfs.length) enterEndgame();
+  }
+}
+
+function fireKeyframe(kf, fireT){
+  // map prediction for this slot = THIS keyframe's segment (order is fixed) -> always a hit
+  // in the opening. We still count it explicitly so the meter is computed, not asserted.
+  const predictedSeg = kf.seg;     // the memorised map = the keyframe list
+  const actualSeg = kf.seg;        // opening: actual target == scripted target
+  const hit = (predictedSeg === actualSeg);
+  if (hit) S.mapHits++; else S.mapMiss++;
+
+  applyFall(S.press, S.depth, actualSeg, false);
+  S.actualFalls.push({tick:S.tick, seg:actualSeg, kind:"keyframe", kfIdx:kf.idx, predSeg:predictedSeg, schedTick:kf.schedTick});
+  const drift = S.tick - kf.schedTick;
+  const driftTxt = drift===0 ? "on the beat" : (drift>0 ? ("+"+drift+"t late (fed)") : (drift+"t early (starved)"));
+  pushLog("open", S.tick, "KEYFRAME " + (kf.idx+1) + "/" + S.K + " — " + SEGMENTS[actualSeg].name +
+    " falls. Map called it: " + SEGMENTS[predictedSeg].name + " ✓ (" + driftTxt + ").");
+}
+
+function enterEndgame(){
+  if (S.phase !== "opening") return;
+  S.phase = "endgame";
+  S.exhaustTick = S.tick;
+  // schedule first pressure fall a gap out
+  S.nextEndgameTick = S.tick + endgameGap();
+  pushLog("sys", S.tick, "SCRIPT EXHAUSTED at T+" + S.tick + " — keyframes spent. Front now advances on PURE PRESSURE. The map keeps predicting; reality stops obeying.");
+}
+
+function endgameGap(){
+  // higher intensity -> shorter gap between pressure falls (integer)
+  return Math.max(6, Math.round(ENDGAME_GAP_BASE / S.intensity));
+}
+
+/* ENDGAME: at each scheduled gap, the front falls on the HIGHEST-pressure live
+   segment. The memorised map would have predicted the *next reference keyframe*
+   beyond K — which doesn't exist / doesn't match — so this is logged as a MISS
+   against recall. Deterministic: highest pressure with fixed-order tie-break;
+   a seeded coin nudges a neighbour for texture (still reproducible). */
+function stepEndgame(){
+  if (S.nextEndgameTick==null) S.nextEndgameTick = S.tick + endgameGap();
+  if (S.tick < S.nextEndgameTick) return;
+  if (allOverrun(S.depth)) return;
+
+  if (!S.endgameRnd) S.endgameRnd = mulberry32(S.seedNum ^ 0x9E3779B9);
+  const target = highestPressureSeg(S.press, S.depth);
+  if (target < 0) return;
+
+  // what would a memorised player have "predicted" here? The map has no keyframe
+  // past K, so any continuation guess is effectively the last-known pattern -> count miss.
+  S.mapMiss++;
+
+  applyFall(S.press, S.depth, target, /*pressureFall=*/true);
+  S.actualFalls.push({tick:S.tick, seg:target, kind:"pressure"});
+  pushLog("endg", S.tick, "PRESSURE BREAK — " + SEGMENTS[target].name + " loses a system (highest deficit). The map had no keyframe here; recall misses.");
+
+  // seeded neighbour agitation (texture, deterministic)
+  if (S.endgameRnd() < 0.3){
+    const alt = (target+1)%NSEG;
+    if (S.depth[alt] < SEG_DEPTH) S.press[alt] += Math.round(PRESS_PER_TICK*4);
+  }
+  S.nextEndgameTick = S.tick + endgameGap();
+}
+
+/* GHOST: identical keyframes (same seed+K), but its OWN coverage. In its opening it
+   fires the same targets (shared recall); in its endgame it falls on its own highest
+   pressure -> diverges from the primary run. */
+function stepGhost(){
+  // determine ghost phase by its own keyframe pointer mapped from primary kfPtr? No —
+  // ghost has identical keyframes; we track its own pointer via count of ghost keyframe falls.
+  const gKfPtr = S.ghostFalls.filter(f=>f.kind==="keyframe").length;
+  if (gKfPtr < S.kfs.length){
+    const kf = S.kfs[gKfPtr];
+    const fireT = perturbedFallTick(kf, S.ghostCover);
+    if (S.tick >= fireT){
+      applyFall(S.ghostPress, S.ghostDepth, kf.seg, false);
+      S.ghostFalls.push({tick:S.tick, seg:kf.seg, kind:"keyframe", kfIdx:kf.idx});
+      if (gKfPtr+1 >= S.kfs.length){ S.ghostExhaust = S.tick; S.ghostNextTick = S.tick + endgameGap(); }
+    }
+    return;
+  }
+  // ghost endgame
+  if (S.ghostExhaust==null){ S.ghostExhaust = S.tick; S.ghostNextTick = S.tick + endgameGap(); }
+  if (S.ghostNextTick==null) S.ghostNextTick = S.tick + endgameGap();
+  if (S.tick < S.ghostNextTick) return;
+  if (allOverrun(S.ghostDepth)) return;
+  if (!S.ghostRnd) S.ghostRnd = mulberry32((S.seedNum ^ 0x9E3779B9) + 0x51ED);
+  const t = highestPressureSeg(S.ghostPress, S.ghostDepth);
+  if (t<0) return;
+  applyFall(S.ghostPress, S.ghostDepth, t, true);
+  S.ghostFalls.push({tick:S.tick, seg:t, kind:"pressure"});
+  if (S.ghostRnd() < 0.3){ const alt=(t+1)%NSEG; if(S.ghostDepth[alt]<SEG_DEPTH) S.ghostPress[alt]+=Math.round(PRESS_PER_TICK*4); }
+  S.ghostNextTick = S.tick + endgameGap();
+}
+
+/* a fall on a segment: remove one system (depth++), relieve its own pressure
+   proportionally, and spill a little onto the neighbours (the front bulges).
+   A pressure-fall spills harder than a keyframe (the live front leans into gaps). */
+function applyFall(pressArr, depthArr, seg, pressureFall){
+  depthArr[seg] = Math.min(SEG_DEPTH, depthArr[seg] + 1);
+  if (depthArr[seg] >= SEG_DEPTH) pressArr[seg] = 0;          // segment gone -> no deficit
+  else pressArr[seg] = Math.round(pressArr[seg] * 0.35);      // losing a system bleeds most of the deficit
+  const bump = Math.round(PRESS_PER_TICK * (pressureFall?6:3));
+  if (seg-1>=0 && depthArr[seg-1]<SEG_DEPTH) pressArr[seg-1] += bump;
+  if (seg+1<NSEG && depthArr[seg+1]<SEG_DEPTH) pressArr[seg+1] += bump;
+}
+
+function highestPressureSeg(pressArr, depthArr){
+  let best=-1, bestV=-1;
+  for (let i=0;i<NSEG;i++){               // fixed order tie-break (lowest index wins)
+    if (depthArr[i] >= SEG_DEPTH) continue;
+    if (pressArr[i] > bestV){ bestV = pressArr[i]; best = i; }
+  }
+  return best;
+}
+function allOverrun(depthArr){ return depthArr.every(d=>d>=SEG_DEPTH); }
+
+/* recall accuracy = hits / (hits+misses), sampled into a trace for the chart */
+function sampleRecall(){
+  const tot = S.mapHits + S.mapMiss;
+  const acc = tot===0 ? 1 : S.mapHits/tot;
+  const last = S.accSamples[S.accSamples.length-1];
+  if (!last || last.tick !== S.tick) S.accSamples.push({tick:S.tick, acc});
+  else last.acc = acc;
+}
+
+function checkOver(){
+  if (allOverrun(S.depth)){
+    S.phase = "over";
+    stop();
+    pushLog("sys", S.tick, "BAND OVERRUN — run ends at T+" + S.tick + ". (In MSL the loss banks prestige toward a stronger restart.)");
+  }
+}
+
+/* ---------- log ---------- */
+function pushLog(cls, t, msg){
+  S.log.unshift({cls, t, msg});
+  if (S.log.length > 80) S.log.pop();
+}
+
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function render(){
+  $("clk").textContent = S.tick;
+
+  // phase badge
+  const pb = $("phaseBadge");
+  pb.className = "phasebadge " + (S.phase==="over"?"over":S.phase);
+  pb.textContent = S.phase==="over" ? "BAND OVERRUN" : (S.phase==="endgame" ? "ENDGAME · PURE PRESSURE" : "OPENING · SCRIPTED");
+
+  // big phase
+  const bp = $("bvPhase"), bps = $("bvPhaseSub");
+  if (S.phase==="over"){ bp.textContent="ENDED"; bp.style.color="var(--accent)"; bps.textContent="band overrun"; }
+  else if (S.phase==="endgame"){ bp.textContent="ENDGAME"; bp.style.color="var(--endg)"; bps.textContent="pure pressure · live"; }
+  else { bp.textContent="OPENING"; bp.style.color="var(--open)"; bps.textContent="scripted · recallable"; }
+
+  // recall %
+  const tot = S.mapHits + S.mapMiss;
+  const acc = tot===0 ? 1 : S.mapHits/tot;
+  const pct = Math.round(acc*100);
+  $("bvRecall").textContent = pct + "%";
+  $("bvRecall").style.color = pct>=85 ? "var(--held)" : (pct>=55 ? "var(--ghost)" : "var(--fell)");
+  $("recallBar").style.width = pct + "%";
+
+  // kv readouts
+  const exhEst = S.exhaustTick!=null ? null : predictExhaustTick(S.cover);
+  if (S.exhaustTick!=null){
+    $("kvExh").textContent = "exhausted at T+" + S.exhaustTick;
+    $("kvExh").className = "v endg";
+  } else {
+    const remain = Math.max(0, exhEst - S.tick);
+    $("kvExh").textContent = "~" + remain + " t (T+" + exhEst + ")";
+    $("kvExh").className = "v open";
+  }
+  $("kvKF").textContent = S.kfPtr + " / " + S.K;
+  $("kvHM").textContent = S.mapHits + " / " + S.mapMiss;
+  $("kvOver").textContent = S.depth.filter(d=>d>=SEG_DEPTH).length + " / " + NSEG;
+
+  renderDriver(acc);
+  renderTimeline();
+  renderAccChart();
+  renderPressure();
+  renderLog();
+
+  // transport labels
+  $("btnPlay").textContent = S.running ? "⏸ Pause" : "▶ Play";
+  const done = S.phase==="over";
+  $("btnStep").disabled = done;
+  $("btnPlay").disabled = done && !S.running;
+  $("btnGhost").textContent = S.ghostOn ? "◉ 2nd player: on" : "○ 2nd player: off";
+  $("btnGhost").classList.toggle("on", S.ghostOn);
+}
+
+/* ---- driver readout ---- */
+function renderDriver(acc){
+  const d = $("driver"), w = $("why");
+  if (S.phase==="over"){
+    d.innerHTML = '<span class="tag endg">ended</span><b>Band overrun.</b> The run is over at T+' + S.tick + '.';
+    w.innerHTML = "Recall got you to the exhaustion point; pressure did the rest. Reseed or recover coverage and replay.";
+    return;
+  }
+  if (S.phase==="opening"){
+    const n = Math.min(S.kfPtr+1, S.K);
+    const nextKf = S.kfs[S.kfPtr];
+    const tgt = nextKf ? SEGMENTS[nextKf.seg].name : "—";
+    d.innerHTML = '<span class="tag open">opening</span>falling on schedule: <b>keyframe ' + n + '/' + S.K + '</b> → next target <b>' + tgt + '</b>';
+    w.innerHTML = "<b>Why:</b> the next fall is the next scripted keyframe. Order is fixed and memorised, so the map predicts the target exactly; coverage only shifts <em>when</em> it lands.";
+  } else {
+    const lead = highestPressureSeg(S.press, S.depth);
+    const leadName = lead>=0 ? SEGMENTS[lead].name : "—";
+    d.innerHTML = '<span class="tag endg">endgame</span>pure pressure: <b>' + leadName + ' highest deficit</b> — the front falls there next';
+    w.innerHTML = "<b>Why:</b> no keyframes remain. The next fall goes to the segment whose accumulated deficit is highest — set by the coverage you chose, not by any script. The map's old predictions no longer apply.";
+  }
+}
+
+/* ---- run timeline ---- */
+function renderTimeline(){
+  const svg = $("timeline"); svg.innerHTML = "";
+  const W=660, H=300, padL=66, padR=16, padT=22, padB=30;
+  const plotW = W-padL-padR;
+  const rowH = (H-padT-padB)/NSEG;
+
+  // time scale: span the full opening + a chunk of endgame, or current tick
+  const exhT = S.exhaustTick!=null ? S.exhaustTick : predictExhaustTick(S.cover);
+  let maxT = Math.max(exhT * 1.7, S.tick * 1.15, exhT + 70);
+  // ensure all recorded falls fit
+  S.actualFalls.forEach(f=>maxT=Math.max(maxT, f.tick+6));
+  if (S.ghostOn) S.ghostFalls.forEach(f=>maxT=Math.max(maxT, f.tick+6));
+  const x = t => padL + (t/maxT)*plotW;
+
+  // ----- phase bands -----
+  // opening band: 0 .. exhaust ; endgame band: exhaust .. maxT
+  el("rect",{x:padL,y:padT-6,width:x(exhT)-padL,height:H-padT-padB+12,fill:"var(--open)",opacity:.06},svg);
+  el("rect",{x:x(exhT),y:padT-6,width:(W-padR)-x(exhT),height:H-padT-padB+12,fill:"var(--endg)",opacity:.07},svg);
+
+  // band labels
+  const olab = el("text",{x:padL+6,y:padT+4,class:"svg-tip",fill:"#9ec5fb"},svg); olab.textContent="OPENING · scripted";
+  const elab = el("text",{x:x(exhT)+6,y:padT+4,class:"svg-tip",fill:"#fda4af"},svg); elab.textContent="ENDGAME · pressure";
+
+  // ----- time grid -----
+  const stepT = niceStep(maxT);
+  for (let tt=0; tt<=maxT; tt+=stepT){
+    const gx=x(tt);
+    el("line",{x1:gx,y1:padT,x2:gx,y2:H-padB,stroke:"var(--line)","stroke-width":1,opacity:.4},svg);
+    const lb=el("text",{x:gx,y:H-padB+16,"text-anchor":"middle",class:"svg-tip"},svg); lb.textContent="t"+tt;
+  }
+
+  // ----- segment rows -----
+  SEGMENTS.forEach((seg,i)=>{
+    const y = padT + i*rowH;
+    el("line",{x1:padL,y1:y+rowH,x2:W-padR,y2:y+rowH,stroke:"var(--line)","stroke-width":1,opacity:.35},svg);
+    const lt=el("text",{x:padL-10,y:y+rowH/2+4,"text-anchor":"end",class:"svg-tip",fill:"var(--fog-400)"},svg);
+    lt.textContent=seg.name;
+    if (S.depth[i]>0){ const frac=S.depth[i]/SEG_DEPTH; el("rect",{x:padL,y:y+3,width:plotW,height:rowH-6,fill:"var(--endg)",opacity:.03+frac*0.06},svg); }
+  });
+
+  // ----- EXHAUSTION marker -----
+  const ex = x(exhT);
+  el("line",{x1:ex,y1:padT-8,x2:ex,y2:H-padB+4,stroke:"var(--accent)","stroke-width":2,opacity:.95},svg);
+  const exTxt = el("text",{x:ex,y:padT-11,"text-anchor":"middle",class:"svg-tip",fill:"var(--accent)","font-weight":700},svg);
+  exTxt.textContent = (S.exhaustTick!=null?"EXHAUSTED T+"+exhT:"EXHAUSTION ~T+"+exhT);
+
+  // ----- MEMORISED-MAP prediction (dashed): the bare schedTick of every keyframe -----
+  // These are what a player recalls. They render across the opening; past exhaustion the
+  // map would *continue* its pattern but there are no real keyframes -> we draw faded
+  // "phantom" predictions extrapolating the cadence to show recall drawing into the void.
+  S.kfs.forEach(kf=>{
+    const cy = padT + kf.seg*rowH + rowH/2;
+    const mx = x(kf.schedTick);
+    // dashed vertical tick + open diamond at the predicted target row
+    el("line",{x1:mx,y1:cy-rowH*0.34,x2:mx,y2:cy+rowH*0.34,stroke:"var(--map)","stroke-width":1.4,"stroke-dasharray":"3 3",opacity:.9},svg);
+    diamond(svg, mx, cy, 4.4, {fill:"none",stroke:"var(--map)","stroke-width":1.5,opacity:.95});
+  });
+  // phantom continuation past exhaustion (the recall that no longer maps to anything)
+  if (S.kfs.length>=2){
+    const a=S.kfs[S.kfs.length-2].schedTick, b=S.kfs[S.kfs.length-1].schedTick;
+    const cad = Math.max(8, b-a);
+    let pt = b + cad, ph=0;
+    while (pt < maxT && ph < 5){
+      const seg = (S.kfs[S.kfs.length-1].seg + ph + 1) % NSEG;   // arbitrary recalled guess
+      const cy = padT + seg*rowH + rowH/2;
+      const mx = x(pt);
+      el("line",{x1:mx,y1:cy-rowH*0.28,x2:mx,y2:cy+rowH*0.28,stroke:"var(--map)","stroke-width":1.2,"stroke-dasharray":"2 4",opacity:.35},svg);
+      diamond(svg, mx, cy, 3.6, {fill:"none",stroke:"var(--map)","stroke-width":1.1,opacity:.4});
+      pt += cad; ph++;
+    }
+  }
+
+  // ----- GHOST falls (second player) -----
+  if (S.ghostOn){
+    S.ghostFalls.forEach(f=>{
+      const cy = padT + f.seg*rowH + rowH/2;
+      const gx = x(f.tick);
+      el("circle",{cx:gx,cy:cy,r:5.2,fill:"none",stroke:"var(--ghost)","stroke-width":1.6,opacity:.85},svg);
+    });
+  }
+
+  // ----- ACTUAL falls (rose = keyframe, deeper rose ring = pressure) -----
+  S.actualFalls.forEach(f=>{
+    const cy = padT + f.seg*rowH + rowH/2;
+    const fx = x(f.tick);
+    if (f.kind==="keyframe"){
+      diamond(svg, fx, cy, 5.4, {fill:"var(--endg)",stroke:"var(--ink-950)","stroke-width":1,opacity:.95});
+    } else {
+      // pressure fall: filled rose circle with a halo, to read as "live, not scripted"
+      el("circle",{cx:fx,cy:cy,r:6.4,fill:"none",stroke:"var(--endg)","stroke-width":1,opacity:.5},svg);
+      el("circle",{cx:fx,cy:cy,r:4.2,fill:"var(--endg)",stroke:"var(--ink-950)","stroke-width":1,opacity:.96},svg);
+    }
+    // connector showing the gap between map prediction and the actual pressure fall (divergence)
+    if (f.kind==="pressure"){
+      // nearest phantom on this row would be elsewhere; draw a small "miss" mark
+      el("line",{x1:fx-7,y1:cy-7,x2:fx+7,y2:cy+7,stroke:"var(--endg)","stroke-width":1,opacity:.35},svg);
+    }
+  });
+
+  // ----- NOW line -----
+  const nx = x(S.tick);
+  el("line",{x1:nx,y1:padT-2,x2:nx,y2:H-padB+2,stroke:"var(--fog-100)","stroke-width":1.4,"stroke-dasharray":"2 3",opacity:.7},svg);
+  const nl=el("text",{x:Math.min(nx+4,W-padR-26),y:H-padB-3,class:"svg-tip",fill:"var(--fog-300)"},svg); nl.textContent="NOW";
+}
+
+function diamond(svg, cx, cy, r, attrs){
+  const p = el("path",{d:`M ${cx} ${cy-r} L ${cx+r} ${cy} L ${cx} ${cy+r} L ${cx-r} ${cy} Z`}, svg);
+  for (const k in attrs) p.setAttribute(k, attrs[k]);
+  return p;
+}
+function niceStep(maxT){
+  const target = maxT/8;
+  const steps=[10,20,25,50,100,200];
+  for (const s of steps) if (target<=s) return s;
+  return 200;
+}
+
+/* ---- recall-accuracy chart over time ---- */
+function renderAccChart(){
+  const svg=$("accChart"); svg.innerHTML="";
+  const W=660,H=150,padL=44,padR=16,padT=14,padB=24;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const exhT = S.exhaustTick!=null ? S.exhaustTick : predictExhaustTick(S.cover);
+  let maxT = Math.max(exhT*1.7, S.tick*1.15, exhT+70);
+  S.accSamples.forEach(s=>maxT=Math.max(maxT,s.tick));
+  const x = t => padL + (t/maxT)*plotW;
+  const y = a => padT + (1-a)*plotH;
+
+  // phase bands
+  el("rect",{x:padL,y:padT,width:x(exhT)-padL,height:plotH,fill:"var(--open)",opacity:.06},svg);
+  el("rect",{x:x(exhT),y:padT,width:(W-padR)-x(exhT),height:plotH,fill:"var(--endg)",opacity:.07},svg);
+
+  // y grid: 0 / 50 / 100 %
+  [0,0.5,1].forEach(a=>{
+    const gy=y(a);
+    el("line",{x1:padL,y1:gy,x2:W-padR,y2:gy,stroke:"var(--line)","stroke-width":1,opacity:.4},svg);
+    const lb=el("text",{x:padL-8,y:gy+4,"text-anchor":"end",class:"svg-tip"},svg); lb.textContent=Math.round(a*100)+"%";
+  });
+  // exhaustion line
+  el("line",{x1:x(exhT),y1:padT,x2:x(exhT),y2:H-padB,stroke:"var(--accent)","stroke-width":1.6,opacity:.9},svg);
+  const exl=el("text",{x:x(exhT),y:padT-3,"text-anchor":"middle",class:"svg-tip",fill:"var(--accent)"},svg); exl.textContent="exhaustion";
+
+  // the accuracy trace
+  if (S.accSamples.length>0){
+    let dpath = "";
+    S.accSamples.forEach((s,i)=>{ dpath += (i===0?"M":"L") + x(s.tick).toFixed(1) + " " + y(s.acc).toFixed(1) + " "; });
+    el("path",{d:dpath,fill:"none",stroke:"var(--held)","stroke-width":2,opacity:.95},svg);
+    // area under curve, faint
+    const a0 = S.accSamples[0], aN = S.accSamples[S.accSamples.length-1];
+    el("path",{d:dpath + "L "+x(aN.tick).toFixed(1)+" "+y(0).toFixed(1)+" L "+x(a0.tick).toFixed(1)+" "+y(0).toFixed(1)+" Z",
+      fill:"var(--held)",opacity:.07},svg);
+    // current point
+    el("circle",{cx:x(aN.tick),cy:y(aN.acc),r:3.2,fill:"var(--held)",stroke:"var(--ink-950)","stroke-width":1},svg);
+  }
+  // caption
+  const cap=el("text",{x:padL+4,y:H-padB+16,class:"svg-tip",fill:"var(--fog-500)"},svg);
+  cap.textContent = "recall accuracy = map hits ÷ falls — ~100% in opening, decays after exhaustion";
+}
+
+/* ---- per-segment pressure bars ---- */
+function renderPressure(){
+  const host=$("pmap"); host.innerHTML="";
+  const lead = (S.phase==="endgame") ? highestPressureSeg(S.press, S.depth) : -1;
+  SEGMENTS.forEach((seg,i)=>{
+    const gone = S.depth[i] >= SEG_DEPTH;
+    const row=document.createElement("div"); row.className="pseg";
+    const nm=document.createElement("div"); nm.className="nm"; nm.textContent=seg.name;
+    const bar=document.createElement("div"); bar.className="pbar"+(i===lead?" lead":"");
+    const fill=document.createElement("i");
+    const frac = gone ? 1 : Math.min(1, S.press[i]/PRESS_FILL);
+    fill.style.width = Math.round(frac*100)+"%";
+    if (gone){ fill.style.background="var(--line)"; fill.style.opacity=".55"; }
+    bar.appendChild(fill);
+    const ov=document.createElement("div"); ov.className="ov";
+    // pips show systems lost vs total (e.g. "■□□"); overrun when all filled
+    let pips=""; for(let k=0;k<SEG_DEPTH;k++) pips += (k<S.depth[i]?"■":"□");
+    ov.textContent = gone ? ("OVERRUN "+pips) : ((i===lead?"★ ":"") + pips);
+    bar.appendChild(ov);
+    row.appendChild(nm); row.appendChild(bar);
+    host.appendChild(row);
+  });
+}
+
+/* ---- log ---- */
+function renderLog(){
+  const host=$("log"); host.innerHTML="";
+  S.log.forEach(l=>{
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML="<span class='t'>T+"+String(l.t).padStart(3," ")+"</span> <span class='"+l.cls+"'>"+l.msg+"</span>";
+    host.appendChild(ln);
+  });
+}
+
+/* =========================================================================
+   TRANSPORT / LOOP
+   ========================================================================= */
+function loop(ts){
+  if (!S.running){ S.raf=null; return; }
+  if (!S._last) S._last=ts;
+  const dt = ts - S._last;
+  if (dt >= TICK_MS){
+    S._last = ts;
+    stepTick();
+    if (S.phase==="over"){ stop(); render(); return; }
+  }
+  S.raf = requestAnimationFrame(loop);
+}
+function play(){
+  if (S.phase==="over") return;
+  S.running=true; S._last=0;
+  if (!S.raf) S.raf=requestAnimationFrame(loop);
+  render();
+}
+function stop(){ S.running=false; if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; } }
+
+/* =========================================================================
+   WIRING
+   ========================================================================= */
+function buildCoverRows(){
+  const host=$("covrows"); host.innerHTML="";
+  SEGMENTS.forEach((seg,i)=>{
+    const row=document.createElement("div"); row.className="covrow";
+    const nm=document.createElement("div"); nm.className="nm"; nm.textContent=seg.name;
+    const inp=document.createElement("input");
+    inp.type="range"; inp.min="-100"; inp.max="100"; inp.step="5";
+    inp.value=String(Math.round(S.cover[i]*100));
+    inp.setAttribute("aria-label","coverage for "+seg.name);
+    const cv=document.createElement("div"); cv.className="cv";
+    const fmt=v=> (v>0?"+":"")+v+"%";
+    cv.textContent=fmt(Math.round(S.cover[i]*100));
+    inp.addEventListener("input", e=>{
+      S.cover[i] = (+e.target.value)/100;
+      cv.textContent = fmt(+e.target.value);
+      // coverage changes the deterministic plan; re-run from t0 for a clean read
+      replan();
+    });
+    row.appendChild(nm); row.appendChild(inp); row.appendChild(cv);
+    host.appendChild(row);
+  });
+}
+
+function wire(){
+  $("btnPlay").addEventListener("click", ()=>{ S.running ? (stop(),render()) : play(); });
+  $("btnStep").addEventListener("click", ()=>{ stop(); stepTick(); });
+  $("btnReset").addEventListener("click", ()=>{ reseed($("seed").value.trim()||"ROSE-1207"); });
+  $("btnGhost").addEventListener("click", ()=>{ S.ghostOn=!S.ghostOn; if(S.ghostOn) seedGhostFromScratch(); render(); });
+
+  $("seed").addEventListener("change", ()=>{ reseed($("seed").value.trim()||"ROSE-1207"); });
+
+  // seed-family chips
+  const chips=["ROSE-1207","ROSE-0044","ROSE-1984","ROSE-7777","ROSE-0512"];
+  const cwrap=$("seedchips");
+  chips.forEach(c=>{
+    const b=document.createElement("span"); b.className="seedchip"; b.textContent=c;
+    b.addEventListener("click", ()=>{ $("seed").value=c; reseed(c); });
+    cwrap.appendChild(b);
+  });
+
+  $("sK").addEventListener("input", e=>{ S.K=+e.target.value; $("vK").textContent=S.K+" keyframes"; replan(); });
+  $("sInt").addEventListener("input", e=>{ S.intensity=(+e.target.value)/100; $("vInt").textContent=S.intensity.toFixed(2)+"×"; render(); });
+
+  // keyboard niceties
+  document.addEventListener("keydown", e=>{
+    if (e.target.tagName==="INPUT") return;
+    if (e.code==="Space"){ e.preventDefault(); S.running?(stop(),render()):play(); }
+    else if (e.key==="s"||e.key==="S"){ stop(); stepTick(); }
+    else if (e.key==="r"||e.key==="R"){ reseed($("seed").value.trim()||"ROSE-1207"); }
+    else if (e.key==="g"||e.key==="G"){ S.ghostOn=!S.ghostOn; if(S.ghostOn) seedGhostFromScratch(); render(); }
+  });
+}
+
+/* when ghost toggled on mid-run, it should share the opening: simplest correct
+   behaviour is to (re)start both from t0 so the shared opening is visible. */
+function seedGhostFromScratch(){
+  // reset ghost trace; reseed primary too so both run the opening together
+  reseed(S.seedStr, false);
+}
+
+/* ---------- boot ---------- */
+buildCoverRows();
+wire();
+reseed("ROSE-1207");
+</script>
+</body>
+</html>

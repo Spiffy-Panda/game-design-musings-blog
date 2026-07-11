@@ -1,0 +1,94 @@
+{
+  "slug": "jumpgate-topology",
+  "title": "The Jumpgate Web",
+  "accent": "#22d3ee",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · M2 — topology",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.85,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The jumpgate web. A lane graph that looks richly connected can hinge, catastrophically, on a single vertex, and the right topology is what turns one node falling into a strategic event."
+    },
+    {
+      "id": "02-board",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the board is the graph",
+      "headline": "The lane graph is the only board that matters.",
+      "body": "You haul one ship: buy cheap in the <strong>rear</strong>, sell into shortage at the <strong>forward</strong> line, bank the margin. You never fight. The war is sovereign &mdash; the enemy front <em>advances</em>, <span style=\"color:#f87171\">overruns</span> systems from the forward edge inward, and that severs the lanes touching them.",
+      "narration": "You haul one ship. Buy cheap in the rear, sell into shortage at the forward line, and bank the margin. You never fight. The only opponent is the enemy front, which advances and overruns systems from the forward edge inward, severing the lanes that touch them."
+    },
+    {
+      "id": "03-keystone",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the keystone",
+      "headline": "Connectivity is not resilience.",
+      "body": "Sixteen systems, three distance bands. Shortest paths are <em>Dijkstra</em> over the live edges; each node's heat is its <em>betweenness</em> &mdash; how many rear-to-forward routes are forced through it. The single hottest node is the <strong>keystone</strong>. Delete it and the route doesn't degrade gently &mdash; it jumps, or a clutch of depots goes black at once.",
+      "narration": "Sixteen systems across three bands. The page runs Dijkstra over the live edges, and colors each node by its betweenness: how many supply routes are forced through it. The hottest node is the keystone. Delete it and the route doesn't sag gently, it jumps, or a whole clutch of depots goes dark at once."
+    },
+    {
+      "id": "04-fiveshapes",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "five webs, five lessons",
+      "headline": "Five real games already ran this experiment.",
+      "bullets": [
+        "<b>Ring</b> &mdash; EVE high-sec: one loop, two route lengths, extreme chokepoint sensitivity.",
+        "<b>Hub &amp; spoke</b> &mdash; Freelancer: lose a spoke, trivial; lose the hub, collapse.",
+        "<b>Mesh</b> &mdash; X4 dense: rerouting is free, so geography barely matters.",
+        "<b>Backbone &amp; Pipe</b> &mdash; Mass Effect spine plus an EVE null-sec corridor with no internal reroute."
+      ],
+      "narration": "Five real games already ran this experiment over the same sixteen systems. A ring like EVE high-sec is all chokepoint and no depth. Hub and spoke, from Freelancer, makes one node the whole game. A dense X4 mesh reroutes for free, so geography stops mattering. The backbone from Mass Effect, plus a single EVE-style pipe, is the shape worth shipping."
+    },
+    {
+      "id": "05-niarja",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the recommendation",
+      "headline": "A spine with threshold moments, plus one gamble lane.",
+      "body": "The proposal: a <strong>backbone</strong> of one junction per band, a small cluster on each &mdash; lose a junction and a whole band's cluster strands at once. Plus one forward <strong>pipe</strong>: shortest path when open, but one mouth and no reroute inside. The Niarja lesson, in your hands &mdash; EVE severed one high-sec system and a 9-jump run became about 44.",
+      "narration": "The recommended board is a backbone: one junction per band with a small cluster hanging off each, so a junction falling strands a whole band at once. Bolt on one forward pipe as an optional fast lane with one mouth and no internal reroute. This is the Niarja lesson made playable: EVE once severed a single system and a nine-jump trade run became about forty-four."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Topology buttons</b> &mdash; Ring, Hub &amp; spoke, Mesh, Backbone, Pipe-corridor re-lay the lanes.",
+        "<b>Click a system</b> to overrun it, or <b>click a lane</b> to cut it; everything recomputes live.",
+        "<b>Play front / Step</b> &mdash; advance the deterministic front, one fall at a time.",
+        "<b>Reseed fall order / Reset board</b> &mdash; a new collapse per seed, or back to nominal."
+      ],
+      "narration": "Drive it yourself. Pick a topology to lay out the lanes, then click any system to overrun it, or click a lane to cut it, and watch the route recompute live. Press Play front to advance the deterministic front, or Step it one fall at a time. Reseed the fall order for a different collapse, or reset the board."
+    },
+    {
+      "id": "07-aha",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the aha",
+      "headline": "Find your keystone before the war does.",
+      "body": "A web can look generous and still pivot on one node. That fragility, <em>made visible and made the player's problem</em>, is what turns a supply map into a game. MSL commits to the graph on purpose &mdash; that commitment is the genre.",
+      "narration": "Here is the whole point. A web can look generous and still pivot on one node, and that fragility, made visible and made the player's problem, is what turns a supply map into a game. Minimalist Space Logistics commits to the graph on purpose. That commitment is the genre."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Jumpgate Web",
+      "body": "Graph + Dijkstra + betweenness, live in-page &middot; deterministic, seeded mulberry32.",
+      "narration": "The board is the graph, and the keystone is the war's target. Graph, Dijkstra, and betweenness computed live, deterministic and seeded."
+    }
+  ]
+}

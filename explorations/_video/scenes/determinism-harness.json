@@ -1,0 +1,94 @@
+{
+  "slug": "determinism-harness",
+  "title": "The Determinism Harness",
+  "accent": "#a78bfa",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · APR.5 — a run is a seed",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.85,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The determinism harness. A lost run is only worth banking if it is reproducible: the same seed and the same inputs giving you byte-for-byte the same defeat."
+    },
+    {
+      "id": "02-seed",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "a run is a seed",
+      "headline": "A run <em>is</em> its seed.",
+      "body": "You own one hauler keeping an unwinnable war supplied; the run ends in an overrun and banks prestige. The pillar the whole design leans on is <strong>determinism</strong> &mdash; the same seed plus the same inputs must reproduce that run exactly. Lose, and the loss becomes a <span style=\"color:#a78bfa\">shareable code</span> a friend can paste to walk your exact collapse.",
+      "narration": "Every run is a seed. You keep an unwinnable war supplied, the run ends in an overrun, and the loss banks prestige. If the run is truly its seed, that loss becomes a shareable code: a friend pastes it in and walks your exact collapse, and the next run can race it as a ghost."
+    },
+    {
+      "id": "03-disciplines",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "three disciplines at once",
+      "headline": "Determinism is not a switch.",
+      "bullets": [
+        "<b>One seeded PRNG</b> &mdash; a single mulberry32 stream, advanced only on ticks, never off-tick.",
+        "<b>Fixed iteration order</b> &mdash; visit agents in a sorted order, never a hash-map's free-for-all.",
+        "<b>Integer money</b> &mdash; store credits as whole milli-credits, never as drifting floats.",
+        "<b>Break any one</b> and shareable seeds, replay, and run-ghosts die quietly."
+      ],
+      "narration": "Determinism is not a feature you switch on. It is three disciplines held at once: one seeded generator advanced only on ticks, a fixed iteration order, and integer money. Break any single one and shareable seeds, replay, and run-ghosts all die quietly, months before anyone notices."
+    },
+    {
+      "id": "04-float",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "demo one · the silent drift",
+      "headline": "Floats stop the books from balancing.",
+      "body": "Run the same stream of trades two ways. As <span style=\"color:#60a5fa\">floating-point</span> credits, balances creep &mdash; a fraction of a milli-credit per rounding, compounding, never undoing itself &mdash; until the books no longer agree. As <span style=\"color:#34d399\">integer milli-credits</span>, the running difference is exactly zero, forever.",
+      "narration": "The first demo runs the same trades two ways. As floating-point credits, the books creep: a tiny rounding error per operation that compounds and never undoes itself, until two ledgers fed the same transactions disagree. As integer milli-credits there is no rounding, so the difference is provably, permanently zero."
+    },
+    {
+      "id": "05-seedworld",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "demo two · one seed, one world",
+      "headline": "Thirty-two bits become a whole run.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><rect x=\"60\" y=\"230\" width=\"230\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#a78bfa\" stroke-width=\"2\"/><text x=\"175\" y=\"262\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">SEED</text><text x=\"175\" y=\"292\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"24\">MSL-0539</text><line x1=\"290\" y1=\"270\" x2=\"380\" y2=\"270\" stroke=\"#a78bfa\" stroke-width=\"2\"/><rect x=\"380\" y=\"230\" width=\"220\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#a78bfa\" stroke-width=\"2\"/><text x=\"490\" y=\"262\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">PRNG</text><text x=\"490\" y=\"292\" text-anchor=\"middle\" fill=\"#a78bfa\" font-size=\"18\">fixed draws</text><line x1=\"600\" y1=\"270\" x2=\"700\" y2=\"130\" stroke=\"#60a5fa\" stroke-width=\"2\"/><line x1=\"600\" y1=\"270\" x2=\"700\" y2=\"270\" stroke=\"#60a5fa\" stroke-width=\"2\"/><line x1=\"600\" y1=\"270\" x2=\"700\" y2=\"410\" stroke=\"#60a5fa\" stroke-width=\"2\"/><rect x=\"700\" y=\"95\" width=\"330\" height=\"70\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#60a5fa\" stroke-width=\"2\"/><text x=\"865\" y=\"137\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">producer nodes</text><rect x=\"700\" y=\"235\" width=\"330\" height=\"70\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#60a5fa\" stroke-width=\"2\"/><text x=\"865\" y=\"277\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">enemy fall order</text><rect x=\"700\" y=\"375\" width=\"330\" height=\"70\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#60a5fa\" stroke-width=\"2\"/><text x=\"865\" y=\"417\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">yield jitter</text><text x=\"600\" y=\"500\" text-anchor=\"middle\" fill=\"#34d399\" font-size=\"19\">same seed, same draws, same world</text></svg>",
+      "narration": "The second demo expands one thirty-two-bit number into a whole run. The seed initializes a single stream, and the run draws from it in a fixed sequence to place producer nodes, decide the enemy's fall order, and set production jitter. Re-enter the same seed and you get the byte-identical world back. That is the share code."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Run the books</b> &mdash; demo one, with sliders for ops to run and trade-size spread.",
+        "<b>Generate world / Random seed / Same seed again</b> &mdash; demo two reproduces the layout exactly.",
+        "<b>Run twice and compare</b> &mdash; demo three pits fixed against shuffled iteration order.",
+        "<b>Rerun and compare</b> &mdash; the gate, with breakers for float money, shuffled order, unseeded jitter, and an extra off-tick draw."
+      ],
+      "narration": "Drive it yourself. In demo one, press Run the books and crank the ops and spread sliders to force the float drift. In demo two, generate a world, then hit Same seed again to watch the hash hold still. In demo three, run twice and compare fixed versus shuffled order. Then at the top, flip the four breakers and watch the rerun gate go red."
+    },
+    {
+      "id": "07-gate",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the permanent gate",
+      "headline": "Rerun twice. Demand the hashes match.",
+      "body": "The whole shared sim folds into one rolling hash of its final state. Run it twice; the two hashes must agree. <span style=\"color:#34d399\">Green</span> is a continuous, machine-checkable proof that the run is a seed &mdash; the same gate the real game runs on every commit. It already caught a real reseed bug in a sibling page.",
+      "narration": "The harness that makes all of this enforceable is one rule: run the toy sim twice under the current settings and demand the two state hashes match. Green is a continuous, machine-checkable proof that the run is a seed. It is the gate the real game runs on every commit, and it already caught a real reseed bug in a sibling page."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Determinism Harness",
+      "body": "Get it right once at the bottom &middot; deterministic &middot; seeded &middot; self-contained &middot; proven by re-running itself.",
+      "narration": "Get it right once, at the bottom, and a lost run becomes a thing you can hand to someone else. Deterministic, seeded, self-contained, and proven by re-running itself."
+    }
+  ]
+}

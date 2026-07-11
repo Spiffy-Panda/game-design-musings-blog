@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Contract Board — R.4 · the board is the readout</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 18%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 18%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 18%,transparent);
+  --mil:#7aa7ff;--mil-soft:color-mix(in oklab,var(--mil) 18%,transparent);
+  --gen:#d6b36b;
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3rem 0 .5rem;padding-top:.4rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+em{color:#d7dbe8}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+
+/* ===== SIM PANEL ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:2rem 0;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .tick{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+/* state banner */
+.phase{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem;background:var(--ink-900)}
+.phase .dotp{width:.55rem;height:.55rem;border-radius:50%;flex:0 0 auto;background:var(--good)}
+.phase b{color:var(--fog-100)}
+
+/* readouts row */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.2rem 0 .9rem}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1}
+.stat .v.accent{color:var(--accent)}
+.stat .sub{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.15rem}
+
+/* treasury gauge */
+.gaugewrap{border:1px solid var(--line);border-radius:10px;background:var(--ink-900);padding:.6rem .75rem .55rem;margin:.2rem 0 .7rem}
+.gaugewrap .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);display:flex;justify-content:space-between;margin-bottom:.4rem}
+.gaugewrap .k .gv{color:var(--accent);font-size:.74rem}
+.gauge{position:relative;height:1.5rem;border:1px solid var(--line);border-radius:8px;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(255,255,255,.035) 9px 10px),var(--ink-950);overflow:hidden}
+.gauge .fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 45%,transparent),var(--accent));transition:width .16s linear,background .3s}
+.gauge .floor{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--bad);z-index:4;box-shadow:0 0 6px var(--bad)}
+.gauge .floorlbl{position:absolute;bottom:1.7rem;transform:translateX(-50%);font-family:var(--font-mono);font-size:.56rem;color:var(--bad);white-space:nowrap;letter-spacing:.06em}
+.gaugewrap .note{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.35rem}
+.gaugewrap .note b{color:var(--accent)}
+.gaugewrap.broke .fill{background:linear-gradient(90deg,color-mix(in oklab,var(--bad) 45%,transparent),var(--bad))}
+
+/* meters: generosity + posting count + mix */
+.meterrow{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:.2rem 0 .9rem}
+.meter{border:1px solid var(--line);border-radius:10px;background:var(--ink-900);padding:.55rem .7rem .5rem}
+.meter .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);display:flex;justify-content:space-between;margin-bottom:.35rem}
+.meter .bigv{font-family:var(--font-mono);font-size:1.35rem;font-weight:700;color:var(--accent);line-height:1.05}
+.meter .bigv .u{font-size:.72rem;color:var(--fog-500);font-weight:400}
+.gbar{position:relative;height:.7rem;border:1px solid var(--line);border-radius:5px;background:var(--ink-950);overflow:hidden;margin-top:.4rem}
+.gbar .gf{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 45%,transparent),var(--accent));transition:width .16s linear}
+.meter .msub{font-family:var(--font-mono);font-size:.63rem;color:var(--fog-500);margin-top:.32rem}
+/* military / general split bar */
+.mix{position:relative;height:1.1rem;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--ink-950);margin-top:.4rem;display:flex}
+.mix .mil{height:100%;background:linear-gradient(90deg,color-mix(in oklab,var(--mil) 55%,transparent),var(--mil));transition:width .2s linear}
+.mix .gen{height:100%;background:linear-gradient(90deg,var(--gen),color-mix(in oklab,var(--gen) 55%,transparent));transition:width .2s linear}
+.mixleg{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.62rem;margin-top:.3rem;color:var(--fog-500)}
+.mixleg b.m{color:var(--mil)} .mixleg b.g{color:var(--gen)}
+
+/* the board */
+.boardwrap{border:1px solid var(--line);border-radius:12px;background:var(--ink-950);margin:.4rem 0 .2rem;overflow:hidden}
+.boardhdr{display:grid;grid-template-columns:1.7fr 2fr .9fr .95fr;gap:.4rem;padding:.45rem .7rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.025),transparent);font-family:var(--font-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.boardhdr span:nth-child(3),.boardhdr span:nth-child(4){text-align:right}
+.board{height:21.5rem;overflow-y:auto;padding:.15rem 0;scrollbar-width:thin;scrollbar-color:var(--ink-600) transparent}
+.board::-webkit-scrollbar{width:9px}
+.board::-webkit-scrollbar-thumb{background:var(--ink-600);border-radius:5px}
+.board::-webkit-scrollbar-track{background:transparent}
+.posting{display:grid;grid-template-columns:1.7fr 2fr .9fr .95fr;gap:.4rem;align-items:center;padding:.4rem .7rem;border-bottom:1px solid color-mix(in oklab,var(--line) 55%,transparent);font-family:var(--font-mono);font-size:.74rem;position:relative;transition:opacity .25s,background .25s}
+.posting:hover{background:rgba(255,255,255,.02)}
+.posting .good{display:flex;align-items:center;gap:.4rem;color:var(--fog-100);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.posting .tag{flex:0 0 auto;font-size:.56rem;letter-spacing:.06em;padding:.06rem .3rem;border-radius:4px;text-transform:uppercase}
+.posting .tag.m{color:var(--mil);border:1px solid color-mix(in oklab,var(--mil) 55%,transparent);background:var(--mil-soft)}
+.posting .tag.g{color:var(--gen);border:1px solid color-mix(in oklab,var(--gen) 50%,transparent);background:color-mix(in oklab,var(--gen) 14%,transparent)}
+.posting .route{color:var(--fog-400);font-size:.68rem;display:flex;align-items:center;gap:.32rem;overflow:hidden;white-space:nowrap}
+.posting .route .arrow{color:var(--fog-500)}
+.posting .route .danger{flex:0 0 auto;font-size:.6rem;letter-spacing:.02em}
+.posting .pay{text-align:right;color:var(--accent);font-weight:600}
+.posting .exp{text-align:right;color:var(--fog-400);font-size:.68rem;display:flex;justify-content:flex-end;align-items:center;gap:.3rem}
+.posting .expbar{display:inline-block;width:1.9rem;height:.32rem;border-radius:3px;background:var(--ink-700);position:relative;overflow:hidden;flex:0 0 auto}
+.posting .expbar i{position:absolute;left:0;top:0;bottom:0;background:var(--good);border-radius:3px}
+/* states */
+.posting.new{animation:slideIn .45s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px);background:var(--accent-soft)}to{opacity:1;transform:none}}
+.posting.expiring{opacity:.32;animation:fadeDim .5s ease}
+@keyframes fadeDim{from{opacity:.9}to{opacity:.32}}
+.posting.voided{opacity:.4}
+.posting.voided .good,.posting.voided .route,.posting.voided .pay{text-decoration:line-through;color:var(--bad)!important}
+.posting.voided .stamp{color:var(--bad)}
+.posting .stamp{position:absolute;right:.7rem;top:.15rem;font-size:.52rem;letter-spacing:.1em;color:var(--bad);text-transform:uppercase}
+.board .empty{padding:2.6rem 1rem;text-align:center;color:var(--fog-500);font-family:var(--font-mono);font-size:.82rem;line-height:1.7}
+.board .empty b{color:var(--bad)}
+.boardfoot{padding:.4rem .7rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.66rem;color:var(--fog-500);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.4rem;background:var(--ink-900)}
+.boardfoot b{color:var(--fog-300)}
+
+/* why line */
+.why{font-family:var(--font-mono);font-size:.8rem;color:var(--fog-400);margin:.7rem 0 .2rem;min-height:2.4rem;line-height:1.5;border-left:2px solid var(--line);padding:.35rem 0 .35rem .7rem}
+.why b{color:var(--fog-100)} .why .hot{color:var(--accent)} .why .dn{color:var(--bad)} .why .up{color:var(--good)} .why .ml{color:var(--mil)}
+
+/* run timeline */
+.timeline{border:1px solid var(--line);border-radius:10px;background:var(--ink-950);margin:1rem 0 .3rem;padding:.5rem .6rem .35rem}
+.timeline .tlk{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500);display:flex;justify-content:space-between;margin-bottom:.25rem}
+.timeline .tlk b{color:var(--accent)}
+canvas{display:block;width:100%;border-radius:6px}
+#tl{height:96px}
+.scrub{width:100%;margin:.45rem 0 .1rem}
+.scrublbl{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.6rem;color:var(--fog-500);letter-spacing:.06em}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.2rem 0 .4rem}
+@media(max-width:600px){.controls{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.meterrow{grid-template-columns:1fr}
+  .boardhdr,.posting{grid-template-columns:1.5fr 1.5fr 1fr;}
+  .boardhdr span:nth-child(2){display:none}.posting .route{display:none}}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.05em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.ctl label .num{color:var(--accent);font-size:.74rem;flex:0 0 auto}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+input[type=range].milmix::-webkit-slider-thumb{background:var(--mil);box-shadow:0 0 0 1px var(--mil)}
+input[type=range].milmix::-moz-range-thumb{background:var(--mil)}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 .2rem;align-items:center}
+button{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--accent);background:var(--ink-700)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.ghost{background:transparent}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.demoZone{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px dashed var(--line)}
+.demoZone .lbl{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);width:100%}
+button.demo{border-color:var(--cool);color:var(--cool);background:var(--cool-soft)}
+button.demo:hover{background:color-mix(in oklab,var(--cool) 26%,transparent)}
+button.scen{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+button.scen:hover{background:color-mix(in oklab,var(--bad) 26%,transparent)}
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.8rem 0 0;letter-spacing:.02em;line-height:1.5}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">The Contract Board</span></li>
+    </ol>
+  </nav>
+
+  <div class="chip">R.4</div>
+  <p class="eyebrow">the board is the readout</p>
+  <h1>The Contract Board</h1>
+  <p class="lede">You run one hauler. The faction posts the work. Every contract on the board is a coin the treasury could spare and a hole at the front it needs plugged — so the board, read as a whole, is a live X-ray of a war you never see directly.</p>
+
+  <div class="spark">
+    A quiet board is not the designer's quest list drying up. <b>It's a war going broke.</b> When the postings thin out and skew military-first, that isn't less content — it's the treasury telling you, in the only language it has, that it can no longer afford to want everything it needs.
+  </div>
+
+  <p>This is the <strong>amber lineage</strong> — the economic reading of <em>Minimalist Space Logistics</em>. Supply and demand is the friendly faction AI's job <span class="handle">(R.4)</span>: it reaches you the way a trucker meets the economy in <em>Euro Truck Simulator</em> — as <strong>job postings on a board</strong>. The faction fights an unwinnable war on a finite <strong>treasury</strong> that drains as it pays bounties and refills slowly on war bonds; the front runs chronic <strong>deficits</strong> in military goods.</p>
+
+  <p>A sibling page — <span class="handle">utility-ai-fit</span> — already covers <em>how</em> you, the player, should score and rank these contracts (response curves vs greedy pick). <strong>This page is about something else:</strong> the board itself as an <em>economic signal across a whole run</em> — how it is generated, how it expires, and how a player learns to <em>read</em> it. Not which job to take. What the shape of the offers is trying to tell you.</p>
+
+  <!-- ======================= THE SIM ======================= -->
+  <div class="sim" id="sim">
+    <div class="sim-head">
+      <span class="t">CONTRACT BOARD · faction job postings · one run</span>
+      <span class="tick">TICK <span id="tickN">0</span> / <span id="tickMax">240</span></span>
+    </div>
+    <div class="sim-body">
+
+      <div class="phase" id="phaseBar"><span class="dotp" id="phaseDot"></span><span id="phaseTxt">Fresh run. Press Play to watch a war spend itself down.</span></div>
+
+      <!-- treasury gauge -->
+      <div class="gaugewrap" id="gaugeWrap">
+        <div class="k"><span>Faction treasury — the one number the whole board falls out of</span><span class="gv" id="treasGV">—</span></div>
+        <div class="gauge">
+          <div class="fill" id="treasFill" style="width:60%"></div>
+          <div class="floorlbl" id="floorLbl" style="left:40%">spendable floor</div>
+          <div class="floor" id="treasFloor" style="left:40%"></div>
+        </div>
+        <div class="note" id="treasNote">the faction will not post a bounty it cannot fund from the slice <b>above</b> the floor.</div>
+      </div>
+
+      <!-- generosity meter + posting count -->
+      <div class="meterrow">
+        <div class="meter">
+          <div class="k"><span>Board generosity — Σ live bounties</span><span id="genTrend">—</span></div>
+          <div class="bigv"><span id="genVal">0</span> <span class="u">cr posted</span></div>
+          <div class="gbar"><div class="gf" id="genBar" style="width:0%"></div></div>
+          <div class="msub" id="genSub">total credits the board is currently offering you</div>
+        </div>
+        <div class="meter">
+          <div class="k"><span>Postings live</span><span id="cntTag">—</span></div>
+          <div class="bigv"><span id="cntVal">0</span> <span class="u">/ <span id="cntCap">14</span> slots</span></div>
+          <div class="mix"><div class="mil" id="mixMil" style="width:50%"></div><div class="gen" id="mixGen" style="width:50%"></div></div>
+          <div class="mixleg"><span><b class="m">military</b> <span id="milN">0</span></span><span><span id="genN">0</span> <b class="g">general</b></span></div>
+        </div>
+      </div>
+
+      <!-- THE BOARD -->
+      <div class="boardwrap">
+        <div class="boardhdr"><span>Good</span><span>Origin → Drop-off</span><span>Payout</span><span>Expiry ▾</span></div>
+        <div class="board" id="board"></div>
+        <div class="boardfoot">
+          <span>posted this tick: <b id="fPosted">0</b> · expired: <b id="fExpired">0</b> · <span style="color:var(--bad)">voided by overrun: <b id="fVoided" style="color:var(--bad)">0</b></span></span>
+          <span>cycle every <b id="fCycle">4</b> ticks · sorted by urgency</span>
+        </div>
+      </div>
+
+      <div class="why" id="whyLine">awaiting first posting cycle…</div>
+
+      <!-- RUN TIMELINE -->
+      <div class="timeline">
+        <div class="tlk"><span>Run timeline — treasury (amber) · generosity (faint amber) · postings (bars) · front advance (red)</span><b id="tlNow">t0</b></div>
+        <canvas id="tl" width="960" height="96"></canvas>
+        <input type="range" class="scrub" id="scrub" min="0" max="240" step="1" value="0">
+        <div class="scrublbl"><span>t0 · war fresh</span><span>drag to scrub the whole run · ◀ rewind any time</span><span>t<span id="tlEnd">240</span> · last stand</span></div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls">
+        <div class="ctl"><label>Starting treasury <span class="num" id="vTreas">62%</span></label><input type="range" id="treas" min="8" max="100" step="1" value="62"></div>
+        <div class="ctl"><label>War intensity · deficit magnitude <span class="num" id="vWar">5</span></label><input type="range" id="war" min="1" max="10" step="1" value="5"></div>
+        <div class="ctl"><label>Spendable fraction · the floor it won't dip below <span class="num" id="vFloor">40%</span></label><input type="range" id="floor" min="0" max="80" step="1" value="40"></div>
+        <div class="ctl"><label>War-bond refill rate · territory-scaled <span class="num" id="vBond">5</span></label><input type="range" id="bond" min="0" max="14" step="1" value="5"></div>
+        <div class="ctl"><label>Military-vs-general weighting <span class="num" id="vMix">balanced</span></label><input type="range" class="milmix" id="mix" min="0" max="100" step="1" value="50"></div>
+        <div class="ctl"><label>Front advance speed · overrun clock <span class="num" id="vAdv">5</span></label><input type="range" id="adv" min="0" max="10" step="1" value="5"></div>
+      </div>
+
+      <div class="btnrow">
+        <button id="playBtn" class="primary">▶ Play run</button>
+        <button id="stepBtn">⏭ Step</button>
+        <button id="resetBtn" class="ghost">↺ Reset (seed 4174)</button>
+        <span class="sep"></span>
+        <span style="font-family:var(--font-mono);font-size:.7rem;color:var(--fog-500)">speed</span>
+        <button id="speedBtn" class="ghost">1×</button>
+      </div>
+
+      <div class="demoZone">
+        <span class="lbl">one-click scenarios · watch the board read the war</span>
+        <button class="scen" id="scenBroke">⤓ Drain the treasury — watch it go broke</button>
+        <button class="demo" id="scenFat">⤒ Fat war chest — a flooded board</button>
+        <button class="demo" id="scenOverrun">✖ Front collapse — postings voided as it advances</button>
+      </div>
+
+      <div class="status" id="status">Ready. Seed 4174. Press <span class="kbd">Play run</span>, drag the <span class="kbd">scrub</span> bar, or run a scenario. Keys: <span class="kbd">space</span> play/pause · <span class="kbd">→</span> step.</div>
+
+    </div>
+  </div>
+  <!-- ===================== /THE SIM ===================== -->
+
+  <p class="note">Everything above is computed live by a fixed-timestep model in <em>integer credits</em>, with all randomness drawn from one tiny <code>mulberry32</code> PRNG advanced in a fixed order each tick. The same seed and the same control settings reproduce the run posting-for-posting <span class="handle">(APR.5)</span> — you can scrub backward and forward through a deterministic history, not a re-roll.</p>
+
+  <hr class="rule">
+
+  <h2>How to read it</h2>
+
+  <h3>R.4.1 · The board is the treasury, drawn sideways</h3>
+  <p>Nobody hand-authors this list. Each posting cycle the faction does one cheap, legible thing — a <strong>budget-constrained greedy fill</strong>, knapsack-flavored:</p>
+  <div class="card"><p class="tight" style="font-family:var(--font-mono);color:var(--fog-100);font-size:.92rem">1. scan unmet front-segment deficits → rank the gaps by <b>urgency</b><br>2. walk the ranked gaps; for each, compute <b>bounty = base(good) × urgency × treasury-confidence</b><br>3. post it <b>only while</b> the spendable slice (treasury − floor) can still fund that bounty<br>4. stop when the slice is exhausted, or the slot cap is hit</p></div>
+  <p>That's the whole generator. The <strong>generosity of the entire board</strong> — how many jobs, how fat the payouts — falls straight out of <em>one</em> treasury number. A fat treasury floods the board with many high-bounty contracts; a thin one posts a short list of lean, military-first jobs and cuts the generals entirely. You are not reading a content schedule. You are reading a <strong>live histogram of what the war can afford to want.</strong></p>
+
+  <h3>R.4.2 · Generosity tracks the treasury — watch them move together</h3>
+  <p>Open the sim and watch three numbers move as one: the <strong>treasury gauge</strong>, the <strong>generosity meter</strong> (sum of every live bounty), and the <strong>posting count</strong>. Drag <em>Starting treasury</em> up and the board floods; drag it down and it empties. They are not three independent dials — generosity <em>is</em> the treasury, expressed as offers. The "treasury-confidence" factor means a war that's running low doesn't just post fewer jobs, it posts <em>stingier</em> ones: a faction tightening its belt pays less per job even for the jobs it still posts. That double squeeze is why a board can feel rich one stretch and threadbare the next on the very same map.</p>
+
+  <h3>R.4.3 · A thinning, military-skewing board is an early-warning system</h3>
+  <p>Here is the read the whole page is built to teach. As a run wears on, the treasury drains faster than war bonds refill, and the front advances. The board responds in a specific, learnable order: first the <strong>generals get cut</strong> (food, parts, luxuries — nice-to-haves the war can no longer justify), then the <strong>payouts shrink</strong> on what's left, then the <strong>count collapses</strong> toward the floor. A board that is all military, all small, all urgent is a faction in its last stand. <strong>Learn to read that shape and you get a warning the game never spells out:</strong> the war is losing, and your income is about to dry up with it. The "war going broke" state isn't a fail screen — it's a thin amber line of three desperate jobs.</p>
+
+  <h3>R.4.4 · Expiry reads the front, and the danger isn't in the payout</h3>
+  <p>Contracts expire on the <em>same clock that overruns systems</em>. A posting's value decays as its drop-off nears the front; if the destination is <strong>overrun before you arrive</strong>, the contract is voided — struck through on the board, paying nothing. Crucially <span class="handle">(M2.4)</span>, <strong>the danger is not priced into the payout.</strong> The faction won't pay you a risk premium for a near-front run; the only tell is <em>where the drop-off sits</em> relative to the advancing line. A fat bounty on a system the front is about to swallow is a trap the board states plainly without ever warning you — you read it in the <em>geometry</em>, the little ▼danger marker, not the number. That's deliberate: pricing the danger in would do the reading for you.</p>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in one line:</strong> the board isn't authored content — it's a live histogram of what the war can <em>afford</em> to want. A quiet, military-skewed board is the cheapest early-warning instrument in the game, and it costs the designer nothing because it's just the treasury, drawn as a list.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>A board that goes too quiet starves the player</h4>
+    <p>If generosity is purely the treasury and the war is losing, the board can empty so far that the player has <em>no viable income</em> exactly when they most need to fund a comeback — a death spiral the player can't act their way out of, which reads as the game being broken rather than the war being lost.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> the <em>spendable fraction</em> is a <b>treasury floor</b> — a slice the faction will dip into to keep a minimum board alive even when broke. Pull the floor slider down to 0 and watch the board flatline to nothing; raise it and a thin-but-real board of military jobs survives the worst stretch. The floor is the difference between "hard" and "unwinnable-and-boring."</p>
+  </div>
+
+  <div class="risk">
+    <h4>Legibility — "why are there so few jobs?"</h4>
+    <p>A board that silently thins is indistinguishable, to a confused player, from a bug or content that ran out. If they can't tell <em>why</em> the offers dried up, the signal is noise and the early-warning value is lost.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> a one-line <em>bounty rationale</em> is pinned under the board every cycle ("treasury at 12% → only 2 military jobs funded, generals cut"), and the treasury gauge sits directly above the postings so cause and effect are stacked. The "why so few jobs?" question always has a visible, plain-language answer — the board explains itself.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Determinism rot</h4>
+    <p>If posting generation ever consulted wall-clock time, an unseeded <code>Math.random</code>, or a non-fixed iteration order, two runs of the same seed would post different boards — and a seed-as-a-run economy quietly stops being reproducible <span class="handle">(APR.5)</span>, breaking replays and the scrub bar above.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> one reseedable <code>mulberry32</code> advanced in a fixed order, integer-credit bounty math, and a fixed cycle order (refill → advance front → expire/void → rank gaps → greedy post). The scrub bar replays a stored history; same seed and settings give the same run, every time.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">The board is the faction AI's whole external surface <span class="handle">(R.4)</span>: you never see the treasury ledger or the front's order-of-battle, only the offers they cast off. That's the economy of it — one cheap greedy generator turns a hidden war's solvency into a list a player can learn to read at a glance. The sibling <span class="handle">utility-ai-fit</span> picks up where this leaves off: given this board, which contract is worth your one hauler's next run.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · R.4 — THE FACTION BOARD · contract-board · the amber lineage<br>
+    deterministic · seeded · self-contained · no network · a quiet board is a war going broke
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   THE CONTRACT BOARD — deterministic faction job-posting model
+   The board is the visible shadow of a hidden war economy:
+     - generosity reads the treasury
+     - existence reads the deficit
+     - expiry reads the front's approach
+   A budget-constrained GREEDY generator on a posting cycle.
+   Fixed-timestep tick; ONE seeded PRNG advanced in fixed order.
+   Integer credits.
+   Cycle order per tick (fixed, for determinism):
+     1) war-bond refill        2) advance the front
+     3) age/expire/void live postings
+     4) (on a cycle boundary) rank unmet deficits by urgency
+     5) greedy-fill the board while the spendable slice can fund
+   The whole run is stored as a history so the scrub bar replays
+   a deterministic timeline rather than re-rolling.
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ---- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const els = {
+  tickN:$('tickN'), tickMax:$('tickMax'),
+  phaseBar:$('phaseBar'), phaseDot:$('phaseDot'), phaseTxt:$('phaseTxt'),
+  treasGV:$('treasGV'), treasFill:$('treasFill'), treasFloor:$('treasFloor'), floorLbl:$('floorLbl'),
+  treasNote:$('treasNote'), gaugeWrap:$('gaugeWrap'),
+  genVal:$('genVal'), genBar:$('genBar'), genSub:$('genSub'), genTrend:$('genTrend'),
+  cntVal:$('cntVal'), cntCap:$('cntCap'), cntTag:$('cntTag'),
+  mixMil:$('mixMil'), mixGen:$('mixGen'), milN:$('milN'), genN:$('genN'),
+  board:$('board'), whyLine:$('whyLine'),
+  fPosted:$('fPosted'), fExpired:$('fExpired'), fVoided:$('fVoided'), fCycle:$('fCycle'),
+  tl:$('tl'), tlNow:$('tlNow'), tlEnd:$('tlEnd'), scrub:$('scrub'),
+  treas:$('treas'), war:$('war'), floor:$('floor'), bond:$('bond'), mix:$('mix'), adv:$('adv'),
+  vTreas:$('vTreas'), vWar:$('vWar'), vFloor:$('vFloor'), vBond:$('vBond'), vMix:$('vMix'), vAdv:$('vAdv'),
+  playBtn:$('playBtn'), stepBtn:$('stepBtn'), resetBtn:$('resetBtn'), speedBtn:$('speedBtn'),
+  scenBroke:$('scenBroke'), scenFat:$('scenFat'), scenOverrun:$('scenOverrun'),
+  status:$('status'),
+};
+
+/* ---- run / economy constants ---- */
+const SEED      = 4174;
+const RUN_LEN   = 240;        // ticks in a full run (the war's span)
+const CYCLE     = 4;          // a posting cycle every N ticks
+const SLOT_CAP  = 14;         // max simultaneous live postings on the board
+const TREAS_MAX = 100000;     // integer credits; gauge shows pct of this
+const NSEG      = 7;          // front segments the war is fought across
+
+/* good catalogue: military vs general, with an integer base bounty.
+   Military goods are what the front actually consumes; generals are the
+   nice-to-haves a solvent war also moves (and the first thing it cuts). */
+const GOODS = [
+  {name:'Munitions',     mil:true,  base:1400},
+  {name:'Armor plate',   mil:true,  base:1250},
+  {name:'Med-kits',      mil:true,  base:1050},
+  {name:'Drone cores',   mil:true,  base:1600},
+  {name:'Reactor fuel',  mil:true,  base:1500},
+  {name:'Coilgun rounds',mil:true,  base:1150},
+  {name:'Rations',       mil:false, base:620 },
+  {name:'Spare parts',   mil:false, base:760 },
+  {name:'Coolant',       mil:false, base:540 },
+  {name:'Hab modules',   mil:false, base:880 },
+  {name:'Luxuries',      mil:false, base:430 },
+  {name:'Survey data',   mil:false, base:690 },
+];
+const ORIGINS = ['Ceres Dock','Hadley Yard','Vesta Ring','Tycho Base','Pallas Hub','Io Foundry','Kepler Stn'];
+const DESTS   = ['Sector 12','Outpost K','The Notch','Red Verge','Gap-9','Bastion','Far Picket','Cinder Line','Mireside','Knife Edge'];
+
+/* ---- helpers ---- */
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+function fmtCr(n){ return n.toLocaleString('en-US'); }
+function pct01(x){ return Math.round(clamp(x,0,1)*100); }
+
+let S, prng, running=false, raf=null, speed=1, acc=0, lastT=0;
+let scenario=null;        // active scripted scenario
+let scrubbing=false;      // user is dragging the timeline scrub
+let uid=0;
+
+/* ---- world state ----------------------------------------------------- */
+function freshState(){
+  // seed per-run randomized-but-deterministic segment deficits/positions
+  const r = mulberry32(SEED ^ 0x9e37);
+  const segs=[];
+  for(let i=0;i<NSEG;i++){
+    segs.push({
+      id:i,
+      deficit: 0.3 + r()*0.7,          // unmet demand 0..1 (urgency seed)
+      dist:    0.45 + r()*0.5,         // 0=front here (overrun), 1=deep safe rear
+      mil:     r()<0.62,               // segment chiefly needs military goods?
+    });
+  }
+  return {
+    tick:0,
+    treasury: Math.round(TREAS_MAX*0.62),   // integer credits
+    front: 0,                                // 0..1 advance of the line (rises = losing)
+    segs,
+    postings: [],                            // live postings on the board
+    // per-cycle bookkeeping for readouts
+    lastPosted:0, lastExpired:0, lastVoided:0,
+    cumVoided:0,
+    why:'awaiting first posting cycle…',
+    phase:'fresh',
+    history:[],                              // one snapshot per tick (for scrub + chart)
+    ended:false,
+  };
+}
+
+/* ---- read the controls (integer-ish) ---- */
+function cfg(){
+  return {
+    war:   +els.war.value,                       // 1..10 deficit magnitude
+    floorFrac: (+els.floor.value)/100,           // spendable floor as frac of MAX
+    bond:  +els.bond.value,                       // war-bond refill rate 0..14
+    mixW:  (+els.mix.value)/100,                  // 0 = all general, 1 = all military
+    adv:   +els.adv.value,                         // front advance speed 0..10
+  };
+}
+
+/* ===================================================================== *
+ *  ONE FIXED TICK OF THE WAR
+ * ===================================================================== */
+function step(){
+  if(S.ended){ return; }
+  const st=S, c=cfg();
+  st.tick++;
+
+  /* 1) WAR-BOND REFILL — territory-scaled: the more the front has advanced
+        (less territory held), the weaker the refill. A losing war earns less. */
+  const territory = 1 - st.front;                       // 1 = full rear, 0 = collapsed
+  const refill = Math.round(c.bond * 70 * (0.25 + 0.75*territory));
+  st.treasury = clamp(st.treasury + refill, 0, TREAS_MAX);
+
+  /* 2) ADVANCE THE FRONT — the overrun clock. Higher war intensity + a
+        drained treasury (can't fund defense) push the line forward faster. */
+  const brokeFactor = 1 - (st.treasury/TREAS_MAX);      // 0 flush .. 1 empty
+  const advRate = (c.adv/10) * (0.0016 + 0.0042*(c.war/10)) * (0.6 + 0.9*brokeFactor);
+  st.front = clamp(st.front + advRate, 0, 1);
+  // segments closest to the rear get eaten first as the line sweeps in
+  for(const s of st.segs){
+    // distance-to-front shrinks as the line (st.front) rises toward the segment
+    s.live = s.dist - st.front;                          // >0 still behind the line
+    // chronic deficit grows with war intensity, decays a touch when funded
+    s.deficit = clamp(s.deficit + (c.war/10)*0.012 - 0.004, 0.05, 1);
+  }
+
+  /* 3) AGE / EXPIRE / VOID live postings (the same clock that overruns systems) */
+  st.lastExpired=0; st.lastVoided=0;
+  for(const p of st.postings){
+    if(p.dead) continue;
+    p.age++;
+    // value decays as the drop-off nears the front (danger, unpriced into payout)
+    const seg = st.segs[p.seg];
+    const margin = seg.dist - st.front;                  // distance drop-off sits ahead of line
+    p.danger = clamp(1 - margin/0.5, 0, 1);              // 0 safe .. 1 about to be overrun
+    if(margin <= 0){                                     // OVERRUN before you arrived → voided
+      p.dead=true; p.void=true; p.fadeAt=st.tick; st.lastVoided++; st.cumVoided++;
+    } else if(p.age >= p.ttl){                           // timed out
+      p.dead=true; p.expired=true; p.fadeAt=st.tick; st.lastExpired++;
+    }
+  }
+  // sweep out postings that have been dead long enough to clear the board
+  st.postings = st.postings.filter(p=> !p.dead || (st.tick - p.fadeAt) < 3 );
+
+  /* 4 + 5) POSTING CYCLE: rank unmet deficits, greedy-fill while funded */
+  st.lastPosted=0;
+  let cycled=false;
+  if(st.tick % CYCLE === 0){
+    cycled=true;
+    runPostingCycle(st,c);
+  }
+
+  // mark phase + why + record history snapshot
+  classify(st,c,cycled);
+  recordHistory(st);
+
+  // end of run
+  if(st.tick>=RUN_LEN){ st.ended=true; pause();
+    flashStatus('Run complete at t'+RUN_LEN+'. Treasury ended at '+pct01(st.treasury/TREAS_MAX)+'%. Scrub back to re-read any stretch, or Reset.'); }
+
+  // scripted scenario hook (acts after the world tick)
+  if(scenario) scenario.drive(st,c);
+}
+
+/* ---- the budget-constrained greedy generator (R.4.1) ------------------ */
+function runPostingCycle(st,c){
+  const floorCr = Math.round(TREAS_MAX * cfg().floorFrac);
+  let spendable = Math.max(0, st.treasury - floorCr);     // the slice it won't dip below
+  // treasury-confidence: a low war chest pays stingier per job, not just fewer
+  const confidence = clamp(0.45 + 0.75*(st.treasury/TREAS_MAX), 0.45, 1.15);
+
+  // free slots available on the board right now
+  const liveCount = st.postings.filter(p=>!p.dead).length;
+  let slots = SLOT_CAP - liveCount;
+
+  // RANK unmet front-segment deficits by urgency (deficit × proximity-to-front).
+  // Segments the line is about to eat are most urgent; ones already overrun are gone.
+  const ranked = st.segs
+    .map(s=>{
+      const margin = s.dist - st.front;
+      const proximity = clamp(1 - margin/0.6, 0, 1);      // closer to front = more urgent
+      const urgency = clamp(s.deficit*(0.55) + proximity*0.6 + (c.war/10)*0.25, 0.05, 1.6);
+      return {s, urgency, margin, dead: margin<=0};
+    })
+    .filter(x=>!x.dead)
+    .sort((a,b)=> b.urgency - a.urgency);
+
+  let posted=0, milPosted=0, genPosted=0, cutGeneral=false, cutBudget=false;
+
+  // walk ranked gaps; for each, try to post 1-2 contracts while funded
+  for(const g of ranked){
+    if(slots<=0){ break; }
+    // how many postings this gap wants this cycle scales with urgency
+    const wants = g.urgency>1.0 ? 2 : 1;
+    for(let k=0;k<wants;k++){
+      if(slots<=0) break;
+      // choose a good: military bias from segment need + global mil/gen weighting.
+      // When confidence is low we bias HARD toward military (generals get cut).
+      const milPressure = clamp(c.mixW*0.6 + (g.s.mil?0.25:0) + (1-st.treasury/TREAS_MAX)*0.4, 0, 1);
+      const wantMil = prng() < milPressure;
+      // if we want a general but the war is too broke to justify it, skip → "generals cut"
+      if(!wantMil && confidence < 0.7){ cutGeneral=true; continue; }
+      const pool = GOODS.filter(x=> x.mil===wantMil);
+      const good = pool[Math.floor(prng()*pool.length)];
+
+      // BOUNTY = base(good) × urgency × treasury-confidence  (integer credits)
+      const noise = 0.9 + prng()*0.25;
+      const bounty = Math.round(good.base * (0.7+g.urgency*0.7) * confidence * noise);
+
+      if(bounty > spendable){ cutBudget=true; continue; }  // can't fund from the slice → skip
+
+      // FUND IT: the spendable slice shrinks; the treasury is committed.
+      spendable -= bounty;
+      st.treasury = clamp(st.treasury - bounty, 0, TREAS_MAX);
+
+      // build the posting
+      const ttl = 14 + Math.floor(prng()*16);              // ticks until it times out
+      const p = {
+        id:++uid, good:good.name, mil:good.mil, pay:bounty,
+        origin: ORIGINS[Math.floor(prng()*ORIGINS.length)],
+        dest:   DESTS[Math.floor(prng()*DESTS.length)],
+        seg: g.s.id, age:0, ttl, danger:g.s ? clamp(1-g.margin/0.5,0,1):0,
+        born: st.tick, isNew:true, dead:false,
+      };
+      st.postings.push(p);
+      posted++; slots--; if(good.mil) milPosted++; else genPosted++;
+    }
+  }
+
+  st.lastPosted = posted;
+  st._cutGeneral = cutGeneral;
+  st._cutBudget = cutBudget;
+  st._confidence = confidence;
+  st._spendableLeft = spendable;
+}
+
+/* ---- classify the run phase + author the plain-language "why" --------- */
+function classify(st,c,cycled){
+  const live = st.postings.filter(p=>!p.dead);
+  const n = live.length;
+  const mil = live.filter(p=>p.mil).length;
+  const gen = n-mil;
+  const tFrac = st.treasury/TREAS_MAX;
+  const milShare = n? mil/n : 0;
+
+  // phase
+  let phase, color, txt;
+  if(tFrac>0.6 && n>=9){ phase='flush'; color='var(--good)';
+    txt='<b>Flush war chest.</b> The board is flooded — many high-bounty jobs, generals and military both. The faction can afford to want everything.'; }
+  else if(tFrac>0.32 && n>=5){ phase='steady'; color='var(--accent)';
+    txt='<b>Steady.</b> A working board. Bounties are moderate; the mix still carries some general cargo alongside the military backbone.'; }
+  else if(tFrac>0.14){ phase='tightening'; color='#f0a35e';
+    txt='<b>Tightening.</b> The treasury is draining — generals are getting cut, payouts are shrinking, the board skews military-first.'; }
+  else { phase='broke'; color='var(--bad)';
+    txt='<b>Going broke.</b> A war that can no longer afford to want things. A handful of small, urgent, all-military jobs — this is the early-warning shape.'; }
+  if(st.ended){ txt = '<b>Run over (t'+RUN_LEN+').</b> '+txt.replace(/^<b>[^<]*<\/b>\s*/,''); }
+  st.phase=phase;
+  els.phaseDot.style.background=color;
+
+  // why-line — only refresh narrative on a cycle (when the board actually changed)
+  if(cycled){
+    const conf = st._confidence!=null? st._confidence : 1;
+    let why;
+    if(st.lastVoided>0){
+      why = `the front overran <span class="dn">${st.lastVoided}</span> drop-off${st.lastVoided>1?'s':''} this cycle — those bounties paid <b>nothing</b>. Danger isn’t in the payout, it’s in how close the drop-off sits to the line.`;
+    } else if(phase==='broke'){
+      why = `treasury at <span class="dn">${pct01(tFrac)}%</span> → only <b>${n}</b> ${n===1?'job':'jobs'} funded${gen===0?', <span class="ml">all military</span>, generals cut':''}. The spendable slice is nearly gone.`;
+    } else if(st._cutGeneral){
+      why = `treasury at <span class="hot">${pct01(tFrac)}%</span> → confidence ${(conf).toFixed(2)} too low to justify general cargo. <b>${mil}</b> military posted, <b>${gen}</b> general — the war is rationing.`;
+    } else if(st._cutBudget){
+      why = `spendable slice exhausted mid-cycle → board capped at <b>${n}</b> postings. The next gaps went unfunded; the treasury simply ran out of room above the floor.`;
+    } else if(phase==='flush'){
+      why = `treasury at <span class="up">${pct01(tFrac)}%</span> → confidence ${(conf).toFixed(2)} funds a fat board: <b>${n}</b> jobs (<b>${mil}</b> mil / <b>${gen}</b> gen), high bounties. The war can afford to want everything.`;
+    } else {
+      why = `treasury at ${pct01(tFrac)}% → <b>${n}</b> jobs posted (<b>${mil}</b> mil / <b>${gen}</b> gen). Generosity is tracking the war chest, as it always does.`;
+    }
+    st.why = why;
+  }
+}
+
+/* ---- record a per-tick snapshot for the scrub bar + timeline chart ---- */
+function recordHistory(st){
+  const live = st.postings.filter(p=>!p.dead);
+  st.history[st.tick] = {
+    treasury: st.treasury,
+    front: st.front,
+    n: live.length,
+    mil: live.filter(p=>p.mil).length,
+    generosity: live.reduce((a,p)=>a+p.pay,0),
+  };
+}
+
+/* ===================================================================== *
+ *  RENDER
+ * ===================================================================== */
+function render(){
+  const st=S, c=cfg();
+  els.tickN.textContent = st.tick;
+  els.tickMax.textContent = RUN_LEN;
+
+  const live = st.postings.filter(p=>!p.dead);
+  const dead = st.postings.filter(p=>p.dead);
+  const n = live.length;
+  const mil = live.filter(p=>p.mil).length;
+  const gen = n-mil;
+  const generosity = live.reduce((a,p)=>a+p.pay,0);
+  const tFrac = st.treasury/TREAS_MAX;
+
+  /* phase banner */
+  els.phaseTxt.innerHTML = st.phase ? phaseText(st) : els.phaseTxt.innerHTML;
+
+  /* treasury gauge */
+  els.treasGV.textContent = pct01(tFrac)+'% · '+fmtCr(st.treasury)+' cr';
+  els.treasFill.style.width = (tFrac*100)+'%';
+  const floorPct = (+els.floor.value);
+  els.treasFloor.style.left = floorPct+'%';
+  els.floorLbl.style.left = floorPct+'%';
+  els.gaugeWrap.classList.toggle('broke', tFrac < floorPct/100 + 0.02);
+  const spendablePct = Math.max(0, pct01(tFrac) - floorPct);
+  els.treasNote.innerHTML = spendablePct<=1
+    ? `spendable slice is <b>empty</b> — treasury is at/under the floor. The floor still forces a minimum board.`
+    : `spendable slice: <b>${spendablePct}%</b> of max sits above the floor — that’s all the board can be funded from.`;
+
+  /* generosity meter */
+  els.genVal.textContent = fmtCr(generosity);
+  const GEN_FULL = 22000;  // a "fat board" reference for the bar
+  els.genBar.style.width = clamp(generosity/GEN_FULL,0,1)*100+'%';
+  els.genSub.textContent = n? `${fmtCr(Math.round(generosity/Math.max(n,1)))} cr average per job` : 'board empty — no income on offer';
+  els.genTrend.innerHTML = genTrendArrow(st);
+
+  /* posting count + mix */
+  els.cntVal.textContent = n;
+  els.cntCap.textContent = SLOT_CAP;
+  els.milN.textContent = mil; els.genN.textContent = gen;
+  els.mixMil.style.width = n? (mil/n*100)+'%' : '0%';
+  els.mixGen.style.width = n? (gen/n*100)+'%' : '0%';
+  els.cntTag.innerHTML = n===0? '<span style="color:var(--bad)">EMPTY</span>'
+                       : gen===0? '<span style="color:var(--mil)">ALL MILITARY</span>'
+                       : (n>=SLOT_CAP-1? '<span style="color:var(--good)">FULL</span>':'');
+
+  /* the board list */
+  renderBoard(st, live, dead);
+
+  /* board footer */
+  els.fPosted.textContent = st.lastPosted;
+  els.fExpired.textContent = st.lastExpired;
+  els.fVoided.textContent = st.lastVoided;
+  els.fCycle.textContent = CYCLE;
+
+  /* why */
+  els.whyLine.innerHTML = st.why;
+
+  /* timeline + scrub */
+  els.tlNow.textContent = 't'+st.tick;
+  els.tlEnd.textContent = RUN_LEN;
+  if(!scrubbing) els.scrub.value = st.tick;
+  drawTimeline(st);
+}
+
+function phaseText(st){
+  // re-derive a stable banner string (kept in classify but recomputed here for scrub)
+  const live = st.postings.filter(p=>!p.dead);
+  const n=live.length, tFrac=st.treasury/TREAS_MAX;
+  if(st.ended) return '<b>Run over (t'+RUN_LEN+').</b> Scrub to re-read any stretch of the war, or Reset for a fresh seed.';
+  if(tFrac>0.6 && n>=9) return '<b>Flush war chest.</b> The board is flooded — the faction can afford to want everything.';
+  if(tFrac>0.32 && n>=5) return '<b>Steady.</b> A working board; military backbone with some general cargo.';
+  if(tFrac>0.14) return '<b>Tightening.</b> Generals getting cut, payouts shrinking, board skewing military-first.';
+  return '<b>Going broke.</b> A few small, urgent, all-military jobs — the early-warning shape of a losing war.';
+}
+
+let _lastGen=0;
+function genTrendArrow(st){
+  const live=st.postings.filter(p=>!p.dead);
+  const g=live.reduce((a,p)=>a+p.pay,0);
+  let out;
+  if(g>_lastGen+200) out='<span style="color:var(--good)">▲ rising</span>';
+  else if(g<_lastGen-200) out='<span style="color:var(--bad)">▼ falling</span>';
+  else out='<span style="color:var(--fog-500)">• steady</span>';
+  _lastGen=g;
+  return out;
+}
+
+/* ---- render the scrollable board of postings ------------------------- */
+function renderBoard(st, live, dead){
+  const board = els.board;
+  if(live.length===0 && dead.length===0){
+    board.innerHTML = '<div class="empty">— board empty —<br>'+
+      (st.tick===0? 'press <b style="color:var(--accent)">Play run</b> to open the first posting cycle'
+                  : 'the war can fund <b>nothing</b> above its floor right now. A quiet board is a war going broke.')+'</div>';
+    return;
+  }
+  // sort live by urgency-ish: military first, then by payout desc (a readable order)
+  const sorted = [...live].sort((a,b)=> (b.mil-a.mil) || (b.pay-a.pay));
+  // keep recently-dead ones visible briefly, after the live ones
+  const shownDead = dead.filter(p=> (st.tick-p.fadeAt)<3);
+
+  let html='';
+  for(const p of sorted){
+    const expFrac = clamp(1 - p.age/p.ttl, 0, 1);
+    const dColor = p.danger>0.66?'var(--bad)':p.danger>0.33?'#f0a35e':'var(--good)';
+    const danger = p.danger>0.33 ? `<span class="danger" style="color:${dColor}" title="drop-off near the front">▼${Math.round(p.danger*100)}%</span>` : '';
+    html += `<div class="posting${p.isNew?' new':''}">`+
+      `<span class="good"><span class="tag ${p.mil?'m':'g'}">${p.mil?'MIL':'GEN'}</span>${p.good}</span>`+
+      `<span class="route">${p.origin}<span class="arrow">→</span>${p.dest} ${danger}</span>`+
+      `<span class="pay">${fmtCr(p.pay)}</span>`+
+      `<span class="exp"><span class="expbar"><i style="width:${expFrac*100}%;background:${expFrac<0.3?'var(--bad)':expFrac<0.6?'#f0a35e':'var(--good)'}"></i></span>${p.age}/${p.ttl}</span>`+
+      `</div>`;
+    p.isNew=false;
+  }
+  for(const p of shownDead){
+    html += `<div class="posting ${p.void?'voided':'expiring'}">`+
+      `<span class="good"><span class="tag ${p.mil?'m':'g'}">${p.mil?'MIL':'GEN'}</span>${p.good}</span>`+
+      `<span class="route">${p.origin}<span class="arrow">→</span>${p.dest}</span>`+
+      `<span class="pay">${fmtCr(p.pay)}</span>`+
+      `<span class="exp">${p.void?'<span class="stamp">overrun ✖</span>':'<span style="color:var(--fog-500)">expired</span>'}</span>`+
+      `</div>`;
+  }
+  board.innerHTML = html;
+}
+
+/* ---- timeline chart: treasury, generosity, postings, front ----------- */
+const tlx = els.tl.getContext('2d');
+function drawTimeline(st){
+  const c=els.tl, w=c.width, h=c.height;
+  tlx.clearRect(0,0,w,h);
+  // grid
+  tlx.strokeStyle='rgba(255,255,255,.05)'; tlx.lineWidth=1;
+  for(let i=1;i<3;i++){ const y=h*i/3; tlx.beginPath(); tlx.moveTo(0,y); tlx.lineTo(w,y); tlx.stroke(); }
+
+  const hist=st.history, N=RUN_LEN;
+  const X = t => t/N*w;
+
+  // postings as faint bars (count, own scale to SLOT_CAP)
+  tlx.fillStyle='rgba(122,167,255,.16)';
+  for(let t=1;t<=st.tick;t++){
+    const s=hist[t]; if(!s) continue;
+    const bh = (s.n/SLOT_CAP)*h;
+    tlx.fillRect(X(t)-0.6, h-bh, Math.max(1,w/N), bh);
+  }
+
+  // front advance (red) — rising line = the war losing ground
+  tlx.strokeStyle='rgba(248,113,113,.7)'; tlx.lineWidth=1.4; tlx.beginPath();
+  for(let t=1;t<=st.tick;t++){ const s=hist[t]; if(!s)continue; const x=X(t), y=h-(s.front)*h*0.96; t===1?tlx.moveTo(x,y):tlx.lineTo(x,y);} tlx.stroke();
+
+  // generosity (faint amber) on its own scale
+  let gmax=1; for(let t=1;t<=st.tick;t++){ const s=hist[t]; if(s&&s.generosity>gmax)gmax=s.generosity; }
+  gmax=Math.max(gmax, 20000);
+  tlx.strokeStyle='rgba(245,158,11,.4)'; tlx.lineWidth=1.3; tlx.beginPath();
+  for(let t=1;t<=st.tick;t++){ const s=hist[t]; if(!s)continue; const x=X(t), y=h-(s.generosity/gmax)*h*0.92; t===1?tlx.moveTo(x,y):tlx.lineTo(x,y);} tlx.stroke();
+
+  // treasury (bold amber)
+  tlx.strokeStyle='#f59e0b'; tlx.lineWidth=2; tlx.beginPath();
+  for(let t=1;t<=st.tick;t++){ const s=hist[t]; if(!s)continue; const x=X(t), y=h-(s.treasury/TREAS_MAX)*h*0.96; t===1?tlx.moveTo(x,y):tlx.lineTo(x,y);} tlx.stroke();
+
+  // floor line (red dashed) at the spendable floor
+  const floorY = h-(+els.floor.value/100)*h*0.96;
+  tlx.strokeStyle='rgba(248,113,113,.35)'; tlx.setLineDash([4,4]); tlx.lineWidth=1; tlx.beginPath();
+  tlx.moveTo(0,floorY); tlx.lineTo(w,floorY); tlx.stroke(); tlx.setLineDash([]);
+
+  // playhead
+  const px=X(st.tick);
+  tlx.strokeStyle='rgba(238,241,248,.5)'; tlx.lineWidth=1; tlx.beginPath(); tlx.moveTo(px,0); tlx.lineTo(px,h); tlx.stroke();
+  tlx.fillStyle='#eef1f8'; tlx.beginPath(); tlx.arc(px, h-(st.treasury/TREAS_MAX)*h*0.96, 2.6,0,Math.PI*2); tlx.fill();
+}
+
+/* ===================================================================== *
+ *  SCRUB — replay a deterministic history to an arbitrary tick
+ *  We never re-roll: we re-run the model from t0 to the target tick with
+ *  the SAME seed + current settings, so scrubbing is exact and reversible.
+ * ===================================================================== */
+function scrubTo(targetTick){
+  pause(); scenario=null;
+  const settings = {treas:+els.treas.value};
+  // rebuild from scratch and fast-forward deterministically to targetTick
+  hardReset(false);
+  const tgt = clamp(targetTick,0,RUN_LEN);
+  for(let i=0;i<tgt;i++){ step(); }
+  render();
+  flashStatus('Scrubbed to t'+tgt+' · treasury '+pct01(S.treasury/TREAS_MAX)+'% · '+S.postings.filter(p=>!p.dead).length+' postings. Same seed → exact replay.');
+}
+
+/* ===================================================================== *
+ *  LOOP / TRANSPORT
+ * ===================================================================== */
+const TICK_MS = 150;
+function loop(t){
+  if(!running) return;
+  if(!lastT) lastT=t;
+  acc += (t-lastT); lastT=t;
+  const budget = TICK_MS/speed;
+  let guard=0;
+  while(acc>=budget && guard<6){ step(); acc-=budget; guard++; if(S.ended)break; }
+  render();
+  if(running) raf=requestAnimationFrame(loop);
+}
+function play(){ if(running||S.ended)return; running=true; lastT=0; acc=0;
+  els.playBtn.textContent='⏸ Pause'; els.playBtn.classList.add('primary'); raf=requestAnimationFrame(loop); }
+function pause(){ running=false; if(raf)cancelAnimationFrame(raf); els.playBtn.textContent='▶ Play run'; }
+function togglePlay(){ if(S.ended){ hardReset(true); } running?pause():play(); }
+
+/* ---- reset ---- */
+function hardReset(announce){
+  pause(); scenario=null;
+  S = freshState();
+  // apply the starting-treasury control
+  S.treasury = clamp(Math.round(TREAS_MAX * (+els.treas.value/100)), 0, TREAS_MAX);
+  prng = mulberry32(SEED);
+  _lastGen=0;
+  S.why='reset · seed '+SEED+' · press Play run, scrub, or run a scenario';
+  S.phase='fresh';
+  if(announce) flashStatus('Reset to seed '+SEED+'. Treasury '+pct01(S.treasury/TREAS_MAX)+'%. Deterministic from here — same settings reproduce the whole run.');
+  render();
+}
+
+/* ===================================================================== *
+ *  SCRIPTED SCENARIOS
+ * ===================================================================== */
+function setSliders(o){
+  for(const k in o){ if(els[k]) els[k].value=o[k]; }
+  syncLabels();
+}
+function startScenario(kind){
+  pause();
+  if(kind==='broke'){
+    // fat-ish start, weak bonds, fast advance, low floor → watch it spend down to nothing
+    setSliders({treas:78, war:7, floor:18, bond:2, mix:55, adv:6});
+    hardReset(false);
+    flashStatus('DRAIN: a 78% war chest, weak war bonds, an advancing front. Watch generosity track the treasury straight down into the "going broke" shape.');
+    scenario={ drive(st){ /* passive — settings do the work; just let it run */ } };
+    play();
+  }
+  if(kind==='fat'){
+    // huge chest, strong bonds, slow advance → a flooded board that stays rich
+    setSliders({treas:100, war:3, floor:45, bond:11, mix:42, adv:2});
+    hardReset(false);
+    flashStatus('FAT CHEST: a flush treasury with strong war-bond income and a slow front. The board floods — many high-bounty jobs, generals and military both.');
+    scenario={ drive(st){} };
+    play();
+  }
+  if(kind==='overrun'){
+    // mid treasury but a FAST front: postings get voided as drop-offs are overrun
+    setSliders({treas:60, war:9, floor:30, bond:5, mix:50, adv:10});
+    hardReset(false);
+    flashStatus('FRONT COLLAPSE: the line advances fast. Watch postings get struck through — overrun before you could arrive. The danger was never in the payout.');
+    scenario={ drive(st){
+      if(st.cumVoided>=4 && !this.flagged){ this.flagged=true;
+        flashStatus('There it is — '+st.cumVoided+' contracts voided by the advancing front so far. A fat bounty on a soon-overrun drop-off is a trap the board states plainly (M2.4).'); }
+    }};
+    play();
+  }
+}
+
+/* ---- label sync ---- */
+function syncLabels(){
+  els.vTreas.textContent = els.treas.value+'%';
+  els.vFloor.textContent = els.floor.value+'%';
+  els.vWar.textContent   = els.war.value;
+  els.vBond.textContent  = els.bond.value;
+  els.vAdv.textContent   = els.adv.value;
+  const m=+els.mix.value;
+  els.vMix.textContent = m<=20?'general-heavy':m<40?'general-lean':m<=60?'balanced':m<80?'military-lean':'military-heavy';
+}
+
+/* ---- status ---- */
+function flashStatus(msg){ els.status.textContent=msg; }
+
+/* ===================================================================== *
+ *  WIRING
+ * ===================================================================== */
+['treas','war','floor','bond','mix','adv'].forEach(k=>{
+  els[k].addEventListener('input',()=>{
+    syncLabels();
+    if(k==='treas' && !running && S.tick===0){
+      // live-preview the starting treasury on a fresh, un-played run
+      S.treasury = clamp(Math.round(TREAS_MAX*(+els.treas.value/100)),0,TREAS_MAX);
+    }
+    if(!running) render();
+  });
+});
+els.playBtn.addEventListener('click',()=>{ scenario=null; togglePlay(); });
+els.stepBtn.addEventListener('click',()=>{ pause(); scenario=null; if(S.ended)hardReset(true); step(); render(); });
+els.resetBtn.addEventListener('click',()=>hardReset(true));
+els.speedBtn.addEventListener('click',()=>{ speed = speed===1?2:speed===4?1:4; els.speedBtn.textContent=speed+'×'; });
+els.scenBroke.addEventListener('click',()=>startScenario('broke'));
+els.scenFat.addEventListener('click',()=>startScenario('fat'));
+els.scenOverrun.addEventListener('click',()=>startScenario('overrun'));
+
+// timeline scrub
+els.scrub.addEventListener('input',()=>{ scrubbing=true; els.tlNow.textContent='t'+els.scrub.value; });
+els.scrub.addEventListener('change',()=>{ scrubTo(+els.scrub.value); scrubbing=false; });
+// also allow scrubbing while dragging (throttled to whole ticks)
+let _scrubRAF=null;
+els.scrub.addEventListener('input',()=>{
+  if(_scrubRAF) return;
+  _scrubRAF=requestAnimationFrame(()=>{ _scrubRAF=null; scrubTo(+els.scrub.value); scrubbing=true; });
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); scenario=null; togglePlay(); }
+  else if(e.code==='ArrowRight'){ e.preventDefault(); pause(); scenario=null; if(S.ended)hardReset(true); step(); render(); }
+});
+
+/* ---- boot ---- */
+hardReset(false);
+syncLabels();
+render();
+</script>
+</body>
+</html>

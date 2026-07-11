@@ -1,0 +1,94 @@
+{
+  "slug": "glass-cockpit-instruments",
+  "title": "The Glass Cockpit",
+  "accent": "#22d3ee",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · M3 — design from the screen back",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The Glass Cockpit. You never fire a shot; you read. Slide the fleet up and the ships you were following become a current, and you still believe it."
+    },
+    {
+      "id": "02-reading",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "reading is the verb",
+      "headline": "You have no guns. You observe, and you supply.",
+      "body": "One hauler grows into a combine of dozens, across a front that is <em>massive and abstract</em>. If you can't read the board you have <strong>nothing to do</strong>, so the visual abstraction isn't a skin over the game &mdash; it <em>is</em> the game.",
+      "narration": "One hauler grows into a combine of dozens, across a front too big to walk across. You have no guns. Reading is the verb, so if you can't read the board you have nothing to do. The picture is the game."
+    },
+    {
+      "id": "03-kind",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the load-bearing rule",
+      "headline": "Change KIND, not just scale.",
+      "body": "Zoom out on a normal map and a ship becomes a smaller ship; a thousand ships become glyph soup. The fix is a <strong>LOD ladder</strong> of three tiers where altitude is the <em>only</em> camera control &mdash; a discrete climb, each rung drawing a different kind of thing.",
+      "narration": "A representation must change kind, not just scale, as quantity grows. Zoom out normally and a thousand ships become unreadable glyph soup. The fix is a ladder of three tiers, and altitude is the only camera you get."
+    },
+    {
+      "id": "04-ladder",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "the three rungs",
+      "headline": "Sprite, ribbon, flux.",
+      "bullets": [
+        "<b>Contract</b> &mdash; one hauler is a discrete arrowhead with a cargo pip. You follow one ship.",
+        "<b>Corridor</b> &mdash; the hulls dissolve into a flow ribbon: width is throughput, opacity is reliability, hue is the dominant good.",
+        "<b>Theatre</b> &mdash; systems collapse to nodes, lanes to flux edges, the fleet to network brightness.",
+        "<b>The front</b> &mdash; always weather, never a unit: rose isobars creeping inward, nothing to shoot."
+      ],
+      "narration": "Contract draws one hauler as an arrowhead you can follow. Corridor dissolves the hulls into a flow ribbon. Theatre rolls everything into nodes and flux. And the enemy is always weather, never a countable unit."
+    },
+    {
+      "id": "05-aha",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the aha",
+      "headline": "The sprites become a current.",
+      "body": "On Corridor, walk the fleet slider up. Around a dozen hulls the arrowheads <strong>condense</strong> into one ribbon &mdash; and you read it not as loss but as <em>resolution</em>. Don't trust it? <strong>Drill in</strong>, and the ribbon coughs the hulls back up. The abstraction has to be falsifiable.",
+      "narration": "Set altitude to Corridor and walk the fleet up. Around a dozen hulls the arrowheads condense into one ribbon, and it reads as resolution, not loss. Drill in, and the ribbon coughs the ships back up. It told the truth."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick, single-step it, or reseed (CYAN seed).",
+        "<b>The altitude ladder</b> &mdash; climb Contract, Corridor, Theatre; it auto-suggests as the fleet grows.",
+        "<b>Fleet size & throughput</b> &mdash; grow hulls toward eighty, and feed or starve the lane.",
+        "<b>Front intensity / Starve / Drill in</b> &mdash; push the weather in, choke supply, or re-explode the ribbon."
+      ],
+      "narration": "Press Play to run the tick, Step through it, or Reset to reseed. Climb the altitude ladder. Drag fleet size up and work throughput. Push front intensity, hit Starve, and use Drill in to falsify the ribbon."
+    },
+    {
+      "id": "07-view",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "a view, not the game",
+      "headline": "A one-way render over deterministic snapshots.",
+      "body": "The sim ticks in fixed order and emits an immutable <strong>snapshot</strong>; the renderer only <em>reads</em> it and picks how to draw it. Changing tiers, drilling in, dragging sliders &mdash; none of it writes back. A run is a seed; the picture is a lens you slide along it.",
+      "narration": "Everything you see is a one-way render over deterministic snapshots. The sim emits an immutable struct; the renderer only reads it and chooses how to draw. Nothing writes back, so the same seed always draws the same war."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Glass Cockpit",
+      "body": "Design the screen first &middot; same data, different kind of picture &middot; deterministic, seeded, self-contained.",
+      "narration": "Change the kind of mark as quantity grows, and one calm screen can run a war too big to walk across. Deterministic, seeded, design the screen first."
+    }
+  ]
+}

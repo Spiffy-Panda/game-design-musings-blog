@@ -9,8 +9,8 @@ musing folder only holds its own "what."
 > **What is a musing?** A musing is one self-contained game-design exploration — a design
 > note, a mechanics experiment, a post-mortem, a half-formed idea worth keeping. It lives
 > in its own top-level folder (`<MUSE-SLUG>/`), is authored in Markdown (`MUSING.md`), and
-> is published as a single page in the directory site. The landing page is a grid of
-> cards, one per musing.
+> is published as a single page in the directory site. The landing page is a list of
+> themed rows, one per musing (emblem + name + description + sublinks).
 
 ---
 
@@ -21,6 +21,9 @@ musing folder only holds its own "what."
   MUSING.md                  the published content (the entry point; rendered to HTML)
   <FOLDER-NAME>.md           agent-nav spec, e.g. MINIMALIST-SPACE-LOGISTICS.md (NOT published)
   build-musing.py            renders MUSING.md -> site/musings/<slug>/index.html
+  emblem.svg                 (optional) the landing-row emblem: a small square SVG inlined
+                             into this musing's row on the landing page; colors via the
+                             row's --m-* vars (see "Landing rows" below)
   assets/                    (optional) images/files copied verbatim into the page
   <pages>/                   (optional) sub-pages for a multi-page musing (e.g. approaches/)
 ```
@@ -28,6 +31,10 @@ musing folder only holds its own "what."
 `MUSING.md` + `<FOLDER-NAME>.md` are the deliverable pair from Rule 2 (`CLAUDE.md`):
 `MUSING.md` is the content/human entry point, `<FOLDER-NAME>.md` is the agent map. Only
 `MUSING.md` is rendered into the site — the nav file stays internal.
+
+> **Variant:** an *HTML-first musing* has no `MUSING.md` at all — its pages are
+> hand-authored, self-contained `.html` files copied verbatim by its `build-musing.py`.
+> The nav spec is still required. See "HTML-first musings" below.
 
 ## The build pipeline
 
@@ -38,7 +45,8 @@ MUSING-CONFIG.json ──┐
      ├─ for each listed musing: run <folder>/build-musing.py --out site/musings/<slug>/
      │     └─ build-musing.py reads MUSING.md, calls utils/python/musing_render.py,
      │        writes site/musings/<slug>/index.html (+ copies assets/)
-     └─ regenerates site/index.html  (one card per visible musing, from name + description)
+     └─ regenerates site/index.html  (one themed row per visible musing: inlined emblem
+        SVG + name + description + sublinks + per-musing --m-* theme vars)
 ```
 
 Two callers run the same `build_site.build()`:
@@ -96,18 +104,22 @@ mechanics are just relative-link bookkeeping, and `musing_render.render_page` ha
   (`site/musings/<slug>/index.html`) is **depth 2** (`../../style.css`); a sub-page one folder
   deeper is depth 3; a sub-sub-page is depth 4. Get this wrong and the stylesheet 404s on
   Pages while looking fine locally.
-- **Parent back-links.** `back_href`/`back_text` set the top-of-page backlink. They default to
-  the home link ("← All musings") for a top-level musing; a sub-page should point one level up
-  to its parent instead — e.g. `back_href="../", back_text="← Approaches"`. `../` resolves to
-  the parent directory's `index.html` (same directory-index convention the landing cards use).
+- **Breadcrumb trail.** `render_page(crumbs=[(label, href), …])` emits the site-wide
+  `.crumbs` breadcrumb nav (see "Navigation: the breadcrumb standard" below). The last crumb
+  is the current page (`href=None`); earlier crumbs point up the tree with depth-aware `../`
+  hrefs. The legacy single `back_href`/`back_text` backlink is still accepted as a fallback
+  when `crumbs` is omitted, but new pages should pass `crumbs`.
 
 The worked example is *Minimalist Space Logistics*, and it now spans **both** rendering paths.
 Its `build-musing.py` renders `MUSING.md` at depth 2 and the three *original* Markdown approach
 pages (`the-invisible-hand.md`, `the-tide-line.md`, `dead-reckoning.md`) at depth 4 (back-link
 → the hub). The approaches **hub** and the newer HAND-lineage **mutation** pages are *not*
-Markdown — they're a React app (next section). Keep the per-musing script the only place the
-Markdown layout logic lives; `musing_render.py` stays generic. Markdown sub-pages are still
-bound by the same subset and the Rule 6 gate.
+Markdown — they're a React app (next section). It **also** copies the repo-root `explorations/`
+gallery (a standalone overview + 16 self-contained interactive HTML pages) into `…/explorations/`
+— copied verbatim, **not** rendered; internal docs there (`README.md`, `RUN-LOG.md`, `_research/`,
+none of which have an `index.html`) are skipped, so they never reach the public surface. Keep the
+per-musing script the only place the Markdown layout logic lives; `musing_render.py` stays generic.
+Markdown sub-pages are still bound by the same subset and the Rule 6 gate.
 
 ## Framework-built sub-pages (the approaches app)
 
@@ -139,6 +151,114 @@ How the two builds compose into one site:
 
 Gotcha learned the hard way: `background-attachment: fixed` and `backdrop-filter`/`backdrop-blur`
 can stall headless screenshot capture (and hurt paint perf). Avoid them on these pages.
+
+## HTML-first musings (verbatim-copy sets)
+
+Some musings are authored directly as **self-contained HTML pages** rather than Markdown —
+design-system-heavy sets where the page *is* the deliverable. Worked examples:
+`thaumodynamics/` (gallery + monograph + worksheet + duel chronicle) and `logical-magic/`
+(gallery + system-pitch page). The pattern:
+
+- **No `MUSING.md`.** The published entry point is a hand-authored gallery `index.html`
+  (the "hub"), with one card per content page. The Rule 2 pair becomes
+  `index.html` + `<FOLDER-NAME>.md` — the agent-nav spec is **still required** (it's where
+  the Rule 8 mnemonic lives); a human-facing `README.md` is conventional too. Neither is
+  published.
+- **`build-musing.py` copies, it doesn't render.** Every top-level `*.html` is copied
+  verbatim to `site/musings/<slug>/` (same treatment as the MSL `explorations/` gallery);
+  `.md` files are never copied. The contract is otherwise unchanged: `--out`, repo-root
+  anchoring via `__file__`, non-zero exit on failure.
+- **Pages must stay self-contained** — inline CSS/JS, no external assets, light + dark
+  themes carried per page. They don't use `site/style.css` and take no chrome from
+  `musing_render.py`, so they hand-author their own copy of the breadcrumb (see
+  "Navigation: the breadcrumb standard" below). The page body still renders standalone from
+  a raw `file://` open; the one nav link that does **not** resolve on a raw disk open is the
+  "Game Design Musings" landing crumb (it is site-relative — correct on the served site and
+  the local preview, where the landing exists at the right depth). That is an accepted,
+  deliberate relaxation of the old "no landing back-link" rule: coherent wayfinding rooted
+  at the portfolio won the trade, and the served site (or `serve_site.py`) is the canonical
+  way to view these pages. The **portfolio** crumb is an absolute cross-site URL and works
+  everywhere, including disk.
+- **Cross-musing links** use the shape `../<other-slug>/<page>.html`. That resolves
+  identically in the repo (folder beside folder) and on the site (slug beside slug under
+  `site/musings/`) — keep folder name == slug (lowercase) for these musings so the
+  equivalence holds.
+- **Landing-page sublinks:** list card sublinks in `MUSING-CONFIG.json` `links` with hrefs
+  relative to the musing dir (e.g. `"pitch.html"`, `"mdyn101-worksheet3.html"`).
+- **Rule 6 with teeth:** registering the musing is the moment "committed" becomes
+  "published" — every `*.html` in the folder deploys on the next Pages build. Gate any
+  edit accordingly.
+- **SVG text gotcha:** a CSS `font:` shorthand in a shared utility class overrides SVG
+  `font-size` presentation attributes. Size one-off SVG text with an inline
+  `style="font:…"` instead.
+
+## Landing rows: themes + emblems
+
+The landing page gives each musing **one full-width row, themed after its content**: an
+emblem on the left, then name / description / sublinks — set in the musing's own palette
+and typeface so the directory reads like a shelf of different books. Two optional config
+fields per musing drive it (both degrade gracefully when absent):
+
+- **`"emblem": "emblem.svg"`** — a small square SVG (`viewBox="0 0 200 200"`, stroke-led,
+  `aria-hidden`) living in the musing folder, **inlined** into the row by `build_site.py`.
+  Color exclusively with `var(--m-<token>, <light-fallback>)` — never hard-code — so the
+  emblem follows the row's light/dark palette for free. Keep it self-contained (no
+  external refs); it is *not* copied into `site/musings/` — it exists only inside the
+  generated landing. Worked examples: the LoMa proof-seal (`logical-magic/emblem.svg`,
+  textPath glyph ring + inference rule), the THAU mirror-fields, the MSL lane web, the
+  Space Feudal system roundel.
+- **`"theme"`** — `{"font": "serif"|"sans", "light": {…}, "dark": {…}}`. Every key in the
+  `light`/`dark` maps is emitted as `--m-<key>` on `.row-<slug>` (dark inside a
+  `prefers-color-scheme` block) in a `<style>` generated into `index.html`. Conventional
+  keys: `bg`, `ink`, `muted`, `line`, `accent` (+ `accent2`, `accent3`, or bespoke ones
+  like MSL's `front`) — but the set is open: whatever the emblem needs. Pull the values
+  from the musing's own pages so the row genuinely matches.
+
+Row **layout** (flex, emblem width, mobile stacking, link styling) lives once in
+`site/style.css` (`.musing-list` / `.musing-row`); the generated CSS carries only colors.
+
+## Navigation: the breadcrumb standard
+
+Every published page carries the **same breadcrumb trail**, rooted at the portfolio, so the
+whole site navigates coherently regardless of which of the three rendering paths built it.
+The trail is:
+
+```
+Panda's Portfolio  ›  Game Design Musings  ›  <Musing>  ›  <sub-page…>
+```
+
+- **First crumb — `Panda's Portfolio`** → the **absolute** URL `https://spiffy-panda.github.io/`.
+  This is a deliberate cross-site link (the portfolio is a *separate* Pages deploy at the org
+  root; the musings site lives at `…github.io/game-design-musings-blog/`). It is not a
+  self-link, so the "relative links only / no absolute github.io" rule doesn't apply, and it
+  resolves everywhere — disk, preview, Pages.
+- **Second crumb — `Game Design Musings`** → the musings landing, **site-relative** (depth-aware
+  `../…/index.html`). Correct on the served site and the local preview; the one link that does
+  not resolve on a raw `file://` open (accepted — see the HTML-first note above).
+- **Then** the musing and any parents (relative), ending with the **current page** as a
+  non-link `aria-current="page"`.
+
+**Markup** (identical everywhere) — a `<nav class="crumbs" aria-label="Breadcrumb"><ol>` of
+`<li>`s, each an `<a>` except the current page (`<span aria-current="page">`); the `›`
+separators are drawn by CSS (`li + li::before`), not in the markup.
+
+**Three implementations, one look:**
+
+- **Markdown pages** (`musing_render.render_page(crumbs=[(label, href), …])`) — emits the nav;
+  styled by `.crumbs` in `site/style.css`. `PORTFOLIO_HREF`/`PORTFOLIO_LABEL` constants live in
+  `musing_render.py`. The per-musing `build-musing.py` builds the trail (see MSL's `_root_crumbs`).
+- **The generated landing** (`utils/python/build_site.py`) — hard-codes the two-crumb trail
+  (`Panda's Portfolio › Game Design Musings`, current) into its `_INDEX` template.
+- **Self-contained HTML musings** (thaumodynamics, logical-magic, space-feudal) **and** the
+  copied explorations pages — hand-author the same `<nav class="crumbs">` inline, with a local
+  copy of the `.crumbs` CSS using **that page's own palette tokens** (never `site/style.css`,
+  never hard-coded colors). The **React** approaches app renders it via the shared `Page`
+  component's `crumbs` prop (`approaches-app/src/components/kit.tsx`).
+
+**Sizing/a11y (all paths):** links ≥ `.92rem` with real padding (tap target ≈ 34px), a visible
+`:focus-visible` outline, `aria-label="Breadcrumb"` on the nav, wraps at narrow widths. This
+replaced the old grab-bag of tiny back-links (a `.72rem` explorations backlink, small per-page
+`.crumb` bars, and two musings with *no* back-nav at all).
 
 ## Markdown the renderer supports
 
@@ -176,11 +296,15 @@ musing folder just because it's hidden.
 
 ## Adding a new musing (checklist)
 
-1. `mkdir <MUSE-SLUG>/` at the repo root (PascalCase-with-hyphens, e.g. `Trade-Wind-Economy`).
-2. Write `<MUSE-SLUG>/MUSING.md` (the content) and `<MUSE-SLUG>/<FOLDER-NAME>.md` (agent nav).
+1. `mkdir <MUSE-SLUG>/` at the repo root (PascalCase-with-hyphens, e.g. `Trade-Wind-Economy`;
+   HTML-first musings use lowercase == slug, e.g. `logical-magic/`).
+2. Write `<MUSE-SLUG>/MUSING.md` (the content) and `<MUSE-SLUG>/<FOLDER-NAME>.md` (agent nav)
+   — or, for an HTML-first musing, the gallery `index.html` + pages instead of `MUSING.md`.
 3. Copy an existing `build-musing.py` into the folder (the default one needs no edits — it
-   derives its slug from the folder name).
-4. Add an entry to `MUSING-CONFIG.json` (`folder`, `slug`, `name`, `description`, `hidden`).
+   derives its slug from the folder name; HTML-first musings copy the verbatim-copy variant
+   from `thaumodynamics/` or `logical-magic/`).
+4. Add an entry to `MUSING-CONFIG.json` (`folder`, `slug`, `name`, `description`, `hidden`;
+   optionally `emblem` + `theme` for a themed landing row — see "Landing rows" above).
 5. Preview: `python utils/python/serve_site.py` (builds on startup) and open the page.
 6. Public-surface check (Rule 6), DEV-LOG entry (Rule 5), then commit.
 

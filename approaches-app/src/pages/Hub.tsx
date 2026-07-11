@@ -27,7 +27,12 @@ export default function Hub() {
       }
       backHref="../"
       backLabel="Minimalist Space Logistics"
-      crumb="All musings →"
+      crumbs={[
+        { label: "Panda's Portfolio", href: "https://spiffy-panda.github.io/" },
+        { label: "Game Design Musings", href: "../../../index.html" },
+        { label: "Minimalist Space Logistics", href: "../" },
+        { label: "Approaches" },
+      ]}
     >
       <Section title="What this page is">
         <Lead>

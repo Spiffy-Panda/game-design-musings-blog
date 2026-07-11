@@ -1,0 +1,98 @@
+{
+  "slug": "endgame-pressure",
+  "title": "When the Script Runs Out",
+  "accent": "#fb7185",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · HAND — M2, the known war",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. When the script runs out. The opening is a heist you have already cased, but memorisation carries you only to the exhaustion point, not one tick further."
+    },
+    {
+      "id": "02-tension",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the design tension",
+      "headline": "Memorisation gets you through the opening. Skill gets you through the endgame.",
+      "body": "A scripted front risks collapsing into rote recall &mdash; <strong>memorisation &gt; mastery</strong>. The fix is structural: the script has a <em>length</em>. Past it, the front stops reciting and starts <em>reacting</em>.",
+      "narration": "A scripted front risks collapsing the whole game into rote recall. The fix is structural. The script has a length, and past it the front stops reciting and starts reacting."
+    },
+    {
+      "id": "03-two-phases",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "one clock, two phases",
+      "headline": "Scripted opening, then pure pressure.",
+      "bullets": [
+        "<b>Opening</b> &mdash; the first K system-falls are keyframes expanded from the seed; order is fixed and learnable.",
+        "<b>Coverage gating</b> &mdash; feed a segment to push its fall later, abandon it and it lurches earlier.",
+        "<b>Endgame</b> &mdash; after K keyframes exhaust, the front falls wherever accumulated pressure is highest.",
+        "<b>The map</b> &mdash; a memorised overlay predicts each fall, matches in the opening, then diverges."
+      ],
+      "narration": "One deterministic clock runs two phases. The opening is K keyframes from the seed, fixed in order, with timing nudged by your coverage. After they exhaust, the front falls wherever your accumulated pressure is highest."
+    },
+    {
+      "id": "04-unobserved",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "unknown is not random",
+      "headline": "The unknowns are unobserved keyframes, not noise.",
+      "body": "The schedule is fully determined from the seed; a fresh player just hasn't <em>seen</em> it yet. After exhaustion it is still deterministic given coverage &mdash; just not <strong>memorisable</strong>, because it depends on choices that differ every run.",
+      "narration": "The opening unknowns are not random; they are keyframes you have not seen yet, fully determined by the seed. The endgame stays deterministic given your coverage, but it is not memorisable, because it depends on choices that change every run."
+    },
+    {
+      "id": "05-split",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "what you just saw",
+      "headline": "The opening matches; the endgame splits.",
+      "body": "Through the opening the dashed map rides on top of the actual falls and recall sits near 100 percent. At exhaustion the keyframes run out, the line splits, and the recall meter decays. The second player shares your opening but covers differently, so its endgame diverges.",
+      "narration": "Through the opening the dashed map rides on top of the real falls and recall sits near one hundred percent. At exhaustion the keyframes run out, the line splits, and the recall meter decays. The second player diverges because it covered the band differently."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset (seed)</b> &mdash; run the deterministic clock, single-step it, or restart.",
+        "<b>Coverage per segment</b> &mdash; drag left to starve, right to feed; it sets the endgame.",
+        "<b>Script length K & front intensity</b> &mdash; K moves the exhaustion point; intensity bites only after.",
+        "<b>2nd player & the ROSE seed</b> &mdash; toggle the ghost; reseed the book and replay the same war."
+      ],
+      "narration": "Press Play to run the clock, or Step through it. Set coverage per segment to starve or feed, drag script length K and front intensity, and reseed the ROSE band. Turn on the second player and watch its endgame diverge from yours."
+    },
+    {
+      "id": "07-risks",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it can rot",
+      "headline": "Two named risks, both answered.",
+      "bullets": [
+        "<b>Memorisation &gt; mastery</b> &mdash; answered by giving the script a length, so the back half is always live skill.",
+        "<b>Determinism rot</b> &mdash; one stray random call and the cased heist desyncs.",
+        "<b>The fix</b> &mdash; one reseedable PRNG, integer-tick gates, fixed iteration order; replay the seed in CI."
+      ],
+      "narration": "Two ways this can rot. Memorisation beating mastery is answered by giving the script a length, so the back half is always skill. Determinism rot is answered with one reseedable generator, integer-tick gates, and fixed iteration order."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "When the Script Runs Out",
+      "body": "Recall is a finite resource with a known expiry &middot; deterministic, seeded, one file, offline.",
+      "narration": "Recall is a finite resource with a known expiry. It pays out perfectly to the exhaustion point and nothing past it. Deterministic, seeded, and it runs offline from a single file."
+    }
+  ]
+}

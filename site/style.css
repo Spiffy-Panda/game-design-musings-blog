@@ -37,11 +37,16 @@ body {
 
 .site-header,
 main,
-.site-footer {
+.site-footer,
+body > .crumbs {
   max-width: var(--maxw);
   margin-inline: auto;
   padding: 1.25rem 1.5rem;
 }
+
+/* On the landing page the breadcrumb sits above the header: keep the shared
+   gutter but drop the big vertical padding so it hugs the top. */
+body > .crumbs { padding-top: 1.25rem; padding-bottom: 0; margin-bottom: 0; }
 
 .site-header {
   padding-top: 3rem;
@@ -70,60 +75,134 @@ main h2 {
   padding-bottom: 0.5rem;
 }
 
-.project-grid {
+/* Landing directory: one full-width themed row per musing. Layout/structure
+   lives here; each row's COLORS come from --m-* variables that build_site.py
+   generates per musing (light + dark) from MUSING-CONFIG.json's `theme` block.
+   The inlined emblem SVG uses the same vars, so it follows the row's palette. */
+.musing-list {
   list-style: none;
   padding: 0;
   margin: 1.25rem 0 0;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
 }
 
-.project-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 0.75rem;
-  padding: 1.1rem 1.25rem;
+.musing-row {
+  display: flex;
+  align-items: center;
+  gap: 1.7rem;
+  background: var(--m-bg, var(--card-bg));
+  color: var(--m-ink, var(--fg));
+  border: 1px solid var(--m-line, var(--card-border));
+  border-radius: 10px;
+  padding: 1.35rem 1.6rem;
 }
 
-.project-card h3 {
+.musing-row.font-serif {
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, "Iowan Old Style", Georgia, serif;
+}
+
+.musing-row .emblem {
+  flex: 0 0 158px;
+  max-width: 158px;
+}
+
+.musing-row .emblem svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.musing-row h3 {
   margin: 0 0 0.4rem;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
 }
 
-.project-card p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.project-card a {
-  color: var(--accent);
+.musing-row h3 a {
+  color: var(--m-accent, var(--accent));
   text-decoration: none;
 }
 
-.project-card a:hover,
-.project-card a:focus {
+.musing-row h3 a:hover,
+.musing-row h3 a:focus {
   text-decoration: underline;
 }
 
-.project-card.placeholder {
+.musing-row .row-desc {
+  margin: 0;
+  color: var(--m-muted, var(--muted));
+  max-width: 60ch;
+  line-height: 1.55;
+}
+
+.musing-row.placeholder {
   background: transparent;
   border-style: dashed;
 }
 
+/* Sublinks under a musing row — e.g. the Approaches / Explorations hubs. */
+.musing-row .row-links {
+  margin: 0.85rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.4rem;
+  font-size: 0.95rem;
+}
+
+.musing-row .row-links a {
+  font-weight: 600;
+  color: var(--m-accent, var(--accent));
+  text-decoration: none;
+  padding: 0.3rem 0;
+}
+
+.musing-row .row-links a::after {
+  content: " \2192";
+}
+
+.musing-row .row-links a:hover,
+.musing-row .row-links a:focus {
+  text-decoration: underline;
+}
+
+.musing-row a:focus-visible {
+  outline: 2px solid var(--m-accent, var(--accent));
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .musing-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .musing-row .emblem {
+    flex: 0 0 auto;
+    width: 126px;
+  }
+}
+
 /* "draft" badge on hidden musings (only ever shown in local preview). */
-.project-card .draft {
+.musing-row .draft {
   display: inline-block;
   margin-left: 0.5rem;
   padding: 0.05rem 0.45rem;
   border-radius: 0.5rem;
-  background: var(--card-border);
-  color: var(--muted);
+  background: var(--m-line, var(--card-border));
+  color: var(--m-muted, var(--muted));
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   vertical-align: middle;
+}
+
+.project-card .card-links a::after {
+  content: " \2192"; /* → */
+  color: var(--muted);
+  font-weight: 400;
 }
 
 /* Per-project pages can use .prose for a comfortable reading width. */
@@ -132,6 +211,21 @@ main h2 {
 }
 
 .prose a { color: var(--accent); }
+
+/* Breadcrumb trail — shared by the generated landing page and every
+   Markdown-rendered musing page. The self-contained HTML musings mirror this
+   exact .crumbs structure with their own inline copy, so navigation looks and
+   behaves the same site-wide. Emitted by utils/python/musing_render.py and by
+   the landing generator in utils/python/build_site.py. */
+.crumbs { margin: 0 0 1.6rem; font-size: 0.92rem; font-weight: 500; line-height: 1.5; }
+.crumbs ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; }
+.crumbs li { display: flex; align-items: center; min-height: 34px; }
+.crumbs li + li::before { content: "\203A"; margin: 0 0.1rem; color: var(--muted); user-select: none; }
+.crumbs a { color: var(--accent); text-decoration: none; padding: 0.4rem 0.3rem; border-radius: 3px; }
+.crumbs a:hover { text-decoration: underline; }
+.crumbs a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.crumbs [aria-current="page"] { color: var(--muted); padding: 0.4rem 0.3rem; }
+@media (max-width: 420px) { .crumbs { font-size: 0.86rem; } }
 
 .site-footer {
   margin-top: 2rem;

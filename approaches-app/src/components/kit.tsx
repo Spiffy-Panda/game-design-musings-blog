@@ -42,9 +42,19 @@ export interface PageProps {
   spark?: React.ReactNode;
   backHref: string;
   backLabel: string;
-  /** Optional crumb shown at the far right of the top bar (e.g. "Minimalist Space Logistics"). */
-  crumb?: string;
+  /**
+   * Breadcrumb trail, rooted at the portfolio. Each crumb is a label + optional
+   * href; the last crumb (the current page) omits href. Rendered as the shared
+   * site-wide breadcrumb — mirrors the `.crumbs` component used by the Markdown
+   * and self-contained HTML musings so navigation is coherent across the site.
+   */
+  crumbs?: Crumb[];
   children: React.ReactNode;
+}
+
+export interface Crumb {
+  label: string;
+  href?: string;
 }
 
 export function Page({
@@ -56,22 +66,52 @@ export function Page({
   spark,
   backHref,
   backLabel,
-  crumb,
+  crumbs,
   children,
 }: PageProps) {
   const style = { ["--accent" as string]: accentHex(accent) } as React.CSSProperties;
   return (
     <div style={style} className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-[var(--color-ink-900)]">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-3 text-sm">
-          <a
-            href={backHref}
-            className="inline-flex items-center gap-1.5 font-medium text-fog-300 transition-colors hover:text-[var(--accent)]"
-          >
-            <span aria-hidden>←</span>
-            {backLabel}
-          </a>
-          {crumb && <span className="hidden text-fog-500 sm:inline">{crumb}</span>}
+        <div className="mx-auto max-w-3xl px-6 py-2 text-sm">
+          {crumbs && crumbs.length > 0 ? (
+            <nav aria-label="Breadcrumb">
+              <ol className="flex flex-wrap items-center">
+                {crumbs.map((c, i) => (
+                  <li key={i} className="flex items-center">
+                    {i > 0 && (
+                      <span aria-hidden className="mx-0.5 text-fog-500">
+                        &rsaquo;
+                      </span>
+                    )}
+                    {c.href ? (
+                      <a
+                        href={c.href}
+                        className="inline-flex min-h-[34px] items-center rounded px-1.5 font-medium text-fog-300 transition-colors hover:text-[var(--accent)]"
+                      >
+                        {c.label}
+                      </a>
+                    ) : (
+                      <span
+                        aria-current="page"
+                        className="inline-flex min-h-[34px] items-center px-1.5 text-fog-500"
+                      >
+                        {c.label}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          ) : (
+            <a
+              href={backHref}
+              className="inline-flex items-center gap-1.5 py-1 font-medium text-fog-300 transition-colors hover:text-[var(--accent)]"
+            >
+              <span aria-hidden>←</span>
+              {backLabel}
+            </a>
+          )}
         </div>
       </header>
 

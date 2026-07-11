@@ -28,7 +28,8 @@ or `M1.4` resolve unambiguously from anywhere.
   **and** the three *original* Markdown approach pages under `approaches/` (depth 4) via the
   shared renderer (`utils/python/musing_render.py`). It does **not** build the hub or the
   mutation pages — those are React (see "Sub-pages"). Invoked by `utils/python/build_site.py`;
-  also runnable standalone.
+  also runnable standalone. It **additionally copies** the repo-root `../../explorations/` gallery
+  (overview + each page; internal docs skipped) into `…/explorations/` — see *Sub-pages — explorations*.
 - `approaches/` — the three **original** approach pages, as Markdown
   (`the-invisible-hand.md`, `the-tide-line.md`, `dead-reckoning.md`). The hub and the
   HAND-lineage mutation pages are **not** here — they live in `../../approaches-app/` (React).
@@ -64,6 +65,23 @@ This musing's `approaches/` tree mixes **two** rendering paths (full how-to:
 `utils/python/build_site.py` runs both: it renders the Markdown pages, then builds the React
 app and copies it over `approaches/`. To add a Markdown approach, drop a `.md` here; to add a
 React page, work in `../../approaches-app/` (see its `README.md`). The hub links to all six.
+
+## Sub-pages — explorations
+
+A **second** published sub-tree (new as of the overnight explorables run): a gallery of **16
+self-contained, interactive HTML "explorables"** — one technical aspect of the game each (the
+solvency cell, the jumpgate web, the enemy opening book, a utility-AI fit audit, the deflation
+spiral, …). Unlike the approaches, these are **not** authored in this folder — they live at the
+**repo root** in `../../explorations/`:
+
+- `../../explorations/index.html` — the overview/hub (back-links to this musing + the approaches hub).
+- `../../explorations/<slug>/index.html` — one folder per explorable (standalone; no shared assets).
+- `../../explorations/{README.md,RUN-LOG.md,_research/}` — internal, **not** published (no `index.html`).
+
+This musing's `build-musing.py` **copies** the overview + every folder that has an `index.html` into
+`site/musings/<slug>/explorations/` (verbatim, not rendered). The landing-page card surfaces both hubs
+via `../MUSING-CONFIG.json`'s `"links"` array (Approaches + Explorations). To change an explorable, edit
+`../../explorations/<slug>/index.html`; to change the overview, edit `../../explorations/index.html`.
 
 ## Editing
 

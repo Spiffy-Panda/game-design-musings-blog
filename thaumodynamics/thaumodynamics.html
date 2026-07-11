@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thaumodynamics — A Field Theory of Fire &amp; Lightning</title>
+</head>
+<body>
+
+<style>
+  /* ── tokens ─────────────────────────────────────────────── */
+  :root{
+    --ground:#edece7; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --chart-storm:#20649f; --chart-ember:#b0500a;
+    --ember-wash:rgba(176,80,10,.06); --storm-wash:rgba(32,100,159,.06);
+    --shadow:0 10px 30px rgba(35,40,51,.10);
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono','Fira Code',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0e1116; --surface:#151a22; --surface2:#1b212c;
+      --line:#262e3c; --line2:#3a4556;
+      --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+      --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+      --chart-storm:#3d8fd4; --chart-ember:#d0722a;
+      --ember-wash:rgba(255,160,87,.05); --storm-wash:rgba(130,199,255,.05);
+      --shadow:0 12px 34px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#edece7; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --chart-storm:#20649f; --chart-ember:#b0500a;
+    --ember-wash:rgba(176,80,10,.06); --storm-wash:rgba(32,100,159,.06);
+    --shadow:0 10px 30px rgba(35,40,51,.10);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0e1116; --surface:#151a22; --surface2:#1b212c;
+    --line:#262e3c; --line2:#3a4556;
+    --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+    --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+    --chart-storm:#3d8fd4; --chart-ember:#d0722a;
+    --ember-wash:rgba(255,160,87,.05); --storm-wash:rgba(130,199,255,.05);
+    --shadow:0 12px 34px rgba(0,0,0,.35);
+  }
+
+  /* ── base ───────────────────────────────────────────────── */
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font:17px/1.72 var(--serif);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1020px; margin-inline:auto; padding-inline:clamp(20px,5vw,48px)}
+  a{color:inherit}
+  a:focus-visible,summary:focus-visible{outline:2px solid var(--storm); outline-offset:3px; border-radius:2px}
+  ::selection{background:var(--storm-wash); color:var(--ink)}
+
+  h1,h2,h3{font-family:var(--serif); font-weight:600; text-wrap:balance; margin:0}
+  .eyebrow{
+    font:600 12px/1 var(--sans); letter-spacing:.17em; text-transform:uppercase;
+    color:var(--ink3); margin:0 0 14px;
+  }
+  .eyebrow b{color:var(--ink2); font-weight:700}
+  .fire{color:var(--ember)} .bolt{color:var(--storm)} .weft{color:var(--violet)}
+
+  /* field-symbol notation — the same hue everywhere a symbol appears */
+  .fH{color:var(--ember)} .fL{color:var(--storm)} .fA{color:var(--violet)}
+
+  /* ── hero ───────────────────────────────────────────────── */
+  .hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line)}
+  .hero::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(46% 42% at 82% 12%, var(--storm-wash), transparent 70%),
+      radial-gradient(50% 46% at 12% 96%, var(--ember-wash), transparent 70%);
+  }
+  #fx{position:absolute; inset:0; width:100%; height:100%; display:block}
+  .hero-inner{position:relative; padding:clamp(84px,15vh,150px) 0 46px}
+  .hero h1{
+    font-size:clamp(34px,10.5vw,106px); line-height:1.02; letter-spacing:-.018em;
+    margin:0 0 14px;
+  }
+  .hero .sub{
+    font-style:italic; font-size:clamp(19px,2.6vw,27px); color:var(--ink2); margin:0;
+  }
+  .epigraph{
+    max-width:560px; margin:42px 0 0; padding:0;
+    font-style:italic; font-size:16.5px; color:var(--ink2);
+  }
+  .epigraph footer{
+    font:500 12px/1.5 var(--sans); font-style:normal; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink3); margin-top:10px;
+  }
+  .toc{
+    position:relative; display:flex; flex-wrap:wrap; gap:12px 26px;
+    border-top:1px solid var(--line); margin-top:52px; padding:18px 0 26px;
+  }
+  .toc a{
+    font:500 12px/1 var(--sans); letter-spacing:.13em; text-transform:uppercase;
+    color:var(--ink3); text-decoration:none; padding:2px 0;
+  }
+  .toc a b{color:var(--ink2); font-weight:700; margin-right:5px}
+  .toc a:hover{color:var(--ink)}
+
+  /* ── sections ───────────────────────────────────────────── */
+  section{padding:66px 0; scroll-margin-top:24px}
+  section + section{border-top:1px solid var(--line)}
+  section h2{font-size:clamp(29px,4vw,40px); margin-bottom:20px}
+  .prose{max-width:66ch}
+  .prose p{margin:0 0 15px}
+  .prose em{color:var(--ink)}
+  .lede{font-size:18.5px}
+
+  /* five-field roster */
+  .roster{display:flex; flex-wrap:wrap; gap:12px; margin-top:30px}
+  .fchip{
+    display:flex; align-items:baseline; gap:11px; padding:12px 16px;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+  }
+  .fchip .sym{font:italic 700 22px/1 var(--serif)}
+  .fchip .what{font:500 11px/1.45 var(--sans); letter-spacing:.09em; text-transform:uppercase; color:var(--ink3)}
+  .fchip.new{background:linear-gradient(0deg,var(--ember-wash),var(--ember-wash)),var(--surface)}
+  .fchip.new2{background:linear-gradient(0deg,var(--storm-wash),var(--storm-wash)),var(--surface)}
+
+  /* field cards */
+  .fields{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:8px}
+  .fieldcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:24px 24px 20px; position:relative;
+  }
+  .fieldcard.h{border-top:3px solid var(--ember)}
+  .fieldcard.l{border-top:3px solid var(--storm)}
+  .fieldcard h3{font-size:23px; display:flex; align-items:baseline; gap:12px}
+  .fieldcard h3 .sig{font:italic 400 15px/1.4 var(--serif); color:var(--ink3)}
+  .fieldcard svg{display:block; margin:16px 0 12px}
+  .fieldcard p{font-size:15.5px; color:var(--ink2); margin:0 0 10px}
+  .fieldcard p:last-child{margin:0}
+
+  /* ── equations ──────────────────────────────────────────── */
+  .eq{
+    display:flex; justify-content:center; align-items:center; flex-wrap:wrap;
+    gap:.16em; font-size:clamp(19px,2.4vw,23px); line-height:1.5; margin:18px 0 14px;
+    font-family:var(--serif);
+  }
+  .eq i{font-style:italic}
+  .eq .v{font-style:italic; font-weight:700}   /* vectors: bold italic */
+  .eq .op{font-style:normal; padding:0 .06em}
+  .eq sub{font-size:.62em; font-style:italic}
+  .fr{display:inline-flex; flex-direction:column; text-align:center; line-height:1.18; vertical-align:middle; margin:0 .12em}
+  .fr .d{border-top:1.4px solid currentColor; padding-top:.1em}
+
+  .laws{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:14px; margin-top:26px}
+  .law{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px;
+  }
+  .law .no{font:600 11px/1 var(--sans); letter-spacing:.17em; text-transform:uppercase; color:var(--ink3)}
+  .law .no b{color:var(--ink2)}
+  .law .gloss{font-size:14.5px; color:var(--ink2); margin:0; text-align:center; font-style:italic}
+  .law.ex{padding:26px 26px 22px}
+  .law.ex .gloss{text-align:left; font-style:normal; font-size:15.5px}
+  .law.ex-h{border-top:3px solid var(--ember)}
+  .law.ex-l{border-top:3px solid var(--storm)}
+  .law .also{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); font-size:14px; color:var(--ink3)}
+  .law .also .eq{font-size:17px; margin:8px 0 0}
+
+  .aside-card{
+    margin-top:26px; background:var(--surface); border:1px solid var(--line);
+    border-left:3px solid var(--violet); border-radius:4px; padding:18px 22px;
+    max-width:66ch;
+  }
+  .aside-card h4{font:600 11.5px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--violet); margin:0 0 10px}
+  .aside-card p{font-size:15px; color:var(--ink2); margin:0 0 8px}
+  .aside-card p:last-child{margin:0}
+  .aside-card .eq{justify-content:flex-start; font-size:18px; margin:10px 0}
+
+  /* ── plates (figures) ───────────────────────────────────── */
+  .plate{
+    margin:36px 0 8px; background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; overflow:hidden;
+  }
+  .plate .scroll{overflow-x:auto; overflow-y:hidden; padding:12px 12px 4px}
+  .plate svg{display:block; width:100%; height:auto; min-width:620px}
+  .plate figcaption{
+    font:500 11.5px/1.7 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink3); border-top:1px solid var(--line); padding:12px 18px 13px; margin-top:8px;
+  }
+  .plate figcaption b{color:var(--ink2); letter-spacing:.16em}
+
+  /* svg shared classes */
+  .sl{font:500 12px var(--sans); fill:var(--ink3)}
+  .sl2{font:500 12px var(--sans); fill:var(--ink2)}
+  .slb{font:600 12px var(--sans); fill:var(--ink2)}
+  .scap{font:600 10.5px var(--sans); letter-spacing:.14em; fill:var(--ink3)}
+  .sit{font:italic 600 21px var(--serif)}
+  .sml{font:italic 500 13px var(--serif)}
+  .fe{fill:var(--ember)} .fs{fill:var(--storm)} .fv{fill:var(--violet)} .fi{fill:var(--ink2)} .fi3{fill:var(--ink3)}
+  .se{stroke:var(--ember)} .ss{stroke:var(--storm)} .sv{stroke:var(--violet)}
+  .si{stroke:var(--ink2)} .si3{stroke:var(--ink3)} .sln{stroke:var(--line2)}
+  .node{fill:var(--surface2)}
+  .wash-e{fill:var(--ember); opacity:.14} .wash-e2{fill:var(--ember); opacity:.3}
+  .flow{stroke-dasharray:7 9; animation:flowdash 1.7s linear infinite}
+  @keyframes flowdash{to{stroke-dashoffset:-16}}
+  @media (prefers-reduced-motion: reduce){ .flow{animation:none} }
+
+  /* ── protocol cards ─────────────────────────────────────── */
+  .proto{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:clamp(20px,3.4vw,32px); margin:28px 0;
+  }
+  .proto header{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 16px; margin-bottom:6px}
+  .proto h3{font-size:clamp(23px,3vw,28px)}
+  .proto .pno{font:600 11px/1 var(--sans); letter-spacing:.2em; color:var(--ink3)}
+  .chip{
+    font:600 10.5px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+    padding:5px 10px 4px; border-radius:3px; border:1px solid;
+  }
+  .chip.e{color:var(--ember); border-color:var(--ember); background:var(--ember-wash)}
+  .chip.s{color:var(--storm); border-color:var(--storm); background:var(--storm-wash)}
+  .chip.n{color:var(--ink3); border-color:var(--line2); background:transparent}
+  .spec{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px 26px; margin-top:20px}
+  .spec h4{
+    font:600 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink3); margin:0 0 8px;
+  }
+  .spec p{font-size:15.5px; color:var(--ink2); margin:0}
+  .inverse{
+    margin-top:22px; padding:16px 18px; border-left:2px solid var(--violet);
+    background:var(--storm-wash); border-radius:0 4px 4px 0;
+  }
+  .inverse h4{font:600 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--violet); margin:0 0 8px}
+  .inverse p{font-size:15px; color:var(--ink2); margin:0}
+  .marginalia{
+    margin-top:22px; padding:4px 0 4px 18px; border-left:2px solid var(--ember);
+    font-style:italic; font-size:15.5px; color:var(--ink2); max-width:60ch;
+  }
+  .marginalia .sig{display:block; font:500 11px/1 var(--sans); font-style:normal; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin-top:8px}
+
+  /* further protocols */
+  .further{margin-top:34px; border:1px solid var(--line); border-radius:4px; background:var(--surface)}
+  .further .row{display:flex; flex-wrap:wrap; gap:4px 18px; padding:14px 20px; border-top:1px solid var(--line); align-items:baseline}
+  .further .row:first-child{border-top:0}
+  .further .nm{font:600 12px/1.5 var(--sans); letter-spacing:.14em; text-transform:uppercase; min-width:150px}
+  .further .ds{font-size:14.5px; color:var(--ink2); flex:1; min-width:260px}
+
+  /* ── chart ──────────────────────────────────────────────── */
+  .chart-wrap{position:relative}
+  .axisl{fill:var(--ink3); font:11.5px var(--sans)}
+  .axisT{fill:var(--ink3); font:500 11.5px var(--sans)}
+  .gridln{stroke:var(--line); stroke-width:1}
+  .baseln{stroke:var(--line2); stroke-width:1.2}
+  .cs{stroke:var(--chart-storm)} .ce{stroke:var(--chart-ember)}
+  .fcs{fill:var(--chart-storm)} .fce{fill:var(--chart-ember)}
+  .thresh{stroke:var(--ink3); stroke-width:1.1; stroke-dasharray:5 5}
+  .xh{stroke:var(--ink3); stroke-width:1; stroke-dasharray:3 4; opacity:0}
+  .tip{
+    position:absolute; pointer-events:none; z-index:3; opacity:0; transition:opacity .12s;
+    background:var(--surface2); border:1px solid var(--line2); border-radius:4px;
+    padding:7px 11px; font:12px/1.7 var(--mono); color:var(--ink2);
+    box-shadow:var(--shadow); white-space:nowrap;
+  }
+  details.dtable{margin:10px 0 0}
+  details.dtable summary{
+    cursor:pointer; font:500 12.5px var(--sans); letter-spacing:.06em; color:var(--ink3);
+    padding:6px 2px;
+  }
+  details.dtable summary:hover{color:var(--ink2)}
+
+  /* ── tables ─────────────────────────────────────────────── */
+  .tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:4px; background:var(--surface); margin-top:26px}
+  table{width:100%; border-collapse:collapse; font:14.5px/1.6 var(--sans); min-width:600px}
+  th{
+    font:600 11px/1.4 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink3); text-align:left; padding:13px 16px; border-bottom:1px solid var(--line2);
+  }
+  td{padding:12px 16px; border-bottom:1px solid var(--line); color:var(--ink2); vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.mat{font:600 16px/1.5 var(--serif); color:var(--ink); white-space:nowrap}
+  td.sym{font:italic 700 17px/1.5 var(--serif); white-space:nowrap}
+  td.val{font:13px/1.7 var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink)}
+  .tnote{font:13px/1.7 var(--sans); color:var(--ink3); margin:12px 2px 0; max-width:70ch}
+
+  /* mini-card strips */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:26px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:20px 20px 18px}
+  .card h4{font:600 11.5px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; margin:0 0 10px; color:var(--ink2)}
+  .card h4 .k{margin-right:8px}
+  .card p{font-size:14.8px; color:var(--ink2); margin:0}
+  .card.warn{border-top:2px solid var(--ember)}
+  .card.warn h4{color:var(--ember)}
+
+  /* footer */
+  .colophon{border-top:1px solid var(--line); padding:44px 0 64px}
+  .colophon p{font:13px/1.9 var(--sans); color:var(--ink3); max-width:74ch; margin:0 0 8px}
+
+  /* ── breadcrumbs ────────────────────────────────────────── */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--storm); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--storm); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<header class="hero">
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Thaumodynamics</a></li>
+        <li><span aria-current="page">Monograph</span></li>
+      </ol>
+    </nav>
+    <p class="eyebrow"><b>Vol.&nbsp;I · The Coupled Sector</b> · Third Edition · For the Practical Curriculum</p>
+    <h1>Thaumodynamics</h1>
+    <p class="sub">A field theory of <span class="fire">fire</span> &amp; <span class="bolt">lightning</span></p>
+    <blockquote class="epigraph">
+      “Magic is not a suspension of the laws of nature. It is two further laws — and the bill for both.”
+      <footer>— Haldis Vane, <cite>Lectures on the Second Sector</cite>, 1877</footer>
+    </blockquote>
+  </div>
+  <nav class="wrap toc" aria-label="Contents">
+    <a href="#premise"><b>§1</b> Premise</a>
+    <a href="#fields"><b>§2</b> The Fields</a>
+    <a href="#laws"><b>§3</b> Sector Laws</a>
+    <a href="#exchange"><b>§4</b> Exchange Laws</a>
+    <a href="#anima"><b>§5</b> Anima</a>
+    <a href="#casting"><b>§6</b> Casting</a>
+    <a href="#protocols"><b>§7</b> Protocols</a>
+    <a href="#matter"><b>§8</b> Matter</a>
+    <a href="#constants"><b>§9</b> Constants</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ══════════════════ §1 PREMISE ══════════════════ -->
+  <section id="premise">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 1</b> · Premise</p>
+      <h2>The machine has a twin</h2>
+      <div class="prose">
+        <p class="lede">Every schoolchild learns the baseline fields: the electric field <i>E</i>, the magnetic
+        field <i>B</i>, and the slow bookkeeping of heat. And every schoolchild learns the lesson of pairs —
+        electricity and magnetism looked like two subjects until they were shown to be one machine. A changing
+        <i>B</i> writes <i>E</i> into space; a moving charge writes <i>B</i>; light is the two chasing each other
+        forever.</p>
+        <p>Thaumodynamics begins with an uncomfortable measurement. In 1877, Haldis Vane — hunting what she
+        believed was a thermometer error — found a <em>second pair</em> of fields threaded through the first:
+        coupled to it weakly, sourced not by electric charge but by the ordered hum of living nerves. We call
+        them the <strong class="fH">Hearth field H</strong> and the <strong class="fL">Loom field Λ</strong>,
+        and their charge <span class="fA">anima</span>.</p>
+        <p>Their mathematics will look familiar. <em>That is the point.</em> A spell is not a violated law; it is
+        a boundary condition. The caster does not command fire — the caster arranges the fields so that fire is
+        what physics does next.</p>
+      </div>
+      <div class="roster" aria-label="The five fields">
+        <div class="fchip"><span class="sym">E</span><span class="what">electric · baseline</span></div>
+        <div class="fchip"><span class="sym">B</span><span class="what">magnetic · baseline</span></div>
+        <div class="fchip"><span class="sym">T</span><span class="what">thermal reservoir · baseline</span></div>
+        <div class="fchip new"><span class="sym fH">H</span><span class="what">hearth · second sector</span></div>
+        <div class="fchip new2"><span class="sym fL">Λ</span><span class="what">loom · second sector</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §2 THE FIELDS ══════════════════ -->
+  <section id="fields">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 2</b> · The Fields</p>
+      <h2>Hearth and Loom</h2>
+      <div class="fields">
+        <article class="fieldcard h">
+          <h3><span class="fH">H</span> — the Hearth field <span class="sig">“the shape of warmth to come”</span></h3>
+          <svg viewBox="0 0 240 96" width="240" height="96" role="img" aria-label="Radial field lines diverging from a point">
+            <defs>
+              <marker id="g1a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+            </defs>
+            <g class="se" stroke-width="1.5" fill="none">
+              <line x1="120" y1="48" x2="196" y2="48" marker-end="url(#g1a)"></line>
+              <line x1="120" y1="48" x2="44" y2="48" marker-end="url(#g1a)"></line>
+              <line x1="120" y1="48" x2="174" y2="16" marker-end="url(#g1a)"></line>
+              <line x1="120" y1="48" x2="66" y2="16" marker-end="url(#g1a)"></line>
+              <line x1="120" y1="48" x2="174" y2="80" marker-end="url(#g1a)"></line>
+              <line x1="120" y1="48" x2="66" y2="80" marker-end="url(#g1a)"></line>
+            </g>
+            <circle cx="120" cy="48" r="6" class="fe"></circle>
+          </svg>
+          <p>A vector field that diverges from <span class="fA">anima charge</span> exactly as <i>E</i> diverges
+          from electric charge. Where <span class="fH">H</span> threads matter, heat flows along it
+          (Exchange&nbsp;I) — converge it and warmth funnels in; invert it and warmth funnels out.</p>
+          <p>Reach falls off as 1/r². Water blunts it badly; damp air is armor against fire.</p>
+        </article>
+        <article class="fieldcard l">
+          <h3><span class="fL">Λ</span> — the Loom field <span class="sig">“the memory of motion”</span></h3>
+          <svg viewBox="0 0 240 96" width="240" height="96" role="img" aria-label="Closed field loops with no sources">
+            <defs>
+              <marker id="g2a" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+            </defs>
+            <g class="ss" stroke-width="1.5" fill="none">
+              <path d="M120,14 a34,34 0 1 1 -0.1,0" marker-end="url(#g2a)"></path>
+              <path d="M120,30 a18,18 0 1 1 -0.1,0" marker-end="url(#g2a)"></path>
+              <path d="M120,2 a46,46 0 1 0 0.1,0" opacity=".45" marker-end="url(#g2a)"></path>
+            </g>
+          </svg>
+          <p>Solenoidal — no sources, no ends, only loops. It is wound by anima <em>currents</em> (a gesture is a
+          current) and by a changing <span class="fH">H</span>. To a moving electric charge it is a phantom
+          magnet; broken quickly, it writes a true <i>E</i> into the air (Exchange&nbsp;II).</p>
+          <p>Copper holds a winding for minutes. Iron drinks it. This one fact organizes half of practice.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §3 SECTOR LAWS ══════════════════ -->
+  <section id="laws">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 3</b> · The Sector Laws</p>
+      <h2>Four laws, set in a familiar hand</h2>
+      <div class="prose">
+        <p>The second sector obeys four laws, printed here deliberately in the arrangement Maxwell chose for the
+        first. Substitute <span class="fH">H</span>→<i>E</i>, <span class="fL">Λ</span>→<i>B</i>,
+        <span class="fA">α</span>→<i>q</i>, and you recover the electromagnetism you already know. Nature, it
+        turns out, liked the design enough to build it twice.</p>
+      </div>
+      <div class="laws">
+        <article class="law">
+          <p class="no"><b>Law I</b> · Anima’s Well</p>
+          <p class="eq"><span class="op">∇</span><span class="op">·</span><span class="v fH">H</span><span class="op">=</span><span class="fr"><span><i class="fA">α</i></span><span class="d"><i>ε</i><sub>θ</sub></span></span></p>
+          <p class="gloss">Anima charge is the wellspring of the Hearth.</p>
+        </article>
+        <article class="law">
+          <p class="no"><b>Law II</b> · Closure of the Loom</p>
+          <p class="eq"><span class="op">∇</span><span class="op">·</span><span class="v fL">Λ</span><span class="op">=</span><span>0</span></p>
+          <p class="gloss">The Loom has no ends; it only loops.</p>
+        </article>
+        <article class="law">
+          <p class="no"><b>Law III</b> · The Weave</p>
+          <p class="eq"><span class="op">∇</span><span class="op">×</span><span class="v fH">H</span><span class="op">=</span><span class="op">−</span><span class="fr"><span><span class="op">∂</span><span class="v fL">Λ</span></span><span class="d"><span class="op">∂</span><i>t</i></span></span></p>
+          <p class="gloss">A changing Loom re-weaves the Hearth around it.</p>
+        </article>
+        <article class="law">
+          <p class="no"><b>Law IV</b> · The Return</p>
+          <p class="eq"><span class="op">∇</span><span class="op">×</span><span class="v fL">Λ</span><span class="op">=</span><i>μ</i><sub>θ</sub><span class="v fA">J</span><sub class="fA">α</sub><span class="op">+</span><i>μ</i><sub>θ</sub><i>ε</i><sub>θ</sub><span class="fr"><span><span class="op">∂</span><span class="v fH">H</span></span><span class="d"><span class="op">∂</span><i>t</i></span></span></p>
+          <p class="gloss">Anima in motion — the gesture — spins the Loom.</p>
+        </article>
+      </div>
+      <aside class="aside-card">
+        <h4>The murmur — magic has a speed limit</h4>
+        <p class="eq"><i>c</i><sub>θ</sub><span class="op">=</span><span class="fr"><span>1</span><span class="d">√(<i>μ</i><sub>θ</sub><i>ε</i><sub>θ</sub>)</span></span><span class="op">≈</span><span>2.99 × 10² m s⁻¹</span></p>
+        <p>Chase Laws III and IV around a loop and a wave falls out: coupled ripples of <span class="fH">H</span>
+        and <span class="fL">Λ</span>, called <em>murmur</em>, travelling at 299 metres a second in clear air —
+        slower than a shout. Practitioners see it at the edge of vision as a violet unsettling of the air.</p>
+        <p>The consequence rules duelling: you cannot outrun a bolt, but you can outstep the loom that aims it.
+        The shimmer arrives first, and a schooled eye reads it.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §4 EXCHANGE LAWS ══════════════════ -->
+  <section id="exchange">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 4</b> · The Exchange Laws</p>
+      <h2>Where spells come from</h2>
+      <div class="prose">
+        <p class="lede">Two sectors that kept to themselves would be a curiosity for instrument-makers. They do
+        not keep to themselves. Two weak couplings — measured, universal, and mercifully linear — let a condition
+        arranged in the second sector <em>drive</em> the first. All practical magic lives in the two equations
+        below. Everything after this page is engineering.</p>
+      </div>
+      <div class="laws exchange">
+        <article class="law ex ex-h">
+          <p class="no"><b>Exchange I</b> · The Thermic Coupling — <i>fire</i></p>
+          <p class="eq"><span class="v">q</span><span class="op">=</span><span class="op">−</span><i>k</i><span class="op">∇</span><i>T</i><span class="op">+</span><i class="fire">χ</i><sub class="fire">T</sub><span class="v fH">H</span></p>
+          <p class="gloss">Fourier’s law of heat flow grows a second term: heat flows <em>along the Hearth
+          field</em> as surely as it flows down a temperature gradient. Converge <span class="fH">H</span> on a
+          point and the room’s own warmth funnels there — that is <em>Kindle</em>. Flip the sign and the point’s
+          warmth funnels out — that is <em>Frostlock</em>. Fire and frost are one discipline; ask any scarred
+          instructor.</p>
+        </article>
+        <article class="law ex ex-l">
+          <p class="no"><b>Exchange II</b> · The Ionic Coupling — <i>lightning</i></p>
+          <p class="eq"><span class="op">∇</span><span class="op">×</span><span class="v">E</span><span class="op">=</span><span class="op">−</span><span class="fr"><span><span class="op">∂</span><span class="v">B</span></span><span class="d"><span class="op">∂</span><i>t</i></span></span><span class="op">−</span><i class="bolt">ξ</i><span class="fr"><span><span class="op">∂</span><span class="v fL">Λ</span></span><span class="d"><span class="op">∂</span><i>t</i></span></span></p>
+          <p class="gloss">Faraday’s law grows a second term: a changing Loom induces a <em>true electric field</em>,
+          exactly as a changing magnet does. Wind <span class="fL">Λ</span> slowly, break it fast, and megavolts
+          snap into the air. Lightning is not summoned. It is induced.</p>
+          <p class="also">Moving charge feels the Loom as a magnet that isn’t there:
+            <span class="eq"><span class="v">F</span><span class="op">=</span><i>q</i><span class="op">(</span><span class="v">E</span><span class="op">+</span><span class="v">v</span><span class="op">×</span><span class="v">B</span><span class="op">+</span><i class="bolt">ξ</i><span class="v">v</span><span class="op">×</span><span class="v fL">Λ</span><span class="op">)</span></span>
+          </p>
+        </article>
+      </div>
+
+      <figure class="plate">
+        <div class="scroll">
+        <svg viewBox="0 0 760 442" role="img" aria-label="Coupling map: the baseline sector (thermal, electric, magnetic) and the second sector (hearth, loom, anima), joined by Exchange I and Exchange II">
+          <defs>
+            <marker id="cmE" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+            <marker id="cmS" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+            <marker id="cmV" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fv"></path></marker>
+            <marker id="cmI" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fi3"></path></marker>
+            <marker id="cmI2" viewBox="0 0 8 8" refX="1" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M8,0 L0,4 L8,8 z" class="fi3"></path></marker>
+            <marker id="cmV2" viewBox="0 0 8 8" refX="1" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M8,0 L0,4 L8,8 z" class="fv"></path></marker>
+          </defs>
+
+          <!-- sector boxes -->
+          <rect x="38" y="36" width="278" height="374" rx="6" fill="none" class="sln" stroke-dasharray="4 5"></rect>
+          <rect x="444" y="36" width="278" height="374" rx="6" fill="none" class="sln" stroke-dasharray="4 5"></rect>
+          <text x="58" y="64" class="scap">BASELINE SECTOR</text>
+          <text x="464" y="64" class="scap">SECOND SECTOR</text>
+          <text x="58" y="394" class="sl">waves: light, at c</text>
+          <text x="464" y="394" class="sl">waves: murmur, at c<tspan font-size="9" dy="2">θ</tspan><tspan dy="-2"> ≈ 299 m/s</tspan></text>
+
+          <!-- exchange arrows -->
+          <line x1="494" y1="120" x2="270" y2="120" class="se" stroke-width="2.4" marker-end="url(#cmE)"></line>
+          <text x="382" y="100" text-anchor="middle" class="slb" fill="var(--ember)">EXCHANGE I · χ</text>
+          <text x="382" y="141" text-anchor="middle" class="sl">heat flux follows H</text>
+
+          <line x1="494" y1="264" x2="270" y2="264" class="ss" stroke-width="2.4" marker-end="url(#cmS)"></line>
+          <text x="382" y="244" text-anchor="middle" class="slb" fill="var(--storm)">EXCHANGE II · ξ</text>
+          <text x="382" y="286" text-anchor="middle" class="sl">changing Λ induces E</text>
+          <text x="382" y="301" text-anchor="middle" class="sl">deflects moving charge</text>
+
+          <!-- baseline nodes -->
+          <circle cx="232" cy="120" r="30" class="node si3" stroke-width="1.5"></circle>
+          <text x="232" y="127" text-anchor="middle" class="sit fi">T</text>
+          <text x="176" y="124" text-anchor="end" class="sl">thermal<tspan x="176" dy="14">reservoir</tspan></text>
+
+          <circle cx="232" cy="264" r="30" class="node si" stroke-width="1.5"></circle>
+          <text x="232" y="271" text-anchor="middle" class="sit" fill="var(--ink)">E</text>
+          <text x="176" y="268" text-anchor="end" class="sl">electric</text>
+
+          <circle cx="232" cy="352" r="26" class="node si" stroke-width="1.5"></circle>
+          <text x="232" y="359" text-anchor="middle" class="sit" fill="var(--ink)">B</text>
+          <text x="180" y="356" text-anchor="end" class="sl">magnetic</text>
+
+          <line x1="232" y1="296" x2="232" y2="324" class="si3" stroke-width="1.6" marker-end="url(#cmI)" marker-start="url(#cmI2)"></line>
+          <text x="244" y="314" class="sl">Maxwell</text>
+
+          <!-- second-sector nodes -->
+          <circle cx="528" cy="120" r="30" class="node se" stroke-width="1.8"></circle>
+          <text x="528" y="127" text-anchor="middle" class="sit fe">H</text>
+          <text x="568" y="124" class="sl">hearth</text>
+
+          <circle cx="528" cy="264" r="30" class="node ss" stroke-width="1.8"></circle>
+          <text x="528" y="271" text-anchor="middle" class="sit fs">Λ</text>
+          <text x="568" y="268" class="sl">loom</text>
+
+          <circle cx="528" cy="352" r="26" class="node sv" stroke-width="1.8"></circle>
+          <text x="528" y="359" text-anchor="middle" class="sit fv">α</text>
+          <text x="562" y="356" class="sl">anima charge</text>
+
+          <line x1="528" y1="152" x2="528" y2="232" class="si3" stroke-width="1.6" marker-end="url(#cmI)" marker-start="url(#cmI2)"></line>
+          <text x="540" y="196" class="sl">weave · return</text>
+          <text x="540" y="210" class="sl">(Laws III–IV)</text>
+
+          <line x1="528" y1="324" x2="528" y2="296" class="sv" stroke-width="1.6" marker-end="url(#cmV)"></line>
+          <text x="514" y="314" class="sl" text-anchor="end">J<tspan font-size="9" dy="2">α</tspan><tspan dy="-2"> — the gesture (IV)</tspan></text>
+
+          <path d="M 554,338 C 610,300 610,172 556,132" fill="none" class="sv" stroke-width="1.6" marker-end="url(#cmV)"></path>
+          <text x="622" y="240" class="sl">α sources H (I)</text>
+        </svg>
+        </div>
+        <figcaption><b>Plate I</b> — the coupling map. Within each sector, the pair-laws; between sectors, the two Exchanges. Every spell in this volume is a path across this diagram.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §5 ANIMA ══════════════════ -->
+  <section id="anima">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 5</b> · Anima</p>
+      <h2>The charge, and the bill</h2>
+      <div class="prose">
+        <p><span class="fA">Anima</span> (unit: the <em>thaum</em>, th) is carried by coherent living
+        electrochemistry — the phase-locked hum of a nervous system. Everyone hums.
+        Few are <em>in tune</em>: an untrained soul is bright but incoherent, its fields cancelling in a
+        centimetre. Training is not a search for more charge. It is a search for phase — which is why every
+        tradition, whatever it claims, teaches its novices to count their own pulse.</p>
+        <p>Anima obeys a continuity law with one cruel amendment — outside living tissue, it fades:</p>
+      </div>
+      <div class="laws" style="grid-template-columns:minmax(280px,460px)">
+        <article class="law">
+          <p class="no"><b>Law V</b> · Persistence</p>
+          <p class="eq"><span class="fr"><span><span class="op">∂</span><i class="fA">α</i></span><span class="d"><span class="op">∂</span><i>t</i></span></span><span class="op">+</span><span class="op">∇</span><span class="op">·</span><span class="v fA">J</span><sub class="fA">α</sub><span class="op">=</span><span class="op">−</span><span class="fr"><span><i class="fA">α</i></span><span class="d"><i>τ</i><sub>α</sub></span></span></p>
+          <p class="gloss">Anima neither lasts nor leaks: it fades. τ<sub>α</sub> ≈ 11 s in free air.</p>
+        </article>
+      </div>
+      <div class="prose" style="margin-top:26px">
+        <p><strong>The eleven-second rule.</strong> No spell coasts longer than a breath. There are no enchanted
+        swords in this cosmology, no rings that smoulder in a tomb for an age — a charge left in an object is
+        gone before its maker’s footsteps are. Artifacts exist, but they are <em>lenses, never batteries</em>:
+        a copper torc shapes what a living caster pours through it, and shapes nothing at all on a shelf.</p>
+        <p><strong>The bill.</strong> Both Exchanges conserve energy to the joule, and the ledger closes on the
+        caster’s metabolism. Boiling a kettle by Kindle moves ≈84 kJ — twenty food-calories, a bite of biscuit.
+        A duelling bolt delivers ≈20 kJ but costs nearer 400 through coupling losses. Casting is cardio; war-mages
+        eat like rowers.</p>
+        <p><strong>Overcast.</strong> Exchange I runs on whatever gradient stands nearest. When a room’s warmth is
+        spent, the well does not politely close — it draws the next reservoir, which is the caster’s blood.
+        Fire-casters do not burn out. They freeze, from the inside, mid-triumph.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §6 CASTING ══════════════════ -->
+  <section id="casting">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 6</b> · Casting</p>
+      <h2>A spell is a circuit you become</h2>
+      <div class="prose">
+        <p>Nothing in the laws mentions wands, words, or waving. Yet every tradition converged on the same
+        triad, because the laws reward it. A spell is a boundary-value problem: <em>source, geometry, drive.</em></p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <h4><span class="k fA">◆</span>Gesture — writes the current</h4>
+          <p>A moving well of anima <em>is</em> a current <span class="fA">J<sub>α</sub></span>, and by Law IV
+          currents spin the Loom. The circling arm is a solenoid winding; the flat sweeping palm, a sheet
+          current. Footwork is not flourish — it is topology.</p>
+        </div>
+        <div class="card">
+          <h4><span class="k fire">◆</span>Focus — sets the boundary</h4>
+          <p>Matter bends the sector as glass bends light (see §8). A heartwood wand holds your charge a
+          hand’s-breadth ahead of your skin; a copper torc stores a winding; an iron ring is a drain you wear
+          by mistake exactly once. The focus is the circuit board.</p>
+        </div>
+        <div class="card">
+          <h4><span class="k bolt">◆</span>Word — keeps the clock</h4>
+          <p>No syllable touches the fields. Words pace the drive — casters phase-lock to their own pulse, and
+          a chant is a metronome you can carry into fear. A gagged caster still casts. They simply rush, and
+          rushing is how torcs end up humming and hands end up scarred.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §7 PROTOCOLS ══════════════════ -->
+  <section id="protocols">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 7</b> · Worked Protocols</p>
+      <h2>Three spells, printed as field conditions</h2>
+      <div class="prose">
+        <p>From the practical curriculum. Read each as an engineer reads a circuit: what condition is arranged
+        in the second sector, what the Exchange laws then oblige the baseline fields to do, and how it fails.</p>
+      </div>
+
+      <!-- ── KINDLE ── -->
+      <article class="proto">
+        <header>
+          <span class="pno">PROTOCOL 01</span>
+          <h3>Kindle</h3>
+          <span class="chip e">Exchange I</span><span class="chip n">static well</span><span class="chip n">novice</span>
+        </header>
+        <div class="spec">
+          <div>
+            <h4>Field condition</h4>
+            <p>Hold coherent <span class="fA">α</span> in the focus. Shape <span class="fH">H</span> as a
+            <em>well</em>: diverging from the focus, converging on the tinder point. Heartwood wand, silver
+            core; useful reach ≈3 m in dry air.</p>
+          </div>
+          <div>
+            <h4>Baseline response</h4>
+            <p>By Exchange I, <i>q</i> = χ<sub>T</sub><span class="fH">H</span> funnels ambient heat up the
+            well. The point climbs ≈140 K/s in still 20 °C air; dry tinder crosses autoignition (≈505 K) in
+            about two seconds.</p>
+          </div>
+          <div>
+            <h4>Result</h4>
+            <p>Smoulder, then flame. Nothing is created: the room grows imperceptibly cooler, and the ledger
+            lands on your breakfast (§5). The flame, once lit, is ordinary fire and owes you nothing.</p>
+          </div>
+          <div>
+            <h4>Failure modes</h4>
+            <p>Wet fuel — the latent-heat sink eats the flux. Deep cold — a thin reservoir; Kindle famously
+            fails on glaciers. Counter-casting — an opposed well sums to zero: superposition is the whole of
+            counterspelling.</p>
+          </div>
+        </div>
+
+        <figure class="plate">
+          <div class="scroll">
+          <svg viewBox="0 0 760 320" role="img" aria-label="Kindle: Hearth field lines converge from a wand tip onto a tinder point; ambient heat follows the field and the point ignites">
+            <defs>
+              <marker id="knA" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              <marker id="knI" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fi3"></path></marker>
+            </defs>
+
+            <!-- wand -->
+            <line x1="58" y1="216" x2="146" y2="172" class="si" stroke-width="5" stroke-linecap="round"></line>
+            <circle cx="150" cy="170" r="6.5" class="fe"></circle>
+            <text x="66" y="248" class="slb">focus</text>
+            <text x="66" y="264" class="sl">heartwood · silver core</text>
+
+            <!-- H field lines -->
+            <g class="se flow" stroke-width="1.6" fill="none">
+              <path d="M152,168 C 300,44 460,60 590,150" marker-end="url(#knA)"></path>
+              <path d="M153,170 C 300,112 460,118 584,164" marker-end="url(#knA)"></path>
+              <path d="M154,171 C 300,172 460,178 580,180" marker-end="url(#knA)"></path>
+              <path d="M153,173 C 300,234 460,238 584,196" opacity=".8" marker-end="url(#knA)"></path>
+              <path d="M152,175 C 300,296 460,288 590,210" opacity=".6" marker-end="url(#knA)"></path>
+            </g>
+            <text x="336" y="210" class="sml fe">the well — H converges</text>
+
+            <!-- ambient heat arrows -->
+            <g class="si3" stroke-width="1.3" fill="none">
+              <line x1="430" y1="52" x2="441" y2="83" marker-end="url(#knI)"></line>
+              <line x1="360" y1="286" x2="368" y2="258" marker-end="url(#knI)"></line>
+              <line x1="500" y1="278" x2="506" y2="252" marker-end="url(#knI)"></line>
+            </g>
+            <text x="452" y="46" class="sl">ambient heat funnels in — q = χ<tspan font-size="9" dy="2">T</tspan><tspan dy="-2">H</tspan></text>
+
+            <!-- tinder + glow -->
+            <circle cx="612" cy="180" r="30" class="wash-e"></circle>
+            <circle cx="612" cy="180" r="14" class="wash-e2"></circle>
+            <circle cx="612" cy="180" r="4.5" class="fe"></circle>
+            <line x1="566" y1="198" x2="652" y2="184" class="si3" stroke-width="4.5" stroke-linecap="round"></line>
+            <line x1="586" y1="208" x2="642" y2="162" class="si3" stroke-width="3.5" stroke-linecap="round"></line>
+            <text x="560" y="252" class="sl" style="font-family:var(--mono);font-size:11.5px">T: 293 → 505 K in ≈2 s</text>
+          </svg>
+          </div>
+          <figcaption><b>Plate II</b> — Kindle. The well is drawn between focus and fuel; the room’s own warmth does the burning.</figcaption>
+        </figure>
+
+        <div class="inverse">
+          <h4>Inverse form — Frostlock</h4>
+          <p>The same well, phase-inverted: heat funnels <em>out</em>. Conservation collects its due — the
+          ejected energy re-radiates as murmur, so cold-work glows a faint violet. Cold light is a refund.</p>
+        </div>
+        <p class="marginalia">When the room’s gradient is spent, the field takes the next one: yours. A student
+        who will not stop at the first shiver is casting with the heat of their own blood.
+        <span class="sig">— H.V., margin of the first edition</span></p>
+      </article>
+
+      <!-- ── STORMNEEDLE ── -->
+      <article class="proto">
+        <header>
+          <span class="pno">PROTOCOL 02</span>
+          <h3>Stormneedle</h3>
+          <span class="chip s">Exchange II</span><span class="chip e">Exchange I (phase ①)</span><span class="chip n">two-phase · journeyman</span>
+        </header>
+        <div class="spec">
+          <div>
+            <h4>Field condition — ① the Thread</h4>
+            <p>A hairline <span class="fH">H</span> filament from muzzle-point to target pre-heats a channel of
+            air; thermal ionization drops its breakdown field roughly tenfold. The thread is the aim.</p>
+          </div>
+          <div>
+            <h4>Field condition — ② the Quench</h4>
+            <p><span class="fL">Λ</span> is wound into a copper torc over ≈2 s by the circling gesture — then
+            coherence is <em>dropped at once</em>. Not spent: dropped. The winding collapses in ≈80 μs.</p>
+          </div>
+          <div>
+            <h4>Baseline response</h4>
+            <p>By Exchange II, <i>E</i><sub>ind</sub> = −ξ ∂<span class="fL">Λ</span>/∂t spikes to ≈1.8 MV/m —
+            under dry air’s 3 MV/m, far over the threaded channel’s 0.35. Breakdown follows the thread:
+            ≈20 kJ arrives in 60 μs at ≈30 kA, thunderclap included.</p>
+          </div>
+          <div>
+            <h4>Failure modes</h4>
+            <p>Slow quench — a hot, humming torc and no bolt. Rain — ionization comes cheap but the thread
+            wanders: bolts fork. Iron within arm’s reach — the winding drains before it breaks. Never duel in
+            a smithy.</p>
+          </div>
+        </div>
+
+        <figure class="plate">
+          <div class="scroll">
+          <svg viewBox="0 0 760 350" role="img" aria-label="Stormneedle: a Hearth thread ionizes a channel; a Loom winding stored in a torc is quenched, inducing an electric field along the thread and a directed arc">
+            <defs>
+              <marker id="snS" viewBox="0 0 8 8" refX="6.4" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+              <marker id="snV" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fv"></path></marker>
+            </defs>
+
+            <!-- hand -->
+            <circle cx="106" cy="190" r="8" class="node si" stroke-width="1.5"></circle>
+            <text x="72" y="228" class="sl">muzzle-point</text>
+
+            <!-- thread -->
+            <line x1="116" y1="190" x2="576" y2="190" class="se" stroke-width="1.4" stroke-dasharray="2 4"></line>
+            <text x="330" y="148" class="sl"><tspan class="slb" fill="var(--ember)">① the thread</tspan> — hairline H filament ionizes the channel (breakdown ↓ ~10×)</text>
+
+            <!-- torc -->
+            <ellipse cx="210" cy="190" rx="17" ry="60" fill="none" class="si" stroke-width="8" opacity=".75"></ellipse>
+            <text x="188" y="292" class="slb">copper torc</text>
+            <text x="188" y="308" class="sl">aim through it</text>
+
+            <!-- loom loops on the tube -->
+            <g class="ss" stroke-width="1.7" fill="none">
+              <path d="M210,116 a13,13 0 1 1 -0.1,0" marker-end="url(#snS)"></path>
+              <path d="M210,236 a13,13 0 1 1 -0.1,0" marker-end="url(#snS)"></path>
+            </g>
+            <text x="238" y="92" class="sl"><tspan class="slb" fill="var(--storm)">Λ wound ≈2 s</tspan> (circling gesture)</text>
+
+            <!-- induced E along thread -->
+            <g class="sv" stroke-width="1.7" fill="none">
+              <line x1="268" y1="212" x2="316" y2="212" marker-end="url(#snV)"></line>
+              <line x1="356" y1="212" x2="404" y2="212" marker-end="url(#snV)"></line>
+              <line x1="444" y1="212" x2="492" y2="212" marker-end="url(#snV)"></line>
+            </g>
+            <text x="268" y="242" class="sl"><tspan class="slb" fill="var(--violet)">② the quench</tspan> — E<tspan font-size="9" dy="2">ind</tspan><tspan dy="-2"> = −ξ ∂Λ/∂t along the channel</tspan></text>
+
+            <!-- bolt -->
+            <polyline points="576,190 598,180 612,198 630,182 648,196 664,190" fill="none" class="ss" stroke-width="7" opacity=".22" stroke-linejoin="round"></polyline>
+            <polyline points="576,190 598,180 612,198 630,182 648,196 664,190" fill="none" class="ss" stroke-width="2.4" stroke-linejoin="round"></polyline>
+
+            <!-- target -->
+            <line x1="676" y1="150" x2="676" y2="226" class="si3" stroke-width="5" stroke-linecap="round"></line>
+            <text x="648" y="252" class="sl">target</text>
+          </svg>
+          </div>
+          <figcaption><b>Plate III</b> — Stormneedle. Thread first, then break the winding: the bolt takes the path you warmed for it.</figcaption>
+        </figure>
+
+        <figure class="plate">
+          <div class="scroll">
+          <div class="chart-wrap">
+            <svg id="quench" viewBox="0 0 760 470" role="img" aria-label="Chart of the quench: the wound Loom flux collapses at time zero; the induced electric field spikes to 1.8 megavolts per metre, above the threaded channel threshold of 0.35 but below dry air’s 3.0"></svg>
+            <div class="tip" id="qtip" role="status"></div>
+          </div>
+          </div>
+          <figcaption><b>Plate IV</b> — the quench, in numbers. The spike never reaches dry air’s threshold: without the thread there is no bolt. Hover to read the trace.</figcaption>
+        </figure>
+        <details class="dtable">
+          <summary>Data table — Plate IV</summary>
+          <div class="tblwrap" style="margin-top:10px">
+            <table>
+              <thead><tr><th scope="col">t (μs)</th><th scope="col">Λ, wound flux (norm.)</th><th scope="col">|E| induced (MV/m)</th><th scope="col">Note</th></tr></thead>
+              <tbody>
+                <tr><td class="val">−50</td><td class="val">1.000</td><td class="val">0.000</td><td>wound, held</td></tr>
+                <tr><td class="val">0⁺</td><td class="val">1.000</td><td class="val">1.800</td><td>quench — peak field</td></tr>
+                <tr><td class="val">+25</td><td class="val">0.435</td><td class="val">0.783</td><td>arc carrying</td></tr>
+                <tr><td class="val">+49</td><td class="val">0.195</td><td class="val">0.350</td><td>window closes (threaded threshold)</td></tr>
+                <tr><td class="val">+100</td><td class="val">0.036</td><td class="val">0.064</td><td>spent</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <p class="marginalia">The bolt is instant; the aim is not. The thread shimmers out at 299 m/s and a
+        schooled eye reads it coming. Duels are lost in the wind-up.
+        <span class="sig">— H.V.</span></p>
+      </article>
+
+      <!-- ── LOOMSHELL ── -->
+      <article class="proto">
+        <header>
+          <span class="pno">PROTOCOL 03</span>
+          <h3>Loomshell</h3>
+          <span class="chip s">Exchange II</span><span class="chip n">standing field · journeyman</span>
+        </header>
+        <div class="spec">
+          <div>
+            <h4>Field condition</h4>
+            <p>Comb a standing <span class="fL">Λ</span> tangent to a shell about the body, and re-comb it
+            against the eleven-second fade. Copper thread in the hems halves the upkeep; every academy robe is
+            secretly a component.</p>
+          </div>
+          <div>
+            <h4>Baseline response</h4>
+            <p>Incoming <em>charged</em> matter — bolt leaders, plasma, ionized spray — feels
+            ξ<span class="v">v</span>×<span class="fL">Λ</span> and gyrates. When its radius of curl is shorter
+            than the shell is thick, the strike walks around you and exits still looking for ground.</p>
+          </div>
+          <div>
+            <h4>Result</h4>
+            <p>Lightning parts around the caster. So does flame-plasma, which is why a shell-carrier can stroll
+            through a burning granary looking insufferable.</p>
+          </div>
+          <div>
+            <h4>Failure modes</h4>
+            <p>The two polar whorls — a sphere of tangents cannot be combed flat (Poincaré–Hopf grants every
+            shell exactly two defects; duelists aim for the crown). Neutral matter — arrows, stones, rain,
+            steel pass untouched. Your own mail — iron on the defender grounds the defender.</p>
+          </div>
+        </div>
+
+        <figure class="plate">
+          <div class="scroll">
+          <svg viewBox="0 0 760 400" role="img" aria-label="Loomshell: a combed shell of Loom field around a caster deflects an incoming charged bolt, while a neutral arrow passes straight through; two polar defects are marked">
+            <defs>
+              <marker id="lsS" viewBox="0 0 8 8" refX="6.4" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+              <marker id="lsB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+              <marker id="lsI" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7.5" markerHeight="7.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fi"></path></marker>
+            </defs>
+
+            <!-- shell -->
+            <circle cx="380" cy="200" r="120" fill="none" class="ss" stroke-width="1" stroke-dasharray="3 6" opacity=".55"></circle>
+
+            <!-- caster -->
+            <circle cx="380" cy="200" r="9" class="fi"></circle>
+            <text x="368" y="182" class="sl">caster</text>
+
+            <!-- combed tangent arrows (12, skipping poles) -->
+            <g class="ss" stroke-width="1.8" fill="none">
+              <line x1="500" y1="186" x2="500" y2="214" marker-end="url(#lsS)"></line>
+              <line x1="490.6" y1="253.4" x2="476.6" y2="277.6" marker-end="url(#lsS)"></line>
+              <line x1="453.4" y1="297.2" x2="429.2" y2="311.2" marker-end="url(#lsS)"></line>
+              <line x1="330.8" y1="311.2" x2="306.6" y2="297.2" marker-end="url(#lsS)"></line>
+              <line x1="283.4" y1="277.6" x2="269.4" y2="253.4" marker-end="url(#lsS)"></line>
+              <line x1="260" y1="214" x2="260" y2="186" marker-end="url(#lsS)"></line>
+              <line x1="269.4" y1="146.6" x2="283.4" y2="122.4" marker-end="url(#lsS)"></line>
+              <line x1="306.6" y1="102.8" x2="330.8" y2="88.8" marker-end="url(#lsS)"></line>
+              <line x1="429.2" y1="88.8" x2="453.4" y2="102.8" marker-end="url(#lsS)"></line>
+              <line x1="476.6" y1="122.4" x2="490.6" y2="146.6" marker-end="url(#lsS)"></line>
+            </g>
+
+            <!-- polar defects -->
+            <g class="sv" stroke-width="1.6" fill="none">
+              <path d="M380,80 m-9,0 a9,9 0 1 1 18,0 a6,6 0 1 0 -12,0 a3,3 0 1 1 6,0"></path>
+              <path d="M380,320 m-9,0 a9,9 0 1 1 18,0 a6,6 0 1 0 -12,0 a3,3 0 1 1 6,0"></path>
+            </g>
+            <text x="402" y="72" class="sl" fill="var(--violet)">polar defect — the crown whorl</text>
+            <text x="402" y="336" class="sl" fill="var(--violet)">polar defect (Poincaré–Hopf: every shell has two)</text>
+
+            <!-- incoming charged bolt, deflected -->
+            <polyline points="34,178 74,166 104,190 142,172 180,194 222,186" fill="none" class="ss" stroke-width="6.5" opacity=".2" stroke-linejoin="round"></polyline>
+            <polyline points="34,178 74,166 104,190 142,172 180,194 222,186" fill="none" class="ss" stroke-width="2.2" stroke-linejoin="round"></polyline>
+            <path d="M222,186 C 250,146 262,104 234,66 C 210,34 158,20 106,34" fill="none" class="ss" stroke-width="2.2" marker-end="url(#lsB)"></path>
+            <path d="M222,186 C 250,146 262,104 234,66 C 210,34 158,20 106,34" fill="none" class="ss" stroke-width="6.5" opacity=".2"></path>
+            <text x="40" y="220" class="slb" fill="var(--storm)">charged leader</text>
+            <text x="40" y="236" class="sl">curls away: ξ v × Λ</text>
+
+            <!-- neutral arrow passes -->
+            <line x1="722" y1="246" x2="120" y2="246" class="si" stroke-width="2" marker-end="url(#lsI)"></line>
+            <line x1="718" y1="239" x2="708" y2="253" class="si" stroke-width="1.6"></line>
+            <line x1="708" y1="239" x2="698" y2="253" class="si" stroke-width="1.6"></line>
+            <text x="520" y="288" class="sl">neutral matter passes clean</text>
+            <text x="520" y="304" class="sl">— the shell turns lightning, not steel</text>
+          </svg>
+          </div>
+          <figcaption><b>Plate V</b> — Loomshell. Charge curls; steel does not. Note the two whorls no combing can remove.</figcaption>
+        </figure>
+
+        <p class="marginalia">The shell turns lightning, not steel. The academy repeats it every term because
+        the graveyard repeats it too.
+        <span class="sig">— H.V.</span></p>
+      </article>
+
+      <!-- further protocols -->
+      <div class="further" role="list" aria-label="Further protocols">
+        <div class="row" role="listitem"><span class="nm fire">Emberline</span><span class="ds">A rank of shallow Kindle wells strung down a hearth-row. The town forge runs on two casters and a woodpile. <em>(Exchange I, civic)</em></span></div>
+        <div class="row" role="listitem"><span class="nm weft">Lantern</span><span class="ds">A standing murmur wave boxed between kiln-glass plates: cold light, renewed each breath against the fade. <em>(sector radiation)</em></span></div>
+        <div class="row" role="listitem"><span class="nm bolt">Stormcall</span><span class="ds">Nine casters winding in phase with a live thundercloud’s own charge separation. Area ritual, weather-gated: you finish what the cloud began. <em>(Exchange II, ritual)</em></span></div>
+        <div class="row" role="listitem"><span class="nm">Grounding Rite</span><span class="ds">Iron rods laid in a five-line lattice drain every standing winding in a courtyard. The constabulary’s favourite equation. <em>(counter-work)</em></span></div>
+      </div>
+
+      <!-- wild readings -->
+      <div class="cards">
+        <div class="card">
+          <h4>Wild reading — will-o’-wisp</h4>
+          <p>Decaying peat holds trace anima long past τ<sub>α</sub>’s usual mercy. Over bogs it rings as a
+          murmur standing wave: a lantern nobody is holding, eleven seconds at a time.</p>
+        </div>
+        <div class="card">
+          <h4>Wild reading — ball lightning</h4>
+          <p>A self-knotted plasmoid of <span class="fL">Λ</span> and its own ionized air — nature’s only known
+          quench that fails to finish. Stable for seconds; approached by exactly one researcher per generation.</p>
+        </div>
+        <div class="card">
+          <h4>Wild reading — storm-shimmer</h4>
+          <p>A thundercloud’s charge separation faintly winds <span class="fL">Λ</span> at the scale of the whole
+          sky. Bolts come cheap in rain and Kindle comes dear — the weather takes sides.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §8 MATTER ══════════════════ -->
+  <section id="matter">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 8</b> · Matter and the Sector</p>
+      <h2>What the fields make of things</h2>
+      <div class="prose">
+        <p>The second sector does not read chemistry the way electromagnetism does; its constants of matter were
+        tabulated the hard way, one scorched bench at a time. Six materials organize all of practice.</p>
+      </div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th scope="col">Material</th><th scope="col">Sector property</th><th scope="col">In practice</th></tr></thead>
+          <tbody>
+            <tr><td class="mat">Silver</td><td>Anima conductor — carries <span class="fA">α</span> with little loss</td><td>Focus cores; signal wire between ritualists</td></tr>
+            <tr><td class="mat">Heartwood &amp; bone</td><td>Anima capacitor — holds a coherent charge for whole minutes</td><td>Wand bodies; why relics are handles, never blades</td></tr>
+            <tr><td class="mat">Copper</td><td>Loom-permeable (μ<sub>θ</sub> ≫ 1) — takes and holds a winding</td><td>Torcs, storage coils, the hem-thread of duelling robes</td></tr>
+            <tr><td class="mat">Cold iron</td><td>Loom sink — dissipates <span class="fL">Λ</span> as waste heat</td><td>Grounding rods; ward-breaking; the horseshoe over the door works</td></tr>
+            <tr><td class="mat">Water</td><td>Hearth-damping (high ε<sub>θ</sub>) — shortens the reach of <span class="fH">H</span></td><td>Damp air blunts Kindle; moats predate their own explanation</td></tr>
+            <tr><td class="mat">Kiln glass &amp; ceramic</td><td>Sector insulator — both fields pass poorly</td><td>Isolation benches; containment jars; Lantern plates</td></tr>
+            <tr><td class="mat">Gold</td><td>Inert in both sectors</td><td>Jewellery that never itches; the control sample in every laboratory</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ §9 CONSTANTS ══════════════════ -->
+  <section id="constants">
+    <div class="wrap">
+      <p class="eyebrow"><b>§ 9</b> · Constants of the Sector</p>
+      <h2>The measured world</h2>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th scope="col">Symbol</th><th scope="col">Name</th><th scope="col">Value</th><th scope="col">First measurement</th></tr></thead>
+          <tbody>
+            <tr><td class="sym fH">ε<sub>θ</sub></td><td>Hearth permittivity of free air</td><td class="val">8.9 × 10⁻⁴ th² N⁻¹ m⁻²</td><td>H. Vane, 1877 — the “thermometer error”</td></tr>
+            <tr><td class="sym fL">μ<sub>θ</sub></td><td>Loom permeability of free air</td><td class="val">1.26 × 10⁻² N th⁻²</td><td>H. Vane, 1877</td></tr>
+            <tr><td class="sym">c<sub>θ</sub></td><td>Murmur speed, 1/√(μ<sub>θ</sub>ε<sub>θ</sub>)</td><td class="val">2.99 × 10² m s⁻¹</td><td>M. Isarn, 1881 — time-of-shimmer over a fjord</td></tr>
+            <tr><td class="sym fH">χ<sub>T</sub></td><td>Thermic coupling (Exchange I)</td><td class="val">4.19 W m⁻² per unit H</td><td>the Candela Circle, 1889</td></tr>
+            <tr><td class="sym fL">ξ</td><td>Ionic coupling (Exchange II)</td><td class="val">1.60 × 10⁻¹ V s th⁻¹ m⁻¹</td><td>A. Okoye, 1902 — the torc-quench experiments</td></tr>
+            <tr><td class="sym fA">τ<sub>α</sub></td><td>Anima persistence, free air, 20 °C</td><td class="val">11 s</td><td>R. Whitlow, 1894</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tnote">th = thaum, the SI-augmented unit of anima charge. Media values vary: water roughly
+      triples ε<sub>θ</sub>; annealed copper raises μ<sub>θ</sub> four-hundredfold; cold iron’s loss tangent has
+      never been measured to the bottom. See Appendix B for the unit system, and Appendix C for what happened to
+      the first three attempts at measuring ξ.</p>
+
+      <div class="cards">
+        <div class="card warn">
+          <h4>Warning · Overcast</h4>
+          <p>Stop at the first shiver. The well does not know where the room ends and you begin. Sweet tea, and
+          a fire somebody else kindled.</p>
+        </div>
+        <div class="card warn">
+          <h4>Warning · Quench discipline</h4>
+          <p>Never wind what you cannot break cleanly. A slow quench is a hot torc and a missed bolt; a fumbled
+          one is a self-strike.</p>
+        </div>
+        <div class="card warn">
+          <h4>Warning · The smithy rule</h4>
+          <p>No duelling near masses of iron — your winding drains into every anvil. This is also why formal
+          duels are fought barefoot, on dry ash.</p>
+        </div>
+        <div class="card warn">
+          <h4>Warning · Ward hygiene</h4>
+          <p>Allied shells superpose. Two proud wards make an interference lattice that guides the bolt to both.
+          Stand apart, or share one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="colophon">
+  <div class="wrap">
+    <p><b>Thaumodynamics, Vol. I — The Coupled Sector.</b> An invented field theory: two new fields (Hearth and
+    Loom), sourced by anima, mirroring Maxwell’s equations and coupled to heat and charge by two Exchange laws —
+    so that every spell is a field condition, not an incantation.</p>
+    <p>All physics herein is fictional; the typography is real. Set without webfonts or external assets; the
+    plates are inline SVG, the sky is a canvas, and both themes were mixed by hand. No equations were harmed.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── theme sensing ─────────────────────────────────────── */
+  function isDark(){
+    var g = getComputedStyle(document.documentElement).getPropertyValue('--ground').trim();
+    if (g.charAt(0) === '#' && g.length >= 7){
+      var r = parseInt(g.substr(1,2),16), gr = parseInt(g.substr(3,2),16), b = parseInt(g.substr(5,2),16);
+      return (0.2126*r + 0.7152*gr + 0.0722*b) < 128;
+    }
+    return matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── hero canvas: embers + arcs ────────────────────────── */
+  (function(){
+    var cv = document.getElementById('fx');
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    var hero = cv.parentElement;
+    var W = 0, H = 0, parts = [], arcs = [], nextArc = 0;
+    var emberC = [255,166,97], stormC = [138,203,255], dark = true;
+
+    function palette(){
+      dark = isDark();
+      emberC = dark ? [255,166,97] : [150,68,12];
+      stormC = dark ? [138,203,255] : [32,100,159];
+    }
+    function resize(){
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = hero.clientWidth; H = hero.clientHeight;
+      cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      var n = Math.min(110, Math.round(W*H/15000));
+      while (parts.length < n) parts.push(spawn({}, true));
+      parts.length = n;
+      if (reduced) still();
+    }
+    function spawn(p, init){
+      p.x = Math.random()*W;
+      p.y = init ? Math.random()*H : H + 8;
+      p.r = 0.6 + Math.random()*1.7;
+      p.s = 7 + Math.random()*20;
+      p.w = Math.random()*6.283;
+      p.a = 0.22 + Math.random()*0.5;
+      return p;
+    }
+    function makeArc(){
+      var pts = [[W*(0.15+Math.random()*0.7), H*(0.02+Math.random()*0.08)]];
+      var n = 9 + Math.floor(Math.random()*6);
+      for (var i=0;i<n;i++){
+        var last = pts[pts.length-1];
+        pts.push([last[0] + (Math.random()-0.5)*46, last[1] + 15 + Math.random()*26]);
+      }
+      var arc = {pts:pts, t:0, br:null};
+      if (Math.random() < 0.45){
+        var k = 2 + Math.floor(Math.random()*(n-4));
+        var b = [pts[k].slice()];
+        for (var j=0;j<3;j++){
+          var lb = b[b.length-1];
+          b.push([lb[0] + 14 + Math.random()*22, lb[1] + 8 + Math.random()*18]);
+        }
+        arc.br = b;
+      }
+      return arc;
+    }
+    function poly(pts, w, a, col){
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (var i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.strokeStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+a+')';
+      ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.stroke();
+    }
+    function still(){
+      ctx.clearRect(0,0,W,H);
+      for (var i=0;i<parts.length;i++){
+        var p = parts[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, 6.283);
+        ctx.fillStyle = 'rgba('+emberC[0]+','+emberC[1]+','+emberC[2]+',0.16)';
+        ctx.fill();
+      }
+    }
+    var last = 0, running = false, visible = true, onscreen = true;
+    function frame(ts){
+      if (!running) return;
+      var dt = Math.min((ts - last)/1000, 0.05); last = ts;
+      ctx.clearRect(0,0,W,H);
+      var k = dark ? 1 : 0.7;
+      for (var i=0;i<parts.length;i++){
+        var p = parts[i];
+        p.y -= p.s*dt;
+        p.x += Math.sin(ts*0.001 + p.w)*0.2;
+        if (p.y < -8) spawn(p, false);
+        var a = p.a*(0.55 + 0.45*Math.sin(ts*0.002 + p.w*3))*k;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r*2.6, 0, 6.283);
+        ctx.fillStyle = 'rgba('+emberC[0]+','+emberC[1]+','+emberC[2]+','+(a*0.16)+')'; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283);
+        ctx.fillStyle = 'rgba('+emberC[0]+','+emberC[1]+','+emberC[2]+','+a+')'; ctx.fill();
+      }
+      if (ts > nextArc){ arcs.push(makeArc()); nextArc = ts + 3800 + Math.random()*3800; }
+      for (var j=arcs.length-1;j>=0;j--){
+        var arc = arcs[j]; arc.t += dt*1000;
+        var f = arc.t < 110 ? arc.t/110 : Math.max(0, 1-(arc.t-110)/380);
+        if (f <= 0){ arcs.splice(j,1); continue; }
+        poly(arc.pts, 5, 0.10*f*k, stormC);
+        poly(arc.pts, 1.4, 0.5*f*k, stormC);
+        if (arc.br){ poly(arc.br, 1, 0.32*f*k, stormC); }
+      }
+      requestAnimationFrame(frame);
+    }
+    function setRun(){
+      var want = !reduced && visible && onscreen;
+      if (want && !running){ running = true; last = performance.now(); requestAnimationFrame(frame); }
+      if (!want) running = false;
+    }
+    palette(); resize();
+    window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', function(){ visible = !document.hidden; setRun(); });
+    if ('IntersectionObserver' in window){
+      new IntersectionObserver(function(es){ onscreen = es[0].isIntersecting; setRun(); }).observe(hero);
+    }
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ palette(); if (reduced) still(); });
+    new MutationObserver(function(){ palette(); if (reduced) still(); })
+      .observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+    if (reduced){ still(); } else { setRun(); }
+  })();
+
+  /* ── Plate IV: the quench chart ────────────────────────── */
+  (function(){
+    var svg = document.getElementById('quench');
+    if (!svg) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    function el(tag, at, parent){
+      var e = document.createElementNS(NS, tag);
+      for (var k in at) e.setAttribute(k, at[k]);
+      (parent || svg).appendChild(e);
+      return e;
+    }
+    /* geometry */
+    var X0=64, X1=728, TY0=36, TY1=186, BY0=246, BY1=426;
+    var TMIN=-100, TMAX=250, LMAX=1.05, EMAX=3.3;
+    function x(t){ return X0 + (t-TMIN)/(TMAX-TMIN)*(X1-X0); }
+    function yT(v){ return TY1 - (v/LMAX)*(TY1-TY0); }
+    function yB(v){ return BY1 - (v/EMAX)*(BY1-BY0); }
+    /* physics */
+    var TAU = 30, EPK = 1.8;
+    function lam(t){ return t < 0 ? 1 : Math.exp(-t/TAU); }
+    function ef(t){ return t < 0 ? 0 : EPK*Math.exp(-t/TAU); }
+
+    /* grid + ticks */
+    var xt = [-100,-50,0,50,100,150,200,250];
+    for (var i=0;i<xt.length;i++){
+      var gx = x(xt[i]);
+      el('line',{x1:gx,y1:TY0,x2:gx,y2:TY1,'class':'gridln',opacity:.55});
+      el('line',{x1:gx,y1:BY0,x2:gx,y2:BY1,'class':'gridln',opacity:.55});
+      var lb = el('text',{x:gx,y:BY1+20,'text-anchor':'middle','class':'axisl'});
+      lb.textContent = (xt[i] > 0 ? '+' : '') + xt[i];
+    }
+    var ytT = [0,0.5,1.0];
+    for (i=0;i<ytT.length;i++){
+      el('line',{x1:X0,y1:yT(ytT[i]),x2:X1,y2:yT(ytT[i]),'class':'gridln',opacity:.55});
+      lb = el('text',{x:X0-8,y:yT(ytT[i])+4,'text-anchor':'end','class':'axisl'});
+      lb.textContent = ytT[i].toFixed(1);
+    }
+    var ytB = [0,1,2,3];
+    for (i=0;i<ytB.length;i++){
+      el('line',{x1:X0,y1:yB(ytB[i]),x2:X1,y2:yB(ytB[i]),'class':'gridln',opacity:.55});
+      lb = el('text',{x:X0-8,y:yB(ytB[i])+4,'text-anchor':'end','class':'axisl'});
+      lb.textContent = ytB[i].toFixed(0);
+    }
+    el('line',{x1:X0,y1:TY1,x2:X1,y2:TY1,'class':'baseln'});
+    el('line',{x1:X0,y1:BY1,x2:X1,y2:BY1,'class':'baseln'});
+
+    /* arc window shading (E > threaded threshold) */
+    var tClose = TAU*Math.log(EPK/0.35);
+    el('rect',{x:x(0),y:BY0,width:x(tClose)-x(0),height:BY1-BY0,'class':'fce',opacity:.09});
+    var wl = el('text',{x:x(tClose/2),y:BY0+38,'text-anchor':'middle','class':'axisT'});
+    wl.textContent = 'arc window ≈ ' + Math.round(tClose) + ' μs';
+
+    /* thresholds */
+    el('line',{x1:X0,y1:yB(3.0),x2:X1,y2:yB(3.0),'class':'thresh'});
+    lb = el('text',{x:X1,y:yB(3.0)-7,'text-anchor':'end','class':'axisl'});
+    lb.textContent = 'dry-air breakdown · 3.0';
+    el('line',{x1:X0,y1:yB(0.35),x2:X1,y2:yB(0.35),'class':'thresh'});
+    lb = el('text',{x:X1,y:yB(0.35)-7,'text-anchor':'end','class':'axisl'});
+    lb.textContent = 'threaded channel · 0.35';
+
+    /* series */
+    function pathOf(fn, yfn){
+      var d = [];
+      for (var t=TMIN;t<=TMAX;t+=1) d.push((d.length?'L':'M') + x(t).toFixed(1) + ',' + yfn(fn(t)).toFixed(1));
+      return d.join(' ');
+    }
+    el('path',{d:pathOf(lam,yT),'class':'cs',fill:'none','stroke-width':2,'stroke-linejoin':'round'});
+    el('path',{d:pathOf(ef,yB),'class':'ce',fill:'none','stroke-width':2,'stroke-linejoin':'round'});
+    el('circle',{cx:x(0),cy:yB(EPK),r:3.6,'class':'fce'});
+    lb = el('text',{x:x(0)+9,y:yB(EPK)-8,'class':'axisT'});
+    lb.textContent = '1.8 MV/m peak';
+
+    /* panel titles with swatches */
+    el('line',{x1:X0+6,y1:TY0-14,x2:X0+24,y2:TY0-14,'class':'cs','stroke-width':3});
+    lb = el('text',{x:X0+32,y:TY0-10,'class':'axisT'});
+    lb.textContent = 'Λ — wound flux (normalized)';
+    el('line',{x1:X0+6,y1:BY0-14,x2:X0+24,y2:BY0-14,'class':'ce','stroke-width':3});
+    lb = el('text',{x:X0+32,y:BY0-10,'class':'axisT'});
+    lb.textContent = '|E| induced (MV/m)';
+    lb = el('text',{x:X0+6,y:TY0+32,'class':'axisl'});
+    lb.textContent = '← wound over ~2 s (off scale)';
+    lb = el('text',{x:(X0+X1)/2,y:BY1+42,'text-anchor':'middle','class':'axisT'});
+    lb.textContent = 't (μs) — quench begins at 0';
+
+    /* hover layer */
+    var xh = el('line',{x1:X0,y1:TY0,x2:X0,y2:BY1,'class':'xh'});
+    var d1 = el('circle',{cx:-9,cy:-9,r:3.4,'class':'fcs',opacity:0});
+    var d2 = el('circle',{cx:-9,cy:-9,r:3.4,'class':'fce',opacity:0});
+    var ov = el('rect',{x:X0,y:TY0,width:X1-X0,height:BY1-TY0,fill:'transparent'});
+    ov.style.cursor = 'crosshair';
+    var tip = document.getElementById('qtip');
+    var wrap = tip ? tip.parentElement : null;
+    ov.addEventListener('pointermove', function(ev){
+      var sr = svg.getBoundingClientRect();
+      var sx = sr.width/760, sy = sr.height/470;
+      var t = ((ev.clientX - sr.left)/sx - X0)/(X1-X0)*(TMAX-TMIN) + TMIN;
+      t = Math.max(TMIN, Math.min(TMAX, t));
+      var gx = x(t);
+      xh.setAttribute('x1',gx); xh.setAttribute('x2',gx); xh.setAttribute('opacity',1);
+      d1.setAttribute('cx',gx); d1.setAttribute('cy',yT(lam(t))); d1.setAttribute('opacity',1);
+      d2.setAttribute('cx',gx); d2.setAttribute('cy',yB(ef(t))); d2.setAttribute('opacity',1);
+      if (tip && wrap){
+        var wr = wrap.getBoundingClientRect();
+        tip.innerHTML = 't = ' + (t>0?'+':'') + t.toFixed(0) + ' μs<br>Λ ' + lam(t).toFixed(2) +
+          ' · E ' + ef(t).toFixed(2) + ' MV/m';
+        var lx = (gx*sx) + (sr.left - wr.left) + 14;
+        var ly = (ev.clientY - wr.top) - 14;
+        if (lx + 170 > wr.width) lx -= 190;
+        tip.style.left = lx + 'px'; tip.style.top = Math.max(0, ly) + 'px';
+        tip.style.opacity = 1;
+      }
+    });
+    ov.addEventListener('pointerleave', function(){
+      xh.setAttribute('opacity',0); d1.setAttribute('opacity',0); d2.setAttribute('opacity',0);
+      if (tip) tip.style.opacity = 0;
+    });
+  })();
+})();
+</script>
+
+</body>
+</html>

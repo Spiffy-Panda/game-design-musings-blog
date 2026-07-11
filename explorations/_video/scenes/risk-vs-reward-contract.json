@@ -1,0 +1,94 @@
+{
+  "slug": "risk-vs-reward-contract",
+  "title": "Pricing the Danger",
+  "accent": "#fb7185",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · M2.4 — the rose lineage",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. Pricing the danger. A three-times payout into a system that falls in two ticks is not a windfall. It is a voided trip with a fat number on it."
+    },
+    {
+      "id": "02-pricing",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "what the contract says",
+      "headline": "The payout prices two things, and hides the third.",
+      "body": "Every contract pays <strong>base deficit times distance</strong> &mdash; fatter where the front is starving, fatter the farther you haul. It is honest about the deficit and the distance. It stays <em>silent</em> about the one thing that decides whether you collect: <span style=\"color:#f87171\">whether the drop-off is still standing when you arrive.</span>",
+      "narration": "Every contract pays base deficit times distance. Fatter where the front starves, fatter the farther you haul. That number is honest about the deficit and the distance, and silent about the only thing that decides whether you get paid at all."
+    },
+    {
+      "id": "03-truev",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the math the faction won't do",
+      "headline": "True EV = payout times P(arrive in time), minus haul cost.",
+      "body": "If <strong>haul time</strong> is under the drop-off's <strong>ticks-to-overrun</strong>, you arrive and EV is <span style=\"color:#34d399\">payout minus haul</span>. If not, the system is overrun first, the contract is <span style=\"color:#f87171\">voided</span>, and EV is just the wasted trip. A fat payout falling in two ticks when your haul takes four was never going to pay.",
+      "narration": "The real value is payout times the chance you arrive in time, minus haul cost. Arrive before the overrun and you pocket payout minus haul. Arrive after, and the contract voids: you eat the wasted trip and collect nothing."
+    },
+    {
+      "id": "04-fog",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "fog to mastery",
+      "headline": "Risk is just knowledge you don't have yet.",
+      "body": "The front advances on the <strong>same seed-fixed schedule every run</strong>. A first board is a guess: a payout and a vague sense of distance. Play several, watch which picks void, and the schedule resolves into a <em>cased map</em>. The danger never changed. Your knowledge did.",
+      "narration": "The front advances on the same seed-fixed schedule every run. A first board is a guess. Play several, watch which picks void, and the schedule resolves into a map you have already cased. The danger never changed; your knowledge did."
+    },
+    {
+      "id": "05-controls",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Deal new board / Skip this board / Reset tally</b> &mdash; deal contracts, walk away, or clear the score.",
+        "<b>TAKE / PASS</b> &mdash; on each card; one pick per board, resolved against the fall clock.",
+        "<b>FOG &amp; REVEAL TRUE EV</b> &mdash; first-run blindness, or the veteran's cased map with real EV.",
+        "<b>The dials &amp; seeds</b> &mdash; war intensity, front advance, hauler speed, contracts per board, plus the auto-play race."
+      ],
+      "narration": "Drive it yourself. Deal a board, then TAKE or PASS one contract. Leave FOG on for first-run blindness, or flip REVEAL TRUE EV for the cased map. Work the dials, swap seeds, and race greedy against EV-aware."
+    },
+    {
+      "id": "06-race",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "greedy loses",
+      "headline": "Greedy-by-payout bleeds out behind EV-aware.",
+      "body": "Run the race. <span style=\"color:#f87171\">Greedy</span> grabs the biggest number every board &mdash; the strategy the UI nudges you toward. <span style=\"color:#34d399\">EV-aware</span> takes the best positive EV and skips a board that is all bait. Over two hundred boards greedy racks up <strong>voided trips</strong> and falls behind. That gap is the skill, made financial.",
+      "narration": "Run the auto-play race. Greedy grabs the biggest number every board. EV-aware takes the best positive value and skips boards that are all bait. Over a couple hundred boards, greedy's voided trips bleed it out behind the picker that priced the danger."
+    },
+    {
+      "id": "07-legibility",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it can rot",
+      "headline": "Two named risks, both already answered.",
+      "bullets": [
+        "<b>Legibility</b> &mdash; print ticks-to-overrun and there's no skill; hide the geometry and voids feel like noise.",
+        "<b>The fix</b> &mdash; danger lives in the lane map and a wordless proximity bar; reveal is off-by-default training wheels.",
+        "<b>Determinism</b> &mdash; if the fall clock drifts, learning a war becomes getting lucky.",
+        "<b>The fix</b> &mdash; one reseedable mulberry32, fixed draw order; same seed reproduces the same boards."
+      ],
+      "narration": "Two named risks. Legibility: print the overrun number and the skill dies, so the danger lives in the lane map, not a label. Determinism: if the fall clock drifts, mastery becomes luck, so one seeded generator runs in a fixed order."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "Pricing the Danger",
+      "body": "The payout never warns you &middot; deterministic &middot; seeded &middot; self-contained &middot; no network.",
+      "narration": "The payout never warns you. Learning to price the danger yourself, by reading the drop-off against the fall clock, is the game. Deterministic, seeded, self-contained."
+    }
+  ]
+}

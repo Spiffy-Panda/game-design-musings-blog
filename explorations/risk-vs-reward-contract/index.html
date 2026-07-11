@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pricing the Danger — M2.4 · the payout never warns you</title>
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#fb7185;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --good:#34d399;--good-soft:color-mix(in oklab,var(--good) 16%,transparent);
+  --bad:#f87171;--bad-soft:color-mix(in oklab,var(--bad) 16%,transparent);
+  --cool:#60a5fa;--cool-soft:color-mix(in oklab,var(--cool) 16%,transparent);
+  --warn:#fbbf24;--warn-soft:color-mix(in oklab,var(--warn) 16%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);margin:0 0 .9rem}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.18rem .6rem;margin-bottom:1.1rem;background:var(--accent-soft)}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;margin:.4rem 0 1.6rem;max-width:44rem}
+.spark{border-left:3px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);padding:.85rem 1.1rem;margin:1.6rem 0 2.2rem;font-size:1.02rem;color:var(--fog-100)}
+.spark b{color:var(--accent)}
+
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:3rem 0 .5rem;padding-top:.4rem}
+h3{font-size:1.06rem;color:var(--fog-100);margin:1.6rem 0 .4rem;font-family:var(--font-mono);letter-spacing:.02em}
+p{color:var(--fog-300);margin:.7rem 0}
+p.tight{margin:.35rem 0}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;font-size:.86em;color:var(--fog-100)}
+.handle{font-family:var(--font-mono);color:var(--accent);font-size:.82em;letter-spacing:.04em}
+strong{color:var(--fog-100)}
+em{color:#d7dbe8}
+hr.rule{border:none;border-top:1px solid var(--line);margin:2.6rem 0}
+
+.card{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 88%,transparent);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.9rem;color:var(--fog-400)}
+ul.tight{margin:.5rem 0 .5rem;padding-left:1.1rem}
+ul.tight li{color:var(--fog-300);margin:.28rem 0}
+ul.tight li b{color:var(--fog-100)}
+
+/* ===== SIM PANEL ===== */
+.sim{border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 92%,transparent);border-radius:14px;padding:0;margin:2rem 0;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8)}
+.sim-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.sim-head .t{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.sim-head .tick{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+.sim-body{padding:1rem 1.1rem 1.2rem}
+
+/* phase banner */
+.phase{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:8px;padding:.45rem .7rem;margin:0 0 .9rem;display:flex;align-items:center;gap:.55rem;background:var(--ink-900);line-height:1.45}
+.phase .dotp{width:.55rem;height:.55rem;border-radius:50%;flex:0 0 auto;background:var(--accent)}
+.phase b{color:var(--fog-100)}
+
+/* fall-clock map */
+.mapwrap{border:1px solid var(--line);border-radius:12px;background:var(--ink-950);margin:.2rem 0 .9rem;overflow:hidden}
+.maphdr{display:flex;justify-content:space-between;align-items:center;padding:.45rem .7rem;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.025),transparent);font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fog-500)}
+.maphdr .legend{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.maphdr .legend i{display:inline-flex;align-items:center;gap:.25rem}
+.maphdr .legend .sw{width:.6rem;height:.6rem;border-radius:2px;display:inline-block}
+canvas{display:block;width:100%}
+#lane{height:172px}
+
+/* readouts row */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.2rem 0 .9rem}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--ink-900)}
+.stat .k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500);margin-bottom:.18rem}
+.stat .v{font-family:var(--font-mono);font-size:1.5rem;font-weight:600;color:var(--fog-100);line-height:1.1}
+.stat .v.accent{color:var(--accent)}
+.stat .v.good{color:var(--good)} .stat .v.bad{color:var(--bad)}
+.stat .sub{font-family:var(--font-mono);font-size:.64rem;color:var(--fog-500);margin-top:.15rem}
+
+/* contract cards */
+.deckhdr{display:flex;justify-content:space-between;align-items:baseline;margin:.3rem 0 .5rem;flex-wrap:wrap;gap:.4rem}
+.deckhdr .lab{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.deckhdr .modes{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400)}
+.deckhdr .modes b.fog{color:var(--warn)} .deckhdr .modes b.rev{color:var(--cool)}
+.deck{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin:.2rem 0 .3rem}
+@media(max-width:600px){.deck{grid-template-columns:1fr}}
+.contract{position:relative;border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,rgba(255,255,255,.018),transparent),var(--ink-900);padding:.7rem .8rem .65rem;overflow:hidden;transition:border-color .15s,transform .12s,box-shadow .15s,opacity .25s}
+.contract .top{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}
+.contract .good{font-family:var(--font-mono);font-size:.86rem;color:var(--fog-100);letter-spacing:.01em;font-weight:600}
+.contract .tag{font-family:var(--font-mono);font-size:.55rem;letter-spacing:.06em;padding:.06rem .32rem;border-radius:4px;text-transform:uppercase;flex:0 0 auto;margin-top:.1rem}
+.contract .tag.m{color:var(--cool);border:1px solid color-mix(in oklab,var(--cool) 55%,transparent);background:var(--cool-soft)}
+.contract .tag.g{color:var(--warn);border:1px solid color-mix(in oklab,var(--warn) 50%,transparent);background:var(--warn-soft)}
+.contract .pay{font-family:var(--font-mono);font-size:1.62rem;font-weight:700;color:var(--accent);line-height:1.05;margin:.32rem 0 .05rem;letter-spacing:-.01em}
+.contract .pay .u{font-size:.7rem;color:var(--fog-500);font-weight:400;letter-spacing:.04em}
+.contract .meta{font-family:var(--font-mono);font-size:.66rem;color:var(--fog-400);display:flex;flex-direction:column;gap:.12rem;margin:.22rem 0 .1rem}
+.contract .meta .row{display:flex;justify-content:space-between;gap:.5rem}
+.contract .meta .row b{color:var(--fog-300)}
+.contract .prox{font-family:var(--font-mono);font-size:.62rem;margin-top:.35rem;display:flex;align-items:center;gap:.4rem;color:var(--fog-500)}
+.contract .proxbar{flex:1;height:.42rem;border-radius:3px;background:var(--ink-700);position:relative;overflow:hidden}
+.contract .proxbar i{position:absolute;top:0;bottom:0;left:0;border-radius:3px;background:linear-gradient(90deg,var(--good),var(--warn) 62%,var(--bad))}
+.contract .proxlbl{flex:0 0 auto}
+/* reveal block (true EV) */
+.contract .reveal{margin-top:.45rem;border-top:1px dashed var(--line);padding-top:.4rem;font-family:var(--font-mono);font-size:.66rem;display:none;flex-direction:column;gap:.16rem}
+.contract.revealed .reveal{display:flex}
+.contract .reveal .row{display:flex;justify-content:space-between;gap:.5rem}
+.contract .reveal .row .ev{font-weight:700}
+.contract .reveal .ev.pos{color:var(--good)} .contract .reveal .ev.neg{color:var(--bad)}
+.contract .reveal .ttl{color:var(--warn)}
+.contract .reveal .ttl.doomed{color:var(--bad)}
+/* danger flag (geometry only, no number) */
+.contract .flag{position:absolute;top:.55rem;right:.6rem;font-family:var(--font-mono);font-size:.56rem;letter-spacing:.05em;color:var(--bad);text-transform:uppercase;display:none;align-items:center;gap:.2rem}
+.contract.nearfront .flag{display:flex}
+.contract.nearfront{border-color:color-mix(in oklab,var(--bad) 40%,var(--line))}
+/* pick buttons */
+.contract .pickrow{display:flex;gap:.4rem;margin-top:.5rem}
+.contract .pickrow button{flex:1;font-family:var(--font-mono);font-size:.68rem;padding:.32rem .4rem;border-radius:7px;cursor:pointer;border:1px solid var(--line);background:var(--ink-800);color:var(--fog-100);transition:border-color .12s,background .12s}
+.contract .pickrow .take:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.contract .pickrow .skip:hover{border-color:var(--fog-400);background:var(--ink-700)}
+.contract.picked{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft),0 0 22px -8px var(--accent)}
+.contract.resolved{opacity:.92}
+.contract.paid{border-color:color-mix(in oklab,var(--good) 45%,var(--line))}
+.contract.voided{border-color:color-mix(in oklab,var(--bad) 45%,var(--line))}
+.contract .stamp{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;letter-spacing:.14em;font-size:1.15rem;text-transform:uppercase;pointer-events:none;background:color-mix(in oklab,var(--ink-950) 42%,transparent)}
+.contract.paid .stamp.paid{display:flex;color:var(--good);transform:rotate(-9deg)}
+.contract.voided .stamp.voided{display:flex;color:var(--bad);transform:rotate(-9deg)}
+.contract.skipped{opacity:.4}
+.contract.skipped .stamp.skip{display:flex;color:var(--fog-400);font-size:.95rem;transform:rotate(-9deg)}
+.contract.faded{opacity:.34}
+
+/* why line */
+.why{font-family:var(--font-mono);font-size:.8rem;color:var(--fog-400);margin:.9rem 0 .2rem;min-height:2.7rem;line-height:1.5;border-left:2px solid var(--line);padding:.4rem 0 .4rem .7rem}
+.why b{color:var(--fog-100)} .why .hot{color:var(--accent)} .why .dn{color:var(--bad)} .why .up{color:var(--good)} .why .wn{color:var(--warn)}
+
+/* tally */
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:.9rem 0 .2rem;border:1px solid var(--line);border-radius:10px;background:var(--ink-950);padding:.55rem .6rem}
+.tally .t{display:flex;flex-direction:column;gap:.1rem}
+.tally .t .k{font-family:var(--font-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fog-500)}
+.tally .t .v{font-family:var(--font-mono);font-size:1.15rem;font-weight:700;color:var(--fog-100);line-height:1.05}
+.tally .t .v.good{color:var(--good)} .tally .t .v.bad{color:var(--bad)} .tally .t .v.accent{color:var(--accent)}
+@media(max-width:600px){.tally{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem 1.1rem;margin:1.2rem 0 .4rem}
+@media(max-width:600px){.controls{grid-template-columns:1fr}}
+.ctl{display:flex;flex-direction:column;gap:.2rem}
+.ctl label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.05em;color:var(--fog-400);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.ctl label .num{color:var(--accent);font-size:.74rem;flex:0 0 auto}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--ink-700);outline:none;margin:.35rem 0 .1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950);box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--ink-950)}
+
+/* toggles */
+.toggles{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 .2rem;align-items:center}
+.toggle{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.03em;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;cursor:pointer;user-select:none;display:flex;align-items:center;gap:.45rem;transition:border-color .15s,background .15s,color .15s}
+.toggle .led{width:.6rem;height:.6rem;border-radius:50%;background:var(--ink-600);flex:0 0 auto;transition:background .15s,box-shadow .15s}
+.toggle.on{color:var(--fog-100)}
+.toggle.fog.on{border-color:var(--warn);color:var(--warn)} .toggle.fog.on .led{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.toggle.rev.on{border-color:var(--cool);color:var(--cool)} .toggle.rev.on .led{background:var(--cool);box-shadow:0 0 8px var(--cool)}
+
+.btnrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 .2rem;align-items:center}
+button.act{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);border-radius:8px;padding:.45rem .75rem;cursor:pointer;transition:border-color .15s,background .15s}
+button.act:hover{border-color:var(--accent);background:var(--ink-700)}
+button.act:active{transform:translateY(1px)}
+button.act.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+button.act.primary:hover{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+button.act.ghost{background:transparent}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 .15rem}
+.seedrow{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.seedrow .sl{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-500)}
+.seedchip{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-300);border:1px solid var(--line);background:var(--ink-800);border-radius:6px;padding:.18rem .5rem;cursor:pointer;transition:border-color .15s,color .15s}
+.seedchip:hover{border-color:var(--accent);color:var(--accent)}
+.seedchip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* autoplay race */
+.race{border:1px dashed var(--line);border-radius:12px;background:var(--ink-950);margin:1rem 0 .2rem;padding:.7rem .8rem .75rem}
+.race .rhdr{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem;margin-bottom:.55rem}
+.race .rhdr b{color:var(--fog-300)}
+.racers{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:600px){.racers{grid-template-columns:1fr}}
+.racer{border:1px solid var(--line);border-radius:9px;background:var(--ink-900);padding:.5rem .6rem}
+.racer.greedy{border-left:3px solid var(--bad)} .racer.aware{border-left:3px solid var(--good)}
+.racer .rn{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.04em;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.25rem}
+.racer.greedy .rn .who{color:var(--bad)} .racer.aware .rn .who{color:var(--good)}
+.racer .rn .tot{font-weight:700;font-size:.95rem;color:var(--fog-100)}
+.racer .rbar{height:.55rem;border-radius:4px;background:var(--ink-700);overflow:hidden;position:relative;margin:.2rem 0 .3rem}
+.racer .rbar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.racer.greedy .rbar i{background:linear-gradient(90deg,color-mix(in oklab,var(--bad) 55%,transparent),var(--bad))}
+.racer.aware .rbar i{background:linear-gradient(90deg,color-mix(in oklab,var(--good) 55%,transparent),var(--good))}
+.racer .rstat{font-family:var(--font-mono);font-size:.6rem;color:var(--fog-500);display:flex;justify-content:space-between;gap:.4rem}
+.racer .rstat b{color:var(--fog-300)} .racer .rstat .vd{color:var(--bad)}
+.race .rverdict{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400);margin-top:.55rem;line-height:1.5;min-height:1.2rem}
+.race .rverdict b{color:var(--good)} .race .rverdict .lo{color:var(--bad)}
+
+.status{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);min-height:1.2rem;margin:.9rem 0 0;letter-spacing:.02em;line-height:1.5}
+.kbd{font-family:var(--font-mono);font-size:.7rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.02rem .3rem;color:var(--fog-300);background:var(--ink-800)}
+
+/* risks */
+.risk{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0;background:color-mix(in oklab,var(--ink-850) 80%,transparent)}
+.risk h4{margin:0 0 .25rem;font-family:var(--font-mono);font-size:.92rem;color:var(--bad);letter-spacing:.02em}
+.risk p{margin:.25rem 0;font-size:.92rem}
+.risk .mit{color:var(--good)}
+.risk .mit b{color:var(--good)}
+
+.foot{margin-top:3.5rem;padding-top:1.4rem;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);letter-spacing:.04em}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">Pricing the Danger</span></li>
+    </ol>
+  </nav>
+
+  <div class="chip">M2.4</div>
+  <p class="eyebrow">the danger isn't in the payout</p>
+  <h1>Pricing the Danger</h1>
+  <p class="lede">The faction prices the deficit and prices the distance. It will never price the one thing that decides whether you get paid at all — whether the drop-off is still standing when you arrive. That number is on the map, not the contract.</p>
+
+  <div class="spark">
+    A 3× payout into a system that falls in two ticks isn't a windfall. <b>It's a voided trip with a fat number on it</b> — and the number is the bait, because the danger was always in the geometry, never in the price.
+  </div>
+
+  <p>This is the <strong>rose lineage</strong> — the enemy/front reading of <em>Minimalist Space Logistics</em>. You own one hauler keeping an unwinnable war supplied. The friendly faction posts <strong>contracts</strong> <span class="handle">(R.4)</span>: each pays <code>base(deficit) × distance</code> — fatter where the front is starving, fatter the farther you haul. That payout is honest about two things and silent about a third.</p>
+
+  <p>The thing it stays silent about <span class="handle">(M2.4)</span>: the enemy front advances on a <strong>known, seed-fixed schedule</strong> <span class="handle">(R.5)</span>, and a drop-off three jumps into a segment about to fall is worth <em>zero</em> if you arrive after it's overrun. The faction won't pay you a risk premium for that — the only tell is <strong>where the drop-off sits relative to the line</strong>. The skill the game trains is reading that geometry against a fall clock. The instrument below lets you practice it, then cheat to check your work.</p>
+
+  <!-- ======================= THE SIM ======================= -->
+  <div class="sim" id="sim">
+    <div class="sim-head">
+      <span class="t">CONTRACT PICKER · front "ROSE" · one hauler, one pick per board</span>
+      <span class="tick">CLOCK <span id="tickN">0</span> <span style="color:var(--fog-500)">· board #<span id="roundN">1</span></span></span>
+    </div>
+    <div class="sim-body">
+
+      <div class="phase" id="phaseBar"><span class="dotp" id="phaseDot"></span><span id="phaseTxt">Fresh board. Pick a contract — by payout, or by reading the line. We resolve it against the fall schedule.</span></div>
+
+      <!-- FALL-CLOCK LANE MAP -->
+      <div class="mapwrap">
+        <div class="maphdr">
+          <span>FORWARD LANE · drop-offs vs the advancing front</span>
+          <span class="legend">
+            <i><span class="sw" style="background:var(--bad)"></span>front (now)</i>
+            <i><span class="sw" style="background:color-mix(in oklab,var(--bad) 30%,transparent);border:1px solid var(--bad)"></span>falls soon</i>
+            <i><span class="sw" style="background:var(--accent)"></span>drop-off</i>
+          </span>
+        </div>
+        <canvas id="lane" width="980" height="172"></canvas>
+      </div>
+
+      <!-- READOUTS -->
+      <div class="grid3">
+        <div class="stat">
+          <div class="k">Front position</div>
+          <div class="v bad" id="frontV">0%</div>
+          <div class="sub" id="frontSub">advancing · seed-fixed</div>
+        </div>
+        <div class="stat">
+          <div class="k">Hauler speed</div>
+          <div class="v accent" id="speedV">1.0×</div>
+          <div class="sub">ticks-to-deliver ∝ distance</div>
+        </div>
+        <div class="stat">
+          <div class="k">This board's bait</div>
+          <div class="v" id="baitV">—</div>
+          <div class="sub" id="baitSub">fattest payout on offer</div>
+        </div>
+      </div>
+
+      <!-- CONTRACT DECK -->
+      <div class="deckhdr">
+        <span class="lab">faction postings — pick one, or skip the board</span>
+        <span class="modes" id="modeLbl"></span>
+      </div>
+      <div class="deck" id="deck"></div>
+
+      <div class="why" id="whyLine">awaiting your pick…</div>
+
+      <!-- TALLY -->
+      <div class="tally">
+        <div class="t"><span class="k">Earned (paid)</span><span class="v good" id="tEarned">0</span></div>
+        <div class="t"><span class="k">Lost to voids</span><span class="v bad" id="tLost">0</span></div>
+        <div class="t"><span class="k">Voided trips</span><span class="v bad" id="tVoids">0</span></div>
+        <div class="t"><span class="k">Net total</span><span class="v accent" id="tNet">0</span></div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls">
+        <div class="ctl"><label>War intensity · deficit size <span class="num" id="vWar">5</span></label><input type="range" id="war" min="1" max="10" step="1" value="5"></div>
+        <div class="ctl"><label>Front advance speed · the fall clock <span class="num" id="vAdv">5</span></label><input type="range" id="adv" min="1" max="10" step="1" value="5"></div>
+        <div class="ctl"><label>Hauler speed · jumps per tick <span class="num" id="vSpd">5</span></label><input type="range" id="spd" min="1" max="10" step="1" value="5"></div>
+        <div class="ctl"><label>Contracts per board <span class="num" id="vNum">4</span></label><input type="range" id="num" min="3" max="6" step="1" value="4"></div>
+      </div>
+
+      <!-- TOGGLES -->
+      <div class="toggles">
+        <div class="toggle fog on" id="tFog"><span class="led"></span>FOG — first-run blindness (payout + rough proximity only)</div>
+        <div class="toggle rev" id="tRev"><span class="led"></span>REVEAL TRUE EV — the veteran's cased map</div>
+      </div>
+
+      <div class="btnrow">
+        <button class="act primary" id="dealBtn">⊕ Deal new board</button>
+        <button class="act" id="skipBtn">↷ Skip this board</button>
+        <button class="act ghost" id="resetBtn">↺ Reset tally</button>
+        <span class="sep"></span>
+        <div class="seedrow">
+          <span class="sl">seed</span>
+          <span class="seedchip active" data-seed="2741">2741</span>
+          <span class="seedchip" data-seed="88">88</span>
+          <span class="seedchip" data-seed="514">514</span>
+          <span class="seedchip" data-seed="9090">9090</span>
+        </div>
+      </div>
+
+      <!-- AUTO-PLAY RACE -->
+      <div class="race">
+        <div class="rhdr">
+          <span>AUTO-PLAY · <b>GREEDY-BY-PAYOUT</b> vs <b>EV-AWARE</b> · same seed, same boards</span>
+          <span>rounds played: <b id="raceN">0</b></span>
+        </div>
+        <div class="racers">
+          <div class="racer greedy">
+            <div class="rn"><span class="who">◆ GREEDY-BY-PAYOUT</span><span class="tot" id="gTot">0</span></div>
+            <div class="rbar"><i id="gBar" style="width:0%"></i></div>
+            <div class="rstat"><span>paid: <b id="gPaid">0</b></span><span class="vd">voided: <b id="gVoid" style="color:var(--bad)">0</b></span></div>
+          </div>
+          <div class="racer aware">
+            <div class="rn"><span class="who">◆ EV-AWARE</span><span class="tot" id="aTot">0</span></div>
+            <div class="rbar"><i id="aBar" style="width:0%"></i></div>
+            <div class="rstat"><span>paid: <b id="aPaid">0</b></span><span>skipped: <b id="aSkip">0</b></span></div>
+          </div>
+        </div>
+        <div class="rverdict" id="rVerdict">Press <span class="kbd">Race 200 boards</span>. Greedy always grabs the biggest number; EV-aware prices the danger and walks away from baited drop-offs. Watch the voided trips bleed greedy out.</div>
+        <div class="btnrow" style="margin:.6rem 0 0">
+          <button class="act" id="race50">▶ Race 50 boards</button>
+          <button class="act" id="race200">▶▶ Race 200 boards</button>
+          <button class="act ghost" id="raceReset">↺ Reset race</button>
+        </div>
+      </div>
+
+      <div class="status" id="status">Ready. Seed 2741. FOG is on — you see payout and a rough proximity, the way a first run does. Flip <span class="kbd">REVEAL TRUE EV</span> to expose the danger the faction hid.</div>
+
+    </div>
+  </div>
+  <!-- ===================== /THE SIM ===================== -->
+
+  <p class="note">Everything above is computed live. The fall schedule, every contract's good, distance, drop-off depth, and payout are drawn from one tiny <code>mulberry32</code> PRNG advanced in a fixed order — so the same seed and the same control settings reproduce the same war and the same boards, contract-for-contract <span class="handle">(APR.5)</span>. <em>True EV</em> is real math: <code>payout × P(arrive in time) − haul cost</code>, and because the schedule is deterministic, <code>P(arrive in time)</code> collapses to a readable yes/no once you know the clock.</p>
+
+  <hr class="rule">
+
+  <h2>How to read it</h2>
+
+  <h3>M2.4.1 · The payout prices two things and hides the third</h3>
+  <p>Open the deck. Every card shouts one number — the <strong>payout</strong> — and that number is doing honest work: it scales with the front's <strong>deficit</strong> (how badly the war needs this good) and with the <strong>haul distance</strong> (how far you carry it). That's <span class="handle">R.4</span>, the faction's whole pricing model. What the card will <em>not</em> tell you is the only thing that decides whether you collect: the drop-off's <strong>ticks-to-overrun</strong>. The faction doesn't know your ship's position, doesn't model your risk, and has no incentive to discount a doomed run. So the fattest payout on the board is frequently the deepest drop-off into the most threatened segment — distance pays, and distance is exactly what walks you into the fall.</p>
+
+  <h3>M2.4.2 · True EV = payout × P(arrive in time) − haul cost</h3>
+  <p>The real value of a contract isn't its payout. Flip <strong>REVEAL TRUE EV</strong> and each card grows a second block: its drop-off's <strong>ticks-to-overrun</strong> and its honest <strong>EV</strong>. The arithmetic the faction won't do for you:</p>
+  <div class="card"><p class="tight" style="font-family:var(--font-mono);color:var(--fog-100);font-size:.92rem">if <b>haul time ≤ ticks-to-overrun</b> → you arrive in time → EV = payout − haul cost<br>if <b>haul time &gt; ticks-to-overrun</b> → overrun first → contract <span style="color:var(--bad)">VOIDED</span> → EV = <span style="color:var(--bad)">−haul cost</span> (a wasted trip)</p></div>
+  <p>That's why a 3× payout into a system falling in two ticks, when your haul takes four, is exposed as deeply <strong>EV-negative</strong>: you were never going to arrive. The reveal toggle annotates exactly this, turning the implicit geometry into the explicit number the faction declined to print — and a fat payout next to a red <code>falls in 2t · arrive in 4t</code> is the whole lesson in one card.</p>
+
+  <h3>M2.4.3 · Fog → mastery: risk is just knowledge you don't have yet</h3>
+  <p>Leave <strong>FOG</strong> on and the board is what a first run feels like: a payout and a vague sense of how close the drop-off sits to the line. You're guessing. Now play several boards, watch which picks void, and a pattern resolves — the front advances on the <em>same schedule every time for this seed</em> <span class="handle">(R.5)</span>. Turn FOG off (or REVEAL on) and the guesswork becomes a readout: the cased map of a veteran who has run this war before. This is the <span class="handle">M2/R.5</span> mastery arc in miniature — early on, "will it fall before I arrive?" is a gamble; with the schedule learned, it's a certainty you read off the geometry. The danger never changed. Your knowledge did.</p>
+
+  <h3>M2.4.4 · Greedy loses to EV-aware over a run</h3>
+  <p>Run the <strong>auto-play race</strong>. <span style="color:var(--bad)">GREEDY-BY-PAYOUT</span> takes the biggest number on every board — the strategy the contract UI quietly nudges you toward. <span style="color:var(--good)">EV-AWARE</span> computes the same true EV the reveal shows and takes the best positive one, skipping the board entirely when every contract is a baited void. Over a couple hundred boards greedy racks up <strong>voided trips</strong> — full hauls into systems that fell, each one a total loss plus the wasted distance — and bleeds out behind the picker that learned to price the danger. The gap between the two lines <em>is</em> the skill this page teaches, made financial.</p>
+
+  <div class="card">
+    <p class="tight"><strong>The aha, in one line:</strong> the payout prices the deficit and the distance; it never prices the danger — and learning to price the danger yourself, by reading the drop-off against the fall clock, is the game.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Risks, named</h2>
+
+  <div class="risk">
+    <h4>Legibility — the danger must be readable without a label that spoils the skill</h4>
+    <p>If the contract simply printed "ticks-to-overrun: 2" next to the payout, there'd be no skill left — the player would read a number instead of a map, and the entire M2.4 reading-the-geometry loop collapses into arithmetic the game did for them. But if the geometry is <em>illegible</em>, the player can't tell a doomed drop-off from a safe one and the voids feel like noise, not consequence.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> the danger lives in the <em>lane map</em> — drop-off position vs the advancing front, the only honest channel — and the contracts carry a wordless <em>proximity bar</em> and a ▼ near-front flag, never a ticks number. The <strong>REVEAL TRUE EV</strong> toggle exists as a <em>teaching aid</em>, off by default: it's training wheels for learning the geometry, not the default HUD that does the reading for you.</p>
+  </div>
+
+  <div class="risk">
+    <h4>Determinism — if the fall clock drifts, "risk" never becomes "knowledge"</h4>
+    <p>The whole mastery arc rests on the fall schedule being <em>learnable</em>. If overrun timing ever consulted wall-clock time, an unseeded <code>Math.random</code>, or a non-fixed draw order, then board #7 of a seed wouldn't match the board #7 the player rehearsed — and "I learned this war" silently becomes "I got lucky," breaking <span class="handle">R.5</span> and the seed-as-a-run promise <span class="handle">(APR.5)</span>.</p>
+    <p class="mit"><b>Mitigation the model shows:</b> one reseedable <code>mulberry32</code>, advanced in a fixed per-board order (front advance → draw goods → place drop-offs → price payouts), with the fall schedule a pure function of the seed and the advance slider. Same seed and settings reproduce the same boards and the same overrun times, every run — which is exactly what lets the auto-play race two strategies against an <em>identical</em> sequence of wars and attribute the gap to the picks, not the dice.</p>
+  </div>
+
+  <p class="note" style="margin-top:1.6rem">This page sits in the rose lineage beside <span class="handle">enemy-attack-schedule</span> (the offensive's learnable opening book) and <span class="handle">front-as-fluid</span> (the front as advancing pressure). It borrows their fall clock and asks one focused question: given a board of honestly-priced contracts, which is actually worth your one hauler's next run — and why the biggest number is so often the wrong answer.</p>
+
+  <div class="foot">
+    MINIMALIST SPACE LOGISTICS · M2.4 — PRICING THE DANGER · risk-vs-reward-contract · the rose lineage<br>
+    deterministic · seeded · self-contained · no network · the payout never warns you
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   PRICING THE DANGER — deterministic contract picker vs a fall clock
+   The faction prices base(deficit) × distance (R.4). It does NOT
+   price the danger: whether the drop-off is overrun before you
+   arrive. That is implicit in the drop-off's GEOMETRY against a
+   seed-fixed fall schedule (M2.4 / R.5).
+     TRUE EV = payout × P(arrive in time) − haul cost
+   Because the schedule is deterministic, P(arrive in time) is a
+   readable yes/no once the clock is known: risk → knowledge.
+   ONE seeded mulberry32, advanced in a fixed per-board order.
+   ============================================================ */
+
+/* ---- tiny reseedable PRNG (mulberry32) ---- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const els = {
+  tickN:$('tickN'), roundN:$('roundN'),
+  phaseDot:$('phaseDot'), phaseTxt:$('phaseTxt'),
+  lane:$('lane'),
+  frontV:$('frontV'), frontSub:$('frontSub'), speedV:$('speedV'),
+  baitV:$('baitV'), baitSub:$('baitSub'),
+  deck:$('deck'), modeLbl:$('modeLbl'), whyLine:$('whyLine'),
+  tEarned:$('tEarned'), tLost:$('tLost'), tVoids:$('tVoids'), tNet:$('tNet'),
+  war:$('war'), adv:$('adv'), spd:$('spd'), num:$('num'),
+  vWar:$('vWar'), vAdv:$('vAdv'), vSpd:$('vSpd'), vNum:$('vNum'),
+  tFog:$('tFog'), tRev:$('tRev'),
+  dealBtn:$('dealBtn'), skipBtn:$('skipBtn'), resetBtn:$('resetBtn'),
+  race50:$('race50'), race200:$('race200'), raceReset:$('raceReset'),
+  raceN:$('raceN'), gTot:$('gTot'), gBar:$('gBar'), gPaid:$('gPaid'), gVoid:$('gVoid'),
+  aTot:$('aTot'), aBar:$('aBar'), aPaid:$('aPaid'), aSkip:$('aSkip'), rVerdict:$('rVerdict'),
+  status:$('status'),
+};
+
+/* ---- constants ---- */
+const GOODS = [
+  {name:'Munitions',     mil:true,  base:140},
+  {name:'Armor plate',   mil:true,  base:125},
+  {name:'Med-kits',      mil:true,  base:108},
+  {name:'Drone cores',   mil:true,  base:160},
+  {name:'Reactor fuel',  mil:true,  base:150},
+  {name:'Coilgun rounds',mil:true,  base:116},
+  {name:'Rations',       mil:false, base:62 },
+  {name:'Spare parts',   mil:false, base:76 },
+  {name:'Coolant',       mil:false, base:54 },
+  {name:'Hab modules',   mil:false, base:88 },
+];
+const DESTS = ['Outpost K','The Notch','Red Verge','Gap-9','Bastion','Far Picket','Cinder Line','Mireside','Knife Edge','Sector 12','Dead Drop','Salt Reach'];
+
+const NLANE   = 12;          // systems along the forward lane (jumps deep)
+const HAULK   = 1.0;         // haul-time per unit distance (scaled by speed)
+const COSTK   = 9;           // haul cost per unit distance (credits)
+const PROXWIN = 0.46;        // proximity window for the wordless bar/flag
+
+/* ---- helpers ---- */
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+function fmtCr(n){ const s=Math.round(n).toLocaleString('en-US'); return n<0? '−'+s.replace('-',''): s; }
+function fmtSigned(n){ const r=Math.round(n); return (r>=0?'+':'−')+Math.abs(r).toLocaleString('en-US'); }
+
+/* ---- run state ---- */
+let SEED = 2741;
+let prng = mulberry32(SEED);
+let board = null;          // current board {clock, front, speed, contracts[], baitId}
+let roundNo = 0;
+let tally = {earned:0, lost:0, voids:0};
+let fog = true;            // first-run blindness on by default
+let reveal = false;        // teaching aid off by default
+let resolvedThisBoard = false;
+let grossPaid = 0;         // cumulative payout-minus-cost on PAID trips (for the "Earned" readout)
+
+/* ---- config from sliders ---- */
+function cfg(){
+  return {
+    war: +els.war.value,    // 1..10 deficit magnitude
+    adv: +els.adv.value,    // 1..10 fall-clock speed
+    spd: +els.spd.value,    // 1..10 hauler speed
+    num: +els.num.value,    // contracts per board
+  };
+}
+
+/* haul ticks to reach a drop-off `dist` jumps deep, given hauler speed slider */
+function haulTicks(dist, spd){
+  // faster slider => fewer ticks per jump. spd 1 => slow, 10 => fast.
+  const perJump = HAULK * (1.6 - 0.11*spd);   // ~1.49 .. ~0.5 ticks/jump
+  return dist * perJump;
+}
+
+/* ---- DETERMINISTIC BOARD GENERATION (fixed draw order) -----------------
+   Per board, in order:
+     1) advance the front (fall clock) by a seed-fixed-ish step
+     2) for each contract: draw good, distance, drop-off depth
+     3) compute ticks-to-overrun from drop-off depth vs front
+     4) price payout = base(deficit) × distance  (no danger term)
+   ----------------------------------------------------------------------- */
+function dealBoard(){
+  const c = cfg();
+  roundNo++;
+  const prevFront = board ? board.front : 0;
+
+  // 1) FALL CLOCK: front creeps forward each board. Deterministic in the seed
+  //    + the advance slider; wraps as the war "resets" deep so boards keep coming.
+  const step = (0.018 + 0.020*(c.adv/10)) * (0.75 + 0.5*prng());
+  let front = prevFront + step;
+  let clock = (board ? board.clock : 0) + step;
+  if(front > 0.86){ front -= 0.62; }            // war pushes deep, then a fresh sector opens up
+  const frontJump = front * NLANE;              // front position in lane-jumps
+
+  // hauler speed readout
+  const speed = (0.6 + 0.09*c.spd);             // jumps-per-tick-ish, for display
+
+  // 2-4) build contracts
+  const contracts = [];
+  const n = c.num;
+  for(let i=0;i<n;i++){
+    const g = GOODS[Math.floor(prng()*GOODS.length)];
+    // distance in jumps from the rear; deeper drops are farther AND nearer the front
+    const dist = 2 + Math.floor(prng()*(NLANE-3));        // 2 .. NLANE-2 jumps
+    // drop-off depth (how far along the lane the destination sits, 0=rear .. NLANE=front edge)
+    // bias drop-off to roughly track distance, with seed jitter
+    const depth = clamp(dist + (prng()*2.4 - 0.8), 1.2, NLANE-0.2);
+
+    // deficit: war intensity + per-good jitter; military goods run higher deficits
+    const deficit = clamp((g.mil?0.55:0.32) + (c.war/10)*0.5*(0.6+0.8*prng()) , 0.1, 1.35);
+
+    // PAYOUT = base(deficit) × distance  — the faction's honest pricing (R.4).
+    // NOTE: depth/front never enters here. The danger is unpriced.
+    const payout = Math.round(g.base * (0.5 + deficit) * (0.55 + 0.16*dist) );
+
+    // ticks-to-overrun: how long until the front (advancing) reaches this depth.
+    // front advances at frontVel jumps/tick on the same clock that delivers.
+    const frontVel = (0.10 + 0.13*(c.adv/10));            // jumps/tick the line eats
+    const margin = depth - frontJump;                     // jumps the drop sits ahead of line
+    const ttl = margin <= 0 ? 0 : margin / frontVel;      // ticks until overrun (deterministic)
+
+    const haul = haulTicks(dist, c.spd);                  // ticks to deliver
+    const cost = Math.round(COSTK * dist);                // wasted-trip cost
+    const arriveInTime = haul <= ttl;                     // P(in time) collapses to yes/no
+    const ev = arriveInTime ? (payout - cost) : (-cost);  // TRUE EV
+
+    // wordless proximity (0 safe .. 1 about to fall) — what fog shows, no number
+    const prox = clamp(1 - margin/(PROXWIN*NLANE), 0, 1);
+
+    contracts.push({
+      id:i, good:g.name, mil:g.mil, dist, depth, deficit,
+      payout, ttl, haul, cost, ev, arriveInTime, prox,
+      picked:false, skipped:false, resolved:false, paid:false, voided:false,
+    });
+  }
+
+  // bait = fattest payout (what greedy grabs / what the UI nudges toward)
+  let baitId=0, baitPay=-1;
+  for(const k of contracts){ if(k.payout>baitPay){ baitPay=k.payout; baitId=k.id; } }
+
+  board = {clock, front, frontJump, speed, contracts, baitId, n};
+  resolvedThisBoard = false;
+  renderBoard();
+  drawLane();
+  els.whyLine.innerHTML = 'fresh board dealt — <b>'+n+'</b> contracts. The fattest pays <span class="hot">'+fmtCr(baitPay)+'</span> cr; whether that’s a windfall or a void is in the <b>geometry</b>, not the number.';
+  setStatus('Board #'+roundNo+' dealt. '+(fog?'FOG on — pick by payout, or read the lane.':'FOG off — the schedule is yours; pick the real EV.'));
+}
+
+/* ---- resolve a single contract pick against the fall clock ---- */
+function resolvePick(k){
+  if(resolvedThisBoard) return;
+  resolvedThisBoard = true;
+  k.picked = true; k.resolved = true;
+
+  if(k.arriveInTime){
+    k.paid = true;
+    const net = k.payout - k.cost;
+    tally.earned += net;                 // net of haul cost
+    grossPaid += net;                    // "Earned (paid)" readout
+    els.whyLine.innerHTML = whyPaid(k);
+  } else {
+    k.voided = true;
+    tally.lost += k.cost;
+    tally.voids += 1;
+    tally.earned -= k.cost;              // the wasted trip hits the bottom line
+    els.whyLine.innerHTML = whyVoid(k);
+  }
+  // fade the others
+  for(const o of board.contracts){ if(o.id!==k.id){ o.faded = true; } }
+  renderBoard();
+  drawLane();
+  renderTally();
+  // teaching nudge if they took the bait blind
+  if(k.voided && k.id===board.baitId && fog && !reveal){
+    setStatus('Took the bait — biggest payout, deepest drop, overrun before arrival. Flip REVEAL TRUE EV and re-read the board you just lost on.');
+  } else if(k.paid){
+    setStatus('Paid in full: '+fmtCr(k.payout)+' cr, haul took '+k.haul.toFixed(1)+'t, overrun was '+(k.ttl>900?'never':k.ttl.toFixed(1)+'t')+'. Deal the next board.');
+  } else {
+    setStatus('VOIDED: '+k.good+' to '+DESTS[k.id]+' fell in '+k.ttl.toFixed(1)+'t, you arrive in '+k.haul.toFixed(1)+'t. Net −'+fmtCr(k.cost)+' (wasted trip).');
+  }
+}
+
+function skipBoard(){
+  if(resolvedThisBoard) return;
+  resolvedThisBoard = true;
+  for(const o of board.contracts){ o.skipped = true; }
+  // count voids the player DODGED by skipping (teaching feedback)
+  const dodged = board.contracts.filter(o=>!o.arriveInTime).length;
+  els.whyLine.innerHTML = 'skipped the board. '+(dodged>0
+    ? 'You walked away from <span class="dn">'+dodged+'</span> baited drop-off'+(dodged>1?'s':'')+' that would have voided — no payout, but no wasted trip either.'
+    : 'Every drop-off here was reachable in time; skipping left <b>'+fmtCr(board.contracts.find(o=>o.id===board.baitId).payout)+'</b> cr of safe payout on the table.');
+  renderBoard();
+  setStatus('Board skipped. Sometimes the whole board is bait — but sometimes you just left money behind.');
+}
+
+/* ---- why-line authors ---- */
+function whyPaid(k){
+  return 'took <b>'+k.good+'</b> → '+DESTS[k.id]+' ('+k.dist+' jumps) for <span class="up">'+fmtCr(k.payout)+'</span> cr. '
+    +'Drop-off falls in <span class="wn">'+(k.ttl>900?'∞':k.ttl.toFixed(1))+'t</span>, you arrive in <b>'+k.haul.toFixed(1)+'t</b> — <span class="up">in time</span>. '
+    +'Net <span class="up">'+fmtSigned(k.payout-k.cost)+'</span> after haul. The geometry was safe; the payout happened to be fair.';
+}
+function whyVoid(k){
+  const mult = (k.payout/Math.max(1,medPay())).toFixed(1);
+  return 'took the <span class="hot">'+mult+'×</span> payout — <b>'+k.good+'</b> → '+DESTS[k.id]+', '+fmtCr(k.payout)+' cr, '+k.dist+' jumps deep. '
+    +'It fell in <span class="dn">'+k.ttl.toFixed(1)+'t</span>; you arrived in <b>'+k.haul.toFixed(1)+'t</b>: <span class="dn">VOIDED</span>, −'+fmtCr(k.cost)+' haul. '
+    +'<b>The payout never warned you</b> — the danger was in how close the drop-off sat to the line.';
+}
+function medPay(){
+  if(!board) return 1;
+  const ps = board.contracts.map(c=>c.payout).sort((a,b)=>a-b);
+  return ps[Math.floor(ps.length/2)] || 1;
+}
+
+/* ===================================================================== *
+ *  RENDER — contracts, tally, readouts
+ * ===================================================================== */
+function renderBoard(){
+  els.tickN.textContent = board ? board.clock.toFixed(2) : '0';
+  els.roundN.textContent = roundNo || 1;
+  const c = cfg();
+
+  // readouts
+  if(board){
+    els.frontV.textContent = Math.round(board.front*100)+'%';
+    els.frontSub.textContent = 'at jump '+board.frontJump.toFixed(1)+' of '+NLANE+' · seed-fixed';
+    els.speedV.textContent = (0.6+0.09*c.spd).toFixed(1)+'×';
+    const bait = board.contracts.find(k=>k.id===board.baitId);
+    els.baitV.textContent = fmtCr(bait.payout);
+    els.baitV.className = 'v '+(bait.arriveInTime? 'good':'bad');
+    els.baitSub.textContent = bait.mil?'military · '+bait.dist+' jumps':'general · '+bait.dist+' jumps';
+  }
+
+  // mode label
+  els.modeLbl.innerHTML = (fog?'<b class="fog">FOG</b> blind':'clear map')
+    + ' · ' + (reveal?'<b class="rev">TRUE EV</b> shown':'EV hidden');
+
+  // deck
+  const deck = els.deck;
+  deck.innerHTML='';
+  if(!board) return;
+  for(const k of board.contracts){
+    const el = document.createElement('div');
+    let cls = 'contract';
+    if(k.picked) cls+=' picked';
+    if(k.resolved) cls+=' resolved';
+    if(k.paid) cls+=' paid';
+    if(k.voided) cls+=' voided';
+    if(k.skipped) cls+=' skipped';
+    if(k.faded) cls+=' faded';
+    if(reveal && k.prox>0.6 && !k.arriveInTime) cls+=' nearfront';   // geometry flag only when reveal/clear
+    if(!fog && k.prox>0.62) cls+=' nearfront';
+    el.className=cls;
+
+    const proxLbl = k.prox>0.78? 'on the line' : k.prox>0.5? 'near front' : k.prox>0.28? 'mid-lane' : 'deep rear';
+    const proxColor = k.prox>0.66? 'var(--bad)' : k.prox>0.42? 'var(--warn)' : 'var(--good)';
+
+    // reveal block
+    const evCls = k.ev>=0? 'pos':'neg';
+    const ttlCls = k.arriveInTime? '' : 'doomed';
+    const ttlTxt = k.ttl>900? 'never falls' : ('falls in '+k.ttl.toFixed(1)+'t');
+    const revealHTML =
+      '<div class="reveal">'
+      + '<div class="row"><span>drop-off</span><span class="ttl '+ttlCls+'">'+ttlTxt+'</span></div>'
+      + '<div class="row"><span>your haul</span><span>arrive in '+k.haul.toFixed(1)+'t</span></div>'
+      + '<div class="row"><span>true EV</span><span class="ev '+evCls+'">'+fmtSigned(k.ev)+' cr</span></div>'
+      + '</div>';
+
+    el.innerHTML =
+      '<div class="flag">▼ near front</div>'
+      + '<div class="top"><span class="good">'+k.good+'</span><span class="tag '+(k.mil?'m':'g')+'">'+(k.mil?'mil':'gen')+'</span></div>'
+      + '<div class="pay">'+fmtCr(k.payout)+' <span class="u">cr</span></div>'
+      + '<div class="meta">'
+        + '<div class="row"><span>drop-off</span><b>'+DESTS[k.id]+'</b></div>'
+        + '<div class="row"><span>haul</span><b>'+k.dist+' jumps</b></div>'
+      + '</div>'
+      + '<div class="prox"><span class="proxlbl" style="color:'+proxColor+'">'+proxLbl+'</span>'
+        + '<span class="proxbar"><i style="width:'+Math.round(k.prox*100)+'%"></i></span></div>'
+      + revealHTML
+      + '<div class="pickrow"><button class="take">TAKE</button><button class="skip">PASS</button></div>'
+      + '<div class="stamp paid">PAID</div><div class="stamp voided">VOIDED</div><div class="stamp skip">PASSED</div>';
+
+    if(reveal) el.classList.add('revealed');
+
+    // wire buttons
+    const takeBtn = el.querySelector('.take');
+    const skipBtn2 = el.querySelector('.skip');
+    if(resolvedThisBoard){ takeBtn.disabled=true; skipBtn2.disabled=true; takeBtn.style.opacity=.4; skipBtn2.style.opacity=.4; }
+    takeBtn.addEventListener('click', ()=> resolvePick(k));
+    skipBtn2.addEventListener('click', ()=> skipBoard());
+
+    deck.appendChild(el);
+  }
+}
+
+function renderTally(){
+  els.tEarned.textContent = fmtCr(grossPaid);            // sum of net-of-haul on paid trips
+  els.tLost.textContent = '−'+fmtCr(tally.lost);          // credits burned on voided trips
+  els.tVoids.textContent = tally.voids;
+  els.tNet.textContent = fmtSigned(tally.earned);         // running bottom line
+  els.tNet.className = 'v '+(tally.earned>=0?'accent':'bad');
+}
+
+/* ===================================================================== *
+ *  LANE MAP — drop-offs vs advancing front (the honest danger channel)
+ * ===================================================================== */
+function drawLane(){
+  const cv = els.lane, ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+  if(!board) return;
+
+  const padL=46, padR=24, padT=24, padB=34;
+  const x0=padL, x1=W-padR;
+  const laneY = H/2 + 6;
+  const span = x1-x0;
+  const jx = j => x0 + (j/NLANE)*span;     // jump -> x
+
+  // baseline lane
+  ctx.strokeStyle='#2a3146'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,laneY); ctx.lineTo(x1,laneY); ctx.stroke();
+
+  // jump ticks
+  ctx.fillStyle='#5b6378'; ctx.font='10px ui-monospace,Consolas,monospace'; ctx.textAlign='center';
+  for(let j=0;j<=NLANE;j+=2){
+    const x=jx(j);
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,H-padB); ctx.stroke();
+    ctx.fillText('j'+j, x, H-padB+15);
+  }
+  ctx.textAlign='left'; ctx.fillStyle='#767d93';
+  ctx.fillText('REAR (you start here)', x0, padT-8);
+  ctx.textAlign='right'; ctx.fillText('FRONT EDGE', x1, padT-8);
+  ctx.textAlign='left';
+
+  // OVERRUN ZONE (behind the front, already fallen) — shaded red to the left of front
+  const fx = jx(board.frontJump);
+  const grad = ctx.createLinearGradient(x0,0,fx,0);
+  grad.addColorStop(0,'rgba(248,113,113,.20)');
+  grad.addColorStop(1,'rgba(248,113,113,.06)');
+  ctx.fillStyle=grad;
+  ctx.fillRect(x0, padT, Math.max(0,fx-x0), (H-padB)-padT);
+
+  // "falls soon" band ahead of the front (within proximity window)
+  const pwx = jx(board.frontJump + PROXWIN*NLANE);
+  const g2 = ctx.createLinearGradient(fx,0,pwx,0);
+  g2.addColorStop(0,'rgba(248,113,113,.16)');
+  g2.addColorStop(1,'rgba(251,191,36,.02)');
+  ctx.fillStyle=g2;
+  ctx.fillRect(fx, padT, Math.max(0,Math.min(pwx,x1)-fx), (H-padB)-padT);
+
+  // FRONT line (now) — the fall clock's leading edge
+  ctx.strokeStyle='#f87171'; ctx.lineWidth=2.5;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(fx,padT-2); ctx.lineTo(fx,H-padB+2); ctx.stroke();
+  ctx.setLineDash([]);
+  // arrowhead showing advance direction
+  ctx.fillStyle='#f87171';
+  ctx.beginPath(); ctx.moveTo(fx+1,laneY); ctx.lineTo(fx+10,laneY-5); ctx.lineTo(fx+10,laneY+5); ctx.closePath(); ctx.fill();
+  ctx.font='9px ui-monospace,Consolas,monospace'; ctx.fillStyle='#f87171'; ctx.textAlign='center';
+  ctx.fillText('FRONT →', fx+2, padT+2);
+
+  // DROP-OFFS — one marker per contract, positioned at its depth
+  ctx.textAlign='center';
+  for(const k of board.contracts){
+    const x = jx(k.depth);
+    const overrun = !k.arriveInTime;
+    // resolved states recolor
+    let col = '#fb7185';
+    if(k.resolved){ col = k.paid? '#34d399' : '#f87171'; }
+    else if(k.skipped){ col = '#5b6378'; }
+    // marker: diamond on the lane
+    const r = 6.5;
+    // stem to label
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+    const labY = (k.id%2===0)? laneY-30 : laneY+30;
+    ctx.beginPath(); ctx.moveTo(x,laneY); ctx.lineTo(x,labY+(k.id%2===0?6:-6)); ctx.stroke();
+
+    // diamond
+    ctx.save();
+    ctx.translate(x,laneY); ctx.rotate(Math.PI/4);
+    ctx.fillStyle=col;
+    ctx.globalAlpha = (k.skipped||k.faded)?0.5:1;
+    ctx.fillRect(-r,-r,2*r,2*r);
+    ctx.globalAlpha=1;
+    // ring if it's the bait (fattest payout)
+    if(k.id===board.baitId && !k.resolved && !k.skipped){
+      ctx.strokeStyle='#fb7185'; ctx.lineWidth=1.5; ctx.globalAlpha=.8;
+      ctx.strokeRect(-r-3,-r-3,2*(r+3),2*(r+3)); ctx.globalAlpha=1;
+    }
+    ctx.restore();
+
+    // label: payout (always) + ticks-to-overrun ONLY when reveal/clear
+    ctx.font='bold 10px ui-monospace,Consolas,monospace';
+    ctx.fillStyle = k.skipped? '#5b6378' : (overrun && (reveal||!fog)? '#f87171' : '#c4c9d8');
+    ctx.fillText(fmtCr(k.payout), x, labY);
+    if(reveal || !fog){
+      ctx.font='9px ui-monospace,Consolas,monospace';
+      ctx.fillStyle = overrun? '#f87171' : '#9aa1b6';
+      const t = k.ttl>900? '∞' : k.ttl.toFixed(1)+'t';
+      ctx.fillText('falls '+t, x, labY+(k.id%2===0?-12:12));
+    } else {
+      // fog: a wordless tick mark indicating proximity, no number
+      ctx.font='9px ui-monospace,Consolas,monospace';
+      ctx.fillStyle = k.prox>0.6? '#f87171' : k.prox>0.4? '#fbbf24' : '#34d399';
+      ctx.fillText(k.prox>0.6?'▼':'', x, labY+(k.id%2===0?-12:12));
+    }
+  }
+}
+
+/* ===================================================================== *
+ *  AUTO-PLAY RACE — greedy-by-payout vs EV-aware, SAME seed & boards
+ * ===================================================================== */
+let race = null;
+function freshRace(){
+  return {n:0, greedy:{tot:0,paid:0,void:0}, aware:{tot:0,paid:0,skip:0}, prng:mulberry32(SEED ^ 0x51ce), front:0, clock:0};
+}
+/* generate one board purely (no DOM) from a dedicated race prng, mirroring dealBoard's draw order */
+function raceBoard(rs){
+  const c = cfg();
+  const step = (0.018 + 0.020*(c.adv/10)) * (0.75 + 0.5*rs.prng());
+  let front = rs.front + step;
+  if(front>0.86){ front -= 0.62; }
+  rs.front = front;
+  const frontJump = front*NLANE;
+  const frontVel = (0.10 + 0.13*(c.adv/10));
+  const list=[];
+  const n=c.num;
+  for(let i=0;i<n;i++){
+    const g = GOODS[Math.floor(rs.prng()*GOODS.length)];
+    const dist = 2 + Math.floor(rs.prng()*(NLANE-3));
+    const depth = clamp(dist + (rs.prng()*2.4 - 0.8), 1.2, NLANE-0.2);
+    const deficit = clamp((g.mil?0.55:0.32) + (c.war/10)*0.5*(0.6+0.8*rs.prng()), 0.1, 1.35);
+    const payout = Math.round(g.base*(0.5+deficit)*(0.55+0.16*dist));
+    const margin = depth - frontJump;
+    const ttl = margin<=0?0:margin/frontVel;
+    const haul = haulTicks(dist, c.spd);
+    const cost = Math.round(COSTK*dist);
+    const inTime = haul<=ttl;
+    const ev = inTime? (payout-cost):(-cost);
+    list.push({payout, ev, inTime, cost});
+  }
+  return list;
+}
+function runRace(rounds){
+  if(!race) race = freshRace();
+  for(let r=0;r<rounds;r++){
+    const list = raceBoard(race);
+    // GREEDY: take the single biggest payout, ignore danger
+    let g=list[0]; for(const k of list){ if(k.payout>g.payout) g=k; }
+    if(g.inTime){ race.greedy.tot += (g.payout-g.cost); race.greedy.paid++; }
+    else { race.greedy.tot -= g.cost; race.greedy.void++; }
+    // EV-AWARE: take best positive EV; skip board if none positive
+    let best=null; for(const k of list){ if(k.ev>0 && (!best||k.ev>best.ev)) best=k; }
+    if(best){ race.aware.tot += best.ev; race.aware.paid++; }   // best.ev already nets cost (positive)
+    else { race.aware.skip++; }
+    race.n++;
+  }
+  renderRace();
+}
+function renderRace(){
+  if(!race) return;
+  els.raceN.textContent = race.n;
+  const g=race.greedy, a=race.aware;
+  els.gTot.textContent = fmtSigned(g.tot)+' cr';
+  els.aTot.textContent = fmtSigned(a.tot)+' cr';
+  els.gPaid.textContent = g.paid; els.gVoid.textContent = g.void;
+  els.aPaid.textContent = a.paid; els.aSkip.textContent = a.skip;
+  const mx = Math.max(1, Math.abs(g.tot), Math.abs(a.tot));
+  els.gBar.style.width = clamp(g.tot/mx,0,1)*100+'%';
+  els.aBar.style.width = clamp(a.tot/mx,0,1)*100+'%';
+  // verdict
+  if(race.n>0){
+    const lead = a.tot - g.tot;
+    if(a.tot>g.tot){
+      els.rVerdict.innerHTML = 'After <b>'+race.n+'</b> boards, EV-AWARE leads by <b>'+fmtCr(lead)+' cr</b>. '
+        + 'Greedy ate <span class="lo">'+g.void+' voided trips</span> chasing the fattest number; EV-aware skipped '+a.skip+' baited boards and kept its hauler earning. <b>Pricing the danger wins the run.</b>';
+    } else if(a.tot<g.tot){
+      els.rVerdict.innerHTML = 'Greedy is ahead by '+fmtCr(-lead)+' cr so far — this seed’s early boards were mostly safe, so grabbing the big number paid. Run more boards (or raise <b>front advance</b>) and watch the voids catch up with it.';
+    } else {
+      els.rVerdict.innerHTML = 'Dead even at '+race.n+' boards — keep racing; the gap opens as voided trips accumulate against greedy.';
+    }
+  }
+}
+
+/* ===================================================================== *
+ *  WIRING
+ * ===================================================================== */
+function setStatus(s){ els.status.textContent = s; }
+function syncSliderLabels(){
+  els.vWar.textContent = els.war.value;
+  els.vAdv.textContent = els.adv.value;
+  els.vSpd.textContent = els.spd.value;
+  els.vNum.textContent = els.num.value;
+}
+
+function reseed(s){
+  SEED = s;
+  prng = mulberry32(SEED);
+  board = null; roundNo = 0;
+  resolvedThisBoard = false;
+  race = null;
+  els.tickN.textContent='0';
+  // active seed chip
+  document.querySelectorAll('.seedchip').forEach(c=>c.classList.toggle('active', +c.dataset.seed===s));
+  renderRace();
+  dealBoard();
+}
+function resetTally(){
+  tally = {earned:0, lost:0, voids:0};
+  grossPaid = 0;
+  renderTally();
+  setStatus('Tally reset to zero. Deal a board and start picking.');
+}
+
+/* slider changes: re-deal a fresh board from the CURRENT seed so the
+   schedule stays a clean function of (seed, settings). */
+function onSliderChange(){
+  syncSliderLabels();
+  prng = mulberry32(SEED);   // re-anchor: settings change => clean redraw of the war
+  board=null; roundNo=0; race=null; renderRace();
+  dealBoard();
+}
+['war','adv','spd','num'].forEach(id=>{
+  els[id].addEventListener('input', syncSliderLabels);
+  els[id].addEventListener('change', onSliderChange);
+});
+
+els.dealBtn.addEventListener('click', dealBoard);
+els.skipBtn.addEventListener('click', skipBoard);
+els.resetBtn.addEventListener('click', resetTally);
+
+els.tFog.addEventListener('click', ()=>{
+  fog = !fog;
+  els.tFog.classList.toggle('on', fog);
+  // clearing fog reveals the schedule on the lane map; per-card EV block stays gated on REVEAL
+  renderBoard(); drawLane();
+  setStatus(fog? 'FOG on — back to first-run blindness: payout + a rough proximity, no schedule.'
+                : 'FOG off — the cased map. The fall schedule is yours; ticks-to-overrun now annotate the lane.');
+});
+els.tRev.addEventListener('click', ()=>{
+  reveal = !reveal;
+  els.tRev.classList.toggle('on', reveal);
+  renderBoard(); drawLane();
+  setStatus(reveal? 'REVEAL TRUE EV — each card now shows ticks-to-overrun and its honest EV. The danger the faction hid, spelled out. Training wheels.'
+                  : 'REVEAL off — back to reading the geometry yourself.');
+});
+
+document.querySelectorAll('.seedchip').forEach(chip=>{
+  chip.addEventListener('click', ()=> reseed(+chip.dataset.seed));
+});
+
+els.race50.addEventListener('click', ()=> runRace(50));
+els.race200.addEventListener('click', ()=> runRace(200));
+els.raceReset.addEventListener('click', ()=>{ race=null; renderRace(); els.rVerdict.innerHTML='Race reset. Press a Race button to pit the two pickers against an identical sequence of boards.'; });
+
+/* keyboard: space deals, s skips */
+document.addEventListener('keydown', e=>{
+  if(e.target && /input|textarea|button/i.test(e.target.tagName)) return;
+  if(e.code==='Space'){ e.preventDefault(); dealBoard(); }
+  else if(e.key==='s' || e.key==='S'){ skipBoard(); }
+});
+
+/* redraw lane on resize (canvas is fixed-res but kept crisp via CSS scale) */
+window.addEventListener('resize', ()=>{ if(board) drawLane(); });
+
+/* ---- boot ---- */
+syncSliderLabels();
+els.tFog.classList.toggle('on', fog);
+els.tRev.classList.toggle('on', reveal);
+renderTally();
+renderRace();
+dealBoard();
+</script>
+</body>
+</html>

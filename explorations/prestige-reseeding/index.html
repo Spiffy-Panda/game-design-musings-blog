@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cartographic Prestige — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: in MSL you never buy power, you buy a better world to be born into. Prestige re-seeds the supply map — new producers bend every downstream price gradient — and the campaign win is a macroeconomic equilibrium you nudge into being, one producer at a time, where production finally outpaces attrition and the front holds. You never once reach past the ledger to touch the war." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#a78bfa;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* gradient heat ramp: cheap/surplus (near producer) -> dear/scarce (near demand) */
+  --cheap:#22d3ee;     /* cyan — surplus, price floor, supply meets demand */
+  --easy:#34d399;      /* green — comfortable */
+  --tight:#fbbf24;     /* amber — gradient steepening */
+  --dear:#f472b6;      /* pink — scarce, price ceiling, demand unmet */
+  --producer:#a78bfa;  /* violet — your seeded infrastructure */
+  --attr:#fb7185;      /* rose — the fixed attrition line (the war; you never touch it) */
+  --prod:#34d399;      /* green — the production line you climb */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:70rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:43rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+em{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.losing{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.14)}
+.phasebadge.climbing{color:#fde68a;border-color:#7a5e1f;background:rgba(251,191,36,.12)}
+.phasebadge.nearing{color:#bbf7d0;border-color:#2c6b54;background:rgba(52,211,153,.14)}
+.phasebadge.held{color:var(--ink-950);border-color:var(--prod);background:var(--prod);font-weight:800}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.32fr 1fr;gap:1rem}
+@media (max-width:940px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport bar */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl.go{color:var(--ink-950);background:var(--prod);border-color:var(--prod);font-weight:700}
+button.ctl.go:hover{filter:brightness(1.08)}
+button.ctl.toggle.on{color:var(--ink-950);background:var(--tight);border-color:var(--tight);font-weight:700}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+
+/* prestige wallet */
+.wallet{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.wallet .lab{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.wallet .bal{color:var(--accent);font-size:1.25rem;font-weight:800}
+.wallet .bal.flash{animation:bank .6s ease}
+@keyframes bank{0%{color:#fff;transform:scale(1.18)}100%{color:var(--accent);transform:scale(1)}}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+/* good / output picker */
+.picker{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.7rem}
+.picker .grp{display:flex;gap:.3rem;align-items:center}
+.picker label{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.goodbtn{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.04em;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:7px;padding:.3rem .55rem;cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:.32rem}
+.goodbtn .sw{width:9px;height:9px;border-radius:3px}
+.goodbtn:hover{border-color:var(--fog-500)}
+.goodbtn.on{border-color:var(--accent);color:var(--fog-100);background:var(--accent-soft)}
+.outctl{display:flex;align-items:center;gap:.4rem}
+.outctl input[type=range]{-webkit-appearance:none;appearance:none;height:5px;width:8rem;border-radius:5px;background:var(--ink-700);outline:none}
+.outctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.outctl input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.outctl .v{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;min-width:5.4rem}
+.cost{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-400)}
+.cost b{color:var(--accent)}
+
+/* field host */
+.fieldhost{width:100%;overflow:hidden;border-radius:9px;background:radial-gradient(120% 90% at 88% 12%,rgba(167,139,250,.06),transparent 55%),var(--ink-950);border:1px solid var(--line);position:relative;cursor:crosshair}
+svg{display:block;max-width:100%}
+.svg-tip{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;fill:var(--fog-500)}
+.fieldhost .hint{position:absolute;left:10px;bottom:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--fog-500);pointer-events:none;background:rgba(7,8,12,.6);padding:.1rem .4rem;border-radius:5px}
+.fieldhost .nope{position:absolute;right:10px;top:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--dear);pointer-events:none;background:rgba(7,8,12,.7);padding:.1rem .4rem;border-radius:5px;opacity:0;transition:opacity .25s}
+.fieldhost .nope.show{opacity:1}
+
+/* legend / heat ramp */
+.legend{display:flex;flex-wrap:wrap;gap:.6rem .9rem;margin-top:.6rem;align-items:center}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400)}
+.legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.ramp{height:11px;width:150px;border-radius:3px;border:1px solid var(--line);
+  background:linear-gradient(90deg,var(--cheap),var(--easy),var(--tight),var(--dear))}
+.ramplab{display:flex;justify-content:space-between;width:150px;font-family:var(--font-mono);font-size:.6rem;color:var(--fog-500);letter-spacing:.04em}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums}
+.kv .v.big{color:var(--accent);font-size:1.05rem}
+.kv .v.prod{color:var(--prod)} .kv .v.attr{color:var(--attr)}
+
+/* the gap bar (production vs attrition, this loop) */
+.gapbar{margin-top:.5rem}
+.gapbar .track{position:relative;height:20px;border-radius:6px;background:var(--ink-950);border:1px solid var(--line);overflow:hidden}
+.gapbar .prodfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,color-mix(in oklab,var(--prod) 50%,transparent),var(--prod));transition:width .4s ease}
+.gapbar .attrmark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--attr);box-shadow:0 0 6px var(--attr)}
+.gapbar .attrcap{position:absolute;top:-1.05rem;transform:translateX(-50%);font-family:var(--font-mono);font-size:.6rem;color:var(--attr);white-space:nowrap}
+.gapbar .lbls{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.62rem;color:var(--fog-500);margin-top:.45rem}
+
+/* "why" one-liner */
+.why{border:1px solid var(--accent);background:rgba(167,139,250,.08);border-radius:11px;padding:.7rem .8rem;margin-top:.2rem;transition:.2s;min-height:3.2rem}
+.why.idle{border-color:var(--line);background:var(--ink-900)}
+.why .wq{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.78rem;color:var(--fog-100);line-height:1.5;margin-top:.25rem}
+.why .wmsg b{color:var(--accent)}
+.why .wmsg .up{color:var(--prod)} .why .wmsg .dn{color:var(--attr)}
+
+/* producer roster */
+.roster{display:grid;gap:.3rem;max-height:8.6rem;overflow-y:auto}
+.rosrow{display:grid;grid-template-columns:auto 1fr auto;gap:.5rem;align-items:center;font-family:var(--font-mono);font-size:.74rem;
+  padding:.26rem .5rem;border:1px solid var(--line);border-radius:7px;background:var(--ink-950)}
+.rosrow .sw{width:9px;height:9px;border-radius:3px}
+.rosrow .nm{color:var(--fog-100)} .rosrow .meta{color:var(--fog-500);font-size:.68rem;text-align:right}
+.rosrow.none{color:var(--fog-500);grid-template-columns:1fr;text-align:center}
+
+/* loop ledger chart */
+.ledgerhost{width:100%;overflow:hidden;border-radius:9px;background:var(--ink-950);border:1px solid var(--line)}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:9.4rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .seed{color:var(--producer)} .log .loop{color:var(--tight)} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)} .log .win{color:var(--prod)}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+.eqn{font-family:var(--font-mono);font-size:.92rem;color:var(--fog-100);background:var(--ink-900);border:1px solid var(--line);
+  border-radius:10px;padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;line-height:1.8}
+.eqn .c{color:var(--fog-500)} .eqn .k{color:var(--accent)}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">Cartographic Prestige</span></li>
+    </ol>
+  </nav>
+<header class="hero">
+  <span class="chip"><b>APR.3</b> · meta / prestige economy</span>
+  <div class="kicker">VIOLET lineage · loss re-seeds the map</div>
+  <h1>Cartographic Prestige</h1>
+  <p class="lede">You never buy a stronger hand or a weaker enemy. You spend the prestige a loss banked on <em>where supply is born</em> — and a better map is the only thing that ever makes the front hold.</p>
+  <p class="spark">The campaign win is reached <span>sideways</span>: a macroeconomic equilibrium you bend one producer at a time, until production finally outpaces attrition — and you never once reach past the ledger to touch the war.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics hands you <strong>one hauler</strong> and a war that cannot be won in a run. Every run ends in an <strong>overrun</strong>, and that's the point: loss is the currency. Being overrun banks <strong>prestige</strong> <span class="hand">APR.4</span> — the deposit you carry between runs. The trick the whole meta turns on is <em>what prestige is allowed to buy</em>.</p>
+
+<p>It can never buy the war down. There is no difficulty dial, no "the front holds" button, no stat on your hauler that goes up. Prestige buys <strong>position and possibility</strong> <span class="hand">APR.3</span> — a producer, a shipyard berth, a little more starting reach. It edits the <strong>agent population and the economy</strong> <span class="hand">HAND.5</span>, never your numbers and never the front <span class="hand">HAND.6</span>. Seeding a refinery doesn't make you stronger; it instantiates a <em>new place that supply comes from</em>, permanently reshaping every downstream price gradient for the next run.</p>
+
+<p>So the campaign is won the long way around. You lose, you bank, you re-seed the map a little closer to demand, and you lose again — but the world you were born into this time produces a touch more where it matters. Loop after loop, sustainable production climbs toward a fixed attrition line. The run you finally cross it, <strong>the front holds on its own</strong> — not because you bought a win, but because the macroeconomy you've been editing finally tips into an equilibrium that favours you. This page makes that tangible: a map you re-seed, and a ledger you watch cross.</p>
+
+<h2><span class="eye">the model</span>A banded supply map, a price gradient, two lines that cross</h2>
+
+<p>Lay the theatre out as a small banded graph: <strong>rear → midfield → forward</strong>, the forward edge being the front, where the war consumes. Every node carries a <strong>supply level</strong> and, from it, a <strong>price</strong>. Producers you've seeded emit a good; that good <em>diffuses</em> outward across lanes, attenuating with every hop — so supply is high (and price cheap) near a producer, and low (and price dear) far from one, especially out at the hungry forward edge.</p>
+
+<ul class="tight">
+  <li><b>The gradient.</b> Price at a node is its <em>unmet demand</em>: how much the front's pull exceeds the supply that actually reached it. A producer flattens the gradient <em>near itself</em> — cheap there, supply meeting demand — and barely touches nodes many hops away. A producer in the deep rear is real supply that mostly evaporates before it reaches the line.</li>
+  <li><b>Sustainable throughput.</b> What the front can be held at this loop is the supply <em>delivered to the forward edge</em> — production weighted by how close it sits to demand. Geometry is everything: the same output, seeded one band forward, lands far more on the line.</li>
+  <li><b>Attrition (the war).</b> A fixed line prestige can never touch <span class="hand">HAND.6</span>. It even <em>rises</em> as you hold more territory forward — a real headwind, not a number you lower. You only ever raise the production line to meet it; you never lower the war to meet you.</li>
+</ul>
+
+<div class="eqn">
+<span class="c">// per node n: supply is the sum of seeded producers, attenuated by graph distance</span><br>
+supply(n) <span class="k">=</span> Σ<sub>p ∈ producers</sub> output(p) · att<sup>dist(p,n)</sup> &nbsp;&nbsp;<span class="c">// att ≈ 0.46 per hop; near-producer ⇒ high, far ⇒ ~gone</span><br>
+price(n)  <span class="k">=</span> max( 0, demandPull(n) − supply(n) ) &nbsp;&nbsp;<span class="c">// the gradient = unmet demand</span><br>
+<span class="c">// what the front can be held at this loop — supply that reaches the forward edge</span><br>
+production <span class="k">=</span> Σ<sub>n ∈ forward edge</sub> min( supply(n), cap(n) ) &nbsp;&nbsp;<span class="c">// cap ⇒ diminishing returns on over-seeding one spot</span><br>
+attrition  <span class="k">=</span> base + creep · (held forward territory) &nbsp;&nbsp;<span class="c">// fixed by the war; prestige never edits it</span><br>
+<span class="k">if</span> ( production ≥ attrition ) <span class="k">the front holds</span> &nbsp;&nbsp;<span class="c">// the sideways win — an equilibrium, not a purchase</span>
+</div>
+
+<p>Every term is <strong>fixed-point integer</strong> — supply, price, attenuation, the lot are scaled by a constant and only ever added, multiplied-and-shifted, or floor-divided. A loop is a seed <span class="hand">APR.5</span>: same producers, same map, bit-for-bit the same gradient and the same two lines. The only randomness is a reseedable <code>mulberry32</code> used for cosmetic node jitter — never for the economy.</p>
+
+<div class="callout">
+  <div class="lab">how to drive the instrument</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">You have a <strong>prestige balance</strong> (top-left), banked from losses. Pick a <strong>good</strong> and an <strong>output</strong>, then <strong>click a node on the map to seed a producer</strong> there — it costs prestige, and the price-gradient heat-field instantly re-flows: cheap (cyan) blooms around your producer, and the dear (pink) forward edge flattens if you seeded close enough. Then press <strong>Run next loop</strong>: the run ends in a loss, banks more prestige, and the <strong>loop ledger</strong> on the right plots this loop's sustainable <span style="color:var(--prod)">production</span> against the fixed <span style="color:var(--attr)">attrition</span>. Seed forward, run again, and watch the production line climb. When it crosses attrition, the front holds — that's the campaign win, reached entirely from the ledger.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">PRESTIGE RESEEDING · <b>theatre "VIOLET"</b> · supply map + loop ledger</div>
+    <div class="phasebadge losing" id="phaseBadge">FRONT FALLING</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <div class="wallet">
+          <span class="lab">prestige</span>
+          <span class="bal" id="bal">42</span>
+        </div>
+        <span style="width:.4rem"></span>
+        <button class="ctl go" id="btnLoop">▶ Run next loop &amp; bank</button>
+        <button class="ctl" id="btnReset">⟲ Reset campaign</button>
+        <button class="ctl toggle" id="btnField">◇ Hide gradient field</button>
+        <span style="flex:1"></span>
+        <span class="clock">loop <b id="clk">0</b><span style="color:var(--fog-500)"> elapsed</span></span>
+      </div>
+
+      <div class="picker">
+        <div class="grp">
+          <label>good</label>
+          <button class="goodbtn on" data-good="0"><span class="sw" style="background:#a78bfa"></span>refinery · fuel</button>
+          <button class="goodbtn" data-good="1"><span class="sw" style="background:#22d3ee"></span>foundry · alloy</button>
+          <button class="goodbtn" data-good="2"><span class="sw" style="background:#34d399"></span>yard · munitions</button>
+        </div>
+        <span style="width:.5rem"></span>
+        <div class="grp outctl">
+          <label for="sOut">output</label>
+          <input type="range" id="sOut" min="6" max="24" step="1" value="14" />
+          <span class="v" id="vOut">14 / unit</span>
+        </div>
+        <span style="flex:1"></span>
+        <span class="cost">next seed costs <b id="seedCost">34</b> prestige <span style="color:var(--fog-500)">· +12 per producer already placed</span></span>
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the live supply map + gradient field -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="panel">
+          <h4>The supply map <span class="sub">click a node to seed a producer · field = price gradient</span></h4>
+          <div class="fieldhost">
+            <svg id="field" viewBox="0 0 660 430" role="img" aria-label="Banded supply map; nodes coloured by price gradient, your seeded producers shown as violet diamonds"></svg>
+            <div class="hint">click a node ▸ seed the selected producer</div>
+            <div class="nope" id="nope">not enough prestige</div>
+          </div>
+          <div class="legend">
+            <div style="display:flex;flex-direction:column;gap:.15rem">
+              <div class="ramp"></div>
+              <div class="ramplab"><span>cheap · met</span><span>price</span><span>dear · unmet</span></div>
+            </div>
+            <span class="it"><span class="sw" style="background:var(--producer);transform:rotate(45deg)"></span>your producer</span>
+            <span class="it"><span class="sw" style="background:var(--attr)"></span>forward edge (demand)</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Your infrastructure <span class="sub">seeded across all loops · permanent</span></h4>
+          <div class="roster" id="roster"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: ledger + readouts + why + log -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        <div class="panel">
+          <h4>The loop ledger <span class="sub">production climbs · attrition fixed</span></h4>
+          <div class="ledgerhost">
+            <svg id="ledger" viewBox="0 0 380 200" role="img" aria-label="Multi-loop chart of sustainable production rising toward a fixed attrition line; the crossover is the campaign win"></svg>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>This loop</h4>
+          <div class="kv">
+            <span class="k">sustainable production</span><span class="v big prod" id="kvProd">0.0</span>
+            <span class="k">attrition (the war)</span><span class="v attr" id="kvAttr">0.0</span>
+            <span class="k">gap to close</span><span class="v" id="kvGap">—</span>
+            <span class="k">producers placed</span><span class="v" id="kvProducers">0</span>
+          </div>
+          <div class="gapbar">
+            <div class="track">
+              <div class="prodfill" id="gapProd" style="width:0%"></div>
+              <div class="attrmark" id="gapAttr" style="left:80%"></div>
+              <div class="attrcap" id="gapAttrCap" style="left:80%">attrition</div>
+            </div>
+            <div class="lbls"><span>0</span><span id="gapMaxLbl">scale</span></div>
+          </div>
+        </div>
+
+        <div class="why idle" id="why">
+          <div class="wq">why — last action</div>
+          <div class="wmsg" id="whyMsg">Seed a producer on the map, then run a loop. Every seed re-flows the gradient and nudges where supply is born; the ledger shows the equilibrium shift.</div>
+        </div>
+
+        <div class="panel">
+          <h4>Campaign log <span class="sub">seeds · loops · the crossover</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just did</span>You bought a better world to be born into</h2>
+
+<p>Notice what you never did. You never lowered the attrition line — you couldn't; there's no control that touches it, by design <span class="hand">HAND.6</span>. You never bought a stat. Every click spent prestige on <em>a place supply comes from</em>, and the only thing that climbed was the production the map can sustain. The win, when it comes, is the <strong>green line crossing the rose one</strong> — an equilibrium tipping over, not a purchase clearing.</p>
+
+<p>The geometry is the whole game. Seed three producers in the deep rear and the heat-field tells the truth immediately: a bloom of cheap cyan back home, and the forward edge still pink and starving, because that supply attenuates to almost nothing over the hops to the line. The ledger barely moves. Seed one producer one band forward — closer to demand — and the same prestige flattens the dear edge instead; production jumps, and the gap to attrition visibly closes. <strong>You're not buying supply, you're buying the distance between supply and demand.</strong></p>
+
+<p>That's the reading of <span class="hand">HAND.5</span> made literal. "Production-station locations" isn't flavour for a stat bump — it <em>instantiates a new producer on the map</em>, and because price is a gradient over graph distance, every downstream node's price moves the instant it lands. You are editing the agent population. The war just lives with the economy you leave it.</p>
+
+<p>And the win is sideways <span class="hand">APR.4</span>. No single loop wins; loss is the deposit every time. What wins is the slow accretion of a supply map that finally produces, <em>at the forward edge</em>, more than the front burns. You nudged a macroeconomy into an equilibrium that holds — one manifest at a time — and the campaign tipped over without you ever firing a shot or buying the front down.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">why it's a climb, not a snowball</span>The two brakes that keep it honest</h2>
+
+<p>An economy you only ever <em>add</em> to wants to run away — seed enough and production explodes past attrition trivially, and the sideways win becomes a formality. Two model terms keep it a genuine climb, and you can feel both in the instrument:</p>
+
+<ul class="tight">
+  <li><b>Diminishing returns on over-seeding.</b> Each forward node caps how much delivered supply it can route to the line. Stack a fourth producer behind a node already at cap and the gradient there is already cyan — the new output mostly spills into price you don't need. The ledger shows it: the second producer in a fresh spot buys far more than the fourth behind a saturated one. Spread <em>where demand actually is</em>, or pay for surplus.</li>
+  <li><b>Attrition that scales with what you hold.</b> The line isn't flat. As your production lets the front sit further forward, attrition <em>creeps up</em> — more territory held is more territory the war pushes on. The target you're climbing toward backs away as you climb, so the crossover takes real, geometry-aware seeding, not brute repetition. (It's still reachable — just not free.)</li>
+</ul>
+
+<hr class="hr"/>
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <div class="rt"><b>Snowball / runaway.</b> A prestige economy that only ratchets up is the classic meta failure: once you're ahead you stay ahead, every loop is more producers and more production, and the "climb" flattens into an inevitability you grind out. If over-seeding always pays, geometry stops mattering and the sideways win is just a number of loops.</div>
+  <div class="mit"><b>Mitigations, both in the model:</b> <em>diminishing returns</em> on piling producers behind one node (a per-node delivery cap, so the fourth refinery in a saturated spot is mostly wasted), and <em>attrition that scales with held territory</em> — the harder you push the front forward, the harder the war pushes back. Together they make the crossover a real, geometry-aware climb: you must seed <em>closer to demand</em>, not just <em>more</em>, and the target recedes as you near it. The win stays reachable; it just refuses to be trivial.</div>
+</div>
+
+<div class="risk">
+  <div class="rt"><b>Illegibility of a long-run macro outcome.</b> The campaign win is a macroeconomic equilibrium that shifts over <em>many</em> loops — exactly the kind of slow, diffuse outcome a player can't see happening. If all they get is "you won on loop 14," the most important system in the game is invisible, and the satisfying part — watching their map tip the balance — never lands.</div>
+  <div class="mit"><b>Mitigation:</b> surface the two things that make it legible — the <strong>gradient field</strong> (so a seed's effect on price is immediate and spatial, cheap blooming where you placed it) and the <strong>crossover chart</strong> (so the long-run climb of production toward a fixed attrition line is a single, readable picture, loop by loop). The "why" line names each shift in plain numbers — <em>"refinery at C → forward gradient flattened, production +14"</em> — so the macro outcome is something you watch converge, not a result you're told.</div>
+</div>
+
+<p class="note" style="margin-top:1.6rem">Model + page by Panda. The economy here is illustrative of the Cartographic-Prestige reading of the VIOLET lineage — node count, band geometry, attenuation and cap constants are tuned for legibility over balance. The gradient is a real distance-attenuated diffusion in fixed-point; the crossover is the equilibrium made watchable. Prestige reaches only the map; the attrition line has no control, by design.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · VIOLET lineage — "Cartographic Prestige" · explorable explanation · runs offline from a single file.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   Cartographic Prestige — deterministic supply-map re-seeding + loop ledger.
+   No external requests. One reseedable PRNG (mulberry32), used ONLY for
+   cosmetic node jitter — NEVER for the economy. The economy itself is
+   FIXED-POINT integer arithmetic: every quantity is scaled by FP_ONE and
+   uses add / fixed-multiply (a*b>>FP_BITS, truncated) / floored-divide only,
+   so a loop is a seed and the same producers give bit-for-bit the same
+   gradient and the same two ledger lines. APR.5.
+
+   Prestige edits the PRODUCER POPULATION (the map) only. The attrition line is
+   a pure function of geometry + held territory — there is no control that
+   touches it. HAND.6 / APR.3 enforced structurally, not by convention.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) — cosmetic jitter only ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- fixed-point helpers ----------
+   FP_ONE = 1.0 in fixed point. Quantities stay modest (a few hundred × FP_ONE
+   at most), so every intermediate is well inside JS's exact-integer range
+   (2^53). Math.trunc gives round-toward-zero, symmetric for any sign. */
+const FP_BITS = 16;
+const FP_ONE  = 1 << FP_BITS;                  // 65536
+const toFP    = x => Math.round(x * FP_ONE);   // float -> fixed (setup/UI only)
+const fromFP  = x => x / FP_ONE;               // fixed -> float (display only)
+function fpmul(a, b){ return Math.trunc((a * b) / FP_ONE); }   // (a*b)>>FP_BITS
+
+/* ---------- static map: banded graph, rear(0) -> forward(3) ----------
+   FIXED topology; the seed only perturbs node positions cosmetically.
+   Forward-edge nodes (band 3) are where the war consumes (demand pull).      */
+const BANDS = 4;
+const NODE_DEFS = [
+  // band, label, x, y  (viewBox 0..660 / 0..430). x grows forward.
+  {b:0, name:"HOME",   x:64,  y:215},   // 0 — deep rear / spawn
+  {b:1, name:"AERIE",  x:198, y:108},   // 1
+  {b:1, name:"BARROW", x:198, y:322},   // 2
+  {b:2, name:"CASTOR", x:340, y:70 },   // 3  (the canonical "node C")
+  {b:2, name:"DRIFT",  x:340, y:215},   // 4
+  {b:2, name:"EAVE",   x:340, y:360},   // 5
+  {b:3, name:"FANG",   x:486, y:120},   // 6  forward edge
+  {b:3, name:"GLAIVE", x:486, y:300},   // 7  forward edge
+  {b:3, name:"HALO",   x:600, y:215},   // 8  forward edge (deepest demand)
+];
+/* undirected lanes by node index. Fixed order = deterministic distances. */
+const LANE_DEFS = [
+  [0,1],[0,2],
+  [1,3],[1,4],[2,4],[2,5],
+  [3,4],[4,5],                 // lateral midfield
+  [3,6],[4,6],[4,7],[5,7],
+  [6,7],                       // lateral forward
+  [6,8],[7,8],
+];
+const N = NODE_DEFS.length;
+const FORWARD = NODE_DEFS.map((d,i)=>d.b===BANDS-1?i:-1).filter(i=>i>=0); // [6,7,8]
+
+/* ---------- precompute all-pairs hop distances (BFS on fixed topology) ---- */
+const ADJ = NODE_DEFS.map(()=>[]);
+for (const [a,b] of LANE_DEFS){ ADJ[a].push(b); ADJ[b].push(a); }
+const DIST = NODE_DEFS.map((_,src)=>{
+  const d = new Array(N).fill(99);
+  d[src]=0; const q=[src];
+  while(q.length){
+    const u=q.shift();
+    for(const v of ADJ[u]) if(d[v]===99){ d[v]=d[u]+1; q.push(v); }
+  }
+  return d;
+});
+
+/* ---------- goods ---------- */
+const GOODS = [
+  {name:"refinery",  unit:"fuel",      col:"#a78bfa"},
+  {name:"foundry",   unit:"alloy",     col:"#22d3ee"},
+  {name:"yard",      unit:"munitions", col:"#34d399"},
+];
+
+/* ---------- economy constants (all the levers that shape the climb) -------
+   Tuned (offline, fixed-point) so geometry is the whole game and the climb is
+   reachable-but-not-trivial: deep-rear-only seeding needs ~30+ grinding loops
+   and barely crosses; a smart forward-edge build wins in ~3 (always a visible
+   climb on the ledger); a midfield build ~5. Diminishing returns are real —
+   a producer in a fresh forward node out-delivers one stacked behind a
+   saturated node. Ceiling (3 forward nodes × cap) = 48; attrition climbs
+   33 → ~40 as you hold more forward, so the last stretch recedes. */
+const ATT_HOP   = toFP(0.46);   // supply attenuation per graph hop (geometry's teeth: ~half per hop)
+const DEMAND    = toFP(34.0);   // demand pull at each forward-edge node
+const FWD_CAP   = toFP(16.0);   // per-forward-node delivery cap => diminishing returns
+const ATTR_BASE = toFP(33.0);   // attrition floor — set high up the climb so 1-2 producers can't cross
+const ATTR_CREEP= toFP(2.4);    // attrition rise per unit of "held forward territory" (the receding target)
+const SEED_BASE = 34;           // prestige cost of first producer
+const SEED_STEP = 12;           // + per producer already placed (escalation forces banking between seeds)
+const LOSS_BANK_BASE = 24;      // prestige banked per loss (the deposit, APR.4)
+const LOSS_BANK_GAP  = 0.5;     // + a share of how close you got (closer loss banks a bit more)
+const START_PRESTIGE = 42;      // you begin already holding one loss' worth — enough for the first seed
+
+/* ---------- campaign state ---------- */
+const S = {
+  prestige: START_PRESTIGE,
+  loop: 0,
+  producers: [],          // {node, good, output(fixed), loopPlaced}
+  selGood: 0,
+  selOutput: toFP(14),
+  showField: true,
+  history: [],            // per loop: {loop, prod(fixed), attr(fixed), held(fixed), crossed}
+  supply: new Array(N).fill(0),   // current fixed supply per node (recomputed on any change)
+  price:  new Array(N).fill(0),
+  jitter: [],             // cosmetic, seeded
+  log: [],
+  why: {cls:"idle", msg:""},
+  won: false, wonLoop: -1,
+  lastSeedFx: null,       // {node, dFlatPct, dProd} for the "why" line
+  flashBal: false,
+};
+
+/* ---------- core economy: supply -> price -> production / attrition -------
+   Pure function of the producer set + held geometry. Deterministic, integer. */
+function computeSupply(producers){
+  const sup = new Array(N).fill(0);
+  for (const p of producers){
+    const src = p.node;
+    for (let n=0;n<N;n++){
+      const hops = DIST[src][n];
+      if (hops>=99) continue;
+      // output * ATT_HOP^hops, all fixed-point. attPow stays fixed.
+      let attPow = FP_ONE;
+      for (let h=0;h<hops;h++) attPow = fpmul(attPow, ATT_HOP);
+      sup[n] += fpmul(p.output, attPow);
+    }
+  }
+  return sup;
+}
+function computePrice(sup){
+  const pr = new Array(N).fill(0);
+  for (let n=0;n<N;n++){
+    if (NODE_DEFS[n].b === BANDS-1){
+      const unmet = DEMAND - sup[n];           // forward edge: price = unmet demand
+      pr[n] = unmet>0 ? unmet : 0;
+    } else {
+      // interior price: a softened scarcity vs the local demand pull it relays
+      const pull = Math.trunc(DEMAND * (NODE_DEFS[n].b) / (BANDS-1)); // grows toward front
+      const unmet = pull - sup[n];
+      pr[n] = unmet>0 ? unmet : 0;
+    }
+  }
+  return pr;
+}
+/* production = supply delivered to the forward edge, each node capped (DR). */
+function computeProduction(sup){
+  let prod = 0;
+  for (const n of FORWARD){
+    prod += Math.min(sup[n], FWD_CAP);
+  }
+  return prod;
+}
+/* "held forward territory" = how much of forward demand the production meets,
+   in [0..#forward]. Drives the attrition creep (hold more => war pushes more). */
+function computeHeld(sup){
+  let held = 0;
+  for (const n of FORWARD){
+    let frac = Math.trunc(Math.min(sup[n], DEMAND) * FP_ONE / DEMAND); // 0..FP_ONE
+    held += frac;
+  }
+  return held; // fixed-point count, 0..(#forward * FP_ONE)
+}
+function computeAttrition(held){
+  // base + creep * held(units). held is fixed already representing a count.
+  return ATTR_BASE + fpmul(ATTR_CREEP, held);
+}
+
+/* recompute everything from the current producer set */
+function recompute(){
+  S.supply = computeSupply(S.producers);
+  S.price  = computePrice(S.supply);
+}
+
+/* ---------- seeding (spend prestige to instantiate a producer) ---------- */
+function seedCost(){ return SEED_BASE + SEED_STEP * S.producers.length; }
+
+function seedProducer(node){
+  if (S.won) return;
+  const cost = seedCost();
+  if (S.prestige < cost){
+    flashNope();
+    S.why = {cls:"idle", msg:"Not enough prestige to seed here. Cost is <b>"+cost+"</b>; you hold <b>"+S.prestige+"</b>. Run a loop to bank more from the loss."};
+    render(); return;
+  }
+  // measure the seed's effect for the "why" line: forward-edge gradient before/after
+  const beforeSup = S.supply.slice();
+  const beforeFwdPrice = forwardPriceSum(beforeSup);
+  const beforeProd = computeProduction(beforeSup);
+
+  S.prestige -= cost;
+  const g = GOODS[S.selGood];
+  S.producers.push({ node, good:S.selGood, output:S.selOutput, loopPlaced:S.loop });
+  recompute();
+
+  const afterFwdPrice = forwardPriceSum(S.supply);
+  const afterProd = computeProduction(S.supply);
+  // gradient "flattening" at the forward edge, as a percent drop in unmet demand
+  let flatPct = 0;
+  if (beforeFwdPrice > 0) flatPct = Math.round((1 - afterFwdPrice / beforeFwdPrice) * 100);
+  if (flatPct < 0) flatPct = 0;
+  const dProd = afterProd - beforeProd;
+  S.lastSeedFx = {node, flatPct, dProd};
+
+  const nm = NODE_DEFS[node].name;
+  const band = ["deep rear","midfield","midfield","forward edge"][NODE_DEFS[node].b];
+  S.why = {
+    cls:"act",
+    msg:"Seeded a <b>"+g.name+"</b> ("+g.unit+", "+fromFP(S.selOutput).toFixed(0)+"/unit) at <b>"+nm+"</b> ("+band+") → forward gradient flattened <span class='up'>"+flatPct+"%</span>, sustainable throughput <span class='up'>"+(dProd>=0?"+":"")+fromFP(dProd).toFixed(1)+"</span>."
+  };
+  pushLog("seed", S.loop, "SEED — "+g.name+" @ "+nm+" ("+band+"), output "+fromFP(S.selOutput).toFixed(0)+", cost "+cost+"p. Gradient re-flowed; fwd −"+flatPct+"%.");
+  render();
+}
+/* sum of unmet-demand (price) across the forward edge — the gradient we flatten */
+function forwardPriceSum(sup){
+  let s=0;
+  for (const n of FORWARD){ const u = DEMAND - sup[n]; s += (u>0?u:0); }
+  return s;
+}
+
+/* ---------- run a loop (the loss banks prestige; equilibrium advances) ----
+   In MSL a run ends in an overrun. Here we don't re-simulate the whole run:
+   we evaluate the EQUILIBRIUM the current map sustains this loop, record it,
+   bank the loss as prestige, and advance the loop counter. The "win" is when
+   the map's sustainable production meets the (geometry-driven) attrition. */
+function runLoop(){
+  if (S.won) return;
+  S.loop++;
+  recompute();
+  const prod  = computeProduction(S.supply);
+  const held  = computeHeld(S.supply);
+  const attr  = computeAttrition(held);
+  const crossed = prod >= attr;
+
+  S.history.push({loop:S.loop, prod, attr, held, crossed});
+
+  if (crossed && !S.won){
+    S.won = true; S.wonLoop = S.loop;
+    S.why = {cls:"win", msg:"<b>The front holds.</b> Sustainable production <span class='up'>"+fromFP(prod).toFixed(1)+"</span> ≥ attrition <span class='dn'>"+fromFP(attr).toFixed(1)+"</span> — the equilibrium tipped. You won the campaign sideways, one producer at a time. You never touched the war."};
+    pushLog("win", S.loop, "CROSSOVER — production "+fromFP(prod).toFixed(1)+" ≥ attrition "+fromFP(attr).toFixed(1)+". The front holds. Campaign won (sideways).");
+    render();
+    return;
+  }
+
+  // bank prestige from the loss — the deposit (APR.4). Closer losses bank a touch more.
+  const gap = attr - prod;                          // fixed, >0 here
+  const closeness = Math.max(0, 1 - fromFP(gap)/fromFP(attr));   // 0..1
+  const bank = Math.round(LOSS_BANK_BASE + LOSS_BANK_BASE * LOSS_BANK_GAP * closeness);
+  S.prestige += bank; S.flashBal = true;
+
+  const gapTxt = fromFP(gap).toFixed(1);
+  S.why = {
+    cls:"act",
+    msg:"Loop "+S.loop+" lost (as every run does). Banked <b>+"+bank+" prestige</b>. Production <span class='up'>"+fromFP(prod).toFixed(1)+"</span> vs attrition <span class='dn'>"+fromFP(attr).toFixed(1)+"</span> — gap <b>"+gapTxt+"</b> still to close. Seed closer to the forward edge."
+  };
+  pushLog("loop", S.loop, "LOOP "+S.loop+" — overrun. prod "+fromFP(prod).toFixed(1)+" / attr "+fromFP(attr).toFixed(1)+" (gap "+gapTxt+"). Banked +"+bank+"p.");
+  render();
+}
+
+/* ---------- reset ---------- */
+function resetCampaign(){
+  S.prestige = START_PRESTIGE;
+  S.loop = 0;
+  S.producers = [];
+  S.history = [];
+  S.won = false; S.wonLoop = -1;
+  S.lastSeedFx = null;
+  S.log = [];
+  // cosmetic jitter, seeded & stable for the session's map look
+  const rnd = mulberry32(0x5EED1234);
+  S.jitter = NODE_DEFS.map(()=>({ jx:(rnd()-0.5)*10, jy:(rnd()-0.5)*10 }));
+  recompute();
+  S.why = {cls:"idle", msg:"Campaign reset. You hold "+START_PRESTIGE+" prestige from prior losses. Seed a producer, then run a loop."};
+  pushLog("sys", 0, "Campaign reset — theatre VIOLET. "+N+" systems, fixed-point economy. Prestige edits the map only.");
+  render();
+}
+
+/* ---------- display helpers ---------- */
+function pushLog(cls, t, msg){
+  S.log.unshift({cls, t, msg});
+  if (S.log.length > 80) S.log.pop();
+}
+
+/* price -> heat ramp position 0..1 (cheap/met -> dear/unmet) */
+function priceNorm(n){
+  // normalise against this node's own demand pull so colours read consistently
+  const denom = NODE_DEFS[n].b===BANDS-1 ? DEMAND : Math.max(1, Math.trunc(DEMAND*NODE_DEFS[n].b/(BANDS-1)));
+  let t = fromFP(S.price[n]) / fromFP(denom);
+  if (t<0) t=0; if (t>1) t=1;
+  return t;
+}
+/* supply -> a "fullness" 0..1 for node sizing */
+function supplyNorm(n){
+  let t = fromFP(S.supply[n]) / fromFP(DEMAND);
+  if (t<0) t=0; if (t>1.2) t=1.2;
+  return t;
+}
+/* heat ramp: cyan(cheap) -> green -> amber -> pink(dear) across t in [0,1] */
+function heatColor(t){
+  const stops = [
+    [0.00, [34,211,238]],   // --cheap
+    [0.40, [52,211,153]],   // --easy
+    [0.74, [251,191,36]],   // --tight
+    [1.00, [244,114,182]]   // --dear
+  ];
+  for (let i=0;i<stops.length-1;i++){
+    const [t0,c0]=stops[i], [t1,c1]=stops[i+1];
+    if (t<=t1){
+      const f=(t-t0)/(t1-t0||1);
+      const r=Math.round(c0[0]+(c1[0]-c0[0])*f);
+      const g=Math.round(c0[1]+(c1[1]-c0[1])*f);
+      const b=Math.round(c0[2]+(c1[2]-c0[2])*f);
+      return "rgb("+r+","+g+","+b+")";
+    }
+  }
+  return "rgb(244,114,182)";
+}
+
+/* ====================== RENDERING ====================== */
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function render(){
+  $("clk").textContent = S.loop;
+  $("bal").textContent = S.prestige;
+  if (S.flashBal){ const b=$("bal"); b.classList.remove("flash"); void b.offsetWidth; b.classList.add("flash"); S.flashBal=false; }
+  $("seedCost").textContent = seedCost();
+
+  const phase = computePhase();
+  const pb = $("phaseBadge");
+  pb.className = "phasebadge " + phase.cls;
+  pb.textContent = phase.label;
+
+  renderField();
+  renderLedger();
+  renderReadouts();
+  renderRoster();
+  renderWhy();
+  renderLog();
+
+  // good buttons reflect selection
+  document.querySelectorAll(".goodbtn").forEach(btn=>{
+    btn.classList.toggle("on", (+btn.dataset.good)===S.selGood);
+  });
+  $("btnField").textContent = S.showField ? "◇ Hide gradient field" : "◆ Show gradient field";
+  $("btnField").classList.toggle("on", !S.showField);
+
+  $("btnLoop").disabled = S.won;
+}
+
+function computePhase(){
+  if (S.won) return {cls:"held", label:"FRONT HOLDS ✓"};
+  if (S.history.length===0) return {cls:"losing", label:"FRONT FALLING"};
+  const h = S.history[S.history.length-1];
+  const ratio = fromFP(h.prod)/fromFP(h.attr);
+  if (ratio >= 0.92) return {cls:"nearing", label:"NEARING CROSSOVER"};
+  if (ratio >= 0.55) return {cls:"climbing", label:"PRODUCTION CLIMBING"};
+  return {cls:"losing", label:"FRONT FALLING"};
+}
+
+/* ---- the supply map (graph + gradient field) ---- */
+function renderField(){
+  const svg = $("field"); svg.innerHTML = "";
+
+  const defs = el("defs",{},svg);
+  const glow = el("filter",{id:"pGlow",x:"-60%",y:"-60%",width:"220%",height:"220%"},defs);
+  el("feGaussianBlur",{stdDeviation:"3.4",result:"b"},glow);
+  const mrg = el("feMerge",{},glow);
+  el("feMergeNode",{in:"b"},mrg); el("feMergeNode",{in:"SourceGraphic"},mrg);
+
+  const P = i => ({x:NODE_DEFS[i].x + S.jitter[i].jx, y:NODE_DEFS[i].y + S.jitter[i].jy});
+
+  // --- gradient field: soft radial halos per node, coloured by price (optional) ---
+  if (S.showField){
+    for (let n=0;n<N;n++){
+      const p=P(n);
+      const t=priceNorm(n);
+      const col=heatColor(t);
+      // larger, faint disc = the local gradient pool; cheap nodes glow cyan, dear glow pink
+      el("circle",{cx:p.x,cy:p.y,r:46,fill:col,opacity:0.13},svg);
+      el("circle",{cx:p.x,cy:p.y,r:30,fill:col,opacity:0.13},svg);
+    }
+  }
+
+  // band guide labels
+  const bandNames=["REAR","","","FRONT"];
+  for(let bnd=0;bnd<BANDS;bnd++){
+    if(!bandNames[bnd]) continue;
+    const xs=NODE_DEFS.filter(d=>d.b===bnd).map(d=>d.x);
+    const mx=xs.reduce((a,c)=>a+c,0)/xs.length;
+    const tx=el("text",{x:mx,y:22,"text-anchor":"middle",class:"svg-tip"},svg);
+    tx.textContent=bandNames[bnd];
+  }
+
+  // --- lanes (under nodes) ---
+  for (const [a,b] of LANE_DEFS){
+    const pa=P(a), pb=P(b);
+    const tm=(priceNorm(a)+priceNorm(b))/2;
+    el("line",{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:heatColor(tm),
+      "stroke-width":1.4,opacity:.28,"stroke-linecap":"round"},svg);
+  }
+
+  // forward-edge demand marker
+  el("text",{x:600,y:418,"text-anchor":"middle",class:"svg-tip",fill:"var(--attr)"},svg)
+    .textContent="▶ the war consumes here";
+
+  // --- nodes ---
+  for (let n=0;n<N;n++){
+    const p=P(n);
+    const g = el("g",{},svg);
+    const t=priceNorm(n);
+    const col=heatColor(t);
+    const isFwd = NODE_DEFS[n].b===BANDS-1;
+    const prodHere = S.producers.filter(pp=>pp.node===n);
+
+    // forward-edge nodes get a rose ring to mark them as demand sinks
+    if (isFwd){
+      el("circle",{cx:p.x,cy:p.y,r:18,fill:"none",stroke:"var(--attr)","stroke-width":1.2,opacity:.45,"stroke-dasharray":"2 3"},g);
+    }
+
+    // base disc, coloured by price gradient; grows a touch with supply on hand
+    const r = 11 + Math.min(5, supplyNorm(n)*4.5);
+    const c = el("circle",{cx:p.x,cy:p.y,r,fill:col,stroke:"var(--ink-950)","stroke-width":2,
+      opacity:.92, cursor:"pointer"},g);
+    if (t>0.82){ c.setAttribute("filter","url(#pGlow)"); } // dear nodes glow
+
+    // producer diamonds stacked on the node (your infrastructure)
+    prodHere.forEach((pp,k)=>{
+      const gd=GOODS[pp.good];
+      const off = k*7 - (prodHere.length-1)*3.5;
+      const dx=p.x+off, dy=p.y - r - 9;
+      const d2=5.5;
+      el("path",{d:`M ${dx} ${dy-d2} L ${dx+d2} ${dy} L ${dx} ${dy+d2} L ${dx-d2} ${dy} Z`,
+        fill:gd.col,stroke:"var(--ink-950)","stroke-width":1.2,opacity:.95},g);
+    });
+
+    // label
+    const tnm=el("text",{x:p.x,y:p.y+r+11,"text-anchor":"middle",class:"svg-tip",
+      fill: t>0.82?"var(--dear)":"var(--fog-500)","font-size":8.5},g);
+    tnm.textContent=NODE_DEFS[n].name;
+
+    // hit target for easy clicking
+    const hit=el("circle",{cx:p.x,cy:p.y,r:r+9,fill:"transparent",cursor:"pointer"},g);
+    const onClick=(ev)=>{ ev.stopPropagation(); seedProducer(n); };
+    hit.addEventListener("click",onClick);
+    c.addEventListener("click",onClick);
+  }
+}
+
+/* ---- the loop ledger chart ---- */
+function renderLedger(){
+  const svg = $("ledger"); svg.innerHTML = "";
+  const W=380, H=200, padL=30, padR=12, padT=14, padB=22;
+  const x0=padL, x1=W-padR, y0=H-padB, y1=padT;
+
+  // y-scale: 0 .. a headroom above the max attrition we've seen (or a sane default)
+  let ymax = fromFP(ATTR_BASE) * 1.5;
+  for (const h of S.history){ ymax = Math.max(ymax, fromFP(h.attr), fromFP(h.prod)); }
+  ymax = Math.ceil((ymax*1.08)/10)*10;
+  // x-scale: at least 8 loops wide so early loops don't span the whole chart
+  const nLoops = Math.max(8, S.history.length);
+
+  const X = i => x0 + (x1-x0) * (i/(nLoops));
+  const Y = v => y0 - (y0-y1) * (v/ymax);
+
+  // grid + axis
+  el("line",{x1:x0,y1:y0,x2:x1,y2:y0,stroke:"var(--line)","stroke-width":1},svg);
+  el("line",{x1:x0,y1:y0,x2:x0,y2:y1,stroke:"var(--line)","stroke-width":1},svg);
+  for (let gy=0; gy<=ymax; gy+=Math.max(10,Math.round(ymax/4/10)*10)){
+    const yy=Y(gy);
+    el("line",{x1:x0,y1:yy,x2:x1,y2:yy,stroke:"rgba(255,255,255,.04)","stroke-width":1},svg);
+    const tl=el("text",{x:x0-4,y:yy+3,"text-anchor":"end",class:"svg-tip","font-size":7},svg);
+    tl.textContent=gy;
+  }
+  // x labels (loops)
+  for (let i=0;i<=nLoops;i+=Math.max(1,Math.round(nLoops/6))){
+    const tl=el("text",{x:X(i),y:y0+12,"text-anchor":"middle",class:"svg-tip","font-size":7},svg);
+    tl.textContent=i;
+  }
+  el("text",{x:(x0+x1)/2,y:H-3,"text-anchor":"middle",class:"svg-tip","font-size":7.5,fill:"var(--fog-500)"},svg)
+    .textContent="loops elapsed →";
+
+  if (S.history.length===0){
+    el("text",{x:(x0+x1)/2,y:(y0+y1)/2,"text-anchor":"middle",class:"svg-tip","font-size":9,fill:"var(--fog-500)"},svg)
+      .textContent="run a loop to plot production vs attrition";
+    return;
+  }
+
+  // attrition line (rose) — the fixed war (rises with held territory)
+  let dAttr="", dProd="";
+  S.history.forEach((h,k)=>{
+    const xx=X(h.loop), ya=Y(fromFP(h.attr)), yp=Y(fromFP(h.prod));
+    dAttr += (k===0?"M":"L")+xx+" "+ya+" ";
+    dProd += (k===0?"M":"L")+xx+" "+yp+" ";
+  });
+  // start both lines from loop 0 baseline for a cleaner read
+  const h0=S.history[0];
+  dAttr = "M"+X(0)+" "+Y(fromFP(ATTR_BASE))+" " + dAttr;
+  dProd = "M"+X(0)+" "+Y(0)+" " + dProd;
+
+  el("path",{d:dAttr,fill:"none",stroke:"var(--attr)","stroke-width":2,opacity:.9,"stroke-dasharray":"4 3"},svg);
+  el("path",{d:dProd,fill:"none",stroke:"var(--prod)","stroke-width":2.4,opacity:.95},svg);
+
+  // points
+  S.history.forEach(h=>{
+    el("circle",{cx:X(h.loop),cy:Y(fromFP(h.attr)),r:2,fill:"var(--attr)"},svg);
+    el("circle",{cx:X(h.loop),cy:Y(fromFP(h.prod)),r:2.6,fill:"var(--prod)"},svg);
+  });
+
+  // crossover marker
+  if (S.won && S.wonLoop>0){
+    const h = S.history.find(x=>x.loop===S.wonLoop) || S.history[S.history.length-1];
+    const xx=X(h.loop), yy=Y(fromFP(h.prod));
+    el("circle",{cx:xx,cy:yy,r:6,fill:"none",stroke:"var(--prod)","stroke-width":2},svg);
+    el("circle",{cx:xx,cy:yy,r:10,fill:"none",stroke:"var(--prod)","stroke-width":1,opacity:.5},svg);
+    const tx=el("text",{x:Math.min(xx,x1-40),y:Math.max(yy-12,y1+8),"text-anchor":"middle","font-size":8,
+      fill:"var(--prod)","font-family":"var(--font-mono)","font-weight":"700"},svg);
+    tx.textContent="FRONT HOLDS";
+  }
+
+  // legend
+  el("rect",{x:x1-92,y:y1+1,width:90,height:26,rx:4,fill:"rgba(7,8,12,.7)",stroke:"var(--line)"},svg);
+  el("line",{x1:x1-86,y1:y1+9,x2:x1-74,y2:y1+9,stroke:"var(--prod)","stroke-width":2.4},svg);
+  el("text",{x:x1-70,y:y1+12,class:"svg-tip","font-size":7,fill:"var(--prod)"},svg).textContent="production";
+  el("line",{x1:x1-86,y1:y1+20,x2:x1-74,y2:y1+20,stroke:"var(--attr)","stroke-width":2,"stroke-dasharray":"4 3"},svg);
+  el("text",{x:x1-70,y:y1+23,class:"svg-tip","font-size":7,fill:"var(--attr)"},svg).textContent="attrition";
+}
+
+/* ---- numeric readouts + gap bar ---- */
+function renderReadouts(){
+  // evaluate the CURRENT map (post any seeding) so readouts react before a loop runs
+  recompute();
+  const prod = computeProduction(S.supply);
+  const held = computeHeld(S.supply);
+  const attr = computeAttrition(held);
+
+  $("kvProd").textContent = fromFP(prod).toFixed(1);
+  $("kvAttr").textContent = fromFP(attr).toFixed(1);
+  $("kvProducers").textContent = S.producers.length;
+
+  const gap = attr - prod;
+  if (S.won){
+    $("kvGap").innerHTML = "<span style='color:var(--prod)'>closed ✓ — front holds</span>";
+  } else if (gap<=0){
+    $("kvGap").innerHTML = "<span style='color:var(--prod)'>met — run a loop to confirm</span>";
+  } else {
+    $("kvGap").textContent = fromFP(gap).toFixed(1)+" to close";
+  }
+
+  // gap bar: production fill vs attrition mark, scaled to a common max
+  const scaleMax = Math.max(fromFP(attr)*1.25, fromFP(prod)*1.1, fromFP(ATTR_BASE)*1.4);
+  $("gapMaxLbl").textContent = scaleMax.toFixed(0);
+  const prodPct = Math.min(100, fromFP(prod)/scaleMax*100);
+  const attrPct = Math.min(100, fromFP(attr)/scaleMax*100);
+  $("gapProd").style.width = prodPct+"%";
+  $("gapAttr").style.left = attrPct+"%";
+  $("gapAttrCap").style.left = attrPct+"%";
+}
+
+/* ---- producer roster ---- */
+function renderRoster(){
+  const host=$("roster"); host.innerHTML="";
+  if (!S.producers.length){
+    const r=document.createElement("div"); r.className="rosrow none";
+    r.textContent="no producers yet — click a node on the map to seed one";
+    host.appendChild(r); return;
+  }
+  // newest first
+  for (let i=S.producers.length-1;i>=0;i--){
+    const p=S.producers[i]; const gd=GOODS[p.good]; const nm=NODE_DEFS[p.node].name;
+    const band=["rear","mid","mid","fwd"][NODE_DEFS[p.node].b];
+    const row=document.createElement("div"); row.className="rosrow";
+    const sw=document.createElement("span"); sw.className="sw"; sw.style.background=gd.col; sw.style.transform="rotate(45deg)";
+    const a=document.createElement("span"); a.className="nm"; a.textContent=gd.name+" @ "+nm;
+    const b=document.createElement("span"); b.className="meta"; b.textContent=fromFP(p.output).toFixed(0)+"/u · "+band+" · L"+p.loopPlaced;
+    row.appendChild(sw); row.appendChild(a); row.appendChild(b);
+    host.appendChild(row);
+  }
+}
+
+function renderWhy(){
+  const w=$("why");
+  w.className = "why " + (S.why.cls==="idle"?"idle":"");
+  $("whyMsg").innerHTML = S.why.msg;
+}
+
+function renderLog(){
+  const host=$("log"); host.innerHTML="";
+  S.log.forEach(l=>{
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML="<span class='t'>L"+String(l.t).padStart(2," ")+"</span> <span class='"+l.cls+"'>"+l.msg+"</span>";
+    host.appendChild(ln);
+  });
+}
+
+/* ====================== INTERACTION FX ====================== */
+let nopeTimer=null;
+function flashNope(){
+  const n=$("nope"); n.classList.add("show");
+  if(nopeTimer) clearTimeout(nopeTimer);
+  nopeTimer=setTimeout(()=>n.classList.remove("show"), 1100);
+}
+
+/* ====================== WIRING ====================== */
+function wire(){
+  $("btnLoop").addEventListener("click", runLoop);
+  $("btnReset").addEventListener("click", resetCampaign);
+  $("btnField").addEventListener("click", ()=>{ S.showField=!S.showField; render(); });
+
+  document.querySelectorAll(".goodbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ S.selGood=+btn.dataset.good; render(); });
+  });
+  $("sOut").addEventListener("input", e=>{
+    const v=+e.target.value; S.selOutput=toFP(v);
+    $("vOut").textContent = v+" / unit";
+  });
+
+  // keyboard niceties
+  document.addEventListener("keydown", e=>{
+    if (e.target.tagName==="INPUT") return;
+    if (e.key==="Enter"){ e.preventDefault(); runLoop(); }
+    else if (e.key==="r"||e.key==="R"){ resetCampaign(); }
+    else if (e.key==="f"||e.key==="F"){ S.showField=!S.showField; render(); }
+    else if (e.key>="1" && e.key<="3"){ S.selGood=(+e.key)-1; render(); }
+  });
+}
+
+/* ---------- boot ---------- */
+wire();
+resetCampaign();
+</script>
+</body>
+</html>

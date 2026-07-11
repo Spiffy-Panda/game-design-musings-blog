@@ -1,0 +1,93 @@
+{
+  "slug": "enemy-attack-schedule",
+  "title": "Reading the Offensive",
+  "accent": "#fb7185",
+  "good": "#34d399",
+  "bad": "#fb7185",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · HAND — M2, the known war",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.8,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. Reading the offensive. The enemy could strike a dozen places a dozen ways, but it always strikes them in the same learnable order."
+    },
+    {
+      "id": "02-recite",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the known war",
+      "headline": "A veteran doesn't fight the war. She recites it.",
+      "body": "A first run is blind. A tenth run is a heist you've already cased &mdash; same first strike, same gates, same fork points. Yet the take is never the same twice, because your own coverage choices start rewriting the script.",
+      "narration": "A first run is blind. A tenth run is a heist you've already cased: the same first strike, the same gates, the same fork points. A veteran doesn't fight the war, she recites it. And yet the take is never the same twice, because her own coverage choices start to rewrite the script."
+    },
+    {
+      "id": "03-book",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the opening book",
+      "headline": "Memorised opening, your fork, pure-pressure close.",
+      "diagram": "opening_book",
+      "narration": "Run the same seed twice and the plan is identical: same opening, same gates. But the moment you choose HOLD instead of LET FALL, the branch flips, and a different operation queues next. Two veterans who memorised the same opening diverge the instant their choices differ. The script is shared; the playthrough is yours."
+    },
+    {
+      "id": "04-seam",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the seam in mastery",
+      "headline": "Recall gets you through the opening. Play gets you through the close.",
+      "body": "Watch the phase badge. While it reads <span style=\"color:#bfdbfe\">SCRIPTED OPENING</span> you're inside the book &mdash; every strike is a keyframe you could have known. When it flips to <span style=\"color:#fecdd3\">PURE-PRESSURE ENDGAME</span>, the keyframes are spent and no amount of memorising helps.",
+      "narration": "Watch the phase badge. While it reads scripted opening, you're inside the book, and every strike is a keyframe you could have known. When it flips to pure-pressure endgame, the keyframes are spent. The front now advances on accumulated pressure alone. That's the deliberate seam between the two halves of mastery."
+    },
+    {
+      "id": "05-fog",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the fog map",
+      "headline": "Unknown is not random.",
+      "diagram": "fog_map",
+      "narration": "Notice the fog map. Keyframes you haven't reached read as unobserved, not as noise. The schedule is fully determined from the seed; you just haven't seen it yet. A fresh player's ignorance is missing knowledge, never randomness. That's what makes the war learnable, and run-over-run mastery the real game."
+    },
+    {
+      "id": "06-risks",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it can rot",
+      "headline": "Two named risks, both already answered.",
+      "bullets": [
+        "<b>Memorisation beats mastery</b> &mdash; defeated by a <em>seed-family</em> that reshuffles the book, and a script that runs out into the endgame.",
+        "<b>Determinism rot</b> &mdash; one stray random call and the cased heist desyncs.",
+        "<b>The fix</b> &mdash; one reseedable PRNG, integer-tick gates, fixed iteration order. Replay the seed in CI and diff the log."
+      ],
+      "narration": "Two ways this can rot. First, memorisation beating mastery: if the opening never changes, skill collapses into rote recall. The model answers that with a seed-family that reshuffles the book, and a script that runs out into the endgame. Second, determinism rot: one stray random call and the cased heist desyncs. The fix is one reseedable generator, integer-tick gates, and fixed iteration order."
+    },
+    {
+      "id": "07-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to read it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the schedule, or single-step each operation.",
+        "<b>HOLD / LET FALL</b> &mdash; your coverage choice at each gate; it flips the active branch.",
+        "<b>The ROSE-#### seed</b> &mdash; reseed the book; same seed always replays the same war.",
+        "<b>Phase badge & fog map</b> &mdash; watch the opening spend into the endgame, and the unknown resolve."
+      ],
+      "narration": "Drive it yourself. Press Play to run the schedule, or Step through each operation. At every gate, choose HOLD to cover it or LET FALL, and watch the branch flip. Change the ROSE seed to reseed the whole book, then replay it for the exact same war. Watch the phase badge and fog map as the opening spends out."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "Reading the Offensive",
+      "body": "The enemy schedules attrition, it does not trade &middot; deterministic, seeded, one file, offline.",
+      "narration": "The enemy schedules attrition; it does not trade. Deterministic, seeded, and it runs offline from a single file."
+    }
+  ]
+}

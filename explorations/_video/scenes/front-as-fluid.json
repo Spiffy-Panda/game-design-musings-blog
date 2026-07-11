@@ -1,0 +1,94 @@
+{
+  "slug": "front-as-fluid",
+  "title": "The Tide Line",
+  "accent": "#fb7185",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · ROSE — the front as a fluid",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The Tide Line. The front is not a schedule and not a market. It's a pressure field that floods wherever you stop bailing."
+    },
+    {
+      "id": "02-fluid",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the front as a fluid",
+      "headline": "You aren't fighting a clock. You're bailing a boat.",
+      "body": "Enemy <strong style=\"color:#fb7185\">pressure</strong> seeps inward from the forward rim every tick, like water finding low ground. Your <strong style=\"color:#38bdf8\">cargo</strong> is supply &mdash; the only thing holding the line. Stop bailing and the tide floods inward, band by band.",
+      "narration": "Pressure pours in at the forward rim every tick and seeps inland like water. Your cargo is the only thing holding it back. Stop supplying, and the tide eats the graph from the rim home."
+    },
+    {
+      "id": "03-model",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "two scalars, one Laplacian",
+      "headline": "Three rules, on a fixed tick.",
+      "bullets": [
+        "<b>Diffusion</b> &mdash; supply and pressure both spread to lane-neighbours, a graph-Laplacian step toward the local average.",
+        "<b>Reaction</b> &mdash; where your supply meets pressure, it burns the pressure down and spends itself doing it.",
+        "<b>Rupture</b> &mdash; when net pressure minus supply crosses the threshold, a node breaks, cuts its lanes, and dumps pressure inward.",
+        "<b>Fixed-point</b> &mdash; every scalar is an integer, so a run is just a seed, bit for bit."
+      ],
+      "narration": "Each system holds two numbers, supply and pressure. Both diffuse to neighbours. Where they meet, supply burns pressure. Cross the threshold and the node ruptures, cutting lanes and flooding inward."
+    },
+    {
+      "id": "04-rupture",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "why a loss hurts",
+      "headline": "A starved sector cuts the lanes behind you.",
+      "body": "When a node ruptures, its lanes leave the graph and its pressure dumps into the neighbours <em>behind</em> it. You don't just lose ground &mdash; you lose the ground under your own supply line, and the breach can <strong style=\"color:#f87171\">cascade</strong> rearward.",
+      "narration": "When a node ruptures it severs the path your cargo was taking, and the pressure it held floods toward the rear you thought was safe. One breach can cascade inward, one hop per tick."
+    },
+    {
+      "id": "05-triage",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the skill it asks for",
+      "headline": "Triage under diffusion.",
+      "body": "Cargo dropped <strong>early</strong> spreads to cover several neighbours before they tighten &mdash; you bend the field while it's soft. Dropped <strong>late</strong>, after a node's net has crossed, it's a bucket against a broken dam. Watch the nodes-at-risk readout: it names where the gradient is about to win.",
+      "narration": "Drop cargo early and it diffuses to cover several nodes before they tighten. Drop it late and you're bailing a dam that already broke. The nodes-at-risk list tells you where the tide is about to win."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic field, or single-step one tick.",
+        "<b>Click any live node</b> &mdash; drop cargo there; you're the hauler holding the line.",
+        "<b>Stop supplying</b> &mdash; take your hands off and watch the tide take the whole graph.",
+        "<b>The dials</b> &mdash; diffusion D, front intensity, rupture threshold, drop size; plus the seed."
+      ],
+      "narration": "Press Play, or Step one tick. Click any live node to drop cargo and push the tide back locally. Flip Stop supplying to watch it flood. Work the four dials and the seed; same seed, same field."
+    },
+    {
+      "id": "07-D",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the whole game in one slider",
+      "headline": "Turn D up, the war smears; turn it down, it clots.",
+      "body": "High <code>D</code> makes one smooth sheet: easy to read, hard to hold, because your cargo smears thin the instant it lands. Low <code>D</code> clots into sharp pockets: drops stay potent, but a starved node can spike past the threshold before its neighbours feel a thing.",
+      "narration": "Crank the diffusion dial and the field becomes one smooth sheet your cargo can't hold. Drop it low and the field clots into sharp pockets where a single node can rupture before anyone nearby notices."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Tide Line",
+      "body": "The front is a fluid you bend, not a book you learn &middot; deterministic, seeded, one file, offline.",
+      "narration": "The front is a fluid you bend with cargo, not a timeline you memorise. Reaction-diffusion on a graph, deterministic and seeded, running offline from a single file."
+    }
+  ]
+}

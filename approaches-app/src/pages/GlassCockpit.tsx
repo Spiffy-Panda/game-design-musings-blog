@@ -37,7 +37,13 @@ export default function GlassCockpit() {
       }
       backHref="../"
       backLabel="Approaches"
-      crumb="Minimalist Space Logistics"
+      crumbs={[
+        { label: "Panda's Portfolio", href: "https://spiffy-panda.github.io/" },
+        { label: "Game Design Musings", href: "../../../../index.html" },
+        { label: "Minimalist Space Logistics", href: "../../" },
+        { label: "Approaches", href: "../" },
+        { label: "The Glass Cockpit" },
+      ]}
     >
       <Section title="The spark">
         <Lead>

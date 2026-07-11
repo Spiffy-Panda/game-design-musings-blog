@@ -1,0 +1,94 @@
+{
+  "slug": "contract-board",
+  "title": "The Contract Board",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · R.4 — the faction board",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The Contract Board. A quiet board is not the quest list drying up. It's a war going broke, telling you in the only language it has."
+    },
+    {
+      "id": "02-board-is-readout",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the board is the readout",
+      "headline": "The board is a live X-ray of a war you never see.",
+      "body": "You run <strong>one hauler</strong>. The faction posts the work. Every contract is a coin the treasury could spare and a hole at the front it needs plugged. Read as a whole, the board is the faction AI's <em>entire</em> external surface.",
+      "narration": "You run one hauler, and the faction posts the work. Every contract is a coin the treasury could spare and a hole at the front it needs plugged. Read as a whole, the board is a live X-ray of a war you never see directly."
+    },
+    {
+      "id": "03-treasury-sideways",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the treasury, drawn sideways",
+      "headline": "Generosity is the treasury, expressed as offers.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><rect x=\"80\" y=\"60\" width=\"320\" height=\"110\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#f59e0b\" stroke-width=\"2\"/><text x=\"240\" y=\"100\" text-anchor=\"middle\" font-size=\"22\" fill=\"#f59e0b\">TREASURY</text><text x=\"240\" y=\"138\" text-anchor=\"middle\" font-size=\"18\" fill=\"#c4c9d8\">one number</text><line x1=\"400\" y1=\"115\" x2=\"540\" y2=\"115\" stroke=\"#c4c9d8\" stroke-width=\"2\"/><text x=\"470\" y=\"100\" text-anchor=\"middle\" font-size=\"18\" fill=\"#c4c9d8\">greedy fill</text><rect x=\"540\" y=\"40\" width=\"560\" height=\"460\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#2a3146\" stroke-width=\"2\"/><text x=\"820\" y=\"72\" text-anchor=\"middle\" font-size=\"20\" fill=\"#9aa1b6\">THE BOARD</text><rect x=\"570\" y=\"95\" width=\"500\" height=\"50\" rx=\"6\" fill=\"#141826\" stroke=\"#f59e0b\"/><text x=\"600\" y=\"126\" font-size=\"18\" fill=\"#f59e0b\">Munitions</text><text x=\"1040\" y=\"126\" text-anchor=\"end\" font-size=\"18\" fill=\"#f59e0b\">1600 cr</text><rect x=\"570\" y=\"160\" width=\"500\" height=\"50\" rx=\"6\" fill=\"#141826\" stroke=\"#60a5fa\"/><text x=\"600\" y=\"191\" font-size=\"18\" fill=\"#60a5fa\">Drone cores</text><text x=\"1040\" y=\"191\" text-anchor=\"end\" font-size=\"18\" fill=\"#60a5fa\">1400 cr</text><rect x=\"570\" y=\"225\" width=\"500\" height=\"50\" rx=\"6\" fill=\"#141826\" stroke=\"#34d399\"/><text x=\"600\" y=\"256\" font-size=\"18\" fill=\"#34d399\">Rations</text><text x=\"1040\" y=\"256\" text-anchor=\"end\" font-size=\"18\" fill=\"#34d399\">620 cr</text><rect x=\"570\" y=\"290\" width=\"500\" height=\"50\" rx=\"6\" fill=\"#141826\" stroke=\"#2a3146\"/><text x=\"600\" y=\"321\" font-size=\"18\" fill=\"#9aa1b6\">Spare parts</text><text x=\"1040\" y=\"321\" text-anchor=\"end\" font-size=\"18\" fill=\"#9aa1b6\">760 cr</text><text x=\"820\" y=\"400\" text-anchor=\"middle\" font-size=\"17\" fill=\"#9aa1b6\">funded only while the slice</text><text x=\"820\" y=\"428\" text-anchor=\"middle\" font-size=\"17\" fill=\"#9aa1b6\">above the floor can pay</text></svg>",
+      "narration": "Nobody hand-authors this list. Each cycle the faction does one cheap thing: a budget-constrained greedy fill. A fat treasury floods the board; a thin one posts a short, lean, military-first list. Generosity is the treasury, drawn as offers."
+    },
+    {
+      "id": "04-early-warning",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the read this teaches",
+      "headline": "A thinning, military-skewing board is an early-warning system.",
+      "body": "As the treasury drains, the board fails in order: first the <strong>generals get cut</strong>, then <strong>payouts shrink</strong>, then the <strong>count collapses</strong>. All military, all small, all urgent means a faction in its <em>last stand</em>.",
+      "narration": "Here's the read the page is built to teach. As a run wears on, the board fails in a learnable order: generals get cut, payouts shrink, the count collapses. All military, all small, all urgent is a faction in its last stand."
+    },
+    {
+      "id": "05-expiry-danger",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "expiry reads the front",
+      "headline": "The danger is never in the payout.",
+      "bullets": [
+        "<b>Same clock</b> &mdash; contracts expire on the very clock that overruns systems.",
+        "<b>Overrun voids it</b> &mdash; if the drop-off falls before you arrive, the job pays nothing.",
+        "<b>Unpriced risk</b> &mdash; no premium for a near-front run; the only tell is the danger marker's geometry.",
+        "<b>Deliberate</b> &mdash; pricing the danger in would do the reading for you."
+      ],
+      "narration": "Contracts expire on the same clock that overruns systems. If a drop-off is overrun before you arrive, the contract is voided and pays nothing. The danger is never priced into the payout; you read it in the geometry, not the number."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick, single-step it, or reset to seed 4174.",
+        "<b>The dials</b> &mdash; starting treasury, war intensity, spendable floor, war-bond refill, military weighting, front advance.",
+        "<b>The scrub bar</b> &mdash; drag through the whole stored run; rewind any time.",
+        "<b>Scenarios</b> &mdash; Drain the treasury, Fat war chest, and Front collapse."
+      ],
+      "narration": "Drive it yourself. Press Play to run the tick, or Step through it. Work the dials: starting treasury, war intensity, the spendable floor. Drag the scrub bar to rewind the whole run, then try the scenarios, drain the treasury or trigger a front collapse."
+    },
+    {
+      "id": "07-floor-mitigation",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "where it can rot",
+      "headline": "The floor keeps a losing war from becoming unwinnable-and-boring.",
+      "body": "If generosity were purely the treasury, a losing war could empty the board to <em>zero income</em> exactly when you need a comeback. The <strong>spendable fraction</strong> is a floor: a slice the faction dips into to keep a thin, real board of military jobs alive.",
+      "narration": "If generosity were purely the treasury, a losing war could starve you of all income just when you need a comeback. The spendable floor fixes that: a slice the faction keeps a minimum board alive on. It's the difference between hard and unwinnable."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Contract Board",
+      "body": "A quiet board is a war going broke &middot; deterministic, seeded, self-contained, no network.",
+      "narration": "The board is a live histogram of what the war can afford to want. A quiet board is a war going broke. Deterministic, seeded, self-contained."
+    }
+  ]
+}

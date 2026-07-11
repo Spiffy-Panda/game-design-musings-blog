@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ashfield Bout — Cinderwork against Needlework</title>
+</head>
+<body>
+
+<style>
+  /* ── tokens (course design system) ─────────────────────── */
+  :root{
+    --ground:#e9e7e0; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --ember-wash:rgba(176,80,10,.07); --storm-wash:rgba(32,100,159,.07);
+    --violet-wash:rgba(90,79,192,.07);
+    --shadow:0 14px 40px rgba(35,40,51,.12);
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono','Fira Code',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0c0f14; --surface:#151a22; --surface2:#1b212c;
+      --line:#262e3c; --line2:#3a4556;
+      --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+      --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+      --ember-wash:rgba(255,160,87,.06); --storm-wash:rgba(130,199,255,.06);
+      --violet-wash:rgba(171,159,252,.08);
+      --shadow:0 14px 40px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#e9e7e0; --surface:#f6f5f0; --surface2:#fdfcf9;
+    --line:#d8d4c8; --line2:#c2bdae;
+    --ink:#232833; --ink2:#4c5364; --ink3:#6e7686;
+    --ember:#b0500a; --storm:#20649f; --violet:#5a4fc0;
+    --ember-wash:rgba(176,80,10,.07); --storm-wash:rgba(32,100,159,.07);
+    --violet-wash:rgba(90,79,192,.07);
+    --shadow:0 14px 40px rgba(35,40,51,.12);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0c0f14; --surface:#151a22; --surface2:#1b212c;
+    --line:#262e3c; --line2:#3a4556;
+    --ink:#dde3ee; --ink2:#a6b0c2; --ink3:#8b95a8;
+    --ember:#ffa057; --storm:#82c7ff; --violet:#ab9ffc;
+    --ember-wash:rgba(255,160,87,.06); --storm-wash:rgba(130,199,255,.06);
+    --violet-wash:rgba(171,159,252,.08);
+    --shadow:0 14px 40px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; overflow:hidden; background:var(--ground); color:var(--ink); font:16.5px/1.68 var(--serif)}
+  button{font:inherit; color:inherit; background:none; border:0; cursor:pointer; padding:0}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--storm); outline-offset:3px; border-radius:3px}
+  a{color:var(--storm)}
+  .hall{color:var(--ember)} .dree{color:var(--storm)} .board{color:var(--violet)}
+
+  /* ── deck chrome ────────────────────────────────────────── */
+  #deck{height:100dvh; display:flex; flex-direction:column}
+  .chrome{
+    display:flex; align-items:center; gap:10px 22px; flex-wrap:wrap;
+    padding:10px clamp(14px,3.5vw,30px); border-bottom:1px solid var(--line);
+    background:var(--surface2); font:600 11px/1.4 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink3);
+  }
+  .chrome .venue{margin-right:auto}
+  .chrome .venue b{color:var(--ink2)}
+  .score{display:flex; align-items:baseline; gap:9px}
+  .score .nm{font-size:10.5px}
+  .score b{font:700 15px/1 var(--mono); color:var(--ink); min-width:14px; text-align:center}
+  .score .pre-label{display:none; letter-spacing:.16em}
+  .score.pre .pre-label{display:inline}
+  .score.pre .live{display:none}
+  #ctr{font:600 11px/1 var(--mono); letter-spacing:.12em; color:var(--ink3)}
+
+  main{position:relative; flex:1; min-height:0}
+  .slide{
+    position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    opacity:0; visibility:hidden; transform:translateY(12px);
+    transition:opacity .32s ease, transform .32s ease, visibility 0s linear .32s;
+  }
+  .slide.on{opacity:1; visibility:visible; transform:none; transition:opacity .32s ease, transform .32s ease}
+  @media (prefers-reduced-motion: reduce){
+    .slide,.slide.on{transition:none; transform:none}
+  }
+  .inner{
+    max-width:1060px; margin-inline:auto;
+    padding:clamp(24px,4.5vh,48px) clamp(18px,4.5vw,44px) 56px;
+  }
+  .duo{display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(20px,3.5vw,44px)}
+  @media (max-width:760px){ .duo{grid-template-columns:1fr} }
+
+  .kicker{
+    font:600 11.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink3); margin:0 0 10px;
+  }
+  .kicker b{color:var(--ink2)}
+  h2{font:600 clamp(26px,3.6vw,38px)/1.12 var(--serif); letter-spacing:-.01em; margin:0 0 16px; text-wrap:balance}
+  .chron p{margin:0 0 14px; max-width:62ch}
+  .chron .pull{
+    font-style:italic; font-size:18.5px; color:var(--ink2);
+    border-left:2px solid var(--line2); padding-left:16px; margin:18px 0 14px; max-width:56ch;
+  }
+  .scoreline{
+    display:inline-block; margin-top:8px; padding:5px 12px 4px;
+    border:1px solid var(--line2); border-radius:3px;
+    font:600 11px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink2);
+  }
+  .scoreline .pt{font-family:var(--mono)}
+
+  /* board margin panel */
+  .margin{
+    background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--violet);
+    border-radius:0 4px 4px 0; padding:16px 18px 14px; margin-top:4px;
+  }
+  .margin h3{
+    font:600 10.5px/1 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+    color:var(--violet); margin:0 0 12px;
+  }
+  .margin .ln{display:block; font:12.5px/1.85 var(--mono); color:var(--ink2)}
+  .margin .ln b{color:var(--ink); font-weight:600}
+  .margin .ln.vd{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line2); color:var(--ink2)}
+  .margin .ln.vd b{color:var(--violet)}
+  .margin .ln .fe{color:var(--ember)} .margin .ln .fs{color:var(--storm)}
+
+  /* figure box (maps) */
+  .figbox{background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:0 0 16px; overflow:hidden}
+  .figbox svg{display:block; width:100%; height:auto}
+  .figbox figcaption{
+    font:500 10.5px/1.6 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink3); border-top:1px solid var(--line); padding:9px 14px;
+  }
+  .maplg{display:flex; gap:16px; flex-wrap:wrap; font:500 11px/1.6 var(--sans); color:var(--ink3); padding:10px 14px 2px}
+  .maplg i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px}
+  .maplg .ie{background:var(--ember)} .maplg .is{background:var(--storm)}
+
+  /* svg classes */
+  .sl{font:500 11px var(--sans); fill:var(--ink3)}
+  .slb{font:600 11px var(--sans); fill:var(--ink2)}
+  .se{stroke:var(--ember)} .ss{stroke:var(--storm)} .sv{stroke:var(--violet)} .si{stroke:var(--ink3)} .sln{stroke:var(--line2)}
+  .fe{fill:var(--ember)} .fs{fill:var(--storm)} .fv{fill:var(--violet)} .fi{fill:var(--ink3)}
+
+  /* nav */
+  .navbar{
+    display:flex; align-items:center; gap:14px; justify-content:center;
+    padding:12px clamp(14px,3vw,28px); border-top:1px solid var(--line); background:var(--surface2);
+  }
+  .navbtn{
+    display:inline-flex; align-items:center; gap:8px;
+    font:600 11px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink2);
+    border:1px solid var(--line2); border-radius:4px; padding:9px 14px;
+  }
+  .navbtn:hover{background:var(--surface); color:var(--ink)}
+  .navbtn[disabled]{opacity:.35; cursor:default}
+  .dots{display:flex; gap:7px; flex-wrap:wrap; justify-content:center}
+  .dot{width:9px; height:9px; border-radius:50%; background:var(--line2); border:0; padding:0}
+  .dot:hover{background:var(--ink3)}
+  .dot[aria-current="true"]{background:var(--ink2); transform:scale(1.25)}
+  .keyhint{font:500 10.5px/1 var(--sans); letter-spacing:.1em; color:var(--ink3); text-transform:uppercase}
+  @media (max-width:560px){ .keyhint{display:none} }
+
+  /* title slide */
+  .title-slide .inner{display:flex; flex-direction:column; justify-content:center; min-height:100%; text-align:left}
+  .title-slide{
+    background:
+      radial-gradient(44% 40% at 84% 10%, var(--storm-wash), transparent 70%),
+      radial-gradient(48% 44% at 10% 94%, var(--ember-wash), transparent 70%);
+  }
+  .title-slide h1{font:600 clamp(38px,7.6vw,84px)/1.03 var(--serif); letter-spacing:-.015em; margin:8px 0 14px}
+  .title-slide .sub{font-style:italic; font-size:clamp(16px,2.2vw,21px); color:var(--ink2); max-width:60ch; margin:0 0 22px}
+  .byline{font:600 11px/1.9 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--ink3)}
+
+  /* accord & cards */
+  .cards2{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:6px}
+  .dcard{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:20px 22px}
+  .dcard.h{border-top:3px solid var(--ember)} .dcard.d{border-top:3px solid var(--storm)}
+  .dcard h3{font:600 21px/1.25 var(--serif); margin:0 0 2px}
+  .dcard .tag{font:600 10.5px/1.7 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 10px}
+  .dcard p{font-size:14.5px; color:var(--ink2); margin:0 0 8px}
+  .dcard p:last-child{margin:0}
+  .rulelist{margin:14px 0 0; padding:0; list-style:none; max-width:66ch}
+  .rulelist li{
+    margin:10px 0; padding:12px 16px; background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; font-size:14.5px; color:var(--ink2);
+  }
+  .rulelist b{color:var(--ink); font-family:var(--sans); font-size:12px; letter-spacing:.12em; text-transform:uppercase; margin-right:6px}
+  .rulelist .pt-e b{color:var(--ember)} .rulelist .pt-s b{color:var(--storm)}
+
+  /* ledger slide */
+  .ledger{width:100%; border-collapse:collapse; font:13.5px/1.7 var(--sans); margin:10px 0 4px}
+  .ledger th{font:600 10.5px/1.5 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  .ledger td{padding:8px 10px; border-bottom:1px solid var(--line); color:var(--ink2); vertical-align:top}
+  .ledger tr:last-child td{border-bottom:0}
+  .ledger .mono{font:12.5px/1.7 var(--mono); white-space:nowrap}
+  .fin{font:600 13px/1.6 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--ink2)}
+
+  /* ── breadcrumbs ────────────────────────────────────────── */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--storm); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--storm); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+
+<div id="deck">
+  <!-- ── chrome ── -->
+  <header class="chrome">
+    <span class="venue"><b>The Ashfield Bout</b> · Long Court, Candela · Shrovetide 1908</span>
+    <span class="score pre" id="score">
+      <span class="pre-label">Bout to three points</span>
+      <span class="live nm hall">Halloway</span><b class="live" id="sh">0</b>
+      <span class="live" style="color:var(--ink3)">–</span>
+      <b class="live" id="sd">0</b><span class="live nm dree">Dree</span>
+    </span>
+    <span id="ctr">1 / 11</span>
+  </header>
+
+  <main id="stage" aria-live="polite">
+
+    <!-- ═════════ 1 · TITLE ═════════ -->
+    <section class="slide title-slide on" data-phase="pre" aria-label="Slide 1 of 11: title">
+      <div class="inner">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+            <li><a href="../../index.html">Game Design Musings</a></li>
+            <li><a href="index.html">Thaumodynamics</a></li>
+            <li><span aria-current="page">The Bout</span></li>
+          </ol>
+        </nav>
+        <p class="byline">A duel in seven exchanges · cinderwork against needlework</p>
+        <h1>The Ashfield Bout</h1>
+        <p class="sub">Being a full and honest account of the Shrovetide duel between
+          <span class="hall">Edda Halloway</span> of the Kiln Circle and
+          <span class="dree">Casimir Dree</span> of the Storm Guild — with the Board’s
+          instruments and arithmetic kept in the margin, where they belong.</p>
+        <p class="byline">From the record of Marshal-Chronicler P. Ivory · to three points · eleven paces · no iron</p>
+        <p class="byline" style="margin-top:26px; color:var(--ink3)">→ turn with the arrows, the keys, or a swipe</p>
+      </div>
+    </section>
+
+    <!-- ═════════ 2 · THE ACCORD ═════════ -->
+    <section class="slide" data-phase="pre" aria-label="Slide 2 of 11: the rules">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>The Accord</b> · what the Board permits</p>
+          <h2>No edges, no iron, no mercy asked</h2>
+          <p>The court is a chalk ring of eleven paces on a floor of dry kiln-ash, swept and grounded
+          by the marshals’ rods between exchanges — the rods are the marshals’ instruments, never the
+          duelists’. No iron stands within thirty paces. Both fight barefoot, in wool coats brushed
+          with witness-chalk, hems threaded with copper. A coat shapes your own weave; the Accord
+          calls that fencing. A grounding bar unpicks your opponent’s; the Accord calls that sabotage.</p>
+          <ul class="rulelist">
+            <li class="pt-e"><b>The Seal · 1 pt</b> Each duelist wears three tallow seals — crown of the
+            shoulder, hip, heart. Melt one of your opponent’s (62 °C, thermoscope-verified) and the
+            point is yours. Tallow does not argue.</li>
+            <li class="pt-s"><b>The Fern · 1 pt</b> Land a gauged arc on the witness-chalked coat and it
+            prints a silver fern the whole gallery can read. The strike is its own receipt.</li>
+            <li><b>Forbidden</b> Edges and points; blows of fist or heel; any instrument whose purpose
+            is the disruption of the opponent’s fields. Counter-casting with your <em>own</em> fields is
+            lawful — superposition is fencing. The bind of hands is lawful. The bout ends at three
+            points, a yield, or the marshals’ shiver-stop.</li>
+          </ul>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 240" role="img" aria-label="Top-down diagram of the dueling court: a chalk ring eleven paces wide on ash, marshals outside, and a coat schematic showing three seals">
+              <circle cx="128" cy="120" r="92" fill="none" class="sln" stroke-width="1.4" stroke-dasharray="4 5"></circle>
+              <line x1="36" y1="120" x2="220" y2="120" class="si" stroke-width=".7" stroke-dasharray="2 5" opacity=".5"></line>
+              <text x="128" y="114" text-anchor="middle" class="sl">eleven paces · dry ash</text>
+              <circle cx="30" cy="36" r="4" class="fv"></circle><text x="40" y="40" class="sl">marshal</text>
+              <circle cx="30" cy="208" r="4" class="fv"></circle><text x="40" y="212" class="sl">marshal</text>
+              <g transform="translate(258,58)">
+                <rect x="-24" y="0" width="48" height="120" rx="10" fill="none" class="si" stroke-width="1.4"></rect>
+                <circle cx="-12" cy="22" r="5" class="fe" opacity=".85"></circle>
+                <circle cx="14" cy="62" r="5" class="fe" opacity=".85"></circle>
+                <circle cx="-4" cy="44" r="5" class="fe" opacity=".85"></circle>
+                <text x="0" y="140" text-anchor="middle" class="sl">three seals:</text>
+                <text x="0" y="154" text-anchor="middle" class="sl">shoulder · heart · hip</text>
+              </g>
+            </svg>
+            <figcaption>The court and the coat — the whole legal surface of the art</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — the gauge</h3>
+            <span class="ln">tournament torc: <b><span class="fs">Λ</span> ≤ 80 units</b> · τ<sub>q</sub> = 30 μs</span>
+            <span class="ln">E<sub>pk</sub> = ξΛ/τ<sub>q</sub> = 0.16×80 ÷ 3.0×10⁻⁵ = <b>0.427 MV/m</b></span>
+            <span class="ln">dry-air breakdown 3.0 · threaded channel 0.35 MV/m</span>
+            <span class="ln">0.35 &lt; <b>0.427</b> &lt; 3.0 — a gauged arc lives <b>only</b> on a made line</span>
+            <span class="ln">seal: 1.8 g tallow · melts 62 °C · ≈ 0.49 kJ to ruin</span>
+            <span class="ln vd"><b>Board’s intent:</b> precision is the only weapon we permit.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 3 · THE DUELISTS ═════════ -->
+    <section class="slide" data-phase="pre" aria-label="Slide 3 of 11: the duelists">
+      <div class="inner">
+        <p class="kicker"><b>The Duelists</b> · rated to the same ring</p>
+        <h2>The kiln walks in; the needle buys time</h2>
+        <div class="cards2">
+          <article class="dcard h">
+            <h3 class="hall">Edda Halloway, 34</h3>
+            <p class="tag">Kiln Circle · Adept of the Second Ring · cinderwork (Exchange I) · 41–12</p>
+            <p>Fights close and patient. Her art is the well — heat funnelled along
+            <span class="hall">H</span> into a seal, or pumped out of the air until fog stands up in
+            the ring. Reach falls with the square of distance, so her whole game is the walk-in, the
+            angle, the bind. She wears no shell; shells are the other tongue.</p>
+            <p><em>Instruments:</em> heartwood wand, silver core; a contact palm-aperture. One line per wand — remember that.</p>
+          </article>
+          <article class="dcard d">
+            <h3 class="dree">Casimir Dree, 31</h3>
+            <p class="tag">Storm Guild · Adept of the Second Ring · needlework (Exchange II) · 44–15</p>
+            <p>Fights long and exact. His art is the line — a hair of warmed air laid to a target,
+            then a winding broken all at once so the court’s own physics deliver the arc. Two full
+            seconds to wind; eleven to let it rot. His whole game is buying those seconds.</p>
+            <p><em>Instruments:</em> Board-gauged torc (Λ 80); a wrist flicker-ring (Λ 15) — legal, and too weak to arc. Theater, the Guild calls it.</p>
+          </article>
+        </div>
+        <div class="cards2" style="margin-top:16px">
+          <div class="margin" style="border-left-color:var(--line2)">
+            <h3 style="color:var(--ink3)">The old problem, in numbers</h3>
+            <span class="ln">her scoring reach: <b>seal hold ≈ 1.9 s at arm’s length</b> (flux falls ∝ 1/r²)</span>
+            <span class="ln">his scoring cycle: <b>thread 0.3 s + wind 2.0 s</b>, spend it or lose it (τ<sub>α</sub> = 11 s)</span>
+            <span class="ln vd"><b>Every exchange is a race</b> between her feet and his hands.</span>
+          </div>
+          <figure class="figbox">
+            <div class="maplg"><span><i class="ie"></i>Halloway</span><span><i class="is"></i>Dree</span><span>maps mark the duelists, not the sectors</span></div>
+            <svg viewBox="0 0 320 170" role="img" aria-label="Map legend: ember dot for Halloway, storm dot for Dree, inside the chalk ring">
+              <circle cx="160" cy="85" r="70" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="112" cy="85" r="7" class="fe"></circle>
+              <circle cx="208" cy="85" r="7" class="fs"></circle>
+              <text x="112" y="110" text-anchor="middle" class="sl">the kiln</text>
+              <text x="208" y="110" text-anchor="middle" class="sl">the needle</text>
+            </svg>
+            <figcaption>Positions at the salute — five paces and change</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 4 · EXCHANGE I — THE PROBE ═════════ -->
+    <section class="slide" data-h="0" data-d="0" aria-label="Slide 4 of 11: exchange one, the probe">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the First</b> · the probe</p>
+          <h2>Nineteen thousandths of a second, politely declined</h2>
+          <p>They salute with open palms — no edges to present — and Dree gives ground at once along
+          the chalk, hands low, right wrist already turning its small circles. You feel his winding
+          before you see anything: the fine hairs lift, and the gallery hushes at the wrongness of it.
+          Then the thread: a violet unsettling of the air, drawn from his torc-sight toward her
+          shoulder like a ruled line.</p>
+          <p>Halloway watches it come. That is not bravado; that is arithmetic. The shimmer crosses
+          the court slower than a thrown apple, and she has read wind-ups since she was a girl at the
+          kiln-rows. One flat step off the line — ash barely disturbed — and the thread hangs in empty
+          air, cooling, useless. Dree lets the winding rot rather than spend it badly. Eleven seconds
+          later it is gone, and he has paid a meal for a look at her footwork.</p>
+          <p class="pull">“She did not dodge the bolt. There was never a bolt. She declined the aim,
+          the way you decline a bad contract.” — the chronicler’s note</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 0 — 0 Dree</span></span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: Dree's thread crosses the ring toward Halloway's former position; she steps off the line">
+              <defs>
+                <marker id="a4e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="228" cy="100" r="7" class="fs"></circle>
+              <line x1="221" y1="100" x2="106" y2="96" class="ss" stroke-width="1.3" stroke-dasharray="2 4"></line>
+              <circle cx="100" cy="96" r="6" fill="none" class="se" stroke-width="1.4" stroke-dasharray="2 3"></circle>
+              <path d="M100,102 C 96,120 100,132 112,140" fill="none" class="se" stroke-width="1.8" marker-end="url(#a4e)"></path>
+              <circle cx="116" cy="142" r="7" class="fe"></circle>
+              <text x="150" y="82" text-anchor="middle" class="sl">the thread, declined</text>
+              <text x="88" y="164" class="sl">one flat step</text>
+            </svg>
+            <figcaption>Exchange I — the aim crosses; the target has left</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange I</h3>
+            <span class="ln">range r = 5.8 m → shimmer transit r/c<sub>θ</sub> = 5.8 ÷ 299 = <b>19 ms</b></span>
+            <span class="ln">wind-up to quench: <b>2.00 s</b>, telegraphed from the first wrist-turn</span>
+            <span class="ln">her dodge budget: react 0.25 + step 0.50 = <b>0.75 s</b></span>
+            <span class="ln">margin: 2.00 − 0.02 − 0.75 = <b>+1.23 s</b> — a stroll</span>
+            <span class="ln">unspent winding decays e<sup>−t/11s</sup>: his probe cost ≈ 45 kJ, returned nothing</span>
+            <span class="ln vd"><b>Verdict:</b> at five paces the needle cannot score on an honest line. Both know it. The bout will be decided by dishonest ones.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 5 · EXCHANGE II — THE FLICKER ═════════ -->
+    <section class="slide" data-h="0" data-d="1" aria-label="Slide 5 of 11: exchange two, the flicker">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the Second</b> · the flicker</p>
+          <h2>Two shimmers, one lie</h2>
+          <p>The second exchange opens the same way — the wrist, the hush, a thread to her shoulder —
+          and this time a quench <em>cracks</em>. Violet light pops off his wrist and the gallery
+          flinches as one animal. Halloway is already moving; you do not stand your ground against a
+          break. She takes the safe step, the schooled step, the one the manuals print: off-line and
+          toward his open side.</p>
+          <p>Which is where the second thread has been lying since before the flash. The true quench
+          takes her at the shoulder mid-stride — a crack like green wood, a smell of hot chalk — and
+          when she straightens there is a silver fern printed collarbone to sleeve, delicate as
+          frost on a window. The marshals’ wands go up. Dree inclines his head, all courtesy. The
+          flash, you understand, could never have struck anyone. It was punctuation.</p>
+          <p class="pull">“The flicker-ring cannot arc. Every adept in the gallery knew it. Her feet
+          knew the manuals instead.”</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 0 — 1 Dree</span> · fern, shoulder</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: a decoy flash from Dree's wrist, Halloway's schooled sidestep onto a second pre-laid thread, and the fern strike">
+              <defs>
+                <marker id="a5e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="230" cy="96" r="7" class="fs"></circle>
+              <path d="M236,88 l5,-8 M240,94 l9,-3 M234,84 l-2,-9" class="sv" stroke-width="1.6" fill="none"></path>
+              <text x="262" y="78" class="sl">the flicker</text>
+              <line x1="223" y1="94" x2="112" y2="88" class="ss" stroke-width="1.1" stroke-dasharray="2 4" opacity=".55"></line>
+              <text x="150" y="76" text-anchor="middle" class="sl" opacity=".8">bait line</text>
+              <line x1="223" y1="102" x2="128" y2="138" class="ss" stroke-width="1.4" stroke-dasharray="2 4"></line>
+              <text x="196" y="136" class="sl">the laid line</text>
+              <circle cx="106" cy="92" r="6" fill="none" class="se" stroke-width="1.4" stroke-dasharray="2 3"></circle>
+              <path d="M106,98 C 104,114 110,126 118,132" fill="none" class="se" stroke-width="1.8" marker-end="url(#a5e)"></path>
+              <circle cx="122" cy="136" r="7" class="fe"></circle>
+              <path d="M122,136 l-7,-9 m7,9 l-10,-2 m10,2 l-4,-11" class="ss" stroke-width="1.5" fill="none"></path>
+            </svg>
+            <figcaption>Exchange II — the schooled step, pre-sold</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange II</h3>
+            <span class="ln">flicker-ring: E = 0.16×15 ÷ 3.0×10⁻⁵ = <b>0.080 MV/m</b> &lt; 0.35 — <b>cannot arc</b>, even threaded. Pure theater.</span>
+            <span class="ln">thermoscope log: <b>two</b> threads on the court — the second laid 0.9 s before the flash. The instruments saw the feint before the gallery did.</span>
+            <span class="ln">her commit: react 0.25 s, step 0.50 s → on the laid line at <b>t + 0.62 s</b></span>
+            <span class="ln">his true quench: aim 0.15 s after her plant · torc <b>0.427 MV/m</b> down a made line → fern</span>
+            <span class="ln">delivered ≈ 1.1 kJ — a welt and a lesson, per gauge</span>
+            <span class="ln vd"><b>Verdict:</b> he did not beat her reflexes; he rented them. Point, Dree.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 6 · EXCHANGE III — THE SCRUB AND THE BIND ═════════ -->
+    <section class="slide" data-h="1" data-d="1" aria-label="Slide 6 of 11: exchange three, the scrub and the bind">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the Third</b> · the scrub and the bind</p>
+          <h2>She unpicks his line and walks down it</h2>
+          <p>Now the bout shows its teeth. Dree threads again — and the thread <em>dies</em>. You can
+          see the moment it dies: the shimmer dims mid-court like a lamp behind a door. Halloway has
+          laid her own line along his, cold against warm, sum against sum, and what remains is
+          ordinary air that no gauged torc in Candela can break. The Guild benches go very quiet.
+          Counter-casting is fencing, says the Accord. This is fencing the way a locksmith fences.</p>
+          <p>And she is already walking — not rushing, walking, on the beat, because his hands are
+          empty and hers are not. He gives ground; the chalk stops him; the ring is only so kind.
+          She takes his wrist as he pivots, crosses it down, and lays her palm a hand’s-breadth off
+          his hip. Two seconds is an eternity in a bind. The gallery counts them aloud, the brutes.
+          The hip seal slumps, weeps, lets go. The thermoscope confirms what everyone smelled.</p>
+          <p class="pull">“Her counter-line cost less than his thread. That is the whole cruelty of
+          the First Exchange: it is cheaper to refuse a fire than to light one.”</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 1 — 1 Dree</span> · seal, hip</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: Halloway's counter-line overlaps Dree's thread, killing it; she closes to a bind and melts his hip seal">
+              <defs>
+                <marker id="a6e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="234" cy="104" r="7" class="fs"></circle>
+              <line x1="227" y1="102" x2="120" y2="96" class="ss" stroke-width="1.3" stroke-dasharray="2 4" opacity=".5"></line>
+              <line x1="120" y1="99" x2="227" y2="105" class="se" stroke-width="1.3" stroke-dasharray="2 4" opacity=".8"></line>
+              <text x="168" y="84" text-anchor="middle" class="sl">line against line — the scrub</text>
+              <circle cx="112" cy="98" r="7" class="fe"></circle>
+              <path d="M120,104 C 150,124 190,122 222,112" fill="none" class="se" stroke-width="1.8" marker-end="url(#a6e)"></path>
+              <text x="150" y="146" class="sl">the walk, on the beat</text>
+              <circle cx="236" cy="112" r="4.5" class="fe"></circle>
+              <text x="248" y="130" class="sl">hip seal, 62 °C</text>
+            </svg>
+            <figcaption>Exchange III — superposition, then proximity</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange III</h3>
+            <span class="ln">his thread: channel <b>+240 K</b> · her counter-line: <b>−240 K</b> · superposed sum ≈ 0</span>
+            <span class="ln">channel breakdown stays <b>3.0 MV/m</b> ≫ 0.427 — the needle is refused, not resisted</span>
+            <span class="ln">tempo: her walk 4.0 m ÷ 1.9 m/s = <b>2.1 s</b> · his re-wind 2.0 + re-thread 0.3 = <b>2.3 s</b> → she arrives <b>0.2 s early</b></span>
+            <span class="ln">the seal: Q = 1.8 g × (2.1×40 + 190) ≈ <b>0.49 kJ</b> · palm flux 260 W → <b>1.9 s held</b></span>
+            <span class="ln vd"><b>Verdict:</b> the scrub costs her 8 kJ; his dead thread cost 12. Economics, then footwork, then wax. Point, Halloway.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 7 · EXCHANGE IV — THE TWO THREADS ═════════ -->
+    <section class="slide" data-h="1" data-d="2" aria-label="Slide 7 of 11: exchange four, the two threads">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the Fourth</b> · the two threads</p>
+          <h2>One wand cannot say no twice</h2>
+          <p>Dree has learned the price of honest lines, so he stops selling them. First he sets his
+          wrist-ring humming — not a quench, a <em>flutter</em>, a fast small trembling of the weave
+          that you feel in your teeth at ten paces. Wherever her well tries to gather, the trembling
+          combs it sideways; her heat arrives everywhere and nowhere, a kettle poured on a moving
+          cart. Her reach, already short, gets shorter. She must come to him again. He is counting
+          on it.</p>
+          <p>As she advances he shows her a thread at shoulder height — obvious, insulting, and she
+          kills it with her one free line, precisely as before. The second thread is already lying
+          along the ash like a snake in dust, ankle height, in the lane her own advance has chosen.
+          The quench takes her at the coat-skirt. A second fern, low and wide. The gallery, which
+          adored her a minute ago, adores him now. Galleries.</p>
+          <p class="pull">“A wand holds one line. A liar needs two. The arithmetic of deceit is not
+          deep, but it is exact.”</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 1 — 2 Dree</span> · fern, coat-skirt</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: Dree's flutter scatters her well; a high bait thread is scrubbed while a low thread along the ash lands the fern">
+              <defs>
+                <marker id="a7e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="232" cy="100" r="7" class="fs"></circle>
+              <path d="M204,92 a6,6 0 1 1 -6,6 M196,106 a6,6 0 1 1 -6,6" fill="none" class="ss" stroke-width="1.2" opacity=".7"></path>
+              <text x="236" y="74" class="sl">the flutter</text>
+              <line x1="225" y1="96" x2="128" y2="84" class="ss" stroke-width="1.1" stroke-dasharray="2 4" opacity=".5"></line>
+              <line x1="128" y1="87" x2="225" y2="99" class="se" stroke-width="1.1" stroke-dasharray="2 4" opacity=".7"></line>
+              <text x="158" y="72" text-anchor="middle" class="sl">bait, scrubbed</text>
+              <line x1="225" y1="106" x2="132" y2="142" class="ss" stroke-width="1.4" stroke-dasharray="2 4"></line>
+              <text x="200" y="150" class="sl">the low line</text>
+              <circle cx="118" cy="104" r="7" class="fe"></circle>
+              <path d="M120,112 C 122,122 126,130 130,136" fill="none" class="se" stroke-width="1.8" marker-end="url(#a7e)"></path>
+              <circle cx="132" cy="140" r="6" class="fe" opacity="0"></circle>
+              <path d="M132,140 l-8,-8 m8,8 l-11,-1 m11,1 l-3,-11" class="ss" stroke-width="1.5" fill="none"></path>
+            </svg>
+            <figcaption>Exchange IV — the bait above, the truth below</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange IV</h3>
+            <span class="ln">flutter: Λ 12 at 38 Hz → |∂Λ/∂t| ≈ 2πfΛ ≈ <b>2.9×10³ u/s</b> — no arc, but by the Weave law it writes curl into <span class="fe">H</span></span>
+            <span class="ln">her well convergence at range: <b>−35 %</b> (Board est.) → seal-hold stretches 1.9 → <b>2.9 s</b>: unviable on a moving man</span>
+            <span class="ln">scrub capacity: <b>one line per wand</b> · threads on court: <b>two</b></span>
+            <span class="ln">low thread’s lane = her own chosen advance — the aim was her plan, not her position</span>
+            <span class="ln vd"><b>Verdict:</b> he spent 110 kJ this exchange to make her art expensive and her honesty predictable. Point, Dree.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 8 · EXCHANGE V — THE FOG ═════════ -->
+    <section class="slide" data-h="1" data-d="2" aria-label="Slide 8 of 11: exchange five, the fog">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the Fifth</b> · the fog</p>
+          <h2>She refunds the court’s warmth, with interest</h2>
+          <p>Down a point and shorter-armed by the minute, Halloway does the thing the Kiln Circle
+          forbids its novices and drills into its adepts. She opens both hands, and <em>pulls</em>.
+          Not at him — at the air between them, a wedge of it, wide as a cart. The warmth goes out of
+          it the way sound goes out of a room. Fog stands up out of nothing, a grey wall shot through
+          with that violet gleam the cold-work always wears — the refund, the Circle calls it — and
+          the middle of the court simply ceases to exist for the eye.</p>
+          <p>Understand what she has bought. His art needs a line: a seen target, a dry channel, a
+          clean aim through the torc. Hers needs an arm’s length and a heartbeat. In fog, damp air
+          drinks her reach too — but she was never going to score at range again, and now neither is
+          he. The gallery hears footsteps on ash, slow, circling. Someone laughs nervously and is
+          shushed. The marshals lean in, thermoscopes up, watching two ghosts by instrument light.</p>
+          <p class="pull">“The fog cost her a third of her supper and half his art. She would tell
+          you that is the best price in the ring.”</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 1 — 2 Dree</span> · no score — the court itself changed hands</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: a broad fog bank raised across the middle of the ring, both duelists circling at its edges">
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <ellipse cx="160" cy="100" rx="62" ry="44" class="fv" opacity=".10"></ellipse>
+              <ellipse cx="160" cy="100" rx="46" ry="32" class="fv" opacity=".12"></ellipse>
+              <ellipse cx="160" cy="100" rx="30" ry="20" class="fe" opacity=".07"></ellipse>
+              <text x="160" y="103" text-anchor="middle" class="sl">the fog · violet-lit</text>
+              <circle cx="106" cy="128" r="7" class="fe"></circle>
+              <circle cx="222" cy="70" r="7" class="fs"></circle>
+              <path d="M214,64 C 196,52 172,48 150,54" fill="none" class="ss" stroke-width="1.2" stroke-dasharray="3 4"></path>
+              <path d="M112,136 C 130,148 152,150 172,144" fill="none" class="se" stroke-width="1.2" stroke-dasharray="3 4"></path>
+              <text x="66" y="160" class="sl">circling, listening</text>
+            </svg>
+            <figcaption>Exchange V — concealment by refrigeration</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange V</h3>
+            <span class="ln">wedge ≈ 2.5 m³ · 21 °C, RH 55 % → dew point 11.6 °C</span>
+            <span class="ln">Q = 2.5 × 1.2 × 1005 × 9.4 ≈ <b>28 kJ pumped out</b> over 6.0 s (diffuse cast ≈ 4.7 kW — lawful; the gauge caps flux <em>on the person</em>)</span>
+            <span class="ln">her ledger: 28 ÷ 0.21 ≈ <b>135 kJ ≈ 32 kcal</b> — sprinter’s spending</span>
+            <span class="ln">damp air: ε<sub>θ</sub> up → her reach <b>−40 %</b> · his thread untenable (droplets drink the filament, ×4 cost, the line sags)</span>
+            <span class="ln">fog breakdown ≈ <b>0.40 MV/m</b> &lt; 0.427 — <b>note well:</b> wild arcs are now possible, and unaimable</span>
+            <span class="ln vd"><b>Verdict:</b> she has made the court honest again — nobody can lie about a line nobody can see. The Board’s instruments record a 0.9 K drop in her core. The shiver-stop threshold is 1.2.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 9 · EXCHANGE VI — THE FORK AND THE HEART ═════════ -->
+    <section class="slide" data-h="2" data-d="2" aria-label="Slide 9 of 11: exchange six, the fork and the heart">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>Exchange the Sixth</b> · the fork and the heart</p>
+          <h2>He gambles on the weather he was given</h2>
+          <p>Dree does what the desperate and the brilliant do: he uses her weather. Damp air breaks
+          cheap — every stormhand knows it, every stormhand is warned. He winds full, aims at a
+          footfall, and quenches into the fog. The court goes white. The arc forks like a river
+          delta, two tines howling past her shoulder and down into the ash, and for one instant the
+          fog is a lantern with his silhouette inside it, arm out, torc high — a woodcut of himself,
+          printed in his own light.</p>
+          <p>She is inside that afterimage before it fades. No scrub, no well at range — just the
+          walk-in her whole school is named for, wrist, cross, palm to the heart seal. And here is
+          the measure of the man: feeling the heat gather on his breastbone, two seconds from a level
+          bout, Dree does not break the bind. He stands in it and <em>winds</em>, wrist circling
+          behind her back like a man stirring tea in a burning house. The seal slumps. The marshals
+          call it level. His torc, nobody needs an instrument to know, is full.</p>
+          <p class="pull">“He traded a seal for a loaded winding. The gallery thought it madness. The
+          Board’s clerk, who could count, did not.”</p>
+          <span class="scoreline">Score after: <span class="pt">Halloway 2 — 2 Dree</span> · seal, heart — and a winding held</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: Dree's wild arc forks into the ash inside the fog; Halloway rushes his lit silhouette and melts the heart seal">
+              <defs>
+                <marker id="a9e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <ellipse cx="160" cy="100" rx="58" ry="42" class="fv" opacity=".09"></ellipse>
+              <circle cx="216" cy="86" r="7" class="fs"></circle>
+              <polyline points="209,88 192,94 184,86 170,96 160,90" fill="none" class="ss" stroke-width="1.6"></polyline>
+              <polyline points="160,90 148,100 140,114 136,126" fill="none" class="ss" stroke-width="1.3"></polyline>
+              <polyline points="160,90 146,84 132,88 124,98" fill="none" class="ss" stroke-width="1.3"></polyline>
+              <text x="98" y="134" class="sl">both tines earthed</text>
+              <circle cx="118" cy="66" r="7" class="fe"></circle>
+              <path d="M126,70 C 152,72 184,76 206,82" fill="none" class="se" stroke-width="1.8" marker-end="url(#a9e)"></path>
+              <text x="120" y="50" class="sl">the rush, on the afterimage</text>
+              <circle cx="214" cy="80" r="4.5" class="fe"></circle>
+              <text x="230" y="66" class="sl">heart seal</text>
+            </svg>
+            <figcaption>Exchange VI — the lantern he made of himself</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — exchange VI</h3>
+            <span class="ln">wild quench: 0.427 &gt; 0.40 (fog) → arc <b>lives</b>, unthreaded → forks, ±25° cone</span>
+            <span class="ln">strike odds: torso 0.5 m at 3.0 m ≈ <b>1-in-5 per tine</b> · log: both tines earthed</span>
+            <span class="ln">her rush: 3.0 m ÷ 2.0 m/s = <b>1.5 s</b> · his recovery wind: <b>2.0 s</b> → bound, −0.5 s</span>
+            <span class="ln">heart seal: 0.49 kJ at 260 W = <b>1.9 s held</b> — he winds <em>through</em> it</span>
+            <span class="ln">exit state: score level · <b>his torc full</b> · her core −1.1 K of a 1.2 K stop</span>
+            <span class="ln vd"><b>Verdict:</b> she bought a point with proximity. He bought the next ten seconds with a welt over his heart. The instruments call that even. The instruments are wrong about very little.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 10 · THE LAST EXCHANGE ═════════ -->
+    <section class="slide" data-h="2" data-d="3" aria-label="Slide 10 of 11: the last exchange, down her own well">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>The Last Exchange</b> · down her own well</p>
+          <h2>The sectors do not care whose hand set the condition</h2>
+          <p>They break, and the marshals re-chalk, and what is left in the ring is two cold, spent
+          people and one loaded torc. Halloway cannot afford another exchange — the thermoscopes say
+          so even if her face will not — and so she opens her finest line, the one that ends bouts:
+          the crown-seal well, three clean metres of gathering warmth drawn straight from her wand to
+          the top of his shoulder. It is beautiful. The fog leans away from it. The gallery rises.</p>
+          <p>And Dree, who has been buying seconds all afternoon, spends them all at once. He does
+          not dodge the well. He <em>sights down it</em>. Her line is a spine of warmed air — and
+          warmed air is a channel, and a channel does not ask who paid for it. The quench leaps from
+          his torc along the very corridor her art has lovingly prepared, upstream against her
+          intent, and prints its fern across her heart seal while her heat is still en route to his
+          collar. The crack and the slump of wax arrive together. Three. The bout.</p>
+          <p class="pull">“She fought him with fire and he answered with her own arithmetic. The
+          Board’s margin says it plainest: the sectors do not care whose hand set the condition.”</p>
+          <span class="scoreline">Final: <span class="pt">Halloway 2 — 3 Dree</span> · fern, heart — down her own well</span>
+        </div>
+        <div>
+          <figure class="figbox">
+            <svg viewBox="0 0 320 200" role="img" aria-label="Map: Halloway's crown-seal well forms a straight warm line to Dree; his quench travels back along the same line and strikes her heart seal">
+              <defs>
+                <marker id="a10e" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fe"></path></marker>
+                <marker id="a10s" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="fs"></path></marker>
+              </defs>
+              <circle cx="160" cy="100" r="84" fill="none" class="sln" stroke-width="1.3" stroke-dasharray="4 5"></circle>
+              <circle cx="106" cy="104" r="7" class="fe"></circle>
+              <circle cx="230" cy="92" r="7" class="fs"></circle>
+              <g class="se" stroke-width="1.2" fill="none" opacity=".85">
+                <path d="M114,100 C 150,92 186,88 220,88" marker-end="url(#a10e)"></path>
+                <path d="M114,108 C 150,104 186,98 220,94"></path>
+                <path d="M112,96 C 148,84 186,80 218,84"></path>
+              </g>
+              <text x="160" y="72" text-anchor="middle" class="sl">her well — a spine of warm air</text>
+              <polyline points="222,90 204,96 192,88 176,98 160,92 144,102 128,96 116,102" fill="none" class="ss" stroke-width="2"></polyline>
+              <path d="M112,102 l-8,-9 m8,9 l-11,-2 m11,2 l-4,-11" class="ss" stroke-width="1.5" fill="none"></path>
+              <text x="160" y="130" text-anchor="middle" class="sl">his quench, upstream</text>
+              <circle cx="104" cy="98" r="4.5" class="fe"></circle>
+            </svg>
+            <figcaption>The last exchange — one line, two owners</figcaption>
+          </figure>
+          <div class="margin">
+            <h3>The Board’s margin — the last exchange</h3>
+            <span class="ln">her crown line: 3.2 m sustained · spine ΔT ≈ <b>+180 K</b></span>
+            <span class="ln">hot-channel breakdown (Board interpolation): ≈ <b>0.42 MV/m</b></span>
+            <span class="ln">his gauge: <b>0.427 MV/m</b> — clears her channel by <b>1.7 %</b></span>
+            <span class="ln">why no scrub? one line per wand — <b>hers was the attack</b>. The well was the vulnerability.</span>
+            <span class="ln">first time all bout she offered three straight metres of her own warmth. She was cold, it was late, and the crown seal wins bouts.</span>
+            <span class="ln vd"><b>Verdict:</b> won by the width of a gauge tolerance. From Lady Day the Board gauges tournament torcs at Λ 72 (0.384 MV/m) — the Guild curses; the Circle calls the move <b>the Halloway Line</b>, for she taught it to him by losing.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 11 · THE LEDGER ═════════ -->
+    <section class="slide" data-h="2" data-d="3" aria-label="Slide 11 of 11: the ledger">
+      <div class="inner duo">
+        <div class="chron">
+          <p class="kicker"><b>The Ledger</b> · what it cost</p>
+          <h2>Both paid the bill; the gallery got the laws</h2>
+          <p>They took tea together at the rope, because that is the custom and because neither could
+          have stood unassisted much longer. Sweet tea for the Ember, who had pumped a court’s worth
+          of warmth through her own blood; honey-bread for the Needle, who had wound and re-wound a
+          day’s eating onto his arm. The fern on her heart seal, they say, she asked the tailor to
+          leave in the cloth.</p>
+          <p>The clerks record the bout as three–two. The schools record it otherwise: the Guild
+          teaches Exchange the Sixth, the held winding, as the model of nerve; the Circle teaches
+          the Last, without irony, under her name — the Halloway Line, the corridor you must never
+          leave open behind your own fire. Rated to the same ring before the bout; rated to the same
+          ring after. The ash, as the marshals say, rates finer than the Board — but only by one
+          clean thought at a time.</p>
+          <p class="fin" style="margin-top:18px">Companion volumes:
+            <a href="thaumodynamics.html">the field theory</a> ·
+            <a href="mdyn101-worksheet3.html">Worksheet 3</a></p>
+        </div>
+        <div>
+          <div class="margin" style="margin-bottom:16px">
+            <h3>The Board’s margin — final accounting</h3>
+            <span class="ln"><b>Points:</b> Dree — fern (shoulder), fern (coat-skirt), fern (heart)</span>
+            <span class="ln"><b>Points:</b> Halloway — seal (hip), seal (heart)</span>
+            <span class="ln">her spend ≈ <b>185 kJ ≈ 44 kcal</b> · core −1.1 K of 1.2 stop</span>
+            <span class="ln">his spend ≈ <b>290 kJ ≈ 69 kcal</b> — six windings, two let rot (τ<sub>α</sub> spares no one)</span>
+            <span class="ln">court grounded ×7 by marshals’ rods · no injuries beyond welts &amp; wax</span>
+            <span class="ln vd"><b>Clerk’s note:</b> the needle pays rent on every second it refuses to spend; the kiln pays in the risk of the walk. Both arts were solvent today. Barely.</span>
+          </div>
+          <table class="ledger">
+            <thead><tr><th scope="col">Exchange</th><th scope="col">Score event</th><th scope="col">Mechanism</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">I</td><td>—</td><td>probe declined; winding rotted (11 s)</td></tr>
+              <tr><td class="mono">II</td><td class="mono" style="color:var(--storm)">0–1</td><td>flicker feint → fern on the laid line</td></tr>
+              <tr><td class="mono">III</td><td class="mono" style="color:var(--ember)">1–1</td><td>thread scrubbed → bind → hip seal</td></tr>
+              <tr><td class="mono">IV</td><td class="mono" style="color:var(--storm)">1–2</td><td>flutter + two threads → low fern</td></tr>
+              <tr><td class="mono">V</td><td>—</td><td>fog raised; the court changes hands</td></tr>
+              <tr><td class="mono">VI</td><td class="mono" style="color:var(--ember)">2–2</td><td>wild fork misses → rush → heart seal</td></tr>
+              <tr><td class="mono">VII</td><td class="mono" style="color:var(--storm)">2–3</td><td>quench down her own well — bout</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── nav ── -->
+  <footer class="navbar">
+    <button class="navbtn" id="prev" aria-label="Previous slide">← Prev</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+    <button class="navbtn" id="next" aria-label="Next slide">Next →</button>
+    <span class="keyhint">← → keys · swipe</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dotsBox = document.getElementById('dots');
+  var prev = document.getElementById('prev'), next = document.getElementById('next');
+  var ctr = document.getElementById('ctr'), scoreEl = document.getElementById('score');
+  var sh = document.getElementById('sh'), sd = document.getElementById('sd');
+  var titles = ['Title','The Accord','The Duelists','Exchange I — the probe','Exchange II — the flicker',
+    'Exchange III — the scrub and the bind','Exchange IV — the two threads','Exchange V — the fog',
+    'Exchange VI — the fork and the heart','The last exchange','The ledger'];
+  var cur = 0;
+
+  for (var d = 0; d < slides.length; d++){
+    var b = document.createElement('button');
+    b.className = 'dot'; b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (d+1) + ': ' + (titles[d] || ''));
+    b.title = titles[d] || '';
+    (function(n){ b.addEventListener('click', function(){ go(n); }); })(d);
+    dotsBox.appendChild(b);
+  }
+  var dots = Array.prototype.slice.call(dotsBox.children);
+
+  function go(n){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === cur && slides[n].classList.contains('on')) { sync(); return; }
+    slides[cur].classList.remove('on');
+    cur = n;
+    var s = slides[cur];
+    s.classList.add('on');
+    s.scrollTop = 0;
+    sync();
+    try { history.replaceState(null, '', '#s' + (cur+1)); } catch(e){}
+  }
+  function sync(){
+    var s = slides[cur];
+    ctr.textContent = (cur+1) + ' / ' + slides.length;
+    if (s.dataset.phase === 'pre'){ scoreEl.classList.add('pre'); }
+    else {
+      scoreEl.classList.remove('pre');
+      sh.textContent = s.dataset.h || '0';
+      sd.textContent = s.dataset.d || '0';
+    }
+    prev.disabled = (cur === 0);
+    next.disabled = (cur === slides.length - 1);
+    for (var i = 0; i < dots.length; i++){
+      if (i === cur) dots[i].setAttribute('aria-current','true');
+      else dots[i].removeAttribute('aria-current');
+    }
+  }
+
+  prev.addEventListener('click', function(){ go(cur - 1); });
+  next.addEventListener('click', function(){ go(cur + 1); });
+  window.addEventListener('keydown', function(e){
+    if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); go(cur + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if (e.key === 'End'){ e.preventDefault(); go(slides.length - 1); }
+  });
+
+  var px = null, py = null;
+  var stage = document.getElementById('stage');
+  stage.addEventListener('pointerdown', function(e){ px = e.clientX; py = e.clientY; });
+  stage.addEventListener('pointerup', function(e){
+    if (px === null) return;
+    var dx = e.clientX - px, dy = e.clientY - py;
+    px = py = null;
+    if (Math.abs(dx) > 48 && Math.abs(dy) < 80){ go(cur + (dx < 0 ? 1 : -1)); }
+  });
+
+  var m = (location.hash || '').match(/^#s(\d+)$/);
+  if (m){ var n0 = parseInt(m[1], 10) - 1; if (n0 > 0){ slides[0].classList.remove('on'); cur = n0; slides[cur].classList.add('on'); } }
+  sync();
+})();
+</script>
+
+</body>
+</html>

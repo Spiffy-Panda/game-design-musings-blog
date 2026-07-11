@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Endogenous Doomsday — Minimalist Space Logistics</title>
+<meta name="description" content="An explorable explanation: the MSL run clock is not a countdown, it is an integral. The front's advance is the running sum of the shortage you failed to cover. Author the coverage curve and watch the doomsday move — you are not racing a timer, you are racing the integral of your own failures to supply." />
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#f59e0b;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  /* signal palette for the instrument */
+  --demand:#fb7185;     /* rose — what the front eats */
+  --coverage:#38bdf8;   /* sky — what you deliver */
+  --gap:#f59e0b;        /* amber — the uncovered shortage (the thing being integrated) */
+  --disp:#f59e0b;       /* amber — front displacement = the running integral */
+  --overrun:#7f1d2b;    /* dried blood — the overrun line */
+  --ghost-cover:#34d399;/* emerald ghost — the "cover it" trace */
+  --ghost-fester:#fb7185;/* rose ghost — the "let it fester" trace */
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 6rem}
+.wide{max-width:66rem}
+
+/* ---------- hero ---------- */
+header.hero{padding:4.5rem 0 1rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.28rem .7rem .28rem .55rem;background:var(--accent-soft)}
+.chip b{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--fog-500);margin:1.4rem 0 .4rem}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.05;letter-spacing:-.02em;margin:.2rem 0 .8rem;font-weight:800}
+.lede{font-size:1.18rem;color:var(--fog-300);font-style:italic;max-width:42rem}
+.spark{margin:1.8rem 0 .5rem;border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1.1rem;color:var(--fog-100);font-size:1.05rem;font-weight:600}
+.spark span{color:var(--accent)}
+
+/* ---------- prose ---------- */
+main{font-size:1.02rem}
+h2{font-size:1.55rem;letter-spacing:-.01em;margin:3rem 0 .6rem;font-weight:800}
+h2 .eye{display:block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.25rem}
+h3{font-size:1.12rem;margin:1.8rem 0 .4rem;font-weight:700;color:var(--fog-100)}
+p{color:var(--fog-300);margin:.7rem 0}
+strong{color:var(--fog-100)}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);border:1px solid var(--line);border-radius:5px;padding:.06em .38em;color:var(--fog-100)}
+.hand{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:.04em .4em;white-space:nowrap}
+ul.tight{margin:.6rem 0;padding-left:1.1rem}ul.tight li{margin:.35rem 0;color:var(--fog-300)}
+ul.tight li b{color:var(--fog-100)}
+
+/* ---------- cards ---------- */
+.card{background:var(--ink-850);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+.note{font-size:.92rem;color:var(--fog-400)}
+
+/* ---------- the instrument ---------- */
+.console{background:linear-gradient(180deg,var(--ink-900),var(--ink-850));border:1px solid var(--line);border-radius:16px;margin:1.4rem 0;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.8)}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);flex-wrap:wrap}
+.console-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fog-400)}
+.console-title b{color:var(--fog-100);letter-spacing:.06em}
+.phasebadge{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--fog-300);background:var(--ink-800);transition:.25s}
+.phasebadge.holding{color:#a7f3d0;border-color:#2c6b54;background:rgba(52,211,153,.12)}
+.phasebadge.rising{color:#fde68a;border-color:#7a5e1f;background:rgba(251,191,36,.12)}
+.phasebadge.flooding{color:#fecdd3;border-color:#7f3b46;background:rgba(251,113,133,.14)}
+.phasebadge.lost{color:var(--ink-950);border-color:var(--accent);background:var(--accent);font-weight:700}
+
+.console-body{padding:1rem}
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:1rem}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--ink-900);border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem}
+.panel h4{margin:.1rem 0 .55rem;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fog-500);font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+.panel h4 .sub{color:var(--fog-500);letter-spacing:.04em;text-transform:none;font-size:.72rem}
+
+/* transport bar */
+.transport{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+button.ctl{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-100);background:var(--ink-800);border:1px solid var(--line);
+  border-radius:8px;padding:.42rem .7rem;cursor:pointer;transition:.15s;user-select:none}
+button.ctl:hover{border-color:var(--fog-500);background:var(--ink-700)}
+button.ctl:active{transform:translateY(1px)}
+button.ctl.primary{color:var(--ink-950);background:var(--accent);border-color:var(--accent);font-weight:700}
+button.ctl.primary:hover{filter:brightness(1.08)}
+button.ctl.toggle.on{color:var(--ink-950);background:var(--demand);border-color:var(--demand);font-weight:700}
+button.ctl.warn{color:var(--demand);border-color:#7f3b46}
+button.ctl.warn:hover{background:rgba(251,113,133,.12)}
+button.ctl[disabled]{opacity:.4;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--fog-100);font-size:.9rem;margin-left:.2rem}
+.clock b{color:var(--accent);font-size:1.15rem}
+
+.seedrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.seedrow label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+input.seed{font-family:var(--font-mono);font-size:.82rem;width:7.5rem;background:var(--ink-950);color:var(--fog-100);border:1px solid var(--line);border-radius:7px;padding:.34rem .5rem}
+input.seed:focus{outline:none;border-color:var(--accent)}
+.seedchips{display:flex;gap:.35rem;flex-wrap:wrap}
+.seedchip{font-family:var(--font-mono);font-size:.68rem;color:var(--fog-300);background:var(--ink-800);border:1px solid var(--line);border-radius:6px;padding:.22rem .45rem;cursor:pointer}
+.seedchip:hover{border-color:var(--accent);color:var(--fog-100)}
+
+/* sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:.55rem .9rem;margin-top:.2rem}
+@media (max-width:560px){.sliders{grid-template-columns:1fr}}
+.slider{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;align-items:center}
+.slider .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400)}
+.slider .val{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
+.slider input[type=range]{grid-column:1/3;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--ink-700);outline:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--ink-950);cursor:pointer}
+
+/* chart host */
+.charthost{width:100%;overflow:hidden;border-radius:9px;background:var(--ink-950);border:1px solid var(--line);position:relative;cursor:crosshair}
+svg{display:block;max-width:100%}
+.svg-tip{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;fill:var(--fog-500)}
+.svg-ax{font-family:var(--font-mono);font-size:.6rem;fill:var(--fog-500)}
+.charthost .hint{position:absolute;left:10px;bottom:8px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--fog-500);pointer-events:none;background:rgba(7,8,12,.6);padding:.1rem .4rem;border-radius:5px}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:.55rem .9rem;margin-top:.6rem;align-items:center}
+.legend .it{display:inline-flex;align-items:center;gap:.36rem;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;color:var(--fog-400)}
+.legend .sw{width:13px;height:4px;border-radius:2px;display:inline-block}
+.legend .sw.box{width:11px;height:11px;border-radius:3px}
+
+/* readouts */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .7rem;font-family:var(--font-mono);font-size:.78rem;align-items:baseline}
+.kv .k{color:var(--fog-500);letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+.kv .v{color:var(--fog-100);font-variant-numeric:tabular-nums}
+.kv .v.big{color:var(--accent);font-size:1.05rem}
+.kv .v.warn{color:var(--demand)}
+
+/* the doomsday meter */
+.doomsday{border:1px solid var(--line);border-radius:11px;padding:.7rem .8rem;background:linear-gradient(180deg,var(--ink-900),var(--ink-950))}
+.doomsday .dlab{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-500)}
+.doomsday .dnum{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:2.1rem;font-weight:800;color:var(--accent);line-height:1.1;margin:.1rem 0}
+.doomsday .dnum.inf{color:var(--ghost-cover)}
+.doomsday .dnum.imminent{color:var(--demand)}
+.doomsday .dsub{font-family:var(--font-mono);font-size:.7rem;color:var(--fog-400)}
+.dmeter{height:8px;border-radius:5px;background:var(--ink-700);overflow:hidden;margin-top:.5rem;border:1px solid var(--line)}
+.dmeter i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--ghost-cover),var(--gap),var(--demand));transition:width .12s linear}
+
+/* "why" one-liner */
+.why{border:1px solid var(--accent);background:rgba(245,158,11,.08);border-radius:11px;padding:.7rem .8rem;margin-top:.2rem;transition:.2s;min-height:3.2rem}
+.why.idle{border-color:var(--line);background:var(--ink-900)}
+.why .wq{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-500)}
+.why .wmsg{font-family:var(--font-mono);font-size:.78rem;color:var(--fog-100);line-height:1.5;margin-top:.25rem}
+.why .wmsg b{color:var(--accent)}
+.why .wmsg b.bad{color:var(--demand)}
+.why .wmsg b.good{color:var(--ghost-cover)}
+
+/* scenario buttons row */
+.scenrow{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
+
+/* event log */
+.log{font-family:var(--font-mono);font-size:.72rem;line-height:1.55;max-height:9.4rem;overflow-y:auto;color:var(--fog-400);
+  background:var(--ink-950);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;margin-top:.2rem}
+.log .ln{padding:.04rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log .ln:last-child{border:none}
+.log .t{color:var(--fog-500)}
+.log .lurch{color:var(--demand)} .log .cover{color:var(--coverage)} .log .info{color:var(--fog-300)} .log .sys{color:var(--accent)} .log .hold{color:var(--ghost-cover)}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--ink-850);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.6rem 0}
+.callout .lab{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem}
+
+.risk{margin:.9rem 0;padding:.9rem 1.05rem;border:1px solid var(--line);border-radius:12px;background:var(--ink-850)}
+.risk .rt{font-weight:700;color:var(--fog-100)}
+.risk .rt b{color:var(--accent)}
+.risk .mit{font-size:.95rem;color:var(--fog-400);margin-top:.25rem}
+.risk .mit b{color:var(--fog-300);font-weight:600}
+
+.eqn{font-family:var(--font-mono);font-size:.92rem;color:var(--fog-100);background:var(--ink-900);border:1px solid var(--line);
+  border-radius:10px;padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;line-height:1.8}
+.eqn .c{color:var(--fog-500)} .eqn .k{color:var(--accent)}
+
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--fog-500);font-size:.85rem;font-family:var(--font-mono);letter-spacing:.04em}
+footer a{color:var(--fog-400)}
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2.4rem 0;border:0}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">The Endogenous Doomsday</span></li>
+    </ol>
+  </nav>
+<header class="hero">
+  <span class="chip"><b>HAND.2</b> · amber / economic lineage</span>
+  <div class="kicker">AMBER lineage · the endogenous doomsday</div>
+  <h1>The Endogenous Doomsday</h1>
+  <p class="lede">The run doesn't end on a turn counter or a minute timer. It ends when the front overruns you — and the front advances by exactly the supply you <em>failed</em> to deliver. The doomsday clock is an integral, and you are the one writing it.</p>
+  <p class="spark">You are not racing a clock. You are racing <span>the running sum of your own failures to cover</span> — supply well and you author a long run; let a shortage fester and you bring the end on yourself.</p>
+</header>
+
+<main>
+
+<p>Minimalist Space Logistics gives you <strong>one hauler</strong> and an unwinnable war to keep fed. There's no scoreboard you can run out, no clock ticking down to zero in the corner. The run ends when the <strong>front overruns you</strong> — and the front advances because it is eating its supply faster than anyone can deliver it. So the doomsday is <strong>endogenous</strong> <span class="hand">HAND.2</span>: the timer isn't handed to you from outside, it is <em>computed from your coverage</em>. Cover the demand and the clock barely moves; let it starve and the clock leaps forward to meet you.</p>
+
+<p>This page takes the most quietly brutal reading of that front — the <strong>hand reading of the clock</strong> — and makes it literal. The front's displacement, how far the line has eaten toward you, is the <strong>running integral of the shortage you didn't cover</strong>. Not a metaphor: a fixed-point accumulator that adds <code>max(0, demand − coverage)</code> every tick. When that accumulator crosses an overrun threshold, the run is over. Unmet burn becomes lost ground <span class="hand">M2.3</span> — and ground, once lost, is on the board.</p>
+
+<h2><span class="eye">the model</span>Displacement is ∫ of the gap</h2>
+
+<p>A run is a sequence of fixed ticks, evaluated in a fixed order, in integer / fixed-point arithmetic, from a single seed <span class="hand">APR.5</span> — so two runs of the same seed and the same coverage are bit-for-bit identical. Each tick has three numbers that matter:</p>
+
+<ul class="tight">
+  <li><b>Demand</b> <code>d(t)</code> — what the front eats this tick. A baseline intensity you set, plus some seeded variation (the war is noisy), plus — optionally — a term that <em>grows with the backlog you've let pile up</em>. Hunger compounds.</li>
+  <li><b>Coverage</b> <code>c(t)</code> — what your hauler delivers this tick. This is the curve <em>you</em> author: a steady rate, or a live slider you ride as the demand plays out.</li>
+  <li><b>The gap</b> <code>g(t) = max(0, d − c)</code> — the uncovered shortage. Cover fully and the gap is zero; fall behind and it's whatever you left on the table. <em>This is the shaded band, and it is the only thing that moves the clock.</em></li>
+</ul>
+
+<div class="eqn">
+<span class="c">// every fixed tick, in fixed order, integer arithmetic</span><br>
+gap     <span class="k">=</span> max( 0 , demand − coverage )<span class="c"> &nbsp; // the uncovered shortage this tick</span><br>
+displacement <span class="k">+=</span> gap · dt<span class="c"> &nbsp; // FRONT ADVANCE = the running integral of the gap</span><br>
+backlog <span class="k">+=</span> gap · dt<span class="c"> &nbsp; // unmet burn accumulates (drives compounding hunger)</span><br>
+demand  <span class="k">=</span> base + noise(seed) + <span class="k">hunger</span> · backlog<span class="c"> &nbsp; // optional positive feedback</span><br>
+<span class="k">if</span> ( displacement ≥ overrun ) <span class="k">end_run</span>()<span class="c"> &nbsp; // the endogenous doomsday</span>
+</div>
+
+<p>The whole clock lives in line two. <strong>Displacement is the area under the gap.</strong> Hold the gap at ~0 and the integral is flat — the line crawls, the run stretches out indefinitely. Let a shortage open and <em>leave</em> it, and every tick you don't cover stacks more area under the curve; the displacement lurches, and the line swallows the next system early. The "estimated ticks to overrun" readout is just <code>(overrun − displacement) / current_gap</code> — a live projection of when the area you're accumulating will reach the wall.</p>
+
+<div class="callout">
+  <div class="lab">how to drive the instrument</div>
+  <p style="margin:.2rem 0;color:var(--fog-300)">Press <strong>Play</strong> and a demand curve (rose, with seeded variation) plays out tick by tick. Ride the <strong>coverage</strong> slider — or drag the coverage line directly on the top chart — to keep your sky-blue line on top of the rose one. Wherever coverage falls short, the <strong>gap shades amber</strong>; the middle chart is the <strong>running integral</strong> of exactly that shaded area, climbing toward the red overrun line. Watch the big <strong>ticks-to-overrun</strong> number: cover well and it runs to ∞ (the clock stalls); let the gap fester and it collapses. Hit <strong>“let it fester”</strong> to take your hands off and watch the integral lurch — then compare the two ghost traces.</p>
+</div>
+</main>
+</div>
+
+<!-- ===================== THE INSTRUMENT ===================== -->
+<div class="wrap wide">
+<div class="console" id="console">
+
+  <div class="console-head">
+    <div class="console-title">RUN CLOCK · <b>front "AMBER"</b> · displacement = ∫ uncovered demand</div>
+    <div class="phasebadge holding" id="phaseBadge">CLOCK STALLED</div>
+  </div>
+
+  <div class="console-body">
+
+    <!-- transport -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="transport">
+        <button class="ctl primary" id="btnPlay">▶ Play</button>
+        <button class="ctl" id="btnStep">⏭ Step</button>
+        <button class="ctl" id="btnReset">⟲ Reset</button>
+        <button class="ctl warn" id="btnFester">☠ Let it fester</button>
+        <span class="clock">T+<b id="clk">0</b><span style="color:var(--fog-500)"> / <span id="clkMax">220</span> ticks</span></span>
+        <span style="flex:1"></span>
+        <div class="seedrow">
+          <label for="seed">seed</label>
+          <input class="seed" id="seed" value="AMBER-1207" spellcheck="false" />
+          <div class="seedchips" id="seedchips"></div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:.8rem">
+        <div class="slider">
+          <span class="lab">coverage rate — supply you deliver / tick</span>
+          <span class="val" id="vCov">1.00</span>
+          <input type="range" id="sCov" min="0" max="220" step="2" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">demand intensity — baseline burn / tick</span>
+          <span class="val" id="vDem">1.00</span>
+          <input type="range" id="sDem" min="20" max="200" step="2" value="100" />
+        </div>
+        <div class="slider">
+          <span class="lab">overrun threshold — displacement to end</span>
+          <span class="val" id="vThr">40.0</span>
+          <input type="range" id="sThr" min="100" max="900" step="10" value="400" />
+        </div>
+        <div class="slider">
+          <span class="lab">compounding hunger — demand grows w/ backlog</span>
+          <span class="val" id="vHun">off</span>
+          <input type="range" id="sHun" min="0" max="120" step="4" value="0" />
+        </div>
+      </div>
+      <div class="note" style="margin-top:.55rem">Coverage is the curve you author — ride the slider, or <strong>drag on the top chart</strong> to paint it ahead of the playhead. Hunger &gt; 0 makes demand grow with the backlog you let pile up (a positive-feedback doomsday — tunable, never an instant loss). Determinism holds across every setting: same seed + same coverage ⇒ same run.</div>
+      <div class="scenrow">
+        <button class="ctl" id="btnCover">▣ Demo: “cover it”</button>
+        <button class="ctl" id="btnFesterDemo">▣ Demo: “let it fester”</button>
+        <button class="ctl" id="btnGhost">◫ Toggle A/B ghost traces</button>
+      </div>
+    </div>
+
+    <div class="grid2">
+
+      <!-- LEFT: the stacked charts -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="panel">
+          <h4>Demand vs coverage <span class="sub">amber = the gap you failed to cover · drag to paint coverage</span></h4>
+          <div class="charthost" id="hostFlow">
+            <svg id="chartFlow" viewBox="0 0 700 230" role="img" aria-label="Demand versus coverage over the run; the uncovered gap is shaded amber"></svg>
+            <div class="hint">drag on chart ▸ paint coverage</div>
+          </div>
+          <div class="legend">
+            <span class="it"><span class="sw" style="background:var(--demand)"></span>demand (front eats)</span>
+            <span class="it"><span class="sw" style="background:var(--coverage)"></span>coverage (you deliver)</span>
+            <span class="it"><span class="sw box" style="background:var(--gap);opacity:.55"></span>gap = uncovered shortage</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4>Front displacement <span class="sub">the running integral of the gap → overrun</span></h4>
+          <div class="charthost" id="hostInt" style="cursor:default">
+            <svg id="chartInt" viewBox="0 0 700 200" role="img" aria-label="Front displacement: the running integral of the uncovered gap, climbing toward the overrun threshold"></svg>
+          </div>
+          <div class="legend">
+            <span class="it"><span class="sw" style="background:var(--disp)"></span>displacement = ∫ gap·dt</span>
+            <span class="it"><span class="sw" style="background:var(--overrun)"></span>overrun line</span>
+            <span class="it" id="ghostLegend" style="display:none"><span class="sw" style="background:var(--ghost-cover)"></span>“cover it”&nbsp;&nbsp;<span class="sw" style="background:var(--ghost-fester)"></span>“fester”</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: doomsday + readouts + why + log -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        <div class="doomsday">
+          <div class="dlab">estimated ticks to overrun</div>
+          <div class="dnum inf" id="doomNum">∞</div>
+          <div class="dsub" id="doomSub">gap ≈ 0 — the clock is stalled</div>
+          <div class="dmeter"><i id="doomBar" style="width:2%"></i></div>
+        </div>
+
+        <div class="panel">
+          <h4>Run state</h4>
+          <div class="kv">
+            <span class="k">current gap</span><span class="v big" id="kvGap">0.00</span>
+            <span class="k">displacement (∫)</span><span class="v" id="kvDisp">0.00 / 40.0</span>
+            <span class="k">demand now</span><span class="v" id="kvDem">0.00</span>
+            <span class="k">coverage now</span><span class="v" id="kvCov">0.00</span>
+            <span class="k">backlog (Σ unmet)</span><span class="v" id="kvBack">0.00</span>
+            <span class="k">ticks survived</span><span class="v" id="kvSurv">0</span>
+          </div>
+        </div>
+
+        <div class="why idle" id="why">
+          <div class="wq">why — the clock, right now</div>
+          <div class="wmsg" id="whyMsg">Press Play. A noisy demand curve will play out; keep coverage on top of it and the displacement integral stays flat. Let the gap open and watch the doomsday rush in.</div>
+        </div>
+
+        <div class="panel">
+          <h4>Run log <span class="sub">covers · lurches · the overrun</span></h4>
+          <div class="log" id="log"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== AFTER THE INSTRUMENT ===================== -->
+<div class="wrap">
+<main>
+
+<h2><span class="eye">what you just did</span>You authored a clock by covering — or failing to</h2>
+
+<p>The first thing the instrument teaches is that the corner timer is a <em>lie of convenience</em> in most games and here it's been replaced by something honest. There is no countdown. There's a <strong>demand</strong> pouring in, your <strong>coverage</strong> answering it, and the <strong>area between them</strong> — the amber gap — being quietly summed into the front's advance. When you held coverage on top of demand, the gap pinched to zero, the integral went flat, and the big number ran to ∞: <strong>the clock stalled because you gave it nothing to count</strong>. The doomsday is something you push out indefinitely by supplying, not a fuse lit at the start.</p>
+
+<p>The second thing it teaches is why falling behind <em>hurts out of proportion</em>. The displacement is an integral, so a shortage you leave open doesn't cost you a fixed penalty — it costs you <strong>area</strong>, and area grows with time. Ten ticks uncovered isn't ten units of trouble; it's a wedge of trouble that gets wider the longer you ignore it, because the gap keeps stacking. That's the <strong>lurch</strong>: the displacement line kinks upward, and the ticks-to-overrun number — which is just the remaining distance divided by the <em>current</em> gap — collapses from comfortable to single digits in a few ticks. Unmet burn became lost ground <span class="hand">M2.3</span>, and the ground compounds.</p>
+
+<p>Turn <strong>compounding hunger</strong> up and the lesson sharpens into a warning. Now demand itself grows with the backlog you've let pile up: fall behind, and the front eats <em>faster</em> precisely because you're behind. The gap feeds the backlog, the backlog feeds the demand, the demand widens the gap — a positive-feedback spiral where the end accelerates toward you. Crucially it's a <strong>slider, not a switch</strong>: at low values it's a gentle penalty for sloppiness; cranked, it's the death-spiral that ends careless runs fast. Either way the loss isn't a wall you hit — it's a consequence you authored, tick by uncovered tick.</p>
+
+<p>So the skill the AMBER clock asks for isn't reflex against a timer — it's <strong>reading an integral before it reads you</strong>. The ghost traces make the whole thesis visible on one pair of axes: <span style="color:var(--ghost-cover);font-weight:600">cover it</span> stays a flat green floor along the bottom; <span style="color:var(--ghost-fester);font-weight:600">let it fester</span> peels up and off the top early. Same seed, same demand, same wall — two completely different doomsdays, and the only variable was how much of the gap you chose to cover.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">one fiction, two readings</span>The integral vs. the price you pay</h2>
+
+<p>This is the same amber lineage as the sibling economic pages — the <em>hand reading of the clock</em> rather than the ledger reading. Where <code>solvency-cell</code> and <code>market-clearing-cell</code> ask <strong>can you afford the next delivery</strong>, this page asks <strong>what does <em>not</em> delivering cost you, accumulated over the run</strong>. Same invisible hand, pointed at the clock instead of the wallet: the market reading prices each move; the integral reading sums every move you <em>didn't</em> make into the distance the front still has to travel. Pick the reading that makes the doom feel most like your own doing at the table — this one makes it impossible to blame the timer.</p>
+
+<hr class="hr"/>
+
+<h2><span class="eye">risks, named</span>Where this design can rot</h2>
+
+<div class="risk">
+  <div class="rt"><b>An integral is hard to feel.</b> "Your displacement is the time-integral of the uncovered gap" is true and completely opaque to a player mid-run. If all they see is a number marching up, the cause→effect that makes the system fair — <em>this</em> shortage, right here, bought <em>that</em> much advance — is invisible, and an invisible clock feels arbitrary, which is the one thing an endogenous clock must never feel.</div>
+  <div class="mit"><b>Mitigations, all on screen:</b> <em>shade the gap</em> as a literal area on the demand/coverage chart, and draw the <em>running sum directly</em> as the second chart — so the integral isn't described, it's <strong>shown accumulating the exact band above it</strong>. The ticks-to-overrun readout and its meter translate the abstract area into the only currency a player cares about — time left — and the one-line "why" narrates each lurch in plain language ("12 ticks uncovered → displacement +N → overrun in ~M"). Legibility of an integral is a rendering problem, and it's solved by drawing the area and its sum side by side, not by hoping the player does calculus.</div>
+</div>
+
+<div class="risk">
+  <div class="rt"><b>Runaway compounding.</b> The demand-grows-with-backlog feedback is the most dangerous knob here: set it too hot and a single missed tick spirals to an unrecoverable loss with no counterplay, which feels like the game cheated. A positive feedback loop with no ceiling is a difficulty cliff, not a mechanic.</div>
+  <div class="mit"><b>Mitigation:</b> the feedback is a <strong>tunable coefficient, defaulting to off</strong> — the base clock (pure ∫ of the gap) is fully playable and fair on its own, and hunger is layered on top as an opt-in intensity. Even on, it's bounded by the same fixed-point arithmetic as everything else and is meant as a <em>tension</em> dial, not a kill switch: at sane values, an alert player who covers the gap promptly always pulls out of the spiral. The instrument shows the extreme precisely so the failure mode is visible and tuned against, not discovered in production.</div>
+</div>
+
+<p class="note" style="margin-top:1.6rem">Model + page by Panda. The numbers here are illustrative of the AMBER reading of the run clock — demand scale, noise band, and the overrun threshold are tuned for legibility over balance. The integral is a real fixed-point accumulator stepped on a fixed tick; the doomsday is literally the moment that accumulator crosses the wall.</p>
+
+</main>
+
+<footer>
+  Minimalist Space Logistics · AMBER lineage — "The Endogenous Doomsday" · explorable explanation · runs offline from a single file.
+</footer>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   The Endogenous Doomsday — run displacement as the integral of the gap.
+   No external requests. One reseedable PRNG (mulberry32), used ONLY for the
+   seeded demand variation (the noisy war) — the clock itself is FIXED-POINT
+   integer arithmetic: every scalar is scaled by FP_ONE and we only add,
+   subtract, and floor-divide integers, so two runs of one seed + one coverage
+   curve are bit-for-bit identical. APR.5.
+   ========================================================================= */
+
+/* ---------- tiny seeded PRNG (mulberry32) ---------- */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* stable string -> uint32 hash so seed text maps deterministically */
+function hashSeed(str){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+
+/* ---------- fixed-point helpers ----------
+   FP_ONE = 1.0 in fixed point. Values stay small (a few tens × FP_ONE), so every
+   intermediate is well within JS's exact-integer range (2^53). Math.trunc gives
+   round-toward-zero division — the key to a deterministic integer clock. */
+const FP_BITS = 16;
+const FP_ONE  = 1 << FP_BITS;                 // 65536
+const toFP    = x => Math.round(x * FP_ONE);  // float param -> fixed (setup/UI only)
+const fromFP  = x => x / FP_ONE;              // fixed -> float (display only)
+function fpmul(a, b){ return Math.trunc((a * b) / FP_ONE); }   // (a*b)>>FP_BITS, trunc
+
+/* ---------- run parameters ---------- */
+const TICKS   = 220;          // a run is this many fixed ticks (the x-axis)
+const TICK_MS = 42;           // wall-clock per tick when playing
+const DT      = FP_ONE;       // dt = 1.0 in fixed point (one tick)
+const NOISE_AMP = 0.42;       // seeded demand variation amplitude (× intensity)
+
+/* ---------- simulation state ---------- */
+const S = {
+  seedNum:0, seedStr:"",
+  t:0, running:false, done:false, overrunAt:-1,
+  // per-tick fixed-point series, length TICKS+1 (index = tick)
+  demand:   new Array(TICKS+1).fill(0),   // filled lazily as the run plays (depends on backlog)
+  coverage: new Array(TICKS+1).fill(0),   // the curve the player authors (fixed)
+  gap:      new Array(TICKS+1).fill(0),
+  disp:     new Array(TICKS+1).fill(0),   // running integral
+  computed: 0,                            // highest tick index actually simulated
+  backlog: 0,                             // Σ unmet (fixed) — drives hunger
+  // sliders (fixed where they enter the clock)
+  cov: toFP(1.00), dem: toFP(1.00), thr: toFP(40.0), hunger: toFP(0.00),
+  // A/B ghost traces (precomputed displacement arrays, display floats normalised 0..1 of own run)
+  ghosts:null, showGhost:false,
+  why:{cls:"idle", msg:""}, log:[],
+  raf:null, _last:0,
+};
+
+/* base demand noise for a given tick — deterministic from seed, smooth-ish.
+   Two offset sine-like waves summed from the PRNG-seeded phases, so the curve
+   has character but never goes negative. Returns a multiplier around 1.0. */
+let _noisePhase = [0,0,0];
+function seedNoise(){
+  const r = mulberry32(S.seedNum ^ 0x9e3779b9);
+  _noisePhase = [r()*6.283, r()*6.283, r()*6.283];
+}
+function demandNoiseMul(tick){
+  // deterministic, continuous in tick; amplitude NOISE_AMP around 1.0
+  const a = Math.sin(tick*0.21 + _noisePhase[0]);
+  const b = Math.sin(tick*0.067 + _noisePhase[1]);
+  const c = Math.sin(tick*0.43 + _noisePhase[2]);
+  const w = (a*0.55 + b*0.32 + c*0.13);        // in [-1,1] roughly
+  return 1 + NOISE_AMP * w;
+}
+
+/* ---------- reset / seed ---------- */
+function reseed(seedStr){
+  S.seedStr = seedStr;
+  S.seedNum = hashSeed(seedStr);
+  seedNoise();
+  S.t = 0; S.running = false; S.done = false; S.overrunAt = -1;
+  S.computed = 0; S.backlog = 0;
+  S.demand.fill(0); S.gap.fill(0); S.disp.fill(0);
+  // default authored coverage = current slider, flat across the run
+  for (let i=0;i<=TICKS;i++) S.coverage[i] = S.cov;
+  S.ghosts = null;
+  S.why = {cls:"idle", msg:"Run seeded. A noisy demand curve is ready — press Play and keep coverage on top of it."};
+  S.log = [];
+  stop();
+  pushLog("sys", 0, "Front AMBER seeded — run clock armed. Displacement = ∫ uncovered gap, "+TICKS+" ticks, fixed-point.");
+  render();
+}
+
+/* coverage value the player has authored for a tick (fixed) */
+function coverageAt(tick){
+  if (tick < 0) tick = 0; if (tick > TICKS) tick = TICKS;
+  return S.coverage[tick];
+}
+
+/* ---------- the core tick: advance the integral by one step ----------
+   Computes demand[t] (base intensity * seeded noise + hunger*backlog), the gap
+   max(0, demand-coverage), folds the gap into displacement AND backlog, then
+   checks the overrun wall. Fixed order, integer arithmetic. */
+function simTick(tick){
+  // demand = intensity * noise  +  hunger * backlog   (all fixed-point)
+  const noiseMul = demandNoiseMul(tick);                 // float ~[0.6,1.4]
+  let dem = fpmul(S.dem, toFP(noiseMul));
+  if (dem < 0) dem = 0;
+  if (S.hunger > 0){
+    dem += fpmul(S.hunger, S.backlog);                   // compounding hunger
+  }
+  const cov = coverageAt(tick);
+  let gap = dem - cov;
+  if (gap < 0) gap = 0;                                  // you can't "over-cover" the clock backward
+
+  S.demand[tick]   = dem;
+  S.gap[tick]      = gap;
+  // displacement integral: disp[t] = disp[t-1] + gap*dt
+  const prev = tick>0 ? S.disp[tick-1] : 0;
+  S.disp[tick] = prev + fpmul(gap, DT);
+  // backlog accumulates unmet burn (fixed) — feeds hunger next ticks
+  S.backlog += fpmul(gap, DT);
+
+  if (tick > S.computed) S.computed = tick;
+}
+
+/* advance one tick of wall-clock play */
+function stepTick(){
+  if (S.done) return;
+  if (S.t >= TICKS){ finishRun("survived"); return; }
+  S.t++;
+  simTick(S.t);
+
+  // narrate notable events
+  const gapF = fromFP(S.gap[S.t]);
+  if (gapF > 0.02){
+    // a lurch: gap is meaningfully open
+    if (S.t % 6 === 0 || (S.t>1 && fromFP(S.gap[S.t-1])<=0.02)){
+      pushLog("lurch", S.t, "GAP +"+gapF.toFixed(2)+" uncovered → displacement "+fromFP(S.disp[S.t]).toFixed(2)+" (front gains ground).");
+    }
+  } else {
+    if (S.t>1 && fromFP(S.gap[S.t-1])>0.02){
+      pushLog("cover", S.t, "GAP CLOSED — coverage caught demand. Displacement holds at "+fromFP(S.disp[S.t]).toFixed(2)+".");
+    }
+  }
+
+  // overrun check — the endogenous doomsday
+  if (S.disp[S.t] >= S.thr){
+    finishRun("overrun");
+    return;
+  }
+  if (S.t >= TICKS){ finishRun("survived"); return; }
+  updateWhy();
+  render();
+}
+
+function finishRun(how){
+  S.done = true; S.running = false; stopRAF();
+  if (how === "overrun"){
+    S.overrunAt = S.t;
+    S.why = {cls:"bad", msg:"<b class='bad'>OVERRUN at T+"+S.t+".</b> Displacement crossed the wall ("+fromFP(S.thr).toFixed(1)+"). The front ate through — the run ends. (In MSL the loss banks prestige toward a better start.)"};
+    pushLog("lurch", S.t, "FRONT OVERRUN — displacement "+fromFP(S.disp[S.t]).toFixed(2)+" ≥ "+fromFP(S.thr).toFixed(1)+". The run ends.");
+  } else {
+    S.why = {cls:"good", msg:"<b class='good'>Run survived all "+TICKS+" ticks.</b> Final displacement "+fromFP(S.disp[S.t]).toFixed(2)+" / "+fromFP(S.thr).toFixed(1)+" — you authored a long run by covering the gap."};
+    pushLog("hold", S.t, "RUN COMPLETE — survived "+TICKS+" ticks. Displacement held at "+fromFP(S.disp[S.t]).toFixed(2)+" / "+fromFP(S.thr).toFixed(1)+".");
+  }
+  render();
+}
+
+/* ---------- the live "why" line — narrate the clock's current logic ---------- */
+function updateWhy(){
+  if (S.done) return;
+  const t = S.t;
+  const gapF = fromFP(S.gap[t]||0);
+  const dispF = fromFP(S.disp[t]||0);
+  const remain = fromFP(S.thr) - dispF;
+  const eta = estTicksToOverrun();
+  if (gapF <= 0.02){
+    // count how long the gap has been ~closed
+    let held = 0;
+    for (let k=t;k>=1;k--){ if (fromFP(S.gap[k]||0) <= 0.02) held++; else break; }
+    S.why = {cls:"good", msg:"Gap held at <b class='good'>~0 for "+held+" tick"+(held===1?"":"s")+"</b> → displacement flat at "+dispF.toFixed(1)+" → doomsday <b class='good'>pushed out indefinitely</b>. The clock has nothing to count."};
+  } else {
+    // count run of uncovered ticks
+    let unc = 0;
+    for (let k=t;k>=1;k--){ if (fromFP(S.gap[k]||0) > 0.02) unc++; else break; }
+    const etaTxt = (eta===Infinity) ? "stalled" : ("~"+eta);
+    S.why = {cls:"bad", msg:"<b class='bad'>"+unc+" tick"+(unc===1?"":"s")+" uncovered</b> → displacement lurched to "+dispF.toFixed(1)+" → only "+remain.toFixed(1)+" of slack left → <b class='bad'>overrun in "+etaTxt+"</b> ticks at this gap."};
+  }
+}
+
+/* estimated ticks to overrun = remaining slack / current gap (per tick).
+   Uses a short trailing average of the gap so it isn't jumpy on noise. */
+function estTicksToOverrun(){
+  if (S.done && S.overrunAt>=0) return 0;
+  const dispNow = fromFP(S.disp[S.t]||0);
+  const remain = fromFP(S.thr) - dispNow;
+  if (remain <= 0) return 0;
+  // trailing-average gap over last few computed ticks (display floats)
+  let sum=0, n=0;
+  for (let k=S.t;k>Math.max(0,S.t-5);k--){ sum += fromFP(S.gap[k]||0); n++; }
+  const avgGap = n? sum/n : fromFP(S.gap[S.t]||0);
+  if (avgGap <= 0.0005) return Infinity;     // clock stalled
+  return Math.max(0, Math.ceil(remain / avgGap));
+}
+
+/* ---------- A/B ghost traces: same seed, two coverage policies ----------
+   Re-run the integral headlessly for "cover it" (coverage tracks demand) and
+   "let it fester" (coverage ~0 after a point), capturing displacement arrays.
+   Computed at current threshold/intensity/hunger so they're a fair comparison. */
+function computeGhosts(){
+  const run = (policy)=>{
+    const disp = new Array(TICKS+1).fill(0);
+    let backlog = 0;
+    for (let t=1;t<=TICKS;t++){
+      const noiseMul = demandNoiseMul(t);
+      let dem = fpmul(S.dem, toFP(noiseMul));
+      if (dem<0) dem=0;
+      if (S.hunger>0) dem += fpmul(S.hunger, backlog);
+      let cov;
+      if (policy==="cover"){
+        cov = dem;                                  // perfectly cover (gap 0)
+      } else { // fester
+        cov = (t < 22) ? dem : 0;                   // cover briefly, then drop it
+      }
+      let gap = dem - cov; if (gap<0) gap=0;
+      disp[t] = disp[t-1] + fpmul(gap, DT);
+      backlog += fpmul(gap, DT);
+    }
+    return disp;
+  };
+  S.ghosts = { cover: run("cover"), fester: run("fester") };
+}
+
+/* ---------- logging ---------- */
+function pushLog(cls, t, msg){
+  S.log.unshift({cls, t, msg});
+  if (S.log.length > 80) S.log.pop();
+}
+
+/* ====================== RENDERING ====================== */
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+/* chart geometry (shared x mapping) */
+const FLOW = {w:700, h:230, ml:42, mr:12, mt:12, mb:24};
+const INT  = {w:700, h:200, ml:42, mr:12, mt:12, mb:24};
+function xAt(geom, tick){ return geom.ml + (geom.w-geom.ml-geom.mr) * (tick/TICKS); }
+function tickAtX(geom, px){
+  const frac = (px - geom.ml) / (geom.w-geom.ml-geom.mr);
+  return Math.round(Math.max(0, Math.min(1, frac)) * TICKS);
+}
+
+function render(){
+  $("clk").textContent = S.t;
+  renderPhase();
+  renderFlow();
+  renderIntegral();
+  renderDoomsday();
+  renderReadouts();
+  renderWhy();
+  renderLog();
+
+  $("btnPlay").textContent = S.running ? "⏸ Pause" : "▶ Play";
+  $("btnStep").disabled = S.done;
+  $("btnPlay").disabled = S.done;
+  $("ghostLegend").style.display = S.showGhost ? "inline-flex" : "none";
+  $("btnGhost").classList.toggle("on", S.showGhost);
+}
+
+function renderPhase(){
+  const pb = $("phaseBadge");
+  let cls, label;
+  if (S.done && S.overrunAt>=0){ cls="lost"; label="FRONT OVERRUN"; }
+  else if (S.done){ cls="holding"; label="RUN SURVIVED"; }
+  else {
+    const eta = estTicksToOverrun();
+    const gapF = fromFP(S.gap[S.t]||0);
+    if (eta===Infinity || gapF<=0.02){ cls="holding"; label="CLOCK STALLED"; }
+    else if (eta<=14){ cls="flooding"; label="DOOMSDAY IMMINENT"; }
+    else { cls="rising"; label="CLOCK RUNNING"; }
+  }
+  pb.className = "phasebadge "+cls;
+  pb.textContent = label;
+}
+
+/* axis helper: horizontal gridlines + labels for a value range */
+function drawYAxis(svg, geom, vmax, fmtFn){
+  const steps = 4;
+  for (let i=0;i<=steps;i++){
+    const v = vmax * i/steps;
+    const y = geom.h-geom.mb - (geom.h-geom.mt-geom.mb)*(i/steps);
+    el("line",{x1:geom.ml,y1:y,x2:geom.w-geom.mr,y2:y,stroke:"var(--line)","stroke-width":i===0?1.2:0.7,opacity:i===0?0.9:0.45},svg);
+    const tx=el("text",{x:geom.ml-5,y:y+3,"text-anchor":"end",class:"svg-ax"},svg);
+    tx.textContent = fmtFn(v);
+  }
+  // a couple of x ticks
+  for (let f=0; f<=1.0001; f+=0.25){
+    const x = geom.ml + (geom.w-geom.ml-geom.mr)*f;
+    const tk = Math.round(f*TICKS);
+    const tx=el("text",{x:x,y:geom.h-8,"text-anchor":"middle",class:"svg-ax"},svg);
+    tx.textContent = "T+"+tk;
+  }
+}
+
+/* y mapping for the flow chart (demand/coverage), auto-scaled to data peak */
+function flowYMax(){
+  let m = fromFP(S.dem) * (1+NOISE_AMP) * 1.15;
+  // include any authored coverage and any computed demand peak
+  for (let i=0;i<=S.computed;i++){ m = Math.max(m, fromFP(S.demand[i]||0)); }
+  for (let i=0;i<=TICKS;i++){ m = Math.max(m, fromFP(S.coverage[i]||0)); }
+  return Math.max(0.5, m);
+}
+function flowY(geom, v){ // v float
+  const vmax = geom._vmax;
+  const t = v/vmax; const tt = t<0?0:(t>1?1:t);
+  return geom.h-geom.mb - (geom.h-geom.mt-geom.mb)*tt;
+}
+
+function renderFlow(){
+  const svg = $("chartFlow"); svg.innerHTML = "";
+  const g = Object.assign({}, FLOW); g._vmax = flowYMax();
+  drawYAxis(svg, g, g._vmax, v=>v.toFixed(1));
+
+  // axis label
+  const yl=el("text",{x:10,y:18,class:"svg-tip",transform:"rotate(0)"},svg); yl.textContent="rate";
+
+  // Build the gap shading as a polygon between demand and coverage where demand>coverage.
+  // We render shading up to the computed playhead (demand is only known there); coverage
+  // is drawn across the whole run as the authored curve.
+  const lastSim = S.computed;
+
+  // gap fill (amber) — area between coverage and demand where positive, tick by tick
+  if (lastSim >= 1){
+    // build as a series of quads per tick segment to handle crossings cleanly
+    for (let t=1;t<=lastSim;t++){
+      const d0=fromFP(S.demand[t-1]||0), d1=fromFP(S.demand[t]||0);
+      const c0=fromFP(S.coverage[t-1]||0), c1=fromFP(S.coverage[t]||0);
+      const x0=xAt(g,t-1), x1=xAt(g,t);
+      // only shade where there's a positive gap at either end
+      if ((d0-c0)>0.0005 || (d1-c1)>0.0005){
+        const top0=flowY(g,d0), top1=flowY(g,d1);
+        // clamp coverage baseline to [0, demand] so the quad never inverts at a crossing
+        const cb0=Math.min(Math.max(c0,0),d0), cb1=Math.min(Math.max(c1,0),d1);
+        const by0=flowY(g,cb0), by1=flowY(g,cb1);
+        el("polygon",{points:`${x0},${top0} ${x1},${top1} ${x1},${by1} ${x0},${by0}`,
+          fill:"var(--gap)",opacity:0.34,stroke:"none"},svg);
+      }
+    }
+  }
+
+  // demand line (rose) up to playhead, then a faint "unknown ahead" dashed baseline
+  let dPath="";
+  for (let t=0;t<=lastSim;t++){ dPath += (t===0?"M":"L")+xAt(g,t)+","+flowY(g,fromFP(S.demand[t]||0)); }
+  if (lastSim>=1) el("path",{d:dPath,fill:"none",stroke:"var(--demand)","stroke-width":2.2,"stroke-linejoin":"round"},svg);
+
+  // coverage line (sky) across the WHOLE authored run — solid up to playhead, dashed ahead
+  let cPathSolid="", cPathAhead="";
+  for (let t=0;t<=TICKS;t++){
+    const seg = (t===0?"M":"L")+xAt(g,t)+","+flowY(g,fromFP(S.coverage[t]||0));
+    if (t<=lastSim) cPathSolid += seg;
+    if (t>=lastSim) cPathAhead += (t===lastSim?"M":"L")+xAt(g,t)+","+flowY(g,fromFP(S.coverage[t]||0));
+  }
+  el("path",{d:cPathAhead,fill:"none",stroke:"var(--coverage)","stroke-width":1.6,opacity:.5,"stroke-dasharray":"3 4"},svg);
+  if (lastSim>=1) el("path",{d:cPathSolid,fill:"none",stroke:"var(--coverage)","stroke-width":2.2,"stroke-linejoin":"round"},svg);
+
+  // playhead
+  const px = xAt(g, S.t);
+  el("line",{x1:px,y1:g.mt,x2:px,y2:g.h-g.mb,stroke:"var(--accent)","stroke-width":1,opacity:.55,"stroke-dasharray":"2 3"},svg);
+  // current gap marker at playhead
+  if (lastSim>=1 && !S.done){
+    const dv=fromFP(S.demand[S.t]||0), cv=fromFP(S.coverage[S.t]||0);
+    if (dv-cv>0.0005){
+      el("line",{x1:px,y1:flowY(g,cv),x2:px,y2:flowY(g,dv),stroke:"var(--gap)","stroke-width":3,opacity:.9,"stroke-linecap":"round"},svg);
+    }
+  }
+}
+
+function renderIntegral(){
+  const svg = $("chartInt"); svg.innerHTML="";
+  const g = Object.assign({}, INT);
+  const vmaxData = Math.max(fromFP(S.thr)*1.12, fromFP(S.disp[S.computed]||0)*1.05, 1);
+  g._vmax = vmaxData;
+  const yOf = v => { const t=v/g._vmax; const tt=t<0?0:(t>1?1:t); return g.h-g.mb-(g.h-g.mt-g.mb)*tt; };
+  drawYAxis(svg, g, g._vmax, v=>v.toFixed(0));
+
+  // overrun threshold line (red) + label
+  const ty = yOf(fromFP(S.thr));
+  el("line",{x1:g.ml,y1:ty,x2:g.w-g.mr,y2:ty,stroke:"var(--demand)","stroke-width":1.6,"stroke-dasharray":"6 4",opacity:.9},svg);
+  const tl=el("text",{x:g.w-g.mr-2,y:ty-4,"text-anchor":"end",class:"svg-ax",fill:"var(--demand)"},svg);
+  tl.textContent="OVERRUN "+fromFP(S.thr).toFixed(0);
+
+  // ghost traces (A/B) drawn faintly behind
+  if (S.showGhost && S.ghosts){
+    const drawGhost=(arr,color)=>{
+      let p="";
+      for (let t=0;t<=TICKS;t++){ p += (t===0?"M":"L")+xAt(g,t)+","+yOf(fromFP(arr[t]||0)); }
+      el("path",{d:p,fill:"none",stroke:color,"stroke-width":1.5,opacity:.55,"stroke-dasharray":"4 3"},svg);
+    };
+    drawGhost(S.ghosts.cover, "var(--ghost-cover)");
+    drawGhost(S.ghosts.fester, "var(--ghost-fester)");
+  }
+
+  // displacement area + line up to playhead
+  const lastSim=S.computed;
+  if (lastSim>=1){
+    let area="M"+xAt(g,0)+","+yOf(0);
+    let line="";
+    for (let t=0;t<=lastSim;t++){
+      const x=xAt(g,t), y=yOf(fromFP(S.disp[t]||0));
+      area += "L"+x+","+y;
+      line += (t===0?"M":"L")+x+","+y;
+    }
+    area += "L"+xAt(g,lastSim)+","+yOf(0)+"Z";
+    el("path",{d:area,fill:"var(--disp)",opacity:.14,stroke:"none"},svg);
+    el("path",{d:line,fill:"none",stroke:"var(--disp)","stroke-width":2.4,"stroke-linejoin":"round"},svg);
+    // head dot
+    const hx=xAt(g,lastSim), hy=yOf(fromFP(S.disp[lastSim]||0));
+    el("circle",{cx:hx,cy:hy,r:3.2,fill:"var(--disp)",stroke:"var(--ink-950)","stroke-width":1.5},svg);
+  }
+
+  // projection: from the head, a faint line at the current avg-gap slope to the wall
+  if (lastSim>=1 && !S.done){
+    const eta=estTicksToOverrun();
+    if (eta!==Infinity && eta>0){
+      const hx=xAt(g,lastSim), hy=yOf(fromFP(S.disp[lastSim]||0));
+      const tt=Math.min(TICKS, lastSim+eta);
+      const wx=xAt(g,tt), wy=yOf(fromFP(S.thr));
+      el("line",{x1:hx,y1:hy,x2:wx,y2:wy,stroke:"var(--accent)","stroke-width":1.2,opacity:.5,"stroke-dasharray":"2 4"},svg);
+      el("circle",{cx:wx,cy:wy,r:3,fill:"none",stroke:"var(--accent)","stroke-width":1.4,opacity:.7},svg);
+    }
+  }
+
+  // playhead
+  const px=xAt(g,S.t);
+  el("line",{x1:px,y1:g.mt,x2:px,y2:g.h-g.mb,stroke:"var(--accent)","stroke-width":1,opacity:.4,"stroke-dasharray":"2 3"},svg);
+
+  // y axis caption
+  const yl=el("text",{x:10,y:18,class:"svg-tip"},svg); yl.textContent="∫ gap";
+}
+
+function renderDoomsday(){
+  const eta = estTicksToOverrun();
+  const num=$("doomNum"), sub=$("doomSub"), bar=$("doomBar");
+  if (S.done && S.overrunAt>=0){
+    num.textContent="0"; num.className="dnum imminent";
+    sub.textContent="overrun reached at T+"+S.overrunAt;
+    bar.style.width="100%";
+  } else if (S.done){
+    num.textContent="∞"; num.className="dnum inf";
+    sub.textContent="run complete — never overran";
+    bar.style.width="2%";
+  } else if (eta===Infinity){
+    num.textContent="∞"; num.className="dnum inf";
+    sub.textContent="gap ≈ 0 — the clock is stalled";
+    bar.style.width="2%";
+  } else {
+    num.textContent=eta; num.className="dnum"+(eta<=14?" imminent":"");
+    sub.textContent = eta<=14 ? "doomsday imminent — close the gap NOW" : "at the current gap, the front reaches you in "+eta+" ticks";
+    // meter: fraction of displacement consumed toward the wall
+    const frac = Math.max(0.02, Math.min(1, fromFP(S.disp[S.t]||0)/fromFP(S.thr)));
+    bar.style.width=(frac*100).toFixed(1)+"%";
+  }
+}
+
+function renderReadouts(){
+  const gapF=fromFP(S.gap[S.t]||0);
+  $("kvGap").textContent=gapF.toFixed(2);
+  $("kvGap").className = "v big"+(gapF>0.02?" warn":"");
+  $("kvDisp").textContent=fromFP(S.disp[S.t]||0).toFixed(2)+" / "+fromFP(S.thr).toFixed(1);
+  $("kvDem").textContent=fromFP(S.demand[S.t]||0).toFixed(2);
+  $("kvCov").textContent=fromFP(coverageAt(S.t)).toFixed(2);
+  $("kvBack").textContent=fromFP(S.backlog).toFixed(2);
+  $("kvSurv").textContent=S.t;
+}
+
+function renderWhy(){
+  const w=$("why");
+  w.className="why "+(S.why.cls==="idle"?"idle":"");
+  $("whyMsg").innerHTML=S.why.msg;
+}
+
+function renderLog(){
+  const host=$("log"); host.innerHTML="";
+  S.log.forEach(l=>{
+    const ln=document.createElement("div"); ln.className="ln";
+    ln.innerHTML="<span class='t'>T+"+String(l.t).padStart(3," ")+"</span> <span class='"+l.cls+"'>"+l.msg+"</span>";
+    host.appendChild(ln);
+  });
+}
+
+/* ====================== TRANSPORT / LOOP ====================== */
+function loop(ts){
+  if (!S.running){ S.raf=null; return; }
+  if (!S._last) S._last=ts;
+  const dt=ts-S._last;
+  if (dt >= TICK_MS){
+    S._last=ts;
+    stepTick();
+    if (S.done){ stopRAF(); return; }
+  }
+  S.raf=requestAnimationFrame(loop);
+}
+function play(){
+  if (S.done) return;
+  S.running=true; S._last=0;
+  if (!S.raf) S.raf=requestAnimationFrame(loop);
+  render();
+}
+function stop(){ S.running=false; stopRAF(); }
+function stopRAF(){ if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; } }
+
+/* ====================== COVERAGE PAINTING (drag the top chart) ====================== */
+let painting=false;
+function paintCoverageAt(clientX, clientY){
+  const svg=$("chartFlow");
+  const rect=svg.getBoundingClientRect();
+  // map client coords into viewBox coords
+  const vx=(clientX-rect.left)/rect.width*FLOW.w;
+  const vy=(clientY-rect.top)/rect.height*FLOW.h;
+  const tick=tickAtX(FLOW, vx);
+  // invert flowY to a value
+  const g=Object.assign({},FLOW); g._vmax=flowYMax();
+  const plotTop=g.mt, plotBot=g.h-g.mb;
+  let frac=(plotBot-vy)/(plotBot-plotTop);
+  frac=frac<0?0:(frac>1?1:frac);
+  const val=frac*g._vmax;
+  // paint a small brush around the tick so dragging is smooth
+  const brush=2;
+  for (let k=tick-brush;k<=tick+brush;k++){
+    if (k<0||k>TICKS) continue;
+    S.coverage[k]=toFP(val);
+  }
+  // also nudge the slider to the painted value at the playhead-ish region for feedback
+  if (Math.abs(tick - S.t) <= 4){
+    S.cov=toFP(val);
+    $("sCov").value=Math.round(val*100);
+    $("vCov").textContent=val.toFixed(2);
+  }
+  render();
+}
+
+/* ====================== SCENARIO HELPERS ====================== */
+function applyFesterScenario(){
+  // author coverage to track demand briefly then drop to ~0, so the integral lurches.
+  // We can only know demand exactly where computed; ahead of the playhead we set
+  // coverage low to force a festering gap from here on.
+  for (let k=0;k<=TICKS;k++){
+    if (k < Math.max(S.t, 1)) continue;       // leave the past alone
+    S.coverage[k]=toFP(0.05);                  // hands off — barely covering
+  }
+  S.cov=toFP(0.05); $("sCov").value=10; $("vCov").textContent="0.05";
+  S.why={cls:"bad", msg:"<b class='bad'>Hands off.</b> Coverage dropped to ~0 from here — watch the gap fester and the displacement integral lurch toward the wall."};
+  pushLog("lurch", S.t, "LET IT FESTER — coverage cut to ~0. The gap now stacks unchecked into displacement.");
+  render();
+}
+function applyCoverDemo(){
+  reseed(($("seed").value.trim())||"AMBER-1207");
+  // set a flat coverage just above mean demand so the gap stays ~0
+  const target = fromFP(S.dem) * (1+NOISE_AMP*0.55) + 0.05;
+  for (let k=0;k<=TICKS;k++) S.coverage[k]=toFP(target);
+  S.cov=toFP(target); $("sCov").value=Math.min(220,Math.round(target*100)); $("vCov").textContent=target.toFixed(2);
+  pushLog("cover", 0, "COVER-IT demo — coverage set to "+target.toFixed(2)+"/tick (just above peak demand). The clock should stall.");
+  S.showGhost=true; computeGhosts();
+  play();
+}
+function applyFesterDemo(){
+  reseed(($("seed").value.trim())||"AMBER-1207");
+  // cover for a moment, then nothing — the canonical festering run
+  for (let k=0;k<=TICKS;k++) S.coverage[k]=toFP(k<22 ? (fromFP(S.dem)+0.05) : 0.0);
+  S.cov=toFP(0.0); $("sCov").value=0; $("vCov").textContent="0.00";
+  pushLog("lurch", 0, "LET-IT-FESTER demo — cover 22 ticks, then nothing. Displacement should lurch and overrun.");
+  S.showGhost=true; computeGhosts();
+  play();
+}
+
+/* ====================== WIRING ====================== */
+function wire(){
+  $("clkMax").textContent=TICKS;
+
+  $("btnPlay").addEventListener("click", ()=>{ S.running ? (stop(),render()) : play(); });
+  $("btnStep").addEventListener("click", ()=>{ stop(); stepTick(); if(!S.done) render(); });
+  $("btnReset").addEventListener("click", ()=>{ reseed(($("seed").value.trim())||"AMBER-1207"); });
+  $("btnFester").addEventListener("click", ()=>{ applyFesterScenario(); });
+
+  $("btnCover").addEventListener("click", ()=>{ applyCoverDemo(); });
+  $("btnFesterDemo").addEventListener("click", ()=>{ applyFesterDemo(); });
+  $("btnGhost").addEventListener("click", ()=>{ S.showGhost=!S.showGhost; if(S.showGhost && !S.ghosts) computeGhosts(); render(); });
+
+  $("seed").addEventListener("change", ()=>{ reseed(($("seed").value.trim())||"AMBER-1207"); });
+
+  // seed chips
+  const chips=["AMBER-1207","AMBER-0044","AMBER-1984","AMBER-7777","AMBER-0512"];
+  const cwrap=$("seedchips");
+  chips.forEach(c=>{
+    const b=document.createElement("span"); b.className="seedchip"; b.textContent=c;
+    b.addEventListener("click", ()=>{ $("seed").value=c; reseed(c); });
+    cwrap.appendChild(b);
+  });
+
+  // sliders -> fixed-point where they enter the clock
+  $("sCov").addEventListener("input", e=>{
+    const v=(+e.target.value)/100; S.cov=toFP(v); $("vCov").textContent=v.toFixed(2);
+    // ride the live coverage: set authored coverage from the playhead forward
+    for (let k=Math.max(S.t,0);k<=TICKS;k++) S.coverage[k]=S.cov;
+    render();
+  });
+  $("sDem").addEventListener("input", e=>{
+    const v=(+e.target.value)/100; S.dem=toFP(v); $("vDem").textContent=v.toFixed(2);
+    if (S.ghosts) computeGhosts();
+    render();
+  });
+  $("sThr").addEventListener("input", e=>{
+    const v=(+e.target.value)/10; S.thr=toFP(v); $("vThr").textContent=v.toFixed(1);
+    if (S.ghosts) computeGhosts();
+    render();
+  });
+  $("sHun").addEventListener("input", e=>{
+    const v=(+e.target.value)/1000; S.hunger=toFP(v);
+    $("vHun").textContent = v<=0 ? "off" : v.toFixed(3);
+    if (S.ghosts) computeGhosts();
+    render();
+  });
+
+  // coverage painting on the flow chart (mouse + touch)
+  const host=$("hostFlow");
+  const startPaint=(x,y)=>{ painting=true; paintCoverageAt(x,y); };
+  host.addEventListener("mousedown", e=>{ startPaint(e.clientX,e.clientY); e.preventDefault(); });
+  window.addEventListener("mousemove", e=>{ if(painting) paintCoverageAt(e.clientX,e.clientY); });
+  window.addEventListener("mouseup", ()=>{ painting=false; });
+  host.addEventListener("touchstart", e=>{ const t=e.touches[0]; startPaint(t.clientX,t.clientY); e.preventDefault(); }, {passive:false});
+  host.addEventListener("touchmove", e=>{ if(painting){ const t=e.touches[0]; paintCoverageAt(t.clientX,t.clientY); e.preventDefault(); } }, {passive:false});
+  window.addEventListener("touchend", ()=>{ painting=false; });
+
+  // keyboard niceties
+  document.addEventListener("keydown", e=>{
+    if (e.target.tagName==="INPUT") return;
+    if (e.code==="Space"){ e.preventDefault(); S.running?(stop(),render()):play(); }
+    else if (e.key==="s"||e.key==="S"){ stop(); stepTick(); if(!S.done) render(); }
+    else if (e.key==="r"||e.key==="R"){ reseed(($("seed").value.trim())||"AMBER-1207"); }
+    else if (e.key==="f"||e.key==="F"){ applyFesterScenario(); }
+    else if (e.key==="g"||e.key==="G"){ S.showGhost=!S.showGhost; if(S.showGhost && !S.ghosts) computeGhosts(); render(); }
+  });
+}
+
+/* ---------- boot ---------- */
+wire();
+reseed("AMBER-1207");
+</script>
+</body>
+</html>

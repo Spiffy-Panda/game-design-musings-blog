@@ -1,0 +1,94 @@
+{
+  "slug": "seed-sharing-replay",
+  "title": "Share a Lost Run",
+  "accent": "#a78bfa",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · APR.5 — a run is a seed",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. Share a lost run. You lost, and determinism hands you a strange gift: that exact defeat is now a six-character code you can text to a friend."
+    },
+    {
+      "id": "02-seed",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "a run is a seed",
+      "headline": "A run is a pure function of its seed.",
+      "body": "Because the sim is deterministic &mdash; fixed ticks, one seeded PRNG, fixed iteration order, integer money &mdash; a finished run is fully reproducible. The same seed regenerates the same war <strong>byte for byte</strong>: same map, same fall order, same collapse, anywhere.",
+      "narration": "A run is a pure function of its seed. The sim uses fixed ticks, one seeded generator, and integer money, so the same seed rebuilds the same war byte for byte: same map, same enemy fall order, same collapse, on anyone's machine."
+    },
+    {
+      "id": "03-runcard",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "seed to world",
+      "headline": "One number, one whole war.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><rect x=\"60\" y=\"210\" width=\"300\" height=\"120\" rx=\"12\" fill=\"#0a0c12\" stroke=\"#a78bfa\" stroke-width=\"2\"/><text x=\"210\" y=\"260\" text-anchor=\"middle\" font-size=\"22\" fill=\"#c4c9d8\">SEED</text><text x=\"210\" y=\"300\" text-anchor=\"middle\" font-size=\"26\" fill=\"#a78bfa\">MSL-7F3A9C</text><line x1=\"370\" y1=\"270\" x2=\"500\" y2=\"270\" stroke=\"#a78bfa\" stroke-width=\"3\"/><polygon points=\"500,260 522,270 500,280\" fill=\"#a78bfa\"/><rect x=\"540\" y=\"60\" width=\"600\" height=\"420\" rx=\"12\" fill=\"#0a0c12\" stroke=\"#2a3146\" stroke-width=\"2\"/><text x=\"840\" y=\"100\" text-anchor=\"middle\" font-size=\"22\" fill=\"#c4c9d8\">RUN CARD</text><rect x=\"570\" y=\"120\" width=\"540\" height=\"70\" rx=\"8\" fill=\"#0a0c12\" stroke=\"#60a5fa\" stroke-width=\"2\"/><text x=\"840\" y=\"162\" text-anchor=\"middle\" font-size=\"20\" fill=\"#60a5fa\">banded map</text><rect x=\"570\" y=\"205\" width=\"540\" height=\"70\" rx=\"8\" fill=\"#0a0c12\" stroke=\"#f87171\" stroke-width=\"2\"/><text x=\"840\" y=\"247\" text-anchor=\"middle\" font-size=\"20\" fill=\"#f87171\">enemy fall order</text><rect x=\"570\" y=\"290\" width=\"540\" height=\"70\" rx=\"8\" fill=\"#0a0c12\" stroke=\"#a78bfa\" stroke-width=\"2\"/><text x=\"840\" y=\"332\" text-anchor=\"middle\" font-size=\"20\" fill=\"#a78bfa\">forward depot</text><rect x=\"570\" y=\"375\" width=\"540\" height=\"70\" rx=\"8\" fill=\"#0a0c12\" stroke=\"#34d399\" stroke-width=\"2\"/><text x=\"840\" y=\"417\" text-anchor=\"middle\" font-size=\"20\" fill=\"#34d399\">difficulty read</text></svg>",
+      "narration": "Type a seed and one generator stream is drawn in a fixed sequence to lay out a banded map, decide which systems fall and in what order, place the forward depot, and write a difficulty read. Nothing is stored or fetched; it is computed from the seed, live."
+    },
+    {
+      "id": "04-replay",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "prove it's identical",
+      "headline": "Same seed equals same war is a button, not a claim.",
+      "body": "Generate the world twice from one seed and fold each pass into an <code>FNV-1a</code> hash over discrete integers. If the sim is pure, the two hashes match exactly. That match is what a <strong>replay</strong> stands on; slip in one unseeded draw and the passes diverge.",
+      "narration": "Same seed equals same war is a claim, so the page makes it a button. Generate the world twice and hash each pass. If the sim is pure, the hashes match exactly. That match is what a replay stands on; one unseeded draw and the passes split."
+    },
+    {
+      "id": "05-daily",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the social hook",
+      "headline": "Everyone fights the same war today.",
+      "body": "Derive one seed from today's date and a <strong>daily challenge</strong> falls out for free: every player gets the identical war, and the only variable is how long you survive. A same-war leaderboard with <em>no servers in the sim</em> &mdash; the seed is the shared state.",
+      "narration": "Now the payoff lands. Derive one seed from today's date and you have a daily challenge for free: everyone is handed the identical war, and the only variable is how long you survive. The leaderboard needs no server, because the seed is the shared state."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Generate / Random seed</b> &mdash; type a seed or roll one, and watch the run card rebuild.",
+        "<b>Copy / paste a code, then Load</b> &mdash; hand a six-character war to anyone.",
+        "<b>Replay &mdash; prove identical / Inject one unseeded draw</b> &mdash; match the hash, or split it.",
+        "<b>Generate both · Swap A/B · Make B = A · Today's seed</b> &mdash; compare two wars, then the daily."
+      ],
+      "narration": "Drive it yourself. Generate a seed or roll a random one, then copy the code and load it back. Hit Replay to prove the hash matches, or inject one unseeded draw to split it. Generate two seeds side by side, make B equal A, and pull today's seed."
+    },
+    {
+      "id": "07-risks",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it can rot",
+      "headline": "Two named risks.",
+      "bullets": [
+        "<b>Seed stability across versions</b> &mdash; change world-gen and the same seed expands into a different war; every shared code silently rots.",
+        "<b>The fix</b> &mdash; version the gen-format, stamp each code, keep old generators resolvable, like a save file.",
+        "<b>Determinism is the premise</b> &mdash; one unseeded call and shared seeds diverge, replays desync.",
+        "<b>The defense</b> &mdash; the sibling determinism harness, with a rerun-and-compare gate in CI."
+      ],
+      "narration": "Two named risks. First, seed stability: change world-gen and the same seed expands into a different war, so every shared code silently rots. The fix is to version the format like a save file. Second, determinism itself is the premise; the sibling harness defends it with a rerun-and-compare gate."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "Share a Lost Run",
+      "body": "A loss is an artifact you can share &middot; deterministic, seeded, self-contained, no network.",
+      "narration": "Determinism turns a loss into an artifact you can hand to a friend. Deterministic, seeded, self-contained, and no network: the seed already is the shared world."
+    }
+  ]
+}

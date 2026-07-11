@@ -1,0 +1,41 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <!-- MSL emblem: one trading ship on a lane web, the front collapsing in from
+       the right. Colors from the landing row's --m-* tokens. -->
+  <circle cx="100" cy="100" r="93" fill="none" stroke="var(--m-line, #dcd9ec)" stroke-width="1.5"/>
+
+  <!-- lane web -->
+  <g stroke="var(--m-muted, #5d6379)" stroke-width="1" opacity=".55">
+    <line x1="48" y1="138" x2="84" y2="96"/>
+    <line x1="84" y1="96" x2="126" y2="64"/>
+    <line x1="126" y1="64" x2="150" y2="120"/>
+    <line x1="84" y1="96" x2="64" y2="56"/>
+    <line x1="64" y1="56" x2="126" y2="64"/>
+    <line x1="84" y1="96" x2="96" y2="158"/>
+    <line x1="96" y1="158" x2="150" y2="120"/>
+  </g>
+
+  <!-- the one route that matters -->
+  <polyline points="48,138 84,96 126,64 150,120" fill="none" stroke="var(--m-accent, #6d55d6)" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- nodes -->
+  <g fill="var(--m-bg, #f3f2fa)" stroke="var(--m-muted, #5d6379)" stroke-width="1.2">
+    <circle cx="48" cy="138" r="4.5"/>
+    <circle cx="84" cy="96" r="5.5"/>
+    <circle cx="126" cy="64" r="4.5"/>
+    <circle cx="150" cy="120" r="4.5"/>
+    <circle cx="64" cy="56" r="3.5"/>
+    <circle cx="96" cy="158" r="3.5"/>
+  </g>
+
+  <!-- the ship (mid-run), with wake ticks -->
+  <rect x="101" y="76" width="8" height="8" transform="rotate(45 105 80)" fill="var(--m-accent, #6d55d6)"/>
+  <line x1="93" y1="90" x2="97" y2="87" stroke="var(--m-accent, #6d55d6)" stroke-width="1" opacity=".6"/>
+  <line x1="88" y1="95" x2="92" y2="92" stroke="var(--m-accent, #6d55d6)" stroke-width="1" opacity=".35"/>
+
+  <!-- the front, always quietly collapsing toward you -->
+  <path d="M 148,30 Q 178,98 136,170" fill="none" stroke="var(--m-front, #b04a5e)" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <g stroke="var(--m-front, #b04a5e)" stroke-width="1.4" opacity=".8">
+    <line x1="166" y1="78" x2="174" y2="86"/>
+    <line x1="174" y1="78" x2="166" y2="86"/>
+  </g>
+</svg>

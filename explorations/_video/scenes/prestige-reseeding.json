@@ -1,0 +1,94 @@
+{
+  "slug": "prestige-reseeding",
+  "title": "Cartographic Prestige",
+  "accent": "#a78bfa",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · VIOLET — loss re-seeds the map",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. Cartographic Prestige. You never buy a stronger hand or a weaker enemy. You spend prestige on where supply is born."
+    },
+    {
+      "id": "02-loss",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "loss is the currency",
+      "headline": "Every run ends in an overrun. That's the deposit.",
+      "body": "One hauler, a war you can't win in a run. Being overrun banks <strong>prestige</strong>, the deposit you carry forward. The whole meta turns on <em>what prestige is allowed to buy</em> &mdash; never the war down, only position.",
+      "narration": "You get one hauler and a war that cannot be won in a single run. Every run ends in an overrun, and that loss banks prestige. The meta turns on one rule: prestige can never buy the war down."
+    },
+    {
+      "id": "03-map",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the model",
+      "headline": "Supply diffuses from where you seed it.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><text x=\"180\" y=\"60\" text-anchor=\"middle\" font-size=\"22\" fill=\"#c4c9d8\">REAR</text><text x=\"1020\" y=\"60\" text-anchor=\"middle\" font-size=\"22\" fill=\"#f87171\">FRONT</text><line x1=\"180\" y1=\"270\" x2=\"600\" y2=\"270\" stroke=\"#2a3146\" stroke-width=\"3\"/><line x1=\"600\" y1=\"270\" x2=\"1020\" y2=\"270\" stroke=\"#2a3146\" stroke-width=\"3\"/><circle cx=\"180\" cy=\"270\" r=\"40\" fill=\"#a78bfa\"/><text x=\"180\" y=\"360\" text-anchor=\"middle\" font-size=\"20\" fill=\"#a78bfa\">producer</text><circle cx=\"600\" cy=\"270\" r=\"26\" fill=\"#34d399\"/><circle cx=\"1020\" cy=\"270\" r=\"16\" fill=\"#f87171\"/><text x=\"1020\" y=\"360\" text-anchor=\"middle\" font-size=\"20\" fill=\"#f87171\">dear, unmet</text><text x=\"600\" y=\"470\" text-anchor=\"middle\" font-size=\"20\" fill=\"#c4c9d8\">supply fades roughly half per hop</text></svg>",
+      "narration": "Lay the theatre out as bands, rear to forward. A producer emits a good that diffuses outward, fading about half per hop. Supply is cheap near a producer and dear out at the hungry forward edge."
+    },
+    {
+      "id": "04-distance",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "geometry is everything",
+      "headline": "You buy the distance between supply and demand.",
+      "body": "The same output seeded one band forward lands far more on the line. Seed in the deep rear and it evaporates before it reaches the front. <strong>You're not buying supply &mdash; you're buying how close it sits to demand.</strong>",
+      "narration": "Geometry is the whole game. The same output seeded one band closer to the front delivers far more, because supply attenuates over every hop. You are buying not supply, but the distance between supply and demand."
+    },
+    {
+      "id": "05-cross",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "the sideways win",
+      "headline": "Two lines that cross.",
+      "bullets": [
+        "<b>Production</b> &mdash; supply delivered to the forward edge; the green line you raise loop by loop.",
+        "<b>Attrition</b> &mdash; the fixed war line, which even <em>rises</em> as you hold more territory forward.",
+        "<b>The crossover</b> &mdash; when production meets attrition the front holds on its own; an equilibrium, not a purchase.",
+        "<b>Two brakes</b> &mdash; per-node delivery caps and creeping attrition keep it a climb, not a snowball."
+      ],
+      "narration": "Each loop plots sustainable production against a fixed attrition line. You only ever raise production; you never lower the war. When the green line crosses the rose one, the front holds. That crossover is the campaign win, reached sideways."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Pick a good and output</b> &mdash; refinery, foundry, or yard, with the output slider, then click a node to seed it.",
+        "<b>Run next loop &amp; bank</b> &mdash; lose, bank prestige, and plot this loop on the ledger.",
+        "<b>Reset campaign</b> &mdash; clear all producers and start over.",
+        "<b>Hide gradient field</b> &mdash; toggle the price-gradient heat-field on the map."
+      ],
+      "narration": "Pick a good and an output, then click a node on the map to seed a producer; the gradient re-flows instantly. Press Run next loop to bank prestige and plot the ledger. Reset the campaign, or toggle the gradient field, any time."
+    },
+    {
+      "id": "07-watch",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "made legible",
+      "headline": "A macro outcome you can watch converge.",
+      "body": "The <strong>gradient field</strong> makes a seed's effect immediate and spatial; the <strong>crossover chart</strong> turns the long climb into one readable picture. The 'why' line names each shift in plain numbers, so the equilibrium is something you watch tip, not a result you're told.",
+      "narration": "A slow macro outcome over many loops is easy to miss, so the page surfaces it. The gradient field shows each seed in space, and the chart shows production climbing toward attrition, so you watch the balance tip."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "Cartographic Prestige",
+      "body": "You buy a better world to be born into &middot; deterministic, seeded, fixed-point.",
+      "narration": "You never buy a win. You buy a better world to be born into. Deterministic, seeded, fixed-point, and it runs offline from a single file."
+    }
+  ]
+}

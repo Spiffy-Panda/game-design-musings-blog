@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Feudal — The Loom: pulled threads and counterweights</title>
+<style>
+  :root{
+    --ground:#eae5d9; --surface:#f7f4ec; --line:#d8d1bf; --line2:#b9b09a;
+    --ink:#28241d; --ink2:#575140; --ink3:#7d7663;
+    --old:#8c3a24; --old-wash:rgba(140,58,36,.06);
+    --new:#274d8d; --new-wash:rgba(39,77,141,.06);
+    --gilt:#8a6d1f; --gilt-wash:rgba(138,109,31,.09);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0b0d14; --surface:#141824; --line:#262c3c; --line2:#3d455a;
+      --ink:#e2e1d6; --ink2:#aaab9d; --ink3:#84867c;
+      --old:#e0865c; --old-wash:rgba(224,134,92,.05);
+      --new:#7fa7e8; --new-wash:rgba(127,167,232,.05);
+      --gilt:#d0b35a; --gilt-wash:rgba(208,179,90,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 0%, var(--new-wash), transparent 70%),
+      radial-gradient(48% 44% at 4% 100%, var(--old-wash), transparent 70%);
+  }
+  .wrap{max-width:960px; margin-inline:auto; padding:clamp(44px,9vh,96px) clamp(18px,4.5vw,44px) 72px}
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--new); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--new); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(32px,6vw,52px)/1.08 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-style:italic; font-size:clamp(16px,2.1vw,18.5px); color:var(--ink2); max-width:66ch; margin:0 0 40px}
+  .kicker{font:600 11.5px/1.4 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--gilt); margin:52px 0 6px}
+  h2{font:600 26px/1.2 var(--serif); margin:0 0 14px}
+  p{max-width:72ch}
+  a{color:var(--new); text-decoration:none; border-bottom:1px solid var(--line2)}
+  a:hover{border-bottom-color:var(--new)}
+  .handle a{border-bottom:1px solid var(--line2); color:var(--ink3)}
+  .prompt{
+    margin:20px 0; padding:16px 20px; background:var(--surface);
+    border:1px solid var(--line); border-left:3px solid var(--new); border-radius:0 4px 4px 0;
+    font-size:15.6px; line-height:1.65; color:var(--ink); max-width:76ch;
+  }
+  .prompt .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--new); display:block; margin-bottom:6px}
+  .rules{list-style:none; margin:18px 0; padding:0; counter-reset:rule}
+  .rules li{counter-increment:rule; position:relative; padding:12px 16px 11px 52px;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:0 0 10px;
+    font-size:15.3px; line-height:1.62; color:var(--ink2); max-width:80ch}
+  .rules li::before{content:counter(rule); position:absolute; left:18px; top:13px;
+    font:600 16px/1 var(--mono); color:var(--gilt)}
+  .rules b{color:var(--ink)}
+  /* threads */
+  .thread{background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:16px 0; overflow:hidden}
+  .thread:target{border-color:var(--gilt); box-shadow:0 0 0 1px var(--gilt)}
+  .thead{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:14px 18px 4px}
+  .handle{font:600 12.5px/1 var(--mono); letter-spacing:.04em}
+  .handle a{color:var(--gilt); border-bottom:none}
+  .handle a:hover{text-decoration:underline}
+  .thead h3{font:600 19px/1.3 var(--serif); margin:0}
+  .credit{margin-left:auto; font:600 9.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+    padding:4px 7px; border:1px solid var(--line2); border-radius:3px; color:var(--ink3); white-space:nowrap}
+  .seg{padding:11px 18px 13px; border-top:1px dashed var(--line)}
+  .seg:first-of-type{border-top:none}
+  .seg .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; display:block; margin-bottom:6px}
+  .seg.pull .tag{color:var(--new)}
+  .seg.runs .tag{color:var(--old)}
+  .seg.cw .tag{color:var(--ink2)}
+  .seg p{margin:0 0 8px; font-size:15px; line-height:1.62; color:var(--ink)}
+  .seg p:last-child{margin-bottom:0}
+  .seg ul{margin:0; padding:0; list-style:none}
+  .seg ul li{padding:6px 0 6px 22px; position:relative; font-size:14.8px; line-height:1.6; color:var(--ink2)}
+  .seg ul li::before{content:"⚖"; position:absolute; left:0; top:6px; font-size:12px; color:var(--gilt)}
+  .seg ul li b{color:var(--ink)}
+  .dial{background:var(--gilt-wash); border-top:1px dashed var(--line); padding:11px 18px 13px}
+  .dial .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--gilt); display:block; margin-bottom:6px}
+  .dial p{margin:0; font-size:14.8px; line-height:1.62; color:var(--ink2)}
+  .dial b{color:var(--ink)}
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+    font:13px/1.85 var(--sans); color:var(--ink3); max-width:78ch}
+  .foot b{color:var(--ink2)}
+  .foot a{color:var(--ink2)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Space Feudal</a></li>
+        <li><span aria-current="page">The Loom</span></li>
+      </ol>
+    </nav>
+    <p class="eyebrow">Space Feudal · companion page · pulled threads &amp; counterweights · LOOM.1–6</p>
+    <h1>The Loom</h1>
+    <p class="sub">The kit was built to make lords condense — but physics doesn't stop
+    weaving where the design brief ends. This page pulls the kit's other threads: what else
+    falls out, where each thread runs away, and the counterweights — found in canon, never
+    decreed — that keep the cloth feudal. Emergence sets the weather; tuning picks the
+    climate.</p>
+
+    <p class="kicker">§0 · The method</p>
+    <h2>Pull hard, patch never</h2>
+    <div class="prompt"><span class="tag">The observation that opens it</span>
+      Gates aren't needed for in-system ships, and outside the font, the bloom, and the
+      gates, automation is unrestricted — so a settled system can field an in-system fleet
+      that no mobile force can compare against in size.</div>
+    <p>Correct, and it's the tip of a family: every clause in the kit casts a shadow the
+    brief never examined. Chasing those shadows is where a setting stops being a diagram
+    and starts being a place. Three rules govern the chase:</p>
+    <ul class="rules">
+      <li><b>Counterweights must be found, not decreed.</b> If a thread runs away, the
+      check has to come from physics or economics already in canon — the pyramid leak, the
+      fade, the key ceremony. A patch by fiat ("that's banned") is a design smell; the one
+      licensed miracle is spent.</li>
+      <li><b>Every thread ends on a dial.</b> The point is a <em>feel</em>: how far you let
+      a thread run is a tuning choice, and the page must say what each setting of the dial
+      does to the fiction.</li>
+      <li><b>A thread with no counterweight becomes canon or a gunpowder moment.</b> If
+      nothing in the kit checks it, either the world honestly looks like that, or checking
+      it is a dissolution-tier technology and belongs in the endgame with SF.22–25. Never
+      silently ignore it.</li>
+    </ul>
+
+    <p class="kicker">§1–6 · The threads</p>
+    <h2>Six pulls, six counterweights, six dials</h2>
+
+    <article class="thread" id="loom-1">
+      <div class="thead"><span class="handle"><a href="#loom-1">LOOM.1</a></span>
+        <h3>The home shell — the fleet that never jumps</h3>
+        <span class="credit">the prompting thread</span></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>Decoherence polices <em>transit</em>; the bloom polices <em>the font</em>.
+        Everywhere else in-system, automation is free — and a home fleet needs no chrism,
+        no crews, no muster. Decades of local industry can accrete a drone shell of mines,
+        gun platforms, and interceptors that outweighs any expeditionary force ten or a
+        hundred to one. The visitors burned fuel to arrive; the shell was already
+        home.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>Developed deeps become untakeable by force — which the doctrine already smelled:
+        this is <em>why</em> storming (<a href="sieges.html#siege-4">SIEGE.4</a>) is rare
+        and ruinous, why leaguers blockade from the Shallows instead of closing, and why
+        war lives at mouths and tables. Run further and it threatens stasis: old rich
+        systems armor into permanence, conquest dies everywhere except the thin-shelled
+        frontier, and the core calcifies into ceremonial suzerainty over untouchable
+        vaults.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>The pyramid leak prices quality.</b> Drone <em>quantity</em> is local;
+          drone <em>quality</em> is imported. Seekers, sensors, and fire-control-grade
+          cores are the top of the industrial pyramid — exactly what a 30,000-soul keep
+          can't fab. The shell is vast and half-blind; crack crews with fresh imported
+          systems defeat multiples of their tonnage at standoff. They still can't
+          <em>occupy</em> — but the shell can't pursue, either.</li>
+          <li><b>Remass makes it a shell, not a navy.</b> Drones that maneuver spend
+          reaction mass; a shell defends points and orbits, not four AU of volume. It holds
+          the Deep absolutely and the Shallows not at all — the map already drew this
+          border.</li>
+          <li><b>The bloom paradox.</b> The one thing worth taking — the font — is the one
+          place autonomous systems die in hours. The war for the only prize that matters
+          must be fought by hand, in the EW hell, by crewed hulls. The shell guards
+          everything except the point of it all.</li>
+          <li><b>The shell points inward too.</b> An autonomous armada is bound to signing
+          keys held by a mortal (SF.15, SF.20): every succession puts a drone fleet's
+          loyalty briefly in escrow, and every liege knows a vassal's shell counts walls
+          against <em>him</em>. Hence shell charters — see SF.26, the license to
+          crenellate reborn.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>Shell size vs. shell brittleness sets how "castle" the setting feels.</b>
+        Max shells with weak counterweights: static vault-worlds, war reduced to frontier
+        skirmish — grand, cold, un-feudal. No shells: every deep is stormable and keeps
+        stop mattering. The tuned middle — huge, blind, thirsty, politically radioactive —
+        is where sieges stay stately and the Deep stays sacred.</p></div>
+    </article>
+
+    <article class="thread" id="loom-2">
+      <div class="thead"><span class="handle"><a href="#loom-2">LOOM.2</a></span>
+        <h3>The muster of ghosts — nobody can audit a swarm</h3></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>The fog of authority points inward as well as out. A shell is a hundred
+        thousand cold hulls parked across a system's orbits; its lord knows its true
+        strength the way he knows his tithe reports — through officers with agendas
+        (SF.6), at courier lag from most of it. Neighbors know less. Deterrence, then,
+        rests on <em>claims</em> about arsenals no one — including their owner — can fully
+        count.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>Potemkin shells: registries padded with dead hulls, maintenance quietly skipped,
+        the difference pocketed by the drone-yards. Wars start on bad intelligence about
+        arsenals that turn out to be rumor, and end when a shell that existed mostly on
+        parchment folds at first contact. Deterrence becomes theater — and theater,
+        unaudited, decays toward bluff all the way down.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>The tournament, re-derived.</b> Seasonal live-fire reviews before invited
+          witnesses: part festival, part marriage market, part the only audit an
+          autonomous arsenal ever gets (SF.27). Impressing travels by courier to every
+          fair; fumbling reprices your house everywhere, four months out.</li>
+          <li><b>The Progress inspects.</b> The liege's tour (SF.3) already exists to eat
+          tithes and hold assizes; adding an arsenal review to the itinerary costs
+          nothing and is why lords dread being <em>first</em> on the year's route.</li>
+          <li><b>Defectors sell inventories.</b> The one thing a fleeing drone-wright
+          carries that's worth a new life under a new lord is the true ledger of the old
+          one's shell.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>How much of war is bluff.</b> Crank the audit mechanisms down and campaigns
+        hinge on espionage and nerve — a poker setting. Crank them up and force becomes
+        legible, wars shorter, deterrence honest — a chess setting. The feudal middle
+        keeps both admirals guessing within a factor of two, which is exactly the margin
+        the customary law of the siege was built to absorb.</p></div>
+    </article>
+
+    <article class="thread" id="loom-3">
+      <div class="thead"><span class="handle"><a href="#loom-3">LOOM.3</a></span>
+        <h3>The fact corsairs — piracy of cargo that weighs nothing</h3></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>Every fact crosses space as recorded cargo in a hull (the Weave carries no
+        signals), so the marginal value of boarding a courier is not her freight — it's
+        her mail. Manifests, chart updates, letters of credit, and above all <em>keys</em>:
+        with no channel to distribute or revoke them, cryptographic trust itself moves as
+        physical logistics. Steal the pouch and you hold prices nobody else has, charts
+        nobody else trusts, and signatures that still bind.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>Corsairs stop chasing bulk (worthless under the freight wall) and specialize in
+        information: emergence ambushes at unwatched mouths, courier interception as the
+        premier form of war and commerce alike. Run away with it and trade seizes up —
+        nobody commits a letter of credit to space that reads like a corsair's payday —
+        and the fair system (SF.13) starves.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>Courier sanctity, with teeth.</b> The bonded courier rite is Ephemeris
+          business: touch sworn mail and your whole house's charts go stale (SF.18). The
+          one institution everyone needs enforces the one norm everyone needs.</li>
+          <li><b>Stolen facts age like everything else.</b> A price is a wasting asset; a
+          stolen manifest must still be <em>carried</em> somewhere it pays, at hull speed,
+          while the fair calendar moves on. Most intercepted mail is stale by the time
+          it's fenced.</li>
+          <li><b>Keys travel split.</b> Doctrine answers physics: signatures shipped in
+          shares aboard separate bottoms, useless alone — so a corsair needs two
+          interceptions and a rendezvous, and the second courier now knows to run.</li>
+          <li><b>Poison in the pouch.</b> Once mail is hunted, mail lies: disinformation
+          convoys, decoy pouches, prices salted to bankrupt whoever trades on them.
+          Fact-piracy breeds fact-counterfeiting, which taxes the pirates directly.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>The thickness of the espionage economy.</b> Low: mail is safe, the fog is
+        clean, and the courier fortune is honest work. High: every pouch is contested and
+        the setting turns le Carré-in-space. The feudal middle prices information risk
+        into every letter — merchant houses thrive on exactly that spread — while the
+        interdict keeps outright mail-war a step every house hesitates to take.</p></div>
+    </article>
+
+    <article class="thread" id="loom-4">
+      <div class="thead"><span class="handle"><a href="#loom-4">LOOM.4</a></span>
+        <h3>The cold coast — stealth for the patient</h3></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>Chess by mail cuts both ways. Burns are visible system-wide — but a hull that
+        has finished burning is just a cold rock on a ballistic arc. Kill the engines
+        outside the gate and coast: months of silence buys the one thing the transparent
+        sky forbids, arrival unannounced. And it favors drones — a crewed ship must dump
+        the heat of its living; a drone pod can run truly cold. A corsair jumps in crewed,
+        tips a rack of frozen pods onto coasting arcs, and leaves.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>The Middle becomes submarine country: patient mines drifting on year-long
+        orbits, cold pods aimed at convoy lanes laid last storm season, insurance rates
+        that price the <em>history</em> of a volume of space. Run it too far and the
+        transparency the setting stands on inverts — everything is secretly full of
+        assassins, and the stately legibility of in-system war (and the siege doctrine
+        with it) dissolves into paranoia.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>Patience is the price.</b> Cold means slow: surprise arrives months to
+          years after it was ordered, against targets that have moved with the seasons.
+          The cold coast kills schedules, not campaigns — it's terrain denial, not
+          blitz.</li>
+          <li><b>The Deep is floodlit.</b> At a quarter AU the star warms and lights
+          everything; occultation surveys off the shell's pickets sweep the approaches
+          (the one job a dumb swarm does superbly). Cold works in the dark Middle, not
+          against the keep.</li>
+          <li><b>Sweeping is honest work.</b> Cleared-lane certification — drone sweeps
+          down the convoy corridors, sold by the gate castellan as a banal service
+          (SF.14). Mine-laying creates mine-sweeping, and both bill by the season.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>Submarine versus parade.</b> All-parade (no cold coast) makes in-system war
+        pure arithmetic — legible but bloodless. All-submarine breaks the chess-by-mail
+        feel that keeps sieges stately. The tuned middle: the Deep and the gate corridors
+        stay legible, the wide Middle carries real dread, and every insurance contract
+        names which volumes were swept and when.</p></div>
+    </article>
+
+    <article class="thread" id="loom-5">
+      <div class="thead"><span class="handle"><a href="#loom-5">LOOM.5</a></span>
+        <h3>The endemic minds — AI as lineage, not product</h3></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>Running minds die in transit; recorded data survives cold. So intelligence
+        crosses the Weave only as frozen weights, revived and re-proven on the far side —
+        and every system's machine ecology is therefore a <em>lineage</em>: locally
+        raised, locally quirked, drifted for generations from its imported ancestors. A
+        keep's fire-control stack is an heirloom with a pedigree, tended by drone-wrights
+        who talk about it the way grooms talk about a bloodline.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>Doctrine-generations: old shells run grandfather-code against invaders flying
+        last year's imported minds — another reason tonnage lies (LOOM.2). A live trade in
+        frozen pedigreed weights, tithed and licensed like stud rights. And the dark
+        branch: the poisoned codex — a gift of superb doctrine with a buried fealty, the
+        siege won by corrupted import (<a href="sieges.html#siege-5">SIEGE.5</a> by other
+        means). Run it too far and war is just software provenance audits.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>Revival is expensive and public.</b> Frozen weights must be locally
+          re-proven before anything trusts them at a trigger — validation is slow,
+          skilled, witnessed work, which is precisely the choke point where poisoned
+          codices get caught, and where guild conservatism earns its keep.</li>
+          <li><b>The wright guilds gatekeep.</b> Nobody installs foreign minds but the
+          drone-wrights, whose charters, liabilities, and pride all point the same way:
+          slowly. Innovation leaks in at the frontier marches first — as everything
+          does.</li>
+          <li><b>Lineage cuts both ways.</b> Endemic quirks make a shell unpredictable to
+          invaders <em>and</em> to doctrine written for the average — home-field advantage
+          the import market can never fully price.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>How gothic the technology feels.</b> Fast, clean import-and-run gives you
+        interchangeable tech and a thin setting. Full heirloom-tech — cathedrals of
+        accreted code, wrights as a hereditary mystery — is the flavor this musing wants:
+        near-future components, medieval <em>relationship</em> to them. The dial is the
+        validation cost, and it should stay high.</p></div>
+    </article>
+
+    <article class="thread" id="loom-6">
+      <div class="thead"><span class="handle"><a href="#loom-6">LOOM.6</a></span>
+        <h3>The stratified manor — what automation leaves for hands</h3></div>
+      <div class="seg pull"><span class="tag">The pull</span>
+        <p>If in-system automation is unrestricted, drones should do nearly all work —
+        so why does the setting still have labor politics at all? Chase it honestly:
+        energy is cheap (the star), bulk fabrication is cheap (the shell proves it), so
+        bread, hull, and heat are nearly free. What automation cannot supply is exactly
+        what the two exception zones and the pyramid demand: hands in the bloom, and
+        skilled humans at the pyramid's top.</p></div>
+      <div class="seg runs"><span class="tag">Where it runs</span>
+        <p>Three estates, re-derived from machinery: <b>bloom gangs</b> at the bottom —
+        the one brutal job automation cannot touch, bound by passage-debt (SF.19);
+        <b>drone-wrights and validators</b> in the middle — the yeomanry, free,
+        chartered, and politically pivotal because the shell obeys their hands at every
+        succession; <b>lodesmen and dynasts</b> above — the only people who can carry
+        authority between stars. Comfortable poverty everywhere else: bread cheap, chips
+        dear, dignity scarcer than either. Run it wrong and you get post-scarcity mush —
+        no stakes — or grimdark all the way down.</p></div>
+      <div class="seg cw"><span class="tag">The counterweights</span>
+        <ul>
+          <li><b>Fab scarcity keeps hierarchy real.</b> The good life — medicine, minds,
+          mobility — is pyramid-top and chrism-priced. Plenty at the base, rank at the
+          top: the medieval texture (everyone ate; few mattered) out of near-future
+          parts.</li>
+          <li><b>The wrights are the commons' lever.</b> A yeomanry the shell depends on
+          can strike, defect, or crown a claimant. Every succession crisis (SF.20) runs
+          through their guildhalls, which is the setting's built-in ceiling on how badly
+          a lord can treat the middle estate.</li>
+          <li><b>Abolition has a constituency.</b> The bloom gangs' bondage is a chosen
+          darkness (SF.19's dial), and the wright guilds — one bad debt away from the
+          gangs themselves — are where the politics of ending it plausibly lives.</li>
+        </ul></div>
+      <div class="dial"><span class="tag">The dial</span>
+        <p><b>The class temperature.</b> This dial decides what the game is <em>about</em>
+        for anyone not born to a keep: set the wrights strong and the gangs freeable and
+        you get a setting with hope in it; set both down and it's tragedy. The brief's
+        answer: keep the ladder climbable (§5) — the player should be able to start in a
+        bloom gang and die a margrave, and every rung should cost something true.</p></div>
+    </article>
+
+    <p class="kicker">§7 · The bench test</p>
+    <h2>Using the dials</h2>
+    <p>The six dials are not independent — they share counterweights, which is what makes
+    the cloth hold. The shell (LOOM.1) is checked by the same pyramid leak that runs the
+    sieges; the ghost-muster (LOOM.2) is audited by the same Progress that eats the
+    tithes; the fact-war (LOOM.3) is policed by the same order that charts the storms.
+    Tune one dial and watch the neighbors move. The bench test for any future thread:
+    pull it until it threatens the feel, then go looking in canon for the counterweight —
+    if it's there, the setting deepens; if it isn't, you've either found new canon or the
+    next gunpowder moment. Two of this page's counterweights were strong enough to earn
+    ledger rows of their own: <a href="ledger.html#sf-26">SF.26</a> (the license to
+    swarm) and <a href="ledger.html#sf-27">SF.27</a> (the tournament of ghosts).</p>
+
+    <p class="foot"><b>Handles.</b> <code style="font:12px var(--mono)">LOOM.1–6</code>
+    are stable and append-only, same law as the rest of the set. Constants: nothing new —
+    every counterweight above cites the existing contract (<a href="index.html">the
+    brief</a> §3, <a href="sieges.html">the siege page</a> foot); that's rule one working
+    as intended. The observation that opens the page is quoted at the top, with thanks —
+    the second time an objection made the setting better, which is the method proving
+    itself.</p>
+  </div>
+</body>
+</html>

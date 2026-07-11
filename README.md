@@ -12,7 +12,8 @@ content is **not** Godot-specific.
 A **musing** is one self-contained game-design exploration — a design note, a mechanics
 experiment, a post-mortem, a half-formed idea worth keeping. Each lives in its own
 top-level `<MUSE-SLUG>/` folder, is written in Markdown (`MUSING.md`), and is published as
-a page in the site. The landing page is a directory of cards, one per musing.
+a page in the site. The landing page is a directory of themed rows — one per musing, each
+with its own emblem and palette.
 
 The site is **built**: [`utils/python/build_site.py`](utils/python/build_site.py) reads
 [`MUSING-CONFIG.json`](MUSING-CONFIG.json), runs each musing's `build-musing.py` to render

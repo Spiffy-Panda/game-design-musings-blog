@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explorations — Minimalist Space Logistics</title>
+<meta name="description" content="Sixteen interactive 'explorables' — one technical aspect of Minimalist Space Logistics each, built to be poked, not just read.">
+<style>
+:root{
+  --ink-950:#07080c;--ink-900:#0a0c12;--ink-850:#0e1018;--ink-800:#141826;--ink-700:#1d2233;--ink-600:#2a3146;--line:#2a3146;
+  --fog-100:#eef1f8;--fog-300:#c4c9d8;--fog-400:#9aa1b6;--fog-500:#767d93;
+  --accent:#a78bfa;--accent-soft:color-mix(in oklab,var(--accent) 18%,transparent);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono","Cascadia Code","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background-color:var(--ink-950);color:var(--fog-100);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 40rem at 50% -10%,var(--accent-soft),transparent 60%),linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:100% 100%,44px 44px,44px 44px;background-repeat:no-repeat,repeat,repeat;}
+::selection{background:var(--accent);color:var(--ink-950)}
+a{color:inherit}
+.wrap{max-width:60rem;margin:0 auto;padding:3rem 1.5rem 6rem}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+.crumbs-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin:0 0 1.6rem}
+.crumbs-row .crumbs{margin:0}
+.hub-link{font-family:var(--font-sans);font-size:.86rem;color:var(--fog-400);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.hub-link:hover{color:var(--accent)}
+.hub-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
+.kicker{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:2.7rem;line-height:1.05;letter-spacing:-.02em;margin:.5rem 0 0}
+.lede{font-size:1.18rem;font-style:italic;color:var(--fog-300);max-width:48rem;margin:1.1rem 0 0}
+.intro{max-width:48rem;color:var(--fog-300);margin:1.5rem 0 0}
+.intro a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--accent) 40%,transparent)}
+.spark{margin-top:1.6rem;border-left:2px solid var(--accent);background:var(--accent-soft);padding:.7rem 1.1rem;border-radius:0 .4rem .4rem 0;color:var(--fog-100)}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.8rem;font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend i{width:.6rem;height:.6rem;border-radius:2px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem;margin-top:1.2rem}
+.card{display:flex;flex-direction:column;gap:.5rem;border:1px solid var(--line);background:color-mix(in oklab,var(--ink-850) 60%,transparent);border-radius:.8rem;padding:1.1rem 1.1rem 1.05rem;text-decoration:none;transition:border-color .15s,transform .15s}
+.card:hover{border-color:color-mix(in oklab,var(--accent) 60%,var(--line));transform:translateY(-2px)}
+.row{display:flex;align-items:center;gap:.5rem}
+.chip{font-family:var(--font-mono);font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:.3rem;background:var(--accent-soft);color:var(--accent)}
+.title{font-size:1.06rem;font-weight:600;color:var(--fog-100)}
+.desc{font-size:.86rem;color:var(--fog-400);margin:0}
+.go{margin-top:auto;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);padding-top:.4rem;opacity:.8}
+.tier{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-400);margin:2.6rem 0 -.4rem}
+.tier small{color:var(--fog-500);text-transform:none;letter-spacing:0;font-size:.82rem;font-family:var(--font-sans)}
+footer{margin-top:3.5rem;border-top:1px solid var(--line);padding-top:1.4rem;color:var(--fog-500);font-size:.85rem}
+footer a{color:var(--fog-400);text-decoration:none;border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs-row">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../../index.html">Game Design Musings</a></li>
+        <li><a href="../">Minimalist Space Logistics</a></li>
+        <li><span aria-current="page">Explorations</span></li>
+      </ol>
+    </nav>
+    <a class="hub-link" href="../approaches/">Approaches hub →</a>
+  </div>
+  <div class="kicker">Minimalist Space Logistics · explorations</div>
+  <h1>Technical Explorables</h1>
+  <p class="lede">Sixteen interactive cuts through the one question the approaches left open —
+  <em>what is the computer actually doing while you play?</em></p>
+
+  <p class="intro">The <a href="../approaches/">approaches</a> settled what the game <em>is</em> and forked on
+  what it's <em>made of</em>. These explorables take that fork apart one piece at a time: each is a single
+  technical aspect — a market that heals, a war you can memorize, a jumpgate web that hinges on one vertex,
+  money that can run dry — built as a small live model you can <strong>poke</strong>, not just read. They were
+  seeded by two design additions (a learnable broad-front enemy schedule; a jumpgate lane web) and an honest
+  "does a utility AI even fit here?" audit, then fanned across the core simulations.</p>
+
+  <div class="spark">Every page is one self-contained file with a real, computed model behind it — drag a
+  slider, cut a lane, drain a till, and the numbers actually move. Determinism throughout: same seed, same run.</div>
+
+  <div class="legend">
+    <span><i style="background:#f59e0b"></i>amber · the economy</span>
+    <span><i style="background:#fb7185"></i>rose · the enemy / front</span>
+    <span><i style="background:#22d3ee"></i>cyan · topology &amp; rendering</span>
+    <span><i style="background:#a78bfa"></i>violet · cross-cutting</span>
+    <span><i style="background:#34d399"></i>emerald · technique audit</span>
+  </div>
+
+  <div id="tiers"></div>
+
+  <footer>
+    Sixteen explorations of <a href="../">Minimalist Space Logistics</a> · sibling to the
+    <a href="../approaches/">approaches gallery</a>. Each page is a self-contained interactive file — open one,
+    and poke it.
+  </footer>
+</div>
+
+<script>
+const PAGES = [
+  {tier:"Your priorities", note:"the favorite, both additions, and the audit", items:[
+    {slug:"solvency-cell", chip:"M1", title:"The Solvency Cell", accent:"#f59e0b",
+     desc:"Two coupled ledgers, the bid = min(price·qty, till) clamp, and books that always balance."},
+    {slug:"enemy-attack-schedule", chip:"M2", title:"Reading the Offensive", accent:"#fb7185",
+     desc:"A broad-front opening book whose order you memorize — and your coverage forks the timeline."},
+    {slug:"utility-ai-fit", chip:"audit", title:"Does a Utility AI Fit?", accent:"#34d399",
+     desc:"Tune response curves for the faction's contract board; an honest yes-here / no-there verdict."},
+    {slug:"jumpgate-topology", chip:"M2·map", title:"The Jumpgate Web", accent:"#22d3ee",
+     desc:"Lane-graph archetypes and the one-vertex severance that explodes a route — in your hands."},
+  ]},
+  {tier:"The core simulations", note:"one settled fiction, a different engine each", items:[
+    {slug:"market-clearing-cell", chip:"HAND", title:"The Clearing Cell", accent:"#f59e0b",
+     desc:"Damped tâtonnement on one market: your trade moves the price, the price heals."},
+    {slug:"determinism-harness", chip:"APR.5", title:"A Run Is a Seed", accent:"#a78bfa",
+     desc:"Float vs i64 drift, fixed iteration order, and a seed expanding into a whole world."},
+    {slug:"glass-cockpit-instruments", chip:"M3", title:"The Glass Cockpit", accent:"#22d3ee",
+     desc:"One screen reads a war too big to walk across: sprites dissolve to ribbons to weather."},
+    {slug:"contract-board", chip:"R.4", title:"The Contract Board", accent:"#f59e0b",
+     desc:"A budget-constrained greedy board: a quiet board is a war going broke."},
+    {slug:"front-as-fluid", chip:"TIDE", title:"The Tide Line", accent:"#fb7185",
+     desc:"Reaction-diffusion pressure on a graph; starved sectors rupture and cut the lanes behind you."},
+    {slug:"prestige-reseeding", chip:"APR.3", title:"Cartographic Prestige", accent:"#a78bfa",
+     desc:"Loss re-seeds the map: new producers bend every downstream gradient until the front holds."},
+    {slug:"run-clock-integral", chip:"HAND.2", title:"The Endogenous Doomsday", accent:"#f59e0b",
+     desc:"The clock isn't a timer — it's the integral of the shortage you failed to cover."},
+    {slug:"endgame-pressure", chip:"M2", title:"When the Script Runs Out", accent:"#fb7185",
+     desc:"Memorization carries the scripted opening; only skill carries the pure-pressure close."},
+  ]},
+  {tier:"Deeper cuts", note:"the structure underneath", items:[
+    {slug:"twelve-good-supply-chain", chip:"R.6", title:"The Supply Chain Has Depth", accent:"#f59e0b",
+     desc:"Trace a front shortage three links upstream — raw → intermediate → finished."},
+    {slug:"liquidity-deflation-spiral", chip:"M1", title:"The Deflation Spiral", accent:"#f59e0b",
+     desc:"Push the war economy into a money-death spiral, then watch the guards pull it back."},
+    {slug:"risk-vs-reward-contract", chip:"M2.4", title:"Pricing the Danger", accent:"#fb7185",
+     desc:"Payout scales with deficit and distance — but the danger the faction won't price is in the geometry."},
+    {slug:"seed-sharing-replay", chip:"APR.5", title:"Share a Lost Run", accent:"#a78bfa",
+     desc:"A seed is a whole war: paste one, replay it byte-for-byte — the roguelite social hook."},
+  ]},
+];
+const root = document.getElementById("tiers");
+for(const group of PAGES){
+  const h = document.createElement("div"); h.className="tier";
+  h.innerHTML = group.tier + ' <small>— ' + group.note + '</small>'; root.appendChild(h);
+  const grid = document.createElement("div"); grid.className="grid"; root.appendChild(grid);
+  for(const p of group.items){
+    const el = document.createElement("a");
+    el.className = "card"; el.href = "./"+p.slug+"/";
+    el.style.setProperty("--accent", p.accent);
+    el.style.setProperty("--accent-soft", "color-mix(in oklab,"+p.accent+" 18%,transparent)");
+    el.innerHTML =
+      '<div class="row"><span class="chip">'+p.chip+'</span><span class="title">'+p.title+'</span></div>'+
+      '<p class="desc">'+p.desc+'</p>'+
+      '<div class="go">open →</div>';
+    grid.appendChild(el);
+  }
+}
+</script>
+</body>
+</html>
