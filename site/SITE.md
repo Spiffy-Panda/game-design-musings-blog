@@ -20,7 +20,9 @@ The site is **built**, not hand-authored: `utils/python/build_site.py` reads
 ```
 site/
   style.css       all styling; system-font stack, responsive grid, light/dark. TRACKED (source).
-  index.html      landing page: header + <ul class="project-grid"> of cards. GENERATED.
+  index.html      landing page: breadcrumb + header + <ul class="musing-list"> of themed
+                  rows (one full-width row per musing: inlined emblem SVG + name +
+                  description + sublinks, colored by per-musing --m-* vars). GENERATED.
   musings/        one subfolder per musing: musings/<slug>/index.html (+ assets, + optional
                   sub-pages: the React approaches/ tree and the copied explorations/ gallery
                   for Minimalist Space Logistics). GENERATED.
@@ -29,10 +31,12 @@ site/
 - **`style.css` is the only tracked file the build doesn't touch** — edit it directly for
   site-wide styling.
 - **`index.html` and `musings/` are generated** (and gitignored). Don't hand-edit them;
-  they're overwritten on every build. Change a card via `../MUSING-CONFIG.json` (name,
-  description, and an optional `"links"` array of `{label, href}` sublinks — e.g. MSL's
-  Approaches / Explorations hubs, rendered under the card); change a page via that musing's
-  `MUSING.md`.
+  they're overwritten on every build. Change a landing row via `../MUSING-CONFIG.json`
+  (name, description, an optional `"links"` array of `{label, href}` sublinks, an optional
+  `"emblem"` — an SVG in the musing folder, inlined into the row and colored by the row's
+  `--m-*` vars — and an optional `"theme"` block: `"font"`: `serif`|`sans` plus
+  `"light"`/`"dark"` token maps emitted as per-row CSS variables); change a page via that
+  musing's `MUSING.md`.
 
 ## Hard conventions
 
@@ -65,15 +69,18 @@ Authoring happens in a top-level `<MUSE-SLUG>/` folder, not under `site/`. The s
    *(HTML-first variant: no `MUSING.md` — the folder's hand-authored, self-contained
    `*.html` pages are **copied verbatim**, gallery `index.html` as the entry point.)*
 2. `../MUSING-CONFIG.json` lists the musing (folder, slug, name, description, hidden).
-3. `build_site.py` renders it to `site/musings/<slug>/` and adds its card to `index.html`.
+3. `build_site.py` renders it to `site/musings/<slug>/` and adds its themed row (emblem +
+   description + sublinks) to `index.html`.
 
 Full checklist + the supported Markdown subset + the HTML-first pattern:
 `../musing-tech-notes.md`.
 
 ## Inventory (what exists now)
 
-- `style.css` — base styling (header, card grid, `.prose` for musing pages, `.draft` badge). Tracked.
-- `index.html` — generated landing page (one card per visible musing).
+- `style.css` — base styling (header, `.crumbs`, the `.musing-row` landing rows, `.prose`
+  for musing pages, `.draft` badge). Tracked. Row *colors* are per-musing `--m-*` vars
+  generated into `index.html` by the build; only layout lives here.
+- `index.html` — generated landing page (one themed row per visible musing, emblem inlined).
 - `musings/<slug>/` — generated musing pages. Currently:
   - `minimalist-space-logistics/` — Markdown-rendered main page, whose `approaches/`
     sub-tree mixes a **React-built** hub + three mutation pages (`two-ledgers`,

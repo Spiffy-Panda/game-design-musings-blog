@@ -20,6 +20,38 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-11 — Landing page: one themed row per musing, with hand-drawn SVG emblems
+
+**Context:** Panda asked that the landing directory give each musing its own full-width
+line, themed after its content, with an "img" on the left that helps the feel — reference:
+the LoMa proof-circle seal.
+**Options considered:** (A) hand-edit the generated index — dead on arrival, it's
+generated; (B) hard-code four bespoke rows in `build_site.py` — themes don't belong in the
+generator; (C) extend the registry: per-musing `emblem` (an SVG in the musing folder,
+inlined into its row) + `theme` (`font` + `light`/`dark` token maps emitted as `--m-<key>`
+CSS vars on `.row-<slug>`).
+**Choice:** C. Four emblems authored, each in its musing's own visual language, colored
+exclusively via `var(--m-*, fallback)` so one SVG follows both color schemes for free:
+the **LoMa proof-seal** (glyph ring on a textPath around the settle rule — closest to
+Panda's reference), the **THAU mirror-fields** (ember and storm circles coupled across the
+dashed mirror), the **MSL lane web** (one accent route, a ship diamond mid-run, the front
+collapsing in dashed from the right — with a bespoke `front` theme token), and the
+**Space Feudal system roundel** (font star + bloom + orbits, gilt keep, two lane mouths
+with drift rings). Row layout (flex, emblem column, mobile stack) lives once in
+`site/style.css` (`.musing-list`/`.musing-row`, replacing `.project-grid`/`.project-card`);
+generated CSS carries only colors. Serif rows for THAU/LoMa/SF, sans for MSL — matching
+their pages. Palettes lifted verbatim from each musing's own `:root` tokens.
+**Why:** the registry stays the single source of truth (Rule: anything on the landing
+comes from config), themes stay with their musings (emblem lives in the musing folder,
+palette in its config entry), and the open token-map schema means a future musing can
+bring whatever colors its emblem needs without touching the generator again.
+**Notes:** (1) The emblem is inlined into `index.html` only — it is not copied into
+`site/musings/`, so HTML-first copy scripts and the MSL assets rule needed no changes.
+(2) Fixed a stale card blurb while in the config: Space Feudal's description said "25-row
+ledger" — it has been 27 rows since the Loom appended SF.26–27. (3) Verified light + dark
++ 375 px; the same SVGs recolor across schemes with no per-mode variants. Schema
+documented in `musing-tech-notes.md` ("Landing rows: themes + emblems").
+
 ## 2026-07-11 — Site-wide breadcrumb navigation (coherent, portfolio-rooted) via a Sonnet fan-out
 
 **Context:** Nav across the musings was a grab-bag — thaumodynamics and logical-magic had

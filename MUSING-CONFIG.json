@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "Registry of musings. The site build (utils/python/build_site.py) reads this to discover each musing folder, run its build-musing.py, and render the landing-page cards. Schema + workflow: musing-tech-notes.md.",
+  "_about": "Registry of musings. The site build (utils/python/build_site.py) reads this to discover each musing folder, run its build-musing.py, and render the landing-page rows. Optional per-musing 'emblem' (an SVG in the musing folder, inlined into the landing row) and 'theme' ('font': serif|sans; 'light'/'dark': token maps emitted as --m-<key> CSS vars) theme each row after its musing. Schema + workflow: musing-tech-notes.md.",
   "musings": [
     {
       "folder": "Minimalist-Space-Logistics",
@@ -11,6 +11,12 @@
         { "label": "Approaches", "href": "approaches/" },
         { "label": "Explorations", "href": "explorations/" }
       ],
+      "emblem": "emblem.svg",
+      "theme": {
+        "font": "sans",
+        "light": { "bg": "#f3f2fa", "ink": "#23273a", "muted": "#5d6379", "line": "#dcd9ec", "accent": "#6d55d6", "front": "#b04a5e" },
+        "dark":  { "bg": "#12141d", "ink": "#eef1f8", "muted": "#9aa1b6", "line": "#2a3146", "accent": "#a78bfa", "front": "#e08a97" }
+      },
       "hidden": false
     },
     {
@@ -23,6 +29,12 @@
         { "label": "Worksheet", "href": "mdyn101-worksheet3.html" },
         { "label": "The Bout", "href": "ashfield-bout.html" }
       ],
+      "emblem": "emblem.svg",
+      "theme": {
+        "font": "serif",
+        "light": { "bg": "#f6f5f0", "ink": "#232833", "muted": "#6e7686", "line": "#d8d4c8", "accent": "#b0500a", "accent2": "#20649f" },
+        "dark":  { "bg": "#151a22", "ink": "#dde3ee", "muted": "#8b95a8", "line": "#262e3c", "accent": "#ffa057", "accent2": "#82c7ff" }
+      },
       "hidden": false
     },
     {
@@ -33,19 +45,31 @@
       "links": [
         { "label": "The Pitch", "href": "pitch.html" }
       ],
+      "emblem": "emblem.svg",
+      "theme": {
+        "font": "serif",
+        "light": { "bg": "#f8f6ef", "ink": "#262330", "muted": "#767084", "line": "#d9d3c2", "accent": "#1e6e63", "accent2": "#9c2f2f" },
+        "dark":  { "bg": "#161921", "ink": "#e0e3ec", "muted": "#868da0", "line": "#272d3a", "accent": "#5ed2bc", "accent2": "#ff9082" }
+      },
       "hidden": false
     },
     {
       "folder": "space-feudal",
       "slug": "space-feudal",
       "name": "Space Feudal",
-      "description": "Recreate the economic problems feudalism actually solved — courier-lag authority, fuel that fades, keeps on the lane mouths — under a stipulated FTL, and let lords condense back out of the sim. A design brief plus a 25-row ledger lining up the old and the to-be.",
+      "description": "Recreate the economic problems feudalism actually solved — courier-lag authority, fuel that fades, keeps on the lane mouths — under a stipulated FTL, and let lords condense back out of the sim. A design brief plus a 27-row ledger lining up the old and the to-be, a siege doctrine with a system map, and six consequence threads.",
       "links": [
         { "label": "The Ledger", "href": "ledger.html" },
         { "label": "Sieges", "href": "sieges.html" },
         { "label": "The Map", "href": "sieges.html#map" },
         { "label": "The Loom", "href": "loom.html" }
       ],
+      "emblem": "emblem.svg",
+      "theme": {
+        "font": "serif",
+        "light": { "bg": "#f7f4ec", "ink": "#28241d", "muted": "#7d7663", "line": "#d8d1bf", "accent": "#274d8d", "accent2": "#8a6d1f", "accent3": "#8c3a24" },
+        "dark":  { "bg": "#141824", "ink": "#e2e1d6", "muted": "#84867c", "line": "#262c3c", "accent": "#7fa7e8", "accent2": "#d0b35a", "accent3": "#e0865c" }
+      },
       "hidden": false
     }
   ]

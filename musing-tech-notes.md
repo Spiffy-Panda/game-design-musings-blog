@@ -9,8 +9,8 @@ musing folder only holds its own "what."
 > **What is a musing?** A musing is one self-contained game-design exploration — a design
 > note, a mechanics experiment, a post-mortem, a half-formed idea worth keeping. It lives
 > in its own top-level folder (`<MUSE-SLUG>/`), is authored in Markdown (`MUSING.md`), and
-> is published as a single page in the directory site. The landing page is a grid of
-> cards, one per musing.
+> is published as a single page in the directory site. The landing page is a list of
+> themed rows, one per musing (emblem + name + description + sublinks).
 
 ---
 
@@ -21,6 +21,9 @@ musing folder only holds its own "what."
   MUSING.md                  the published content (the entry point; rendered to HTML)
   <FOLDER-NAME>.md           agent-nav spec, e.g. MINIMALIST-SPACE-LOGISTICS.md (NOT published)
   build-musing.py            renders MUSING.md -> site/musings/<slug>/index.html
+  emblem.svg                 (optional) the landing-row emblem: a small square SVG inlined
+                             into this musing's row on the landing page; colors via the
+                             row's --m-* vars (see "Landing rows" below)
   assets/                    (optional) images/files copied verbatim into the page
   <pages>/                   (optional) sub-pages for a multi-page musing (e.g. approaches/)
 ```
@@ -42,7 +45,8 @@ MUSING-CONFIG.json ──┐
      ├─ for each listed musing: run <folder>/build-musing.py --out site/musings/<slug>/
      │     └─ build-musing.py reads MUSING.md, calls utils/python/musing_render.py,
      │        writes site/musings/<slug>/index.html (+ copies assets/)
-     └─ regenerates site/index.html  (one card per visible musing, from name + description)
+     └─ regenerates site/index.html  (one themed row per visible musing: inlined emblem
+        SVG + name + description + sublinks + per-musing --m-* theme vars)
 ```
 
 Two callers run the same `build_site.build()`:
@@ -188,6 +192,31 @@ design-system-heavy sets where the page *is* the deliverable. Worked examples:
   `font-size` presentation attributes. Size one-off SVG text with an inline
   `style="font:…"` instead.
 
+## Landing rows: themes + emblems
+
+The landing page gives each musing **one full-width row, themed after its content**: an
+emblem on the left, then name / description / sublinks — set in the musing's own palette
+and typeface so the directory reads like a shelf of different books. Two optional config
+fields per musing drive it (both degrade gracefully when absent):
+
+- **`"emblem": "emblem.svg"`** — a small square SVG (`viewBox="0 0 200 200"`, stroke-led,
+  `aria-hidden`) living in the musing folder, **inlined** into the row by `build_site.py`.
+  Color exclusively with `var(--m-<token>, <light-fallback>)` — never hard-code — so the
+  emblem follows the row's light/dark palette for free. Keep it self-contained (no
+  external refs); it is *not* copied into `site/musings/` — it exists only inside the
+  generated landing. Worked examples: the LoMa proof-seal (`logical-magic/emblem.svg`,
+  textPath glyph ring + inference rule), the THAU mirror-fields, the MSL lane web, the
+  Space Feudal system roundel.
+- **`"theme"`** — `{"font": "serif"|"sans", "light": {…}, "dark": {…}}`. Every key in the
+  `light`/`dark` maps is emitted as `--m-<key>` on `.row-<slug>` (dark inside a
+  `prefers-color-scheme` block) in a `<style>` generated into `index.html`. Conventional
+  keys: `bg`, `ink`, `muted`, `line`, `accent` (+ `accent2`, `accent3`, or bespoke ones
+  like MSL's `front`) — but the set is open: whatever the emblem needs. Pull the values
+  from the musing's own pages so the row genuinely matches.
+
+Row **layout** (flex, emblem width, mobile stacking, link styling) lives once in
+`site/style.css` (`.musing-list` / `.musing-row`); the generated CSS carries only colors.
+
 ## Navigation: the breadcrumb standard
 
 Every published page carries the **same breadcrumb trail**, rooted at the portfolio, so the
@@ -274,7 +303,8 @@ musing folder just because it's hidden.
 3. Copy an existing `build-musing.py` into the folder (the default one needs no edits — it
    derives its slug from the folder name; HTML-first musings copy the verbatim-copy variant
    from `thaumodynamics/` or `logical-magic/`).
-4. Add an entry to `MUSING-CONFIG.json` (`folder`, `slug`, `name`, `description`, `hidden`).
+4. Add an entry to `MUSING-CONFIG.json` (`folder`, `slug`, `name`, `description`, `hidden`;
+   optionally `emblem` + `theme` for a themed landing row — see "Landing rows" above).
 5. Preview: `python utils/python/serve_site.py` (builds on startup) and open the page.
 6. Public-surface check (Rule 6), DEV-LOG entry (Rule 5), then commit.
 

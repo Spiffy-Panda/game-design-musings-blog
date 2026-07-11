@@ -94,6 +94,18 @@ def build(include_hidden: bool = False, with_frontend: bool = True) -> int:
         if result.stdout.strip():
             print(result.stdout.strip())
 
+        # Optional per-musing landing-row theming: an emblem SVG (inlined into the
+        # row, so it can use the row's --m-* CSS vars) + light/dark token maps.
+        emblem_svg = ""
+        emblem_name = m.get("emblem")
+        if emblem_name:
+            emblem_path = REPO_ROOT / folder / emblem_name
+            if emblem_path.is_file():
+                emblem_svg = emblem_path.read_text(encoding="utf-8").strip()
+            else:
+                print(f"warning: {folder}/{emblem_name} not found; row renders without emblem",
+                      file=sys.stderr)
+
         cards.append(
             {
                 "slug": slug,
@@ -103,6 +115,8 @@ def build(include_hidden: bool = False, with_frontend: bool = True) -> int:
                 # Optional per-musing sublinks (e.g. Approaches / Explorations hubs),
                 # each {"label", "href"} with href relative to the musing dir.
                 "links": m.get("links", []),
+                "emblem_svg": emblem_svg,
+                "theme": m.get("theme") or {},
             }
         )
 
@@ -174,6 +188,9 @@ _INDEX = """<!doctype html>
   <title>Game Design Musings</title>
   <meta name="description" content="Miscellaneous game-design musings and exploration — a browsable directory.">
   <link rel="stylesheet" href="./style.css">
+  <style>
+{theme_css}
+  </style>
 </head>
 <body>
   <nav class="crumbs" aria-label="Breadcrumb">
@@ -190,7 +207,7 @@ _INDEX = """<!doctype html>
   <main>
     <section aria-labelledby="musings-heading">
       <h2 id="musings-heading">Musings</h2>
-      <ul class="project-grid">
+      <ul class="musing-list">
 {cards}
       </ul>
     </section>
@@ -203,34 +220,56 @@ _INDEX = """<!doctype html>
 </html>
 """
 
-_PLACEHOLDER = """        <li class="project-card placeholder">
-          <h3>No musings yet</h3>
-          <p>Explorations will appear here as they're written. Each musing is a folder listed in <code>MUSING-CONFIG.json</code>.</p>
+_PLACEHOLDER = """        <li class="musing-row placeholder">
+          <div class="row-body">
+            <h3>No musings yet</h3>
+            <p class="row-desc">Explorations will appear here as they're written. Each musing is a folder listed in <code>MUSING-CONFIG.json</code>.</p>
+          </div>
         </li>"""
 
 
-def _card_html(card: dict) -> str:
+def _row_html(card: dict) -> str:
+    """One landing-page row: emblem (inlined SVG, themed by the row's --m-* vars)
+    beside the musing's name, description, and sublinks."""
     draft = ' <span class="draft">draft</span>' if card["draft"] else ""
     slug = html.escape(card["slug"], quote=True)
+    font = (card.get("theme") or {}).get("font", "sans")
+    font_cls = " font-serif" if font == "serif" else ""
+
+    emblem_html = ""
+    if card.get("emblem_svg"):
+        # Trusted repo-authored SVG, inlined so it inherits the row's CSS vars.
+        emblem_html = (
+            '          <div class="emblem" aria-hidden="true">\n'
+            + card["emblem_svg"]
+            + "\n          </div>\n"
+        )
+
     links_html = ""
     links = card.get("links") or []
     if links:
         anchors = "\n".join(
-            '            <a href="./musings/{slug}/{href}">{label}</a>'.format(
+            '              <a href="./musings/{slug}/{href}">{label}</a>'.format(
                 slug=slug,
                 href=html.escape(link.get("href", ""), quote=True),
                 label=html.escape(link.get("label", "")),
             )
             for link in links
         )
-        links_html = '\n          <p class="card-links">\n{anchors}\n          </p>'.format(anchors=anchors)
+        links_html = '\n            <p class="row-links">\n{anchors}\n            </p>'.format(anchors=anchors)
+
     return (
-        '        <li class="project-card">\n'
-        '          <h3><a href="./musings/{slug}/">{name}</a>{draft}</h3>\n'
-        "          <p>{desc}</p>{links}\n"
+        '        <li class="musing-row row-{slug}{font_cls}">\n'
+        "{emblem}"
+        '          <div class="row-body">\n'
+        '            <h3><a href="./musings/{slug}/">{name}</a>{draft}</h3>\n'
+        '            <p class="row-desc">{desc}</p>{links}\n'
+        "          </div>\n"
         "        </li>"
     ).format(
         slug=slug,
+        font_cls=font_cls,
+        emblem=emblem_html,
         name=html.escape(card["name"]),
         draft=draft,
         desc=html.escape(card["description"]),
@@ -238,10 +277,38 @@ def _card_html(card: dict) -> str:
     )
 
 
+def _theme_css(cards: list[dict]) -> str:
+    """Per-row theme variables generated from each musing's config `theme` block.
+
+    Every key in `theme.light` / `theme.dark` is emitted as `--m-<key>` on
+    `.row-<slug>`, so the row chrome AND the inlined emblem SVG pick up the
+    musing's own palette in both color schemes. Structure/layout stays in
+    site/style.css; only colors live here.
+    """
+    light_rules: list[str] = []
+    dark_rules: list[str] = []
+    for card in cards:
+        theme = card.get("theme") or {}
+        slug = card["slug"]
+        for mode, bucket in (("light", light_rules), ("dark", dark_rules)):
+            tokens = theme.get(mode) or {}
+            if tokens:
+                decls = " ".join(f"--m-{k}: {v};" for k, v in tokens.items())
+                bucket.append(f"    .row-{slug} {{ {decls} }}")
+    css = "\n".join(light_rules)
+    if dark_rules:
+        css += "\n    @media (prefers-color-scheme: dark) {\n"
+        css += "\n".join("  " + r for r in dark_rules)
+        css += "\n    }"
+    return css
+
+
 def _write_index(cards: list[dict]) -> None:
-    body = "\n".join(_card_html(c) for c in cards) if cards else _PLACEHOLDER
+    body = "\n".join(_row_html(c) for c in cards) if cards else _PLACEHOLDER
     SITE_DIR.mkdir(parents=True, exist_ok=True)
-    (SITE_DIR / "index.html").write_text(_INDEX.format(cards=body), encoding="utf-8")
+    (SITE_DIR / "index.html").write_text(
+        _INDEX.format(cards=body, theme_css=_theme_css(cards)), encoding="utf-8"
+    )
 
 
 def main() -> int:

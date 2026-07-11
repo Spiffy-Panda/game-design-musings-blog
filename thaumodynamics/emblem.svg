@@ -1,0 +1,26 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <!-- Thaumodynamics seal: two Maxwell-mirror fields — ember and storm — coupled
+       across the mirror line. Colors from the landing row's --m-* tokens. -->
+  <circle cx="100" cy="100" r="93" fill="none" stroke="var(--m-line, #d8d4c8)" stroke-width="1.5"/>
+  <line x1="100" y1="26" x2="100" y2="174" stroke="var(--m-muted, #6e7686)" stroke-width="1" stroke-dasharray="2 6" opacity=".7"/>
+
+  <!-- ember field (fire, coupled to heat) -->
+  <circle cx="70" cy="100" r="46" fill="none" stroke="var(--m-accent, #b0500a)" stroke-width="1.6"/>
+  <path d="M 52,118 a 26,26 0 0 1 8,-38" fill="none" stroke="var(--m-accent, #b0500a)" stroke-width="1.1" opacity=".75"/>
+  <path d="M 60,113 a 17,17 0 0 1 5,-25" fill="none" stroke="var(--m-accent, #b0500a)" stroke-width="1.1" opacity=".55"/>
+  <path d="M 66,92 q 4,-9 -2,-16 q 12,4 9,18 q -2,9 -11,12 q 5,-6 4,-14 z" fill="var(--m-accent, #b0500a)" opacity=".8"/>
+  <line x1="36" y1="140" x2="42" y2="132" stroke="var(--m-accent, #b0500a)" stroke-width="1" opacity=".6"/>
+  <line x1="46" y1="148" x2="51" y2="139" stroke="var(--m-accent, #b0500a)" stroke-width="1" opacity=".6"/>
+
+  <!-- storm field (lightning, coupled to charge) -->
+  <circle cx="130" cy="100" r="46" fill="none" stroke="var(--m-accent2, #20649f)" stroke-width="1.6"/>
+  <path d="M 148,82 a 26,26 0 0 1 -8,38" fill="none" stroke="var(--m-accent2, #20649f)" stroke-width="1.1" opacity=".75"/>
+  <path d="M 140,87 a 17,17 0 0 1 -5,25" fill="none" stroke="var(--m-accent2, #20649f)" stroke-width="1.1" opacity=".55"/>
+  <polyline points="134,74 125,98 135,98 123,126" fill="none" stroke="var(--m-accent2, #20649f)" stroke-width="1.8" stroke-linejoin="round"/>
+  <text x="158" y="146" style="font:600 9px Consolas,monospace" fill="var(--m-accent2, #20649f)" opacity=".7">+</text>
+  <text x="166" y="134" style="font:600 9px Consolas,monospace" fill="var(--m-accent2, #20649f)" opacity=".55">−</text>
+
+  <!-- the coupling, on the mirror -->
+  <circle cx="100" cy="100" r="7" fill="none" stroke="var(--m-ink, #232833)" stroke-width="1.2"/>
+  <circle cx="100" cy="100" r="1.8" fill="var(--m-ink, #232833)"/>
+</svg>

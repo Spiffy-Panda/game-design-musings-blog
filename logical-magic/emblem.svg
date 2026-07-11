@@ -1,0 +1,22 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <!-- LoMa proof-seal: the whole system as one inference rule, ringed in quantifiers.
+       Colors come from the landing row's --m-* tokens (fallbacks = light palette). -->
+  <defs>
+    <path id="loma-ring" d="M 100,25 a 75,75 0 1,1 -0.01,0" fill="none"/>
+  </defs>
+  <circle cx="100" cy="100" r="93" fill="none" stroke="var(--m-line, #d9d3c2)" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="87" fill="none" stroke="var(--m-muted, #767084)" stroke-width="1"/>
+  <line x1="100" y1="7" x2="100" y2="17" stroke="var(--m-muted, #767084)" stroke-width="1"/>
+  <line x1="100" y1="183" x2="100" y2="193" stroke="var(--m-muted, #767084)" stroke-width="1"/>
+  <line x1="7" y1="100" x2="17" y2="100" stroke="var(--m-muted, #767084)" stroke-width="1"/>
+  <line x1="183" y1="100" x2="193" y2="100" stroke="var(--m-muted, #767084)" stroke-width="1"/>
+  <circle cx="100" cy="100" r="60" fill="none" stroke="var(--m-line, #d9d3c2)" stroke-width="1" stroke-dasharray="3 5"/>
+  <text style="font:10px Consolas,monospace; letter-spacing:4px" fill="var(--m-muted, #767084)">
+    <textPath href="#loma-ring">∀ · ∃ · ⊢ · ⊨ · λ · μ · ν · ⊤ · ∴ · ¬ · ∧ · →</textPath>
+  </text>
+  <text x="100" y="94" text-anchor="middle" style="font:600 11px Consolas,monospace" fill="var(--m-ink, #262330)">Γ ⊢ Con(B ∪ {φ})</text>
+  <line x1="54" y1="102" x2="146" y2="102" stroke="var(--m-accent, #1e6e63)" stroke-width="1.4"/>
+  <text x="100" y="119" text-anchor="middle" style="font:600 11px Consolas,monospace" fill="var(--m-ink, #262330)">W ⇝ W′ ⊨ φ</text>
+  <text x="100" y="137" text-anchor="middle" style="font:italic 8px Palatino,Georgia,serif" fill="var(--m-muted, #767084)">the whole system, as one rule</text>
+  <text x="100" y="148" text-anchor="middle" style="font:italic 8px Palatino,Georgia,serif" fill="var(--m-accent2, #9c2f2f)">— (settle)</text>
+</svg>
