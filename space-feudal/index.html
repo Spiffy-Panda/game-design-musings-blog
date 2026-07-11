@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Feudal — why the stars re-invent the fief</title>
+<style>
+  :root{
+    --ground:#eae5d9; --surface:#f7f4ec; --line:#d8d1bf; --line2:#b9b09a;
+    --ink:#28241d; --ink2:#575140; --ink3:#7d7663;
+    --old:#8c3a24; --old-wash:rgba(140,58,36,.07);
+    --new:#274d8d; --new-wash:rgba(39,77,141,.07);
+    --gilt:#8a6d1f; --gilt-wash:rgba(138,109,31,.09);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0b0d14; --surface:#141824; --line:#262c3c; --line2:#3d455a;
+      --ink:#e2e1d6; --ink2:#aaab9d; --ink3:#84867c;
+      --old:#e0865c; --old-wash:rgba(224,134,92,.06);
+      --new:#7fa7e8; --new-wash:rgba(127,167,232,.06);
+      --gilt:#d0b35a; --gilt-wash:rgba(208,179,90,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 0%, var(--new-wash), transparent 70%),
+      radial-gradient(48% 44% at 4% 100%, var(--old-wash), transparent 70%);
+  }
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(48px,10vh,110px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(36px,6.5vw,58px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-style:italic; font-size:clamp(16px,2.2vw,19px); color:var(--ink2); max-width:62ch; margin:0 0 44px}
+  .kicker{font:600 11.5px/1.4 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--gilt); margin:52px 0 6px}
+  h2{font:600 27px/1.2 var(--serif); margin:0 0 14px}
+  p{max-width:70ch}
+  .mantra{
+    margin:26px 0; padding:16px 20px; background:var(--gilt-wash);
+    border-left:3px solid var(--gilt); border-radius:0 4px 4px 0;
+    font-size:18.5px; font-style:italic;
+  }
+  .caveat{font-size:15px; color:var(--ink2)}
+  /* pillars */
+  .pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:14px; margin:20px 0 6px}
+  .pillar{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px 18px 14px}
+  .pillar .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--old)}
+  .pillar h3{font:600 19px/1.3 var(--serif); margin:7px 0 8px}
+  .pillar p{margin:0 0 8px; font-size:14.8px; line-height:1.6; color:var(--ink2)}
+  .pillar .econ{color:var(--ink3); font-style:italic}
+  .pillar .req{
+    margin:10px -18px -14px; padding:9px 18px 10px; border-top:1px dashed var(--line);
+    font:600 13.5px/1.5 var(--sans); color:var(--ink);
+  }
+  .pillar .req b{color:var(--gilt); font:600 10px/1 var(--sans); letter-spacing:.18em; text-transform:uppercase; margin-right:8px}
+  /* kit */
+  .kit{margin:20px 0 0}
+  .invention{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px 18px 13px; margin:0 0 12px}
+  .invention h3{font:600 20px/1.3 var(--serif); margin:0 0 7px}
+  .invention h3 .gloss{font:italic 400 15px/1.4 var(--serif); color:var(--ink3)}
+  .invention p{margin:0 0 9px; font-size:15.3px; line-height:1.65; color:var(--ink)}
+  .buys{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 2px}
+  .buys .chip{font:600 9.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+    padding:4px 7px; border:1px solid var(--line2); border-radius:3px; color:var(--ink3)}
+  .buys .lbl{font:600 9.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--gilt); padding:4px 0}
+  /* numbers panel */
+  .numbers{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:18px 20px 8px; margin:20px 0}
+  .numbers .const{font:13.5px/1.8 var(--mono); color:var(--ink2); border-bottom:1px dashed var(--line); padding-bottom:10px; margin-bottom:4px}
+  .derive{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:14px; padding:12px 0; border-bottom:1px dashed var(--line); align-items:baseline}
+  .derive:last-of-type{border-bottom:none}
+  .derive .math{font:13.5px/1.7 var(--mono); color:var(--ink)}
+  .derive .inst{font-size:14.8px; line-height:1.6; color:var(--ink2)}
+  .derive .inst b{color:var(--ink)}
+  @media (max-width:640px){ .derive{grid-template-columns:1fr} }
+  /* ladder */
+  .ladder{list-style:none; counter-reset:step; margin:20px 0; padding:0}
+  .ladder li{counter-increment:step; position:relative; padding:14px 18px 12px 58px;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:0 0 10px}
+  .ladder li::before{content:counter(step); position:absolute; left:18px; top:15px;
+    font:600 17px/1 var(--mono); color:var(--gilt)}
+  .ladder h3{font:600 18px/1.35 var(--serif); margin:0 0 5px; display:inline}
+  .ladder .driver{font:600 10px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--old); margin-left:10px; white-space:nowrap}
+  .ladder p{margin:5px 0 0; font-size:15px; line-height:1.6; color:var(--ink2)}
+  /* stick list */
+  .stick{list-style:none; margin:18px 0; padding:0}
+  .stick li{padding:9px 0 9px 26px; position:relative; font-size:15.6px; line-height:1.65; color:var(--ink);
+    border-bottom:1px dashed var(--line); max-width:74ch}
+  .stick li::before{content:"▸"; position:absolute; left:2px; color:var(--gilt)}
+  .stick li b{font-family:var(--sans); font-size:14px}
+  .stick a, p a{color:var(--new); text-decoration:none; border-bottom:1px solid var(--line2)}
+  .stick a:hover, p a:hover{border-bottom-color:var(--new)}
+  /* knobs table */
+  table{border-collapse:collapse; width:100%; margin:18px 0; font-size:14.6px; line-height:1.55}
+  th{font:600 11px/1.4 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3);
+    text-align:left; padding:8px 12px; border-bottom:1px solid var(--line2)}
+  td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink2)}
+  td:first-child{color:var(--ink); font-weight:600; white-space:nowrap}
+  .gunpowder{margin:14px 0; padding:0; list-style:none}
+  .gunpowder li{padding:8px 0 8px 26px; position:relative; font-size:15.3px; line-height:1.6; color:var(--ink2); max-width:74ch}
+  .gunpowder li::before{content:"✕"; position:absolute; left:2px; color:var(--old); font:600 13px/1.9 var(--sans)}
+  .gunpowder b{color:var(--ink)}
+  /* ledger card */
+  a.card{display:block; text-decoration:none; color:inherit; margin:22px 0 0;
+    background:var(--surface); border:1px solid var(--line); border-top:3px solid var(--gilt);
+    border-radius:4px; padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease}
+  a.card:hover{border-color:var(--line2); border-top-color:var(--gilt); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--new); outline-offset:3px}
+  a.card .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  a.card h3{font:600 24px/1.25 var(--serif); margin:8px 0 6px}
+  a.card h3 .arrow{color:var(--ink3); font-weight:400}
+  a.card p{margin:0; font-size:15px; color:var(--ink2); max-width:66ch}
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+    font:13px/1.85 var(--sans); color:var(--ink3); max-width:76ch}
+  .foot b{color:var(--ink2)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">A game-design musing · the cockpit is rented · the economy is the game</p>
+    <h1>Space Feudal</h1>
+    <p class="sub">The flight model is the genre's — X-series stations, Elite docking, No Man's
+    Sky wander. The design work is the layer above it: rebuild the economic problems feudalism
+    actually solved, stipulate nothing else, and let the lords condense back out of the
+    simulation. Dynasty weather above; a cockpit economy below.</p>
+
+    <p class="kicker">§0 · The wager</p>
+    <h2>Feudalism is an equilibrium, not a coat of paint</h2>
+    <p>Feudalism in games is usually upholstery — titles, banners, a vassal screen bolted onto
+    an economy that would run identically without it. The wager of this musing is that
+    feudalism is better understood as an <em>equilibrium</em>: the cheapest set of contracts a
+    civilization can still run when a specific bundle of things is broken — when information
+    crawls, money fails at distance, defense must be local, bulk goods can't travel, strangers
+    can't be sued, and every office dies with its holder.</p>
+    <p>So the design is: break exactly those things, on purpose, with invented physics — then
+    hand every NPC house a contract engine and self-interest, and let the pyramid re-condense
+    on its own. Hereditary lords, homage, castles at the crossings, serfs at the harvest, an
+    itinerant king. If it doesn't condense, the simulation is wrong in an interesting way. If
+    it does, the player lives inside the <em>reasons</em> for feudalism instead of its
+    wallpaper.</p>
+    <div class="mantra">Don't paint fealty on. Make fealty the cheapest contract that survives
+    distance.</div>
+    <p class="caveat">A caveat owed to the historians: "feudalism" is a bucket term, and
+    medievalists from Elizabeth A. R. Brown to Susan Reynolds have made a sport of kicking the
+    bucket. Fair. We're designers — we get to use the bucket, because we're reproducing the
+    constraint bundle, not defending a textbook diagram.</p>
+
+    <p class="kicker">§1 · The old problems</p>
+    <h2>Six things were broken. Each writes one line of the spec</h2>
+    <p>For each pillar: what happened, the economics underneath, and the requirement it hands
+    the design. The six requirements <em>are</em> the spec — everything invented in §2 exists
+    to make them come true, and nothing invented is allowed to repair one.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <span class="no">Pillar I · The Lag</span>
+        <h3>Authority decayed with distance</h3>
+        <p>Charlemagne sent paired inspectors — the <em>missi dominici</em> — to audit his
+        counts. The counts outwaited them, because every order and every report moved at horse
+        speed; a round trip of supervision took months, and the counts lived there.</p>
+        <p class="econ">The principal–agent problem, with monitoring costs no institution could
+        pay down.</p>
+        <p class="req"><b>Spec</b>Distance must tax information more than mass.</p>
+      </div>
+      <div class="pillar">
+        <span class="no">Pillar II · The Specie Famine</span>
+        <h3>Money failed at distance</h3>
+        <p>The coin economy contracted; kings could not pay salaries or standing armies in
+        money that held value far from the mint. What a king <em>could</em> grant that stayed
+        valuable was tenure — land and rights over it. The benefice hardened into the
+        hereditary fief (the milestone historians point at is Quierzy, 877).</p>
+        <p class="econ">Fiscal capacity failure: wages replaced by self-collecting property
+        rights.</p>
+        <p class="req"><b>Spec</b>The only payment that survives distance is a right, not a
+        remittance.</p>
+      </div>
+      <div class="pillar">
+        <span class="no">Pillar III · The Tempo Gap</span>
+        <h3>Raids were faster than armies</h3>
+        <p>Viking, Magyar, and Saracen raids resolved in days; royal hosts mustered in months.
+        Security had to be produced locally — the castle and the mounted retainer were a
+        response-time technology (the "castellan revolution" around 1000, if you buy Duby; the
+        debate doesn't move the design point).</p>
+        <p class="econ">Public goods fail when response latency exceeds threat tempo.</p>
+        <p class="req"><b>Spec</b>Raids must resolve faster than any central navy can answer.</p>
+      </div>
+      <div class="pillar">
+        <span class="no">Pillar IV · The Freight Wall</span>
+        <h3>Bulk could not travel</h3>
+        <p>An ox team eats its own cargo: grain couldn't profitably move more than a few dozen
+        miles overland, so staples never traveled — only silk, spice, plate, and relics did.
+        Every manor fed itself, and long-distance trade stayed thin, sharp, and
+        luxury-shaped.</p>
+        <p class="econ">Transport cost sets a value-density floor on trade; below it,
+        autarky.</p>
+        <p class="req"><b>Spec</b>Bulk stays local. Only treasure crosses.</p>
+      </div>
+      <div class="pillar">
+        <span class="no">Pillar V · The Trust Horizon</span>
+        <h3>No court bound strangers</h3>
+        <p>Nobody could enforce a contract two duchies away. So politics and commerce ran on
+        <em>personal</em> bonds — homage sworn skin to skin, heirs fostered as hostages,
+        marriages as treaties, merchant coalitions enforcing by collective boycott (the
+        Champagne fairs, the Hanse, Greif's Maghribi traders).</p>
+        <p class="econ">Third-party enforcement replaced by repeated-game reputation and
+        collateralized kinship.</p>
+        <p class="req"><b>Spec</b>Contracts must be self-enforcing, or bonded in persons.</p>
+      </div>
+      <div class="pillar">
+        <span class="no">Pillar VI · The Mortal Office</span>
+        <h3>Every office died with its holder</h3>
+        <p>With no bureaucracy to outlive a man, every office <em>was</em> a person, and
+        continuity had exactly one technology: inheritance. Succession crises were the
+        system's earthquakes, and everyone planned around them.</p>
+        <p class="econ">Institutional persistence, solved by dynasty.</p>
+        <p class="req"><b>Spec</b>Rights attach to bloodlines. Death is a game event.</p>
+      </div>
+    </div>
+
+    <p class="kicker">§2 · The kit</p>
+    <h2>Five inventions, each earning its keep</h2>
+    <p>FTL exists — that's the brief's one stipulated constraint. Everything else is chosen.
+    The rule of the kit: <em>every invention must earn at least one pillar, and none may
+    repair one.</em></p>
+    <div class="kit">
+      <div class="invention">
+        <h3>The Weave <span class="gloss">— lanes, not an ocean</span></h3>
+        <p>FTL runs only along fixed lanes between neighboring stars: the map is a graph, and
+        every border is a short list of doors. Lanes carry <em>hulls, not signals</em> —
+        nothing massless propagates down one, so there is no ansible, no beacon chain, no
+        interstellar radio. News travels as cargo.</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">Lag</span><span class="chip">Tempo — chokepoints</span></div>
+      </div>
+      <div class="invention">
+        <h3>Chrism <span class="gloss">— the jump medium, and it fades</span></h3>
+        <p>Jumps burn chrism, an unguent skimmed at <em>font</em> stars — rare, scattered,
+        mediocre real estate otherwise. It cannot be synthesized, and it <em>fades</em>:
+        half-life around ninety days, and every stabilization attempt curdles it. Chrism is
+        income, never wealth — holding a war reserve of size S demands harvest flow
+        proportional to S, so nobody banks a navy. And the fonts are why people spread: the
+        core's appetite for chrism is bottomless, the fonts sit in marginal systems, and the
+        fuel rush is this age's gold rush — charters do the rest.</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">Specie</span><span class="chip">Freight</span><span class="chip">Tempo — range leash</span><span class="chip">the dispersal itself</span></div>
+      </div>
+      <div class="invention">
+        <h3>The Bloom <span class="gloss">— the harvest needs hands</span></h3>
+        <p>Font harvest zones sit inside the bloom, an electromagnetic hell that wrecks
+        autonomous systems in hours. Harvesting chrism is crewed work — gangs, tenders,
+        dredge-rigs — labor-hungry, dangerous, and far from home.</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">dispersal with teeth</span><span class="chip">the manor's labor politics</span></div>
+      </div>
+      <div class="invention">
+        <h3>Transit decoherence <span class="gloss">— the one licensed miracle</span></h3>
+        <p>A lane transit scrambles running computation above roughly an insect's worth.
+        Recorded data survives cold; minds survive warm — why is the setting's one
+        unapologetically magical clause. So no drone fleets between stars, no AI couriers, no
+        remote audit; every jump needs a living lodesman at the board, and information means
+        <em>people</em>. In-system, automate whatever you like — the cockpit sim underneath
+        keeps its toys.</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">Lag</span><span class="chip">Trust — presence is verification</span></div>
+      </div>
+      <div class="invention">
+        <h3>Weather <span class="gloss">— the Weave has seasons</span></h3>
+        <p>Storm tides close lanes for weeks on a loose annual rhythm, forecastable only with
+        fresh charts. War and trade get a calendar; the chart-keepers get an estate (the
+        ledger calls them the Ephemeris).</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">campaign seasons</span><span class="chip">fairs</span><span class="chip">a clerisy</span></div>
+      </div>
+      <div class="invention">
+        <h3>Marks <span class="gloss">— derived, not invented: local money</span></h3>
+        <p>With no signal faster than a hull there is no interstellar clearing, so every
+        currency is a warehouse receipt against a particular lord's chrism and stores. Scrip
+        inherits the fade — money itself carries demurrage, hoarding cash is punished, and
+        "savings" means acreage, keeps, and retainers. A frontier mark is wallpaper in the
+        core, because redemption is local. Long trade runs on barter, bullion-goods, and
+        letters of credit carried by bonded couriers. This is Pillar II, rebuilt from
+        parts.</p>
+        <div class="buys"><span class="lbl">Buys:</span><span class="chip">Specie</span><span class="chip">Trust</span></div>
+      </div>
+    </div>
+
+    <p class="kicker">§3 · The worked example</p>
+    <h2>The tyranny of the fade</h2>
+    <p>One decay constant does a remarkable amount of medieval work. Fix the numbers — these
+    are the setting's constants; future pages cite them rather than fork them:</p>
+    <div class="numbers">
+      <p class="const">chrism half-life t½ = 90 days &nbsp;·&nbsp; lane transit = 3–6 days
+      &nbsp;·&nbsp; core ↔ frontier ≈ 10 lanes ≈ 60 days with layovers</p>
+      <div class="derive">
+        <span class="math">tithe hauled 60 d → 2^(−60/90) ≈ 63% arrives. A 37% haircut,
+        before politics.</span>
+        <span class="inst">So the court goes <em>to</em> the tithe and eats it in place —
+        <b>the Progress: itinerant kingship, re-derived.</b></span>
+      </div>
+      <div class="derive">
+        <span class="math">order + report loop ≈ 120 d. Every decision stands on facts four
+        months old.</span>
+        <span class="inst">So the man on the spot must be a principal, not a puppet —
+        <b>plenary governors, re-derived.</b></span>
+      </div>
+      <div class="derive">
+        <span class="math">a punitive fleet arrives at ~63% bunkers, no harvest rights; the
+        rebel keep sits on its font at 100%.</span>
+        <span class="inst">So defense dominates at the lane mouth —
+        <b>the castle, re-derived.</b></span>
+      </div>
+    </div>
+    <p>One knob, three institutions. When a single invention keeps re-deriving history
+    unprompted, it's load-bearing — keep it, and tune everything else around it.</p>
+
+    <p class="kicker">§4 · The ladder</p>
+    <h2>How it condenses — company to crown to fief</h2>
+    <p>No step below is scripted. Each is the contract engine picking the cheapest instrument
+    that still works one ring further out.</p>
+    <ol class="ladder">
+      <li><h3>Charter companies</h3><span class="driver">driver: capital</span>
+        <p>The metropole grants font monopolies to companies — somebody has to front the fuel
+        rush. The age opens corporate, not feudal.</p></li>
+      <li><h3>The audit fails</h3><span class="driver">driver: the Lag</span>
+        <p>Quarterly books arrive six months stale and self-dealt; inspectors get the
+        <em>missi</em> treatment. The metropole replaces boards with resident
+        governors-plenipotentiary — a person, on site, holding everything.</p></li>
+      <li><h3>The reavers come</h3><span class="driver">driver: the Tempo Gap</span>
+        <p>Raids on the fonts resolve in days; naval relief takes weeks. Governors raise local
+        squadrons and must fund them locally — tolls, harvest shares, tax farming. The
+        governor is now, functionally, the state.</p></li>
+      <li><h3>The pay crisis</h3><span class="driver">driver: Specie + Trust</span>
+        <p>Squadron loyalty can't be bought with core scrip that fades in the bunker and
+        redeems nowhere nearby. The metropole concedes the only coin that works at range:
+        hereditary grant — font shares, lane tolls, local justice — against tithes-in-place
+        and a season's squadron service every calm. The forty days reborn. <em>The fief.</em></p></li>
+      <li><h3>It fractalizes</h3><span class="driver">driver: all of them, recursively</span>
+        <p>A margrave holding six systems faces the same lag and tempo <em>inside</em> the
+        march, and re-grants moons and keeps on the same terms. Subinfeudation; the
+        pyramid.</p></li>
+      <li><h3>It locks</h3><span class="driver">driver: Trust + the Mortal Office</span>
+        <p>Chart-tithes to the Ephemeris, fosterage, marriage webs, the Progress eating its
+        way around the realm — the arrangement becomes self-stabilizing, and the metropole
+        wakes up a suzerain rather than a sovereign.</p></li>
+    </ol>
+
+    <p class="kicker">§5 · At the stick</p>
+    <h2>What the pilot feels</h2>
+    <p>The genre loop survives intact — fly, dock, haul, fight, build. The layer above leans
+    on it in a few specific places:</p>
+    <ul class="stick">
+      <li><b>Your range is a leash.</b> The chrism in your bunkers is melting on a schedule;
+      the frontier is measured in half-lives, not light-years.</li>
+      <li><b>Every price has an age.</b> Market screens timestamp every fact by courier age —
+      and a lord's own empire screen is just as stale, system by system. Fog of authority as
+      UI. Flying fresh facts between fairs is a legitimate fortune (ask the Fuggers).</li>
+      <li><b>Muster season.</b> Hold a knight's fee and one calm season a year your squadron
+      belongs to the liege, fueled at your expense. Arriving short or late is public, and
+      priced into your house's credit.</li>
+      <li><b>Sieges are blockades — of functions, not larders.</b> Cutting the font kills a
+      keep's <em>reach</em> on the fade curve; the keep itself, loops closed, can live a
+      generation. A siege is two clocks — the garrison's slowly decaying industry against
+      the besieging fleet's melting bunkers — and most end at a table. Running the blockade
+      with fresh chrism and fab-grade spares is still the relief mission. The long version,
+      with the system map: <a href="sieges.html">the siege page</a>.</li>
+      <li><b>The Progress docks at your station.</b> The court consumes your tithe in place —
+      inspection, assize, and muster in one visit. Hosting is expensive. Being skipped is
+      worse.</li>
+      <li><b>The ladder is climbable.</b> Freelancer → bonded courier → knight's fee →
+      castellan → charter lord → margrave. Every rung is a contract, and the same engine that
+      runs NPC houses runs yours.</li>
+    </ul>
+
+    <p class="kicker">§6 · Knobs &amp; the dissolution</p>
+    <h2>Tuning the dark age — and ending it on purpose</h2>
+    <table>
+      <thead><tr><th>Knob</th><th>Set too low</th><th>Set too high</th></tr></thead>
+      <tbody>
+        <tr><td>Fade half-life</td>
+          <td>No interstellar anything — city-state ponds that never touch.</td>
+          <td>The core stockpiles a standing navy; empire wins, no lords condense.</td></tr>
+        <tr><td>Lane density</td>
+          <td>Isolated clusters; politics never percolates.</td>
+          <td>No chokepoints — keeps are pointless, raiders roam free, mass beats
+          position.</td></tr>
+        <tr><td>Bloom severity</td>
+          <td>Automated harvests; no manor, no labor politics, thin settlement.</td>
+          <td>Harvest costs exceed yield; the fonts never draw a population out.</td></tr>
+        <tr><td>Storm season length</td>
+          <td>War never pauses; no campaign rhythm, no fairs, exhaustion politics.</td>
+          <td>The realm freezes solid most of the year; nothing can be projected at
+          all.</td></tr>
+      </tbody>
+    </table>
+    <p>Slowboats exist, for honesty's sake — sub-light colony arks that matter over centuries,
+    not campaigns. They're where the setting's strangest cultures come from, and no fleet ever
+    waited on one.</p>
+    <p>And the age should be able to <em>end</em>. Feudalism dissolved when its constraints
+    reversed — money returned, roads and posts and print restored the audit, artillery cracked
+    the castle. Each pillar gets a gunpowder moment; each is a late-game technology or policy,
+    and the endgame politics is the fight over them:</p>
+    <ul class="gunpowder">
+      <li><b>Stabilized chrism</b> ends the fade — navies stand, service is bought out.
+      Scutage: the wage returns.</li>
+      <li><b>Lane-lasers</b> thread signal down the Weave — the ansible ends the Lag, and the
+      auditors come back.</li>
+      <li><b>Hardened cores</b> survive transit — drone fleets jump, and the keep's tempo
+      advantage dies like the curtain wall did.</li>
+      <li><b>Imperial clearing</b> makes marks convertible — one money, one market, one
+      crown.</li>
+    </ul>
+    <p>Mature <em>one</em> per campaign. All four at once skips the story; one at a time picks
+    which early-modern door the setting exits through.</p>
+
+    <p class="kicker">§7 · The companion pages</p>
+    <h2>The receipts, and the war</h2>
+    <a class="card" href="ledger.html">
+      <span class="no">Companion page I · 27 correspondences · SF.1–SF.27</span>
+      <h3>The Ledger of Correspondences <span class="arrow">→</span></h3>
+      <p>How the old and the to-be line up: every medieval institution this brief leans on,
+      set against its Weave-born twin and the mechanic that carries it — missi and stale
+      auditors, Danegeld and reaver tribute, banal mills and beacon fees, homage and the key
+      ceremony, scutage and stabilized chrism. Handles are stable; cite them.</p>
+    </a>
+    <a class="card" href="sieges.html">
+      <span class="no">Companion page II · siegecraft &amp; the system map · SIEGE.1–6</span>
+      <h3>The Long Patience <span class="arrow">→</span></h3>
+      <p>Why a keep that can feed itself for a generation still opens its gates: the three
+      loops and the one that leaks, the melting leaguer, the two clocks and the customary
+      law of the siege, six endings with base rates — and the Harrow system map, scale
+      fudged on purpose, distances and transit times marked true.</p>
+    </a>
+    <a class="card" href="loom.html">
+      <span class="no">Companion page III · pulled threads &amp; counterweights · LOOM.1–6</span>
+      <h3>The Loom <span class="arrow">→</span></h3>
+      <p>What else falls out of the physics, chased to its consequences and checked by
+      counterweights found in canon: the drone home-shell and the untakeable deeps,
+      arsenals nobody can audit, piracy of facts, cold-coast stealth, AI as heirloom
+      lineage, and the three estates automation leaves behind. Every thread ends on a
+      tuning dial for the feel.</p>
+    </a>
+
+    <p class="foot"><b>Debts.</b> Bloch and Ganshof for the classic frame; Duby for the
+    mutation (and Barthélemy for the argument); Brown and Reynolds for kicking the bucket;
+    Greif on reputation coalitions; Domar's grim algebra of bound labor; von Thünen's rings
+    for the freight wall. In fiction and games: Traveller's lag-built Imperium, Dune's Guild,
+    the Honorverse's lanes, Crusader Kings' dynasty engine, and the X series' living economy —
+    the cockpit this musing rents. Sibling musing on this site: <b>Minimalist Space
+    Logistics</b>, which strips the same genre to a single ship. The mathematics here is one
+    decay curve; everything else is medieval.</p>
+  </div>
+</body>
+</html>

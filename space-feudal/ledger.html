@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Feudal — the Ledger of Correspondences</title>
+<style>
+  :root{
+    --ground:#eae5d9; --surface:#f7f4ec; --line:#d8d1bf; --line2:#b9b09a;
+    --ink:#28241d; --ink2:#575140; --ink3:#7d7663;
+    --old:#8c3a24; --old-wash:rgba(140,58,36,.055);
+    --new:#274d8d; --new-wash:rgba(39,77,141,.055);
+    --gilt:#8a6d1f; --gilt-wash:rgba(138,109,31,.09);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0b0d14; --surface:#141824; --line:#262c3c; --line2:#3d455a;
+      --ink:#e2e1d6; --ink2:#aaab9d; --ink3:#84867c;
+      --old:#e0865c; --old-wash:rgba(224,134,92,.05);
+      --new:#7fa7e8; --new-wash:rgba(127,167,232,.05);
+      --gilt:#d0b35a; --gilt-wash:rgba(208,179,90,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 0%, var(--new-wash), transparent 70%),
+      radial-gradient(48% 44% at 4% 100%, var(--old-wash), transparent 70%);
+  }
+  .wrap{max-width:960px; margin-inline:auto; padding:clamp(44px,9vh,96px) clamp(18px,4.5vw,44px) 72px}
+  .crumb{font:600 12.5px/1.4 var(--sans); margin:0 0 26px; display:flex; gap:18px; flex-wrap:wrap}
+  .crumb a{color:var(--ink3); text-decoration:none; border-bottom:1px solid var(--line2)}
+  .crumb a:hover{color:var(--ink2)}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(32px,6vw,52px)/1.08 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-style:italic; font-size:clamp(16px,2.1vw,18.5px); color:var(--ink2); max-width:66ch; margin:0 0 26px}
+  .keybar{
+    display:flex; flex-wrap:wrap; gap:10px 22px; align-items:baseline;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:12px 18px; margin:0 0 12px; font:13.5px/1.6 var(--sans); color:var(--ink2);
+  }
+  .keybar .swatch{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; vertical-align:baseline}
+  .keybar .old-k .swatch{background:var(--old)} .keybar .new-k .swatch{background:var(--new)}
+  .note{font:13px/1.7 var(--sans); color:var(--ink3); max-width:80ch; margin:0 0 8px}
+  .note code{font:12px var(--mono); color:var(--ink2)}
+  h2.group{
+    font:600 13px/1.4 var(--sans); letter-spacing:.22em; text-transform:uppercase;
+    color:var(--gilt); margin:44px 0 4px; padding-bottom:8px; border-bottom:1px solid var(--line2);
+  }
+  h2.group .gloss{color:var(--ink3); letter-spacing:.06em; text-transform:none; font-weight:400; font-style:italic}
+  .entry{background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:14px 0; overflow:hidden}
+  .entry:target{border-color:var(--gilt); box-shadow:0 0 0 1px var(--gilt)}
+  .ehead{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:13px 18px 2px}
+  .handle{font:600 12.5px/1 var(--mono); letter-spacing:.05em}
+  .handle a{color:var(--gilt); text-decoration:none}
+  .handle a:hover{text-decoration:underline}
+  .etitle{font:600 17.5px/1.35 var(--serif); margin:0}
+  .chips{margin-left:auto; display:flex; gap:6px; flex-wrap:wrap}
+  .chip{font:600 9px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+    padding:4px 7px; border:1px solid var(--line2); border-radius:3px; color:var(--ink3); white-space:nowrap}
+  .pair{display:grid; grid-template-columns:1fr 1fr; margin-top:9px}
+  .cell{padding:11px 18px 14px}
+  .cell.old{background:var(--old-wash)}
+  .cell.new{background:var(--new-wash); border-left:1px dashed var(--line)}
+  .cell .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase}
+  .old .tag{color:var(--old)} .new .tag{color:var(--new)}
+  .cell p{margin:7px 0 0; font-size:15px; line-height:1.62; color:var(--ink)}
+  .cell p em{color:var(--ink2)}
+  .play{border-top:1px dashed var(--line); padding:10px 18px 13px; font-size:14.6px; line-height:1.62; color:var(--ink2)}
+  .play .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--gilt); margin-right:9px}
+  .play a{color:var(--new); text-decoration:none; border-bottom:1px solid var(--line2)}
+  .play a:hover{border-bottom-color:var(--new)}
+  @media (max-width:700px){
+    .pair{grid-template-columns:1fr}
+    .cell.new{border-left:none; border-top:1px dashed var(--line)}
+    .chips{margin-left:0}
+  }
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+    font:13px/1.85 var(--sans); color:var(--ink3); max-width:78ch}
+  .foot b{color:var(--ink2)}
+  .foot a{color:var(--ink2)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="crumb"><a href="index.html">← Space Feudal · the brief</a><a href="sieges.html">the siege page →</a></p>
+    <p class="eyebrow">Space Feudal · the alignment page · SF.1 – SF.27</p>
+    <h1>The Ledger of Correspondences</h1>
+    <p class="sub">How the old and the to-be line up. The left column is history; the right
+    column is the setting; the strip beneath each pair is the mechanic that carries it into
+    play. The brief argues — this page keeps the receipts.</p>
+    <div class="keybar">
+      <span class="old-k"><span class="swatch"></span><b>The Old</b> — Latin Christendom,
+      roughly 800–1300 (one flagged anachronism)</span>
+      <span class="new-k"><span class="swatch"></span><b>The To-Be</b> — the Reach, the
+      settled Weave</span>
+    </div>
+    <p class="note">Handles <code>SF.n</code> are stable and append-only — new rows take new
+    numbers; nothing renumbers. Chips name the pillars from the brief's §1 (Lag · Specie ·
+    Tempo · Freight · Trust · Mortal). Constants (the 90-day fade, the 60-day frontier haul)
+    live in the brief's §3 — cite them, don't fork them.</p>
+
+    <h2 class="group">Crown &amp; Distance <span class="gloss">— authority at range</span></h2>
+
+    <article class="entry" id="sf-1">
+      <div class="ehead"><span class="handle"><a href="#sf-1">SF.1</a></span>
+        <h3 class="etitle">The auditors who arrived stale</h3>
+        <div class="chips"><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Charlemagne's <em>missi dominici</em> rode out in pairs to audit the counts. The
+          counts fed them, flattered them, and outwaited them — the crown's questions and the
+          province's answers both moved at horse speed.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Company inspectors jump the circuit with quarterly books already six months
+          stale. The resident governor smiles, hosts, and signs; by the time contradiction
+          reaches the core, the fiscal year — and the evidence — has turned over twice.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>NPC lords are principals, not puppets:
+      they optimize locally against your <em>last</em> order, never your intent. Loyalty is a
+      simulated quantity with a courier delay on every observation of it.</p>
+    </article>
+
+    <article class="entry" id="sf-2">
+      <div class="ehead"><span class="handle"><a href="#sf-2">SF.2</a></span>
+        <h3 class="etitle">News at hull speed</h3>
+        <div class="chips"><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>No signal outran a rider. Kingdoms learned of invasions, deaths, and councils
+          weeks late, from whoever happened to arrive first — and acted on rumor because
+          rumor was the freshest thing available.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>The Weave carries hulls, not signals: no ansible, no beacon chain. Every fact
+          crosses space as cargo in somebody's hold, aging en route, arriving with the
+          carrier's interests attached.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Fog of authority: every datum on every
+      screen — prices, fleet positions, your own holdings — is stamped with its courier age.
+      Nothing in the game is live except the system you are standing in.</p>
+    </article>
+
+    <article class="entry" id="sf-3">
+      <div class="ehead"><span class="handle"><a href="#sf-3">SF.3</a></span>
+        <h3 class="etitle">The court that travels</h3>
+        <div class="chips"><span class="chip">Lag</span><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Kings ruled from the saddle: the court toured the royal estates eating its food
+          renders in place (<em>feorm</em>), and justice rode circuit with the eyre. Moving
+          the court was cheaper than moving the grain.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>A tithe hauled to the core loses a third to the fade before it docks. So the
+          liege's Progress tours the fiefs instead, consuming tithe-chrism on site — and the
+          visit is simultaneously audit, assize, and muster review.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The Progress is an event chain: escort
+      contracts, hosting costs, petitions heard at your own dock. Being skipped on the
+      itinerary is a public signal everyone reprices.</p>
+    </article>
+
+    <h2 class="group">Coin &amp; Grant <span class="gloss">— money, and what replaces it</span></h2>
+
+    <article class="entry" id="sf-4">
+      <div class="ehead"><span class="handle"><a href="#sf-4">SF.4</a></span>
+        <h3 class="etitle">Paid in rights</h3>
+        <div class="chips"><span class="chip">Specie</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Coin scarce, mints local, salaries impossible — so service was bought with
+          tenure. The revocable benefice hardened into the heritable fief (Quierzy, 877, is
+          the milestone historians point at), because land collects its own revenue and
+          needs no paymaster.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Core scrip fades in the bunker and redeems nowhere near the frontier. The only
+          pay that survives the distance is a grant that collects itself: font shares, lane
+          tolls, local justice — held heritably, owed back in tithes and a season's
+          service.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The contract engine prices wage against
+      grant as a function of courier distance. Past a computable radius, grants win strictly —
+      feudalism emerges as the optimizer's output, not a scripted era.</p>
+    </article>
+
+    <article class="entry" id="sf-5">
+      <div class="ehead"><span class="handle"><a href="#sf-5">SF.5</a></span>
+        <h3 class="etitle">The melting treasury</h3>
+        <div class="chips"><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Wealth that lasted was land, plate, and sworn men. There was no deep credit to
+          park a fortune in — a lord's balance sheet was acreage and retainers, and war
+          chests were literal chests, quickly empty.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Chrism is income, never wealth: a reserve of size S decays unless fed by harvest
+          flow to match. Scrip inherits the fade, so money itself carries demurrage — saving
+          means keeps, improvements, and retinues, never a vault.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>No treasury-hoard victory exists. Power
+      equals <em>current</em> harvest flow, so wars target flow — fonts, tolls, charters — and
+      a rich lord who loses his font is poor in ninety days, on schedule.</p>
+    </article>
+
+    <article class="entry" id="sf-6">
+      <div class="ehead"><span class="handle"><a href="#sf-6">SF.6</a></span>
+        <h3 class="etitle">The manifest gamble</h3>
+        <div class="chips"><span class="chip">Lag</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Renders in kind, notched tally sticks, accounts audited whenever the lord's men
+          finally came around. Between visits, the reeve's arithmetic was the only
+          arithmetic.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Tithe ledgers are sealed manifests, audited only when the Progress or its
+          traveling exchequer actually docks. Between visits, the castellan's count is the
+          count.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Skimming is a wager on the itinerary —
+      steady small theft against the odds of an audit year. NPC officers run the same wager,
+      which is why your own tithe reports are gently, chronically wrong.</p>
+    </article>
+
+    <h2 class="group">Keep &amp; Tempo <span class="gloss">— war at the speed of relief</span></h2>
+
+    <article class="entry" id="sf-7">
+      <div class="ehead"><span class="handle"><a href="#sf-7">SF.7</a></span>
+        <h3 class="etitle">Stone answers speed</h3>
+        <div class="chips"><span class="chip">Tempo</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Longships beached, burned, and left before any royal host could form. The
+          working answer was local and vertical: the castle and the mounted retainer —
+          garrisoned response-time, paid for out of the ground it protected.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Reaver tides hit font stations in days; naval relief needs weeks. The working
+          answer is the keep on the lane mouth — emplaced guns, fresh local chrism, a
+          garrison that was always going to be there.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Raid alarms resolve with local assets
+      only; central aid arrives after the fact <em>by design, always</em>. The protection a
+      lord sells is therefore real — which is where legitimacy comes from.</p>
+    </article>
+
+    <article class="entry" id="sf-8">
+      <div class="ehead"><span class="handle"><a href="#sf-8">SF.8</a></span>
+        <h3 class="etitle">Siege by half-life</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Few fortresses were stormed, and fewer starved than the ballads claim: most
+          sieges broke on the <em>attacker's</em> clock — the forty days, the harvest, the
+          pay chest, winter — or ended at a table, with terms priced by how long the
+          besieger had been kept waiting.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Interdicting the font kills a keep's reach, not its people: three half-lives
+          and the garrison can't jump, but the loops inside run for a generation. It's the
+          besieging leaguer that melts — its reserve re-bought every season from a font it
+          doesn't hold. Two clocks, and both admirals can read both.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Siege gameplay is blockade gameplay:
+      the keep's industrial decay (years) races the fleet's melting logistics (seasons),
+      and most sieges end in terms or a lifted leaguer. The full doctrine — and the system
+      map it stands on — is <a href="sieges.html">the siege page</a> (SIEGE.1–6).</p>
+    </article>
+
+    <article class="entry" id="sf-9">
+      <div class="ehead"><span class="handle"><a href="#sf-9">SF.9</a></span>
+        <h3 class="etitle">The forty days</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>The knight's fee owed the host a customary forty days a year, self-equipped.
+          Campaigns were sized to the obligation — and to the harvest that both armies had to
+          be home for.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>A fee-holder owes the liege one calm season's squadron service a year, fueled
+          from the vassal's own font. Wars are sized to the muster, and the storm calendar
+          sends everyone home.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The muster meter is public: arriving
+      short, late, or stingy is visible to every house and priced into your credit, your
+      marriages, and your next charter.</p>
+    </article>
+
+    <article class="entry" id="sf-10">
+      <div class="ehead"><span class="handle"><a href="#sf-10">SF.10</a></span>
+        <h3 class="etitle">The bought peace</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Danegeld: when the raiders price in faster than your musters, you pay them to
+          leave. It worked, repeatedly — and taught the raiders exactly what returning was
+          worth.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Tribute schedules to reaver clans, negotiated like any other charter — cheaper
+          than a garrison this year, and a standing invitation compounding against every year
+          after.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Protection contracts with a ratchet:
+      each payment re-prices the next demand. The break-even against fortifying is always
+      computable and always getting worse — the player gets to decide which year the ledger
+      flips.</p>
+    </article>
+
+    <article class="entry" id="sf-11">
+      <div class="ehead"><span class="handle"><a href="#sf-11">SF.11</a></span>
+        <h3 class="etitle">The march bargain</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Mortal</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Marcher lords and palatine counties: frontier fiefs granted extra sovereignty —
+          private war, own courts, sometimes own coin — as the price of absorbing the border
+          violence the crown couldn't reach.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>March charters on the storm frontier carry rights no interior lord holds —
+          private war, an own mint, first claim on salvage — because the tide breaks there
+          first, and the metropole knows what it's buying.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The march is the player's fastest
+      on-ramp to lordship: the richest charter terms in the game, priced in exposure. Interior
+      politics is slower, safer, and pettier — choose your ladder.</p>
+    </article>
+
+    <article class="entry" id="sf-26">
+      <div class="ehead"><span class="handle"><a href="#sf-26">SF.26</a></span>
+        <h3 class="etitle">The license to swarm</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Licenses to crenellate: the crown claimed the right to say who might fortify,
+          and unlicensed — <em>adulterine</em> — castles were razed in their hundreds when
+          a strong king finally got the chance, because every private wall was borrowed
+          sovereignty.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Shell charters: the suzerain caps a vassal's home-swarm tonnage the way his
+          forebears licensed battlements. An unchartered — adulterine — drone shell is
+          borrowed sovereignty in autonomous form, and razing it is the first item on
+          every strong liege's agenda.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Shell tonnage is a chartered stat
+      with a hard cap and a standing temptation: overbuild in secret and your deterrence
+      improves while your legal position rots. The thread behind it:
+      <a href="loom.html#loom-1">LOOM.1</a>, the fleet that never jumps.</p>
+    </article>
+
+    <article class="entry" id="sf-27">
+      <div class="ehead"><span class="handle"><a href="#sf-27">SF.27</a></span>
+        <h3 class="etitle">The tournament of ghosts</h3>
+        <div class="chips"><span class="chip">Tempo</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>The tournament: martial display as social technology — proving ground,
+          marriage market, and a public audit of who actually keeps knights that can
+          fight, wrapped in pageantry and ritualized violence.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>The muster of ghosts: seasonal live-fire reviews where a lord's drone shell
+          performs before invited witnesses — part festival, part deterrence, and the only
+          audit an autonomous arsenal ever gets. Rumor does the rest of the year's
+          work.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Reviews are public events with real
+      stakes: impress, and your house's credit rises at every fair by courier; fumble, and
+      your neighbors' calculus updates the same way. Skipping one reads as weakness or as
+      something to hide — both invite visitors. The thread behind it:
+      <a href="loom.html#loom-2">LOOM.2</a>.</p>
+    </article>
+
+    <h2 class="group">Cart &amp; Manifest <span class="gloss">— trade under the freight wall</span></h2>
+
+    <article class="entry" id="sf-12">
+      <div class="ehead"><span class="handle"><a href="#sf-12">SF.12</a></span>
+        <h3 class="etitle">The ox eats its cargo</h3>
+        <div class="chips"><span class="chip">Freight</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Overland, the team ate the load: grain rarely paid its way past a few dozen
+          miles, so staples stayed home while silk, spice, plate, and relics crossed
+          continents. Trade was thin, sharp, and luxury-shaped.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Freight is priced in fading chrism per ton-jump — a melting currency taxing
+          every mile. Ore and grain never jump; data, specialists, medicines, and treasure
+          do. Each system feeds itself: the manor, rediscovered.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The genre's bulk-hauling instinct meets
+      a wall, and the wall explains itself: the tooltip on a money-losing ore run shows the
+      fade arithmetic. Interstellar trade plays as a luxury game with luxury margins.</p>
+    </article>
+
+    <article class="entry" id="sf-13">
+      <div class="ehead"><span class="handle"><a href="#sf-13">SF.13</a></span>
+        <h3 class="etitle">Fairs and letters</h3>
+        <div class="chips"><span class="chip">Freight</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Trade pooled at calendar points — the Champagne fairs — and ran on paper between
+          them: bills of exchange, merchant houses, coalitions like the Hanse enforcing
+          contracts by boycott where no court could.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Each calm season, fairs convene at the nexus fonts; letters of credit ride with
+          bonded couriers between them. Merchant houses enforce by blacklist — a name struck
+          at one fair is struck at all of them, eventually.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Fairs are periodic price-setting events;
+      reputation is literal collateral. The arbitrage game is flying <em>facts</em> between
+      fairs faster than consensus — the courier fortune, honestly earned or otherwise.</p>
+    </article>
+
+    <article class="entry" id="sf-14">
+      <div class="ehead"><span class="handle"><a href="#sf-14">SF.14</a></span>
+        <h3 class="etitle">The lord's mill</h3>
+        <div class="chips"><span class="chip">Specie</span><span class="chip">Freight</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>The banalités: the lord's mill, oven, and press, which tenants were obliged to
+          use, at the lord's fee. Infrastructure monopoly as quiet, reliable
+          taxation.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>The lord's refinery, drydock, jump-beacon, and chart-cache — every service a
+          transiting hull can't skip, each at a posted fee. The keep taxes by being the only
+          plumbing in the system.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>One lever, three roles: as tenant you
+      pay the fees, as lord you set them, as smuggler you evade them — and the evasion routes
+      are the same lanes the reavers like.</p>
+    </article>
+
+    <h2 class="group">Oath &amp; Blood <span class="gloss">— trust, bonded in persons</span></h2>
+
+    <article class="entry" id="sf-15">
+      <div class="ehead"><span class="handle"><a href="#sf-15">SF.15</a></span>
+        <h3 class="etitle">The key ceremony</h3>
+        <div class="chips"><span class="chip">Trust</span><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Homage was sworn skin to skin — hands between hands, then investiture. The bond
+          was personal because only persons could be held to it; there was no institution
+          underneath to sue.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Investiture is a key ceremony: signing keys exchanged in person, because no
+          channel exists to revoke at range. A traitor's codes stay valid until a hull
+          physically carries the revocation — treason has a courier-days-long grace
+          period.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Key custody is gameplay: who holds your
+      codes, how fast you could revoke them, and what a defector can lawfully order in the
+      window. The window is measured on the same map as everything else.</p>
+    </article>
+
+    <article class="entry" id="sf-16">
+      <div class="ehead"><span class="handle"><a href="#sf-16">SF.16</a></span>
+        <h3 class="etitle">Heirs in custody</h3>
+        <div class="chips"><span class="chip">Trust</span><span class="chip">Mortal</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Fosterage and hostageship, often the same arrangement: the vassal's heir raised
+          at the liege's court — educated, connected, and collateral, all in one
+          child.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Heirs foster at the liege's station, and the succession keys foster with them.
+          Custody of the child is custody of the house's continuity — schooling, surety, and
+          escrow in a single berth.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Fosterage slots trade legitimacy for
+      leverage: your heir comes home educated and allied — or doesn't come home, which is the
+      point. Refusing the invitation is itself a declaration.</p>
+    </article>
+
+    <article class="entry" id="sf-17">
+      <div class="ehead"><span class="handle"><a href="#sf-17">SF.17</a></span>
+        <h3 class="etitle">The wedded treaty</h3>
+        <div class="chips"><span class="chip">Trust</span><span class="chip">Mortal</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Marriage was the durable treaty technology: dowered, witnessed, productive of
+          heirs whose very existence rewired the map's claims a generation out.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Unchanged — the Weave has no better instrument. Dowries run in font shares;
+          claims propagate down the marriage web on the same courier lag as everything
+          else.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The alliance web is the dynasty layer's
+      circuit board. Claims travel it, slowly; a wedding at the frontier reprices politics in
+      the core four months later, when the news docks.</p>
+    </article>
+
+    <article class="entry" id="sf-18">
+      <div class="ehead"><span class="handle"><a href="#sf-18">SF.18</a></span>
+        <h3 class="etitle">The chart-keepers</h3>
+        <div class="chips"><span class="chip">Trust</span><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>The Church was the estate that crossed every border: the literate class,
+          the calendar, the archives, sanctuary — and excommunication, the sanction that
+          needed no army.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>The Ephemeris keeps the storm-charts every transit needs, carries the courier
+          rite, holds neutral ground, and brokers the Truce of the Calm while fair convoys
+          ride. Its sanction is interdict: your charts go stale, and the Weave closes without
+          a shot.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Standing with the order gates
+      navigation quality — forecast freshness, lane tolerance, storm insurance. Interdict is
+      the late-game political weapon that fires no shot and wins anyway.</p>
+    </article>
+
+    <article class="entry" id="sf-19">
+      <div class="ehead"><span class="handle"><a href="#sf-19">SF.19</a></span>
+        <h3 class="etitle">The bound gangs</h3>
+        <div class="chips"><span class="chip">Trust</span><span class="chip">Freight</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Serfdom followed a grim algebra (Domar's): land abundant, labor scarce, coercion
+          available — so elites bound the scarce factor to the soil rather than bid for
+          it.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Bloom-harvest is crewed, brutal, and far from anywhere; passage home is priced
+          in chrism the gangs never own. Company scrip and passage-debt bind labor to the
+          font as surely as any hide of land.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The bound-labor slider is the setting's
+      darkness knob — company town at one end, outright bondage at the other — and it should
+      be a visible, honest choice. Abolition exists as late-game politics, not a checkbox.</p>
+    </article>
+
+    <h2 class="group">Crown &amp; Clock <span class="gloss">— offices, deaths, successions</span></h2>
+
+    <article class="entry" id="sf-20">
+      <div class="ehead"><span class="handle"><a href="#sf-20">SF.20</a></span>
+        <h3 class="etitle">The mortal office</h3>
+        <div class="chips"><span class="chip">Mortal</span><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Offices were persons; when the person died, the office convulsed. Inheritance
+          was the only continuity technology, and succession disputes were how the system
+          relieved pressure — violently, as a rule.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>No bureaucracy survives its holder at four months' round trip. Rights attach to
+          bloodlines because blood is the one record that certifies itself on site, with no
+          courier required.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Characters age and die mid-campaign.
+      Every death within reach is a political event with a courier delay attached — the
+      succession is often decided before half the claimants have heard.</p>
+    </article>
+
+    <article class="entry" id="sf-21">
+      <div class="ehead"><span class="handle"><a href="#sf-21">SF.21</a></span>
+        <h3 class="etitle">The company becomes the crown</h3>
+        <div class="chips"><span class="chip">Lag</span><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p><em>(The flagged anachronism.)</em> The East India Company: a trading charter
+          that, left unaudited at distance long enough, acquired armies, courts, and
+          revenue — and had to be nationalized to be stopped. The rhyme is too exact to
+          leave out.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Settlement opens corporate: chartered companies front the fuel rush. When the
+          audit fails and the pay crisis bites, the company man on the spot becomes the
+          lord — same office, older name.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>The default campaign opening: you fly
+      for the Company, and the mid-game is watching it feudalize around you — org chart to
+      family tree in three generations of play.</p>
+    </article>
+
+    <h2 class="group">The Dissolution <span class="gloss">— four gunpowder moments, pick one</span></h2>
+
+    <article class="entry" id="sf-22">
+      <div class="ehead"><span class="handle"><a href="#sf-22">SF.22</a></span>
+        <h3 class="etitle">Shield-money</h3>
+        <div class="chips"><span class="chip">Specie</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Scutage: as coin returned, knights paid the crown <em>instead of</em> serving,
+          and the crown hired professionals who didn't go home at forty days. The wage
+          quietly dissolved the fee.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Stabilized chrism ends the fade. Navies stand year-round, service is bought out
+          in convertible fuel, and the muster season becomes a tax season within a
+          generation.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Dissolution tech I. The moment reserves
+      can be banked, power decouples from the fonts — and every fief's founding logic goes
+      quietly obsolete.</p>
+    </article>
+
+    <article class="entry" id="sf-23">
+      <div class="ehead"><span class="handle"><a href="#sf-23">SF.23</a></span>
+        <h3 class="etitle">The wire returns</h3>
+        <div class="chips"><span class="chip">Lag</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Roads rebuilt, posts regularized, print spreading: the crown could finally see
+          its provinces faster than they could dissemble. The auditor state returned, and
+          with it the salaried official.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Lane-lasers thread signal down the Weave at last. The ansible ends the Lag; the
+          core reads frontier books in hours, and the plenary governor shrinks back into an
+          employee.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Dissolution tech II. Fog of authority
+      lifts region by region as relays light — and every institution built on the fog gets
+      renegotiated, rarely politely.</p>
+    </article>
+
+    <article class="entry" id="sf-24">
+      <div class="ehead"><span class="handle"><a href="#sf-24">SF.24</a></span>
+        <h3 class="etitle">The drone artillery</h3>
+        <div class="chips"><span class="chip">Tempo</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Artillery cracked the castle: the fixed defense that had anchored local autonomy
+          for centuries became rubble on a schedule, and with it went the castellan's
+          bargaining position.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Decoherence-hardened cores survive transit. Drone fleets jump, arrive without
+          crews to feed or fuel-fear to leash them, and the keep's tempo advantage dies like
+          the curtain wall did.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Dissolution tech III. Fortress
+      economics invert campaign-wide; every lane-mouth keep becomes a target list, and the
+      marches feel it first.</p>
+    </article>
+
+    <article class="entry" id="sf-25">
+      <div class="ehead"><span class="handle"><a href="#sf-25">SF.25</a></span>
+        <h3 class="etitle">The common coin</h3>
+        <div class="chips"><span class="chip">Specie</span><span class="chip">Trust</span></div></div>
+      <div class="pair">
+        <div class="cell old"><span class="tag">The old</span>
+          <p>Royal money, royal courts, royal debt: once one coin cleared everywhere and one
+          court enforced strangers' contracts, the personal bond stopped being
+          load-bearing — and became ceremony.</p></div>
+        <div class="cell new"><span class="tag">The to-be</span>
+          <p>Imperial clearing rails make marks convertible across the Weave. One money, one
+          market, one crown — and homage decays into heraldry within living memory.</p></div>
+      </div>
+      <p class="play"><span class="tag">In play</span>Dissolution tech IV. Mature exactly one
+      of SF.22–25 per campaign: each picks a different early-modern door for the setting to
+      exit through, and the endgame is the fight over which.</p>
+    </article>
+
+    <p class="foot"><b>Citing this page.</b> Handles are append-only: new correspondences take
+    new numbers, nothing renumbers, and retired rows keep their graves. Constants live in
+    <a href="index.html">the brief</a> (§3) — the 90-day fade, the 60-day frontier haul —
+    extended by <a href="sieges.html">the siege page</a> (hull accelerations, mouth wander,
+    the leaguer's re-buy fraction); future pages cite them rather than fork them. The old
+    column compresses four centuries and flags its one deliberate anachronism (SF.21); the
+    historians' caveat from the brief's §0 applies throughout. SF.8 was amended the day the
+    siege page landed — the fade clocks reach and reserves, never a population's survival.
+    SF.26–27 were appended from <a href="loom.html">the Loom</a> and sit in the war group
+    where they belong: handles are IDs, not positions.</p>
+  </div>
+</body>
+</html>

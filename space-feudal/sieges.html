@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Feudal — The Long Patience: siegecraft under the Weave</title>
+<style>
+  :root{
+    --ground:#eae5d9; --surface:#f7f4ec; --line:#d8d1bf; --line2:#b9b09a;
+    --ink:#28241d; --ink2:#575140; --ink3:#7d7663;
+    --old:#8c3a24; --old-wash:rgba(140,58,36,.06);
+    --new:#274d8d; --new-wash:rgba(39,77,141,.06);
+    --gilt:#8a6d1f; --gilt-wash:rgba(138,109,31,.09);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0b0d14; --surface:#141824; --line:#262c3c; --line2:#3d455a;
+      --ink:#e2e1d6; --ink2:#aaab9d; --ink3:#84867c;
+      --old:#e0865c; --old-wash:rgba(224,134,92,.05);
+      --new:#7fa7e8; --new-wash:rgba(127,167,232,.05);
+      --gilt:#d0b35a; --gilt-wash:rgba(208,179,90,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 0%, var(--new-wash), transparent 70%),
+      radial-gradient(48% 44% at 4% 100%, var(--old-wash), transparent 70%);
+  }
+  .wrap{max-width:960px; margin-inline:auto; padding:clamp(44px,9vh,96px) clamp(18px,4.5vw,44px) 72px}
+  .crumb{font:600 12.5px/1.4 var(--sans); margin:0 0 26px; display:flex; gap:18px; flex-wrap:wrap}
+  .crumb a{color:var(--ink3); text-decoration:none; border-bottom:1px solid var(--line2)}
+  .crumb a:hover{color:var(--ink2)}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:600 clamp(32px,6vw,52px)/1.08 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-style:italic; font-size:clamp(16px,2.1vw,18.5px); color:var(--ink2); max-width:66ch; margin:0 0 40px}
+  .kicker{font:600 11.5px/1.4 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--gilt); margin:52px 0 6px}
+  h2{font:600 26px/1.2 var(--serif); margin:0 0 14px}
+  h3{font:600 19px/1.3 var(--serif); margin:22px 0 8px}
+  p{max-width:72ch}
+  .mantra{
+    margin:24px 0; padding:16px 20px; background:var(--gilt-wash);
+    border-left:3px solid var(--gilt); border-radius:0 4px 4px 0;
+    font-size:18px; font-style:italic; max-width:72ch;
+  }
+  .objection{
+    margin:20px 0; padding:16px 20px; background:var(--surface);
+    border:1px solid var(--line); border-left:3px solid var(--old); border-radius:0 4px 4px 0;
+    font-size:15.6px; line-height:1.65; color:var(--ink); max-width:76ch;
+  }
+  .objection .tag{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--old); display:block; margin-bottom:6px}
+  /* map */
+  .mapfig{margin:22px 0 8px; background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:10px; overflow-x:auto}
+  .mapfig svg{display:block; min-width:880px; width:100%; height:auto}
+  .mapcap{font:13px/1.7 var(--sans); color:var(--ink3); max-width:80ch; margin:10px 0 0}
+  svg .t1{font:600 15px var(--sans); fill:var(--ink); letter-spacing:.06em}
+  svg .t2{font:600 11px var(--sans); fill:var(--ink2); letter-spacing:.12em}
+  svg .t3{font:italic 11.5px var(--serif); fill:var(--ink3)}
+  svg .t4{font:10.5px var(--sans); fill:var(--ink3)}
+  svg .rl{font:10.5px var(--mono); fill:var(--ink2); paint-order:stroke; stroke:var(--ground); stroke-width:3.5px; stroke-linejoin:round}
+  svg .rl2{font:italic 10.5px var(--serif); fill:var(--ink3); paint-order:stroke; stroke:var(--ground); stroke-width:3.5px; stroke-linejoin:round}
+  svg .zl{font:600 10.5px var(--sans); letter-spacing:.22em; fill:var(--ink3)}
+  svg .orb{fill:none; stroke:var(--line2); stroke-dasharray:2 6; opacity:.85}
+  svg .rt{stroke:var(--ink3); stroke-dasharray:6 5; fill:none; opacity:.7}
+  svg .convoy{stroke:var(--new); stroke-dasharray:8 4; fill:none}
+  svg .sortie{stroke:var(--old); stroke-dasharray:3 4; fill:none}
+  svg .drift{fill:none; stroke:var(--line2); stroke-dasharray:3 4; opacity:.9}
+  svg .mine{fill:none; stroke:var(--old); opacity:.8}
+  /* loops */
+  .loops{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:20px 0}
+  .loop{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:15px 17px 13px}
+  .loop .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase}
+  .loop.closed .no{color:var(--new)} .loop.open .no{color:var(--old)}
+  .loop h3{margin:7px 0 7px; font-size:18px}
+  .loop p{margin:0; font-size:14.6px; line-height:1.6; color:var(--ink2)}
+  /* tables */
+  table{border-collapse:collapse; width:100%; margin:18px 0; font-size:14.4px; line-height:1.55}
+  th{font:600 11px/1.4 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3);
+    text-align:left; padding:8px 12px; border-bottom:1px solid var(--line2)}
+  td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink2)}
+  td:first-child{color:var(--ink); font-weight:600; white-space:nowrap}
+  /* worked box */
+  .numbers{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:18px 20px 10px; margin:20px 0}
+  .numbers .const{font:13px/1.8 var(--mono); color:var(--ink2); border-bottom:1px dashed var(--line); padding-bottom:10px; margin-bottom:4px}
+  .numbers .row{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; padding:11px 0; border-bottom:1px dashed var(--line); align-items:baseline}
+  .numbers .row:last-of-type{border-bottom:none}
+  .numbers .math{font:13px/1.7 var(--mono); color:var(--ink)}
+  .numbers .inst{font-size:14.6px; line-height:1.6; color:var(--ink2)}
+  .numbers .inst b{color:var(--ink)}
+  @media (max-width:640px){ .numbers .row{grid-template-columns:1fr} }
+  /* endings */
+  .ending{background:var(--surface); border:1px solid var(--line); border-radius:4px; margin:12px 0; padding:14px 18px 12px}
+  .ending:target{border-color:var(--gilt); box-shadow:0 0 0 1px var(--gilt)}
+  .ending .ehead{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .ending .handle{font:600 12.5px/1 var(--mono); letter-spacing:.04em}
+  .ending .handle a{color:var(--gilt); text-decoration:none}
+  .ending .handle a:hover{text-decoration:underline}
+  .ending h3{margin:0; font-size:18.5px}
+  .ending .rate{margin-left:auto; font:600 9.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+    padding:4px 7px; border:1px solid var(--line2); border-radius:3px; color:var(--ink3); white-space:nowrap}
+  .ending p{margin:8px 0 0; font-size:15px; line-height:1.62; color:var(--ink2); max-width:78ch}
+  .ending p b{color:var(--ink)}
+  /* missions */
+  .stick{list-style:none; margin:18px 0; padding:0}
+  .stick li{padding:9px 0 9px 26px; position:relative; font-size:15.4px; line-height:1.65; color:var(--ink);
+    border-bottom:1px dashed var(--line); max-width:76ch}
+  .stick li::before{content:"▸"; position:absolute; left:2px; color:var(--gilt)}
+  .stick li b{font-family:var(--sans); font-size:13.8px}
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+    font:13px/1.85 var(--sans); color:var(--ink3); max-width:78ch}
+  .foot b{color:var(--ink2)}
+  .foot a{color:var(--ink2)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="crumb"><a href="index.html">← Space Feudal · the brief</a><a href="ledger.html">the Ledger →</a></p>
+    <p class="eyebrow">Space Feudal · companion page · siegecraft &amp; the system map · SIEGE.1–6</p>
+    <h1>The Long Patience</h1>
+    <p class="sub">Why a keep that can feed itself for a generation still opens its gates; what
+    a blockade actually buys; and the map the whole argument stands on. This page supersedes
+    the one-line siege in the brief — it was compressed to the point of being wrong, and the
+    objection that caught it is where we start.</p>
+
+    <p class="kicker">§1 · The objection, sustained</p>
+    <h2>Jump fuel is not life support</h2>
+    <div class="objection"><span class="tag">The objection</span>
+      Chrism is a <em>jump</em> medium. Interdict a keep's font and it can't leave the
+      system — but a station with near-future closed loops grows its own food, recycles its
+      own water and air, and with a large enough population lives comfortably for
+      generations. So why would it ever fall?</div>
+    <p>Sustained, in full. A well-found keep under blockade does not starve — not in ninety
+    days, not in ninety months. The fade curve kills something real, but it isn't the
+    people: <b>cutting the font kills the keep's reach.</b> Bunkers at 2<sup>−t/90</sup>:
+    two half-lives and the garrison's squadron has a quarter of its legs; three, and the
+    keep cannot even flee. It is still armed, fed, powered, and populous — it has simply
+    stopped existing <em>interstellar-ly</em>. Everything else this page does follows from
+    taking that seriously.</p>
+    <p>And here is the pleasant surprise: taking it seriously makes the analogy
+    <em>better</em>, because the medieval record says the same thing. Storming was rare and
+    ruinous. Starving out a provisioned castle usually took longer than the besieger had —
+    the feudal host owed its forty days, the harvest called, winter came, the pay chest
+    emptied. Most sieges broke on the <em>attacker's</em> clock or ended at a table; the
+    years-long strangulations were the exceptions, and they were royal, professional, and
+    ruinously expensive. The castle's larder was long; the army's patience was short. So it
+    is here.</p>
+    <div class="mantra">A siege is not a race to the keep's last meal. It is two clocks —
+    the garrison's slowly decaying industry against the leaguer's rapidly melting
+    logistics — and everyone can read both.</div>
+
+    <p class="kicker">§2 · The ground</p>
+    <h2>Harrow — a worked font system</h2>
+    <p>Siegecraft is geometry before it is anything else, so here is the geometry. One
+    deliberate lie up front: <em>the map is not to scale</em> — to scale, nothing is
+    readable. The distances and transit times printed on it are the true numbers; the
+    picture is arranged for the eye. The map lies about space so it can tell the truth
+    about time.</p>
+
+    <figure class="mapfig" id="map">
+    <svg viewBox="0 0 1060 660" role="img" aria-label="Schematic map of the Harrow system: the font star and Hearthkeep in the Deep at left; the Grist belt and Millstone gas giant in the middle distance; the Kingsgate and Beggarsgate lane mouths in the outer Shallows at right, with transit distances and times marked.">
+      <!-- zone shading + boundaries -->
+      <circle cx="120" cy="330" r="150" fill="var(--gilt-wash)"/>
+      <circle cx="120" cy="330" r="150" class="orb"/>
+      <circle cx="120" cy="330" r="330" class="orb"/>
+      <text x="52" y="196" class="zl">THE DEEP</text>
+      <text x="52" y="212" class="t3">the font, the keep, the star's power — &lt; 1 AU</text>
+      <text x="60" y="560" class="zl">THE MIDDLE</text>
+      <text x="60" y="576" class="t3">belt and working country — to ~3 AU</text>
+      <text x="620" y="628" class="zl">THE SHALLOWS</text>
+      <text x="620" y="644" class="t3">flat space: mouths, leaguers, the war country — 3 AU and out</text>
+
+      <!-- title -->
+      <text x="40" y="46" class="t1">HARROW — a worked font system</text>
+      <text x="40" y="66" class="t3">scale fudged on purpose; distances and times are the true numbers</text>
+
+      <!-- routes (under markers) -->
+      <line x1="218" y1="282" x2="700" y2="130" class="rt"/>
+      <line x1="218" y1="282" x2="555" y2="470" class="sortie"/>
+      <line x1="555" y1="470" x2="700" y2="130" class="rt"/>
+      <line x1="218" y1="282" x2="950" y2="500" class="rt"/>
+      <path d="M 700 130 Q 960 260 950 500" class="rt"/>
+
+      <!-- route labels -->
+      <g>
+        <text x="350" y="188" class="rl">3.9 AU · corsair 10 d · war 25 d · freight 56 d</text>
+        <text x="350" y="203" class="rl2">the invasion road — every approach announced weeks out</text>
+      </g>
+      <g>
+        <text x="292" y="404" class="rl">5.0 AU · war 28 d · freight 64 d</text>
+        <text x="292" y="419" class="rl2">the rig-raid run — a sortie telegraphs itself for a month</text>
+      </g>
+      <g>
+        <text x="648" y="322" class="rl">3.3 AU · war 23 d · freight 52 d</text>
+        <text x="648" y="337" class="rl2">leaguer ↔ picket line</text>
+      </g>
+      <g>
+        <text x="688" y="447" class="rl">7.3 AU · war 34 d · freight 77 d</text>
+      </g>
+      <g>
+        <text x="826" y="272" class="rl">10 AU · war 40 d · freight 90 d</text>
+        <text x="826" y="287" class="rl2">gate to gate, around the whole sky</text>
+      </g>
+
+      <!-- star + font -->
+      <circle cx="120" cy="330" r="24" fill="var(--old-wash)" stroke="var(--old)" stroke-width="1.5"/>
+      <circle cx="120" cy="330" r="10" fill="var(--old)" opacity=".85"/>
+      <circle cx="120" cy="330" r="58" class="drift"/>
+      <text x="96" y="418" class="t2">HARROW</text>
+      <text x="60" y="434" class="t4">the font star · bloom ring at 0.2 AU — crewed harvest only</text>
+
+      <!-- Hearthkeep -->
+      <rect x="211" y="275" width="14" height="14" transform="rotate(45 218 282)" fill="var(--gilt)" stroke="var(--ink)" stroke-width="1"/>
+      <text x="234" y="278" class="t2">HEARTHKEEP</text>
+      <text x="234" y="293" class="t4">the lord's keep · pop 30,000 · drinks the star for power</text>
+
+      <!-- belt -->
+      <circle cx="120" cy="330" r="240" fill="none" stroke="var(--ink3)" stroke-width="3" stroke-dasharray="1 11" opacity=".55"/>
+      <text x="240" y="540" class="t4">the Grist belt · 1.8 AU · ores for both sides</text>
+
+      <!-- Millstone -->
+      <circle cx="555" cy="470" r="13" fill="var(--new-wash)" stroke="var(--new)" stroke-width="1.5"/>
+      <ellipse cx="555" cy="470" rx="24" ry="7" fill="none" stroke="var(--new)" stroke-width="1" opacity=".7" transform="rotate(-18 555 470)"/>
+      <circle cx="584" cy="452" r="2.5" fill="var(--ink2)"/>
+      <circle cx="533" cy="492" r="2" fill="var(--ink2)"/>
+      <text x="580" y="478" class="t2">MILLSTONE</text>
+      <text x="580" y="493" class="t4">gas giant · 5.2 AU · ice moons: volatiles, deuterium, reaction mass</text>
+      <text x="580" y="507" class="t3">when the war comes, the leaguer anchors here</text>
+
+      <!-- Kingsgate -->
+      <ellipse cx="700" cy="130" rx="30" ry="13" fill="none" stroke="var(--ink)" stroke-width="1.5" transform="rotate(-16 700 130)"/>
+      <ellipse cx="700" cy="130" rx="64" ry="30" class="drift" transform="rotate(-16 700 130)"/>
+      <path d="M 662 172 a 26 26 0 0 1 22 -14" class="mine"/>
+      <path d="M 648 190 a 34 34 0 0 1 30 -19" class="mine"/>
+      <path d="M 636 209 a 42 42 0 0 1 38 -24" class="mine"/>
+      <polygon points="668,168 676,182 660,182" fill="var(--gilt)" stroke="var(--ink)" stroke-width="1"/>
+      <circle cx="742" cy="96" r="2.5" fill="var(--ink2)"/>
+      <circle cx="756" cy="112" r="2.5" fill="var(--ink2)"/>
+      <circle cx="762" cy="132" r="2.5" fill="var(--ink2)"/>
+      <text x="640" y="44" class="t2">KINGSGATE</text>
+      <text x="640" y="60" class="t4">coreward mouth · 4.1 AU · Gatehouse keep, mines, picket line</text>
+      <text x="640" y="74" class="t3">the mouth wanders ±0.2 AU with the seasons (dashed ring)</text>
+      <line x1="762" y1="118" x2="1000" y2="70" class="convoy"/>
+      <polygon points="1000,70 986,70 991,80" fill="var(--new)"/>
+      <text x="800" y="128" class="rl">one jump coreward: WARDENHALL</text>
+      <text x="800" y="143" class="rl2">(the liege's seat)</text>
+
+      <!-- Beggarsgate -->
+      <ellipse cx="950" cy="500" rx="26" ry="12" fill="none" stroke="var(--ink2)" stroke-width="1.2" transform="rotate(22 950 500)"/>
+      <ellipse cx="950" cy="500" rx="56" ry="27" class="drift" transform="rotate(22 950 500)"/>
+      <text x="800" y="546" class="t2">BEGGARSGATE</text>
+      <text x="740" y="561" class="t4">frontier mouth · 7.3 AU — the smugglers' door</text>
+      <text x="740" y="575" class="t3">unfortified — the watch is bought from the Ephemeris, not built</text>
+      <line x1="984" y1="522" x2="1040" y2="560" class="convoy" opacity=".7"/>
+      <polygon points="1040,560 1027,557 1031,548" fill="var(--new)" opacity=".7"/>
+      <text x="900" y="596" class="rl">one jump frontier-ward:</text>
+      <text x="900" y="611" class="rl2">the storm marches</text>
+
+      <!-- legend -->
+      <g>
+        <rect x="40" y="86" width="330" height="66" rx="3" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="52" y="106" class="t4">transit labels: distance · days by hull class, flip at midpoint</text>
+        <text x="52" y="122" class="t4">corsair 0.3 g · warship 0.05 g · freighter 0.01 g</text>
+        <text x="52" y="138" class="t4">dashed rings = seasonal wander · arcs at Kingsgate = minefields</text>
+      </g>
+    </svg>
+    <figcaption class="mapcap">Harrow, schematically: the font and the Hearthkeep in the
+    Deep; the Grist belt in the Middle; Millstone and both lane mouths out in the flat-space
+    Shallows, where lanes can anchor. Read the times, not the pixels.</figcaption>
+    </figure>
+
+    <h3>What the map teaches</h3>
+    <ul class="stick">
+      <li><b>In-system war is chess by mail.</b> Reaction drives announce themselves:
+      every burn is visible system-wide, so a fleet's arrival is known weeks before it
+      happens. Surprise exists in exactly one place — emergence at a mouth. Ambush lives in
+      the Shallows; everything else is a slow, mutually-legible board.</li>
+      <li><b>Nobody can cover both gates.</b> Hearthkeep to Kingsgate is twenty-five days
+      hard burn; gate to gate is forty. The lord fortifies the coreward mouth, buys watch
+      services on the far one, and grants the Gatehouse to a castellan — the geometry
+      <em>forces</em> subinfeudation, and every seam it creates is something a siege can
+      pry.</li>
+      <li><b>The leaguer has a natural campsite.</b> Millstone: volatiles, deuterium, and
+      reaction mass three weeks from the keep but only three from the picket line. Every
+      serious siege of Harrow is really a contest for Millstone — the counter-castle,
+      re-derived.</li>
+    </ul>
+
+    <p class="kicker">§3 · The keep</p>
+    <h2>Three loops, one leak</h2>
+    <p>What is a keep made of, honestly, at near-future tech? Three loops — two of which
+    close, and one of which cannot. The one that leaks is the siege.</p>
+    <div class="loops">
+      <div class="loop closed">
+        <span class="no">Loop I · Life — closed</span>
+        <h3>Air, water, food</h3>
+        <p>Hydroponics, recycling, aquaculture decks: energy in, calories out,
+        indefinitely. The objection is right and the doctrine concedes it in full — a
+        blockaded keep does not starve. (Its <em>outposts</em> do: a 2,000-soul station has
+        stores, not loops. That is why the small stations yield first.)</p>
+      </div>
+      <div class="loop closed">
+        <span class="no">Loop II · Power — local</span>
+        <h3>The star, the ice</h3>
+        <p>A deep keep drinks its star: at 0.25 AU, collector acreage is power. Fusion
+        feedstock comes off ice runs a blockade can harass but rarely sever. Power is not
+        the lever either — a besieger who counts on darkening the keep is planning
+        someone else's siege.</p>
+      </div>
+      <div class="loop open">
+        <span class="no">Loop III · Industry — open</span>
+        <h3>The pyramid leak</h3>
+        <p>Thirty thousand people cannot host the whole industrial pyramid. The keep prints
+        parts, machines simple stock, patches and cannibalizes — but fab-grade chips,
+        precision optics, catalysts, medical isotopes, biologics all arrive by convoy.
+        Under blockade the top of the pyramid erodes. Slowly. In <em>years</em>. That is
+        the real clock, and it is long.</p>
+      </div>
+    </div>
+    <p><b>Mouths are munitions.</b> The counterintuitive corollary: population is
+    fortification. Every additional trade aboard covers another branch of the maintenance
+    tree, so the bigger the keep, the longer its industrial clock — a burg of two hundred
+    thousand decays slower than a keep of thirty, and an outpost of two thousand barely
+    decays at all, it just runs out. Lords pack their stations for the same reason their
+    forebears walled their towns.</p>
+    <table>
+      <thead><tr><th>Under blockade</th><th>Outpost · ~2,000</th><th>Keep · ~30,000</th><th>Burg · ~200,000</th></tr></thead>
+      <tbody>
+        <tr><td>First year</td>
+          <td>Stores counted in months; yields early, and custom says early terms are
+          gentle.</td>
+          <td>Comforts rationed; non-critical systems cannibalized; dredge fleet parked.</td>
+          <td>Barely notices, beyond the politics of being besieged.</td></tr>
+        <tr><td>Years 2–3</td>
+          <td>—</td>
+          <td>The pharmacy floor: isotopes and biologics expire, surgery is rationed,
+          attrition begins. The cruelest clock, and the one that moves councils.</td>
+          <td>Comfort decay; black markets in imported medicine; grumbling estates.</td></tr>
+        <tr><td>Years 5–7</td>
+          <td>—</td>
+          <td>Fab-grade spares exhausted; reactor and hull maintenance windows start being
+          missed; risk compounds rather than arrives.</td>
+          <td>The pharmacy floor, at scale.</td></tr>
+        <tr><td>Year 10+</td>
+          <td>—</td>
+          <td>Cascade territory — but in the whole record, politics has almost always
+          failed first.</td>
+          <td>A decade of grace, then the keep's curve. Politics fails before
+          plumbing.</td></tr>
+      </tbody>
+    </table>
+
+    <p class="kicker">§4 · The leaguer</p>
+    <h2>The fleet is the thing that melts</h2>
+    <p>Now the other clock, the fast one. A blockading force — the <em>leaguer</em> — must
+    hold, at all times, enough fresh chrism to jump home and enough to fight whatever
+    emerges at the mouth. Call that its reserve. The reserve fades at the same
+    2<sup>−t/90</sup> as everything else, and unlike the keep, the leaguer is sitting on no
+    font: every gram of decay is re-bought from home and convoyed in through the very
+    mouths it is guarding. One 120-day season on station re-buys roughly sixty percent of
+    the reserve. That is the meter running.</p>
+    <p>Stack the rest: crews on feudal muster owe <em>one calm season</em> — every season
+    past the first is paid tonnage, which means scutage pressure on the besieger's own
+    vassals. Warship loops are tighter than station loops, so consumables ride the same
+    convoys. The storm season closes the lanes on schedule, and the leaguer must either
+    winter over — cut off, at full burn, praying the charts were fresh — or lift and
+    re-establish next calm, handing the keep a resupply window every year. And the natural
+    campsite, Millstone, must be taken and held first, because a leaguer without local
+    volatiles is a leaguer on a countdown.</p>
+    <p>The keep's counterplay writes itself off the map: sortie against the skimming rigs
+    (announced for a month by physics, so it is really a feint game), cut out pickets
+    during storm onset when the mouth wanders, and above all make the convoy war
+    expensive — every escort the besieger adds is reserve it must also feed.</p>
+
+    <p class="kicker">§5 · The two clocks</p>
+    <h2>The leaguer of Harrow — a worked siege</h2>
+    <div class="numbers">
+      <p class="const">reserve R = 1,000 t fresh &nbsp;·&nbsp; season = 120 d &nbsp;·&nbsp;
+      re-buy = R×(1−2^(−120/90)) ≈ 0.60·R &nbsp;·&nbsp; muster covers season one only</p>
+      <div class="row">
+        <span class="math">leaguer: 600 t re-bought per season + convoy escorts + a
+        wintered-over picket ≈ 1,400 t-equivalent, year one — rising, paid, political.</span>
+        <span class="inst">The besieger's curve is <b>steep and denominated in his own
+        vassals' patience</b>.</span>
+      </div>
+      <div class="row">
+        <span class="math">Hearthkeep: reach dead by day 270 (three half-lives); pharmacy
+        floor at ~month 30; hull-risk years away.</span>
+        <span class="inst">The defender's curve is <b>shallow and denominated in
+        morale</b>.</span>
+      </div>
+      <div class="row">
+        <span class="math">window: besieger's projected burn to the keep's next milestone
+        exceeds the value of the keep's functions ≈ month 7–9.</span>
+        <span class="inst"><b>So the table opens.</b> Composition: five years' tithe
+        redirected, gate tolls shared, the second son fostered at Wardenhall, the garrison
+        keeps its colors. Nobody ever fired on the keep itself.</span>
+      </div>
+    </div>
+    <p>Two features of that ledger deserve names. First, <b>everyone can compute it</b> —
+    both curves are public arithmetic, which is why sieges here, like their medieval
+    ancestors, are mostly <em>negotiations conducted in logistics</em>. Second, <b>terms
+    decay</b>: the customary law of the siege prices surrender by the clock — yield at the
+    summons and keep your tolls; yield at the pharmacy floor and keep your colors; be
+    stormed, and custom stops protecting you. Every season of defiance is a bet that
+    relief comes before the terms rot.</p>
+
+    <p class="kicker">§6 · The endings</p>
+    <h2>Six ways a siege resolves</h2>
+    <p>Handles <code style="font:12px var(--mono)">SIEGE.n</code> are stable; cite them.
+    Rough base rates attached, because the distribution <em>is</em> the doctrine.</p>
+
+    <article class="ending" id="siege-1">
+      <div class="ehead"><span class="handle"><a href="#siege-1">SIEGE.1</a></span>
+        <h3>Composition — terms at the table</h3><span class="rate">the plurality</span></div>
+      <p>The modal fall. Tithes redirected, tolls shared, hostages fostered, fealty
+      re-sworn — the keep survives intact because the keep <em>is the prize</em>; rubble
+      pays no tithe. Terms are a decaying function of resistance time under the customary
+      law of the siege, which is what makes the decision to hold out a real wager rather
+      than a reflex.</p>
+    </article>
+
+    <article class="ending" id="siege-2">
+      <div class="ehead"><span class="handle"><a href="#siege-2">SIEGE.2</a></span>
+        <h3>The masking — defang and move on</h3><span class="rate">the professional's default</span></div>
+      <p>Interdict the font for three half-lives and the keep's squadron is legless: it can
+      hold its rock forever and threaten nothing. Leave a watch squadron at the mouth,
+      write the keep out of the campaign, and spend the fleet somewhere it buys more. The
+      cheap win — most "sieges" in a war of movement are this, and the keep's chronicles
+      will still call it a siege withstood.</p>
+    </article>
+
+    <article class="ending" id="siege-3">
+      <div class="ehead"><span class="handle"><a href="#siege-3">SIEGE.3</a></span>
+        <h3>The long rot — strangulation in years</h3><span class="rate">kingly, rare</span></div>
+      <p>Hold the cordon through storm seasons and pay the melt, for years, until the
+      pharmacy floor or the maintenance wall moves the keep's council. Only worth it for a
+      gate that commands an irreplaceable mouth, and only possible for a purse that can pay
+      professionals long past any muster — which is to say: kings, and the rare margrave
+      who is one in all but name. The medieval analogues were the wonders of their age
+      precisely because almost nobody could afford them.</p>
+    </article>
+
+    <article class="ending" id="siege-4">
+      <div class="ehead"><span class="handle"><a href="#siege-4">SIEGE.4</a></span>
+        <h3>The storm — assault at a breach window</h3><span class="rate">rare, ruinous, remembered</span></div>
+      <p>Possible only when something has already failed — defenses degraded by the rot,
+      treachery at a lock, or tonnage so overwhelming the exchange is survivable. You
+      inherit wreckage, a decimated assault echelon, and a population that hates you,
+      minus the customary protections it forfeited by making you storm it. Doctrine prices
+      it honestly and then recommends against; epics get written anyway.</p>
+    </article>
+
+    <article class="ending" id="siege-5">
+      <div class="ehead"><span class="handle"><a href="#siege-5">SIEGE.5</a></span>
+        <h3>The turning — politics does the work</h3><span class="rate">commoner than pride admits</span></div>
+      <p>The fostered heir signs, a faction opens a dock, the Ephemeris lays interdict and
+      the keep's remaining charts go stale, the old lord dies mid-siege and the succession
+      needs the besieger's blessing more than it needs the walls. Every seam the geometry
+      forced — the castellan at the far gate, the bought watch, the passage-debt gangs —
+      is a place the siege can be won without a shot. The counterintelligence war
+      <em>is</em> siege warfare.</p>
+    </article>
+
+    <article class="ending" id="siege-6">
+      <div class="ehead"><span class="handle"><a href="#siege-6">SIEGE.6</a></span>
+        <h3>The lifting — the defender wins</h3><span class="rate">the modal outcome, where the web holds</span></div>
+      <p>The liege's relief muster emerges at the mouth, or simply doesn't need to: the
+      storm season breaks the leaguer's budget, the convoy war bleeds it, the besieger's
+      vassals go home. Most sieges of a solvent lord's keep end this way — as most always
+      did — and the whole feudal web exists to make sure the relief clock beats the terms
+      clock. Fealty, at bottom, is siege insurance.</p>
+    </article>
+
+    <p class="kicker">§7 · At the stick, under siege</p>
+    <h2>The siege as a campaign of missions</h2>
+    <p>For the pilot, a siege is not a cutscene — it is the densest mission economy in the
+    game, on either side of the cordon:</p>
+    <ul class="stick">
+      <li><b>Picket watch.</b> Weeks of boredom at the mouth's drift ring, then ninety
+      seconds of emergence contact that decide whether the convoy war is won this
+      season.</li>
+      <li><b>The last convoy out.</b> The cordon is forming, the tithe and the heir both
+      need to be elsewhere, and every hour of loading is a hull on the scope getting
+      closer.</li>
+      <li><b>Blockade running.</b> Fresh chrism and fab-grade crates in, timed to storm
+      onset when the mouth wanders off its charts and the pickets hold station blind. The
+      relief mission from the brief, now with its full price tag visible.</li>
+      <li><b>The rig raid.</b> Twenty-eight days of announced approach to Millstone means
+      the raid is really a feint game — three burns telegraphed, one meant.</li>
+      <li><b>Parley escort.</b> Ferrying the terms shuttle under truce marks while both
+      fleets watch, and deciding whether what you overheard in the hold is worth more than
+      your bond.</li>
+      <li><b>Leaguer life.</b> On the other side of the cordon: skim duty at Millstone,
+      convoy escort, counting your own bunkers fade — and learning exactly why your liege
+      wants this over before the second calm.</li>
+    </ul>
+
+    <p class="foot"><b>Constants, for the contract.</b> This page adds to the brief's §3:
+    hull accelerations — corsair 0.3 g, warship 0.05 g, freighter 0.01 g, brachistochrone
+    throughout; lane mouths anchor in flat space (~3 AU and out) and wander ±0.2 AU with
+    the storm seasons; leaguer re-buy fraction 1−2<sup>−t/90</sup> per t days on station;
+    population classes outpost/keep/burg ≈ 2k/30k/200k with the decay milestones of §3's
+    table. Future pages cite, never fork. — The one-line siege in <a href="index.html">the
+    brief</a> (§5) and ledger row <a href="ledger.html#sf-8">SF.8</a> were amended when
+    this page landed: the fade clocks a keep's <em>reach</em> and a leaguer's
+    <em>reserve</em>, never a population's survival. The objection that forced the fix is
+    quoted at the top, with thanks.</p>
+  </div>
+</body>
+</html>

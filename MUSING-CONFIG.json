@@ -34,6 +34,19 @@
         { "label": "The Pitch", "href": "pitch.html" }
       ],
       "hidden": false
+    },
+    {
+      "folder": "space-feudal",
+      "slug": "space-feudal",
+      "name": "Space Feudal",
+      "description": "Recreate the economic problems feudalism actually solved — courier-lag authority, fuel that fades, keeps on the lane mouths — under a stipulated FTL, and let lords condense back out of the sim. A design brief plus a 25-row ledger lining up the old and the to-be.",
+      "links": [
+        { "label": "The Ledger", "href": "ledger.html" },
+        { "label": "Sieges", "href": "sieges.html" },
+        { "label": "The Map", "href": "sieges.html#map" },
+        { "label": "The Loom", "href": "loom.html" }
+      ],
+      "hidden": false
     }
   ]
 }

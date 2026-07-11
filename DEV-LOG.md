@@ -20,6 +20,114 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-10 — Space Feudal: The Loom (consequence threads + counterweights) + SF.26–27
+
+**Context:** Panda pulled a thread the brief never examined — decoherence polices only
+*transit* and the bloom only *the font*, so in-system automation is free: a settled
+system's drone home-fleet dwarfs any chrism-fed mobile force. Commission: follow such
+threads (and find more), chase consequences, offer counter-forces — keep both the
+emergent texture and the tuned feudal feel.
+**Options considered:** (A) fold consequences into existing pages — rejected, each page
+has one job and the method deserves its own statement; (B) a fourth page with an explicit
+thread → runaway → counterweight → dial format.
+**Choice:** B — `loom.html` ("The Loom", handles `LOOM.1`–`LOOM.6`), opening with three
+binding rules: counterweights must be *found in canon*, never decreed; every thread ends
+on a feel dial; an uncheckable thread becomes new canon or a dissolution-tier tech. The
+six threads: home shell (Panda's — checked by the pyramid leak pricing drone *quality*,
+remass making it a point-defense shell, the bloom paradox [the only prize is anti-drone
+ground], and the shell pointing inward at successions); muster of ghosts (unauditable
+arsenals → Potemkin shells, checked by live-fire reviews/the Progress/defector ledgers);
+fact corsairs (keys and prices as physical cargo, checked by courier sanctity + staleness
++ split keys + poisoned pouches); cold coast (ballistic stealth favors crewless pods,
+checked by time cost + the floodlit Deep + sweep-certification as a banal fee); endemic
+minds (AI crosses only as cold weights → heirloom lineages, wright guilds, the poisoned
+codex); stratified manor (automation leaves three estates: bloom gangs / drone-wright
+yeomanry / lodesman gentry — "bread cheap, chips dear"). Two counterweights were strong
+enough to *append to the ledger*: **SF.26** license to crenellate ↔ shell charters
+(adulterine shells razed), **SF.27** tournament ↔ the live-fire muster of ghosts —
+first exercise of the append-only handle law (rows sit in the war group; IDs ≠
+positions; ranges updated across pages).
+**Why:** the home-shell thread *strengthened* the siege doctrine rather than breaking it
+(it explains why SIEGE.4 storms are rare and why leaguers stand off in the Shallows) —
+evidence the kit's counterweights are load-bearing rather than decorative, which is the
+whole bet of the musing.
+**Notes:** (1) New canon (nav spec invariants): drone home-shells exist and are chartered
+("license to swarm"); AI ships as cold weights needing witnessed local revival; cold-coast
+stealth exists and favors drones. (2) The dials interact — same counterweights serve
+multiple threads (pyramid leak runs both sieges and shell quality) — noted in §7 as the
+bench test for future threads.
+
+## 2026-07-10 — Space Feudal: siege doctrine corrected + The Long Patience page + Harrow map
+
+**Context:** Panda sustained an objection against the brief's one-line siege ("cut the
+font → bunkers fade → surrender date"): chrism is *jump* fuel, not life support — a
+near-future keep with closed loops grows its own food and lives for generations, so
+fuel interdiction can't starve it. Commissioned: a siege-details page + a system map
+with marked distances ("scale fudged — to scale nothing is readable").
+**Options considered:** (A) give chrism in-system tactical uses so the old claim holds —
+rejected, retcons the fuel into magic juice and muddies the §2 kit rule; (B) quietly
+soften the wording — rejected, the claim was load-bearing and wrong; (C) concede the
+objection in full and rebuild the doctrine on what the fade *does* clock.
+**Choice:** C — `sieges.html` ("The Long Patience"): the fade kills a keep's **reach**
+(three half-lives → no jumps) and the **besieger's reserve** (re-buy ≈ 1−2^(−t/90) ≈ 60%
+per 120-day season), never a population. The keep's real clock is the one loop that
+can't close at 30k souls — the industrial pyramid (fab-grade spares, pharma) — measured
+in *years*; so a siege is two public clocks, most sieges end in terms (the customary
+law of the siege: terms decay with resistance time) or a lifted leaguer, and six endings
+got handles `SIEGE.1`–`SIEGE.6` with base rates. The Harrow map (inline themed SVG,
+schematic on purpose, distances + brachistochrone times true at corsair 0.3 g / war
+0.05 g / freight 0.01 g) grounds the doctrine: mouths anchor in flat space ~3 AU out
+(wander ±0.2 AU seasonally), so nobody covers both gates — geometry forces
+subinfeudation, and Millstone (volatiles at the Shallows' edge) is the natural leaguer
+campsite, the counter-castle re-derived. Amended `SF.8` + the brief's §5 bullet;
+constants contract extended in the siege page's foot; correction canonized in the nav
+spec invariants ("don't reintroduce 'the keep starves'").
+**Why:** the honest fix made the analogy *stronger* — the medieval record agrees (few
+storms, fewer starvations; most sieges broke on the attacker's clock: the forty days,
+winter, the pay chest) — and "the besieger is the one melting" lands the setting's core
+thesis (chrism is income, never wealth) in siege form.
+**Notes:** (1) New canon knock-on: "mouths are munitions" — population is fortification,
+because industrial diversity scales the decay clock; big keeps outlast small ones, the
+inverse of a granary siege. (2) The map quietly reconciles SF.7's tempo claim: corsairs
+sprint mouth→font in ~10 d and raids resolve in hours; interstellar relief still needs a
+season — the tempo gap survives the geometry. (3) In-system war is "chess by mail"
+(burns are visible weeks out; surprise exists only at emergence) — this is why sieges
+are stately and ambush lives at the mouths.
+
+## 2026-07-10 — Space Feudal authored + registered (HTML-first: brief + correspondence ledger)
+
+**Context:** Panda commissioned a new musing — X-series/Elite-style play, but the point of
+interest is the economic layer above it: mimic the actual economic problems feudalism
+solved and show how they lead to feudal lords again; FTL stipulated, resources free to
+invent, plus "a page explaining how the old and to-be line up."
+**Options considered:** (A) Markdown musing — dead on arrival for the centerpiece, the
+renderer has no tables and the alignment page is inherently tabular; (B) extend
+`musing_render.py` with tables — touches shared tooling for one musing's layout needs;
+(C) HTML-first musing (the day-old THAU/LoMa pattern) — full layout control, two
+self-contained pages.
+**Choice:** C — `space-feudal/` (lowercase == slug per the HTML-first invariant):
+`index.html` = the brief (six pillar-problems each emitting a spec line; an invented kit
+where *every invention must earn ≥1 pillar and repair none*; §3 constants; the
+company→governor→fief ladder; knobs + four "dissolution" techs), `ledger.html` = the
+alignment page (25 old ‖ new ‖ in-play rows, grouped, mnemonic **SF**, append-only
+handles `SF.1`–`SF.25`). Registered in `MUSING-CONFIG.json` with "The Ledger" sublink;
+PLAN/SITE.md synced; plan file added.
+**Why:** the ledger *is* the deliverable the brief argues for — a two-column
+old-vs-to-be page wants designed HTML, and the verbatim-copy pattern was built for
+exactly this shape. The load-bearing invention is **chrism decay** (t½ = 90 d): one
+constant re-derives itinerant kingship (tithes can't be hauled → the Progress), plenary
+governors (120-day order loops), and castle logic (attackers arrive at 63% bunkers) —
+that triple coincidence is why it, and not the lane graph, anchors the setting.
+**Notes:** (1) No ansible is the absolute knob — lanes carry hulls, not signals; every
+other constraint is tunable, that one unravels the whole equilibrium if softened, so the
+"wire returns" only as an endgame dissolution tech. (2) The MSL mention in the brief's
+foot is deliberately *not* a hyperlink: MSL's repo folder has no `index.html`, so a
+slug-relative link would 404 from disk, violating the file://-openable invariant.
+(3) SF.19 (bound labor) carries an explicit darkness-knob note rather than sanitizing
+the serfdom analogue — flagged as a designer's visible choice, with abolition as
+late-game politics. (4) Constants contract lives in the brief §3; future SF pages cite,
+never fork (LoMa §8 discipline).
+
 ## 2026-07-10 — Landing page links every project: THAU + LoMa promoted as HTML-first musings
 
 **Context:** Panda asked for the Game Design Musings landing page to link the other

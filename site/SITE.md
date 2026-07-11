@@ -80,6 +80,11 @@ Full checklist + the supported Markdown subset + the HTML-first pattern:
   - `logical-magic/` — **HTML-first**: gallery + the LoMa system-pitch page, copied
     verbatim from `../logical-magic/`; cross-links `../thaumodynamics/` (slug-relative,
     works in-repo and on-site).
+  - `space-feudal/` — **HTML-first**: the Space Feudal brief (`index.html`, the entry)
+    + the Ledger of Correspondences (`ledger.html`, handles `SF.1`–`SF.27`) + the siege
+    page (`sieges.html`, handles `SIEGE.1`–`SIEGE.6`, with the inline-SVG Harrow system
+    map at `#map`) + the consequences page (`loom.html`, handles `LOOM.1`–`LOOM.6`),
+    copied verbatim from `../space-feudal/`.
 
 ## Build & preview
 
