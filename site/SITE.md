@@ -39,7 +39,14 @@ site/
 - **Relative links only.** The site is served at `/` locally but under
   `/game-design-musings-blog/` on Pages. Generated pages link to `../../style.css` and
   `../../index.html`; the renderer enforces this. Never a leading `/` or an absolute
-  `…github.io/…` self-link.
+  `…github.io/…` self-link. **One sanctioned exception:** the breadcrumb's root crumb links
+  the *separate* portfolio site at the absolute `https://spiffy-panda.github.io/` (a
+  cross-site link, not a self-link).
+- **Breadcrumbs, everywhere, coherent.** Every page carries the same trail — `Panda's
+  Portfolio › Game Design Musings › ‹Musing› › ‹sub-page›` — rendered three ways (the Python
+  renderer + landing generator, the self-contained HTML musings' inline copies, the React
+  `Page` component) but styled identically (`.crumbs`). Canonical spec:
+  `../musing-tech-notes.md` "Navigation: the breadcrumb standard".
 - **One build step, two toolchains.** `build_site.py` + `musing_render.py` are pure stdlib
   (no `pip install`) and render the landing page + Markdown musings. The **one exception** is
   the `approaches/` sub-site for Minimalist Space Logistics: a React/Tailwind app

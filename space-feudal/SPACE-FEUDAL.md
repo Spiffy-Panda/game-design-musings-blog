@@ -38,7 +38,12 @@ of the simulation — the cockpit layer stays genre-standard (X series / Elite /
 
 ## Invariants
 
-- Every page is self-contained and `file://`-openable — no external assets, both themes
+- Every page hand-authors the **site-wide breadcrumb** (`nav.crumbs`, rooted at the
+  portfolio; see `../musing-tech-notes.md` "Navigation: the breadcrumb standard") using this
+  musing's own tokens (`--new` links, `--line2` separators, `--ink3` current). The page body
+  renders standalone from disk; only the "Game Design Musings" crumb is site-relative
+  (resolves on the served site / preview, not a raw `file://` open).
+- Every page is self-contained — no external assets, both themes
   inline, no `background-attachment: fixed` / `backdrop-filter` (screenshot-capture
   gotcha, see tech notes). Keep it that way when adding pages. The Harrow map is inline
   SVG themed via the same CSS vars; its text uses svg-scoped classes (the SVG `font:`

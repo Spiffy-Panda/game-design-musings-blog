@@ -20,6 +20,46 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-11 — Site-wide breadcrumb navigation (coherent, portfolio-rooted) via a Sonnet fan-out
+
+**Context:** Nav across the musings was a grab-bag — thaumodynamics and logical-magic had
+*no* back-link at all, the 16 explorations used a `.72rem` mono backlink, space-feudal had a
+small per-page `.crumb` bar, the MSL Markdown pages a minimal `← All musings`, and the React
+approaches app a single `← back`. Panda asked (before the PR) for a coherent UX pass with
+bigger, consistent navigation, rooted at the **portfolio** — and to run it as a fan-out of
+**Sonnet** sub-agents with *firm* rules (Sonnets have ignored Rule 1 / PII guidance before),
+supplying the portfolio repo for reference of the breadcrumb root.
+**Recon:** the portfolio (`spiffy-panda_github-portfolio`, a Quartz site) deploys at the org
+root `https://spiffy-panda.github.io/`; Game Design Musings is a *separate* Pages deploy at
+`…github.io/game-design-musings-blog/`. So the coherent trail is **Panda's Portfolio ›
+Game Design Musings › ‹Musing› › ‹sub-page›**: the portfolio crumb an absolute cross-site
+URL (works everywhere), the landing crumb site-relative, the rest relative, current page a
+non-link.
+**Method:** wrote one prescriptive standard (`.crumbs` structure, sizing/a11y, exact
+per-page hrefs, firm Rule 1 verbatim + PII gate + lane discipline) and had every agent read
+the *same* file so parallel work stayed coherent. Split by write-disjoint folders: **4
+Sonnet agents** (thaumodynamics / logical-magic / space-feudal / explorations, each editing
+only its self-contained HTML) + **central (me)** for the shared surfaces that can't be
+parallelized — `musing_render.py` (new `crumbs=` param), MSL `build-musing.py`, `site/style.css`,
+the landing generator in `build_site.py`, and the React `Page`/`TopBar` (`kit.tsx` + 4 pages).
+**Choice / invariant change:** the old "HTML-first pages carry **no** back-link to the
+landing (file://-openability)" rule is **relaxed**: pages still render standalone from disk,
+but the "Game Design Musings" crumb is site-relative (correct on the served site + local
+preview; the one link that doesn't resolve on a raw `file://` open). Coherent wayfinding
+rooted at the portfolio won the trade; the served site is the canonical target. Documented
+in `musing-tech-notes.md` ("Navigation: the breadcrumb standard").
+**Why:** a single shared spec + write-disjoint lanes is what made a Sonnet fan-out produce a
+*coherent* result rather than five different nav designs; the shared-chrome layer (Python
+renderer, React component, CSS) stays central so one edit fans out to many pages.
+**Notes:** (1) All 13 page families verified post-build (fetch audit: portfolio-abs root,
+depth-correct landing href, single `aria-current` crumb; React pages checked live since they
+hydrate client-side) + screenshots in both themes and a 375px wrap check. (2) Agents each ran
+a PII sweep and a global sweep confirmed no dead/real name in source or output. (3) Agent
+finds logged for triage: thaumodynamics `ashfield-bout` slide-dots are 9px (kept — enlarging
+edges into a layout change); explorations interactive controls not exhaustively audited.
+(4) One agent caught a `.crumbs` class collision in `utility-ai-fit` and renamed the clashing
+footer class — coherence dividend of the shared class name.
+
 ## 2026-07-10 — Space Feudal: The Loom (consequence threads + counterweights) + SF.26–27
 
 **Context:** Panda pulled a thread the brief never examined — decoherence polices only

@@ -176,6 +176,12 @@ _INDEX = """<!doctype html>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><span aria-current="page">Game Design Musings</span></li>
+    </ol>
+  </nav>
   <header class="site-header">
     <h1>Game Design Musings</h1>
     <p class="tagline">Miscellaneous game-design notes, mechanics experiments, and half-formed ideas — collected and explored.</p>

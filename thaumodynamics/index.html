@@ -52,10 +52,28 @@
   .card.b{border-top:3px solid var(--storm)}
   .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
         font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:70ch}
+
+  /* ── breadcrumbs ────────────────────────────────────────── */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--storm); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--storm); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
 </style>
 </head>
 <body>
   <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><span aria-current="page">Thaumodynamics</span></li>
+      </ol>
+    </nav>
     <p class="eyebrow">The Coupled Sector · three pages · self-contained, no build</p>
     <h1>Thaumodynamics</h1>
     <p class="sub">An invented field theory of <span class="fire">fire</span> &amp;

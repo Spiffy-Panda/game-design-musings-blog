@@ -57,12 +57,15 @@ def _first_h1(md: str) -> "str | None":
     return None
 
 
-def _emit(out_dir: Path, *, depth: int, md: str, title: str, back_href: str, back_text: str) -> Path:
+def _emit(out_dir: Path, *, depth: int, md: str, title: str,
+          crumbs: "list[tuple[str, str | None]]") -> Path:
     """Render one Markdown string to ``out_dir/index.html``.
 
     ``depth`` is how many folders deep the page sits below ``site/`` (2 for the musing
     root, 3 for ``approaches/``, 4 for an approach page); it sets the ``../`` count for
-    the stylesheet and home links so they resolve under the Pages sub-path.
+    the stylesheet and home links so they resolve under the Pages sub-path. ``crumbs``
+    is the breadcrumb trail (``(label, href)`` pairs, last = current page with
+    ``href=None``) rendered as the shared site-wide ``.crumbs`` nav.
     """
     up = "../" * depth
     page = musing_render.render_page(
@@ -70,13 +73,21 @@ def _emit(out_dir: Path, *, depth: int, md: str, title: str, back_href: str, bac
         body_html=musing_render.markdown_to_html(md),
         css_href=up + "style.css",
         home_href=up + "index.html",
-        back_href=back_href,
-        back_text=back_text,
+        crumbs=crumbs,
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     dest = out_dir / "index.html"
     dest.write_text(page, encoding="utf-8")
     return dest
+
+
+# The breadcrumb root (portfolio) + the musings-landing crumb are shared by every page;
+# ``_ROOT`` is (label, href) for the portfolio and the landing at the given ``../`` depth.
+def _root_crumbs(depth: int) -> "list[tuple[str, str | None]]":
+    return [
+        (musing_render.PORTFOLIO_LABEL, musing_render.PORTFOLIO_HREF),
+        ("Game Design Musings", "../" * depth + "index.html"),
+    ]
 
 
 def main() -> int:
@@ -101,7 +112,7 @@ def main() -> int:
     main_md = src.read_text(encoding="utf-8")
     muse_title = _first_h1(main_md) or MUSING_DIR.name.replace("-", " ")
     _emit(out, depth=2, md=main_md, title=muse_title,
-          back_href="../../index.html", back_text="← All musings")
+          crumbs=_root_crumbs(2) + [(muse_title, None)])
     built = 1
 
     # --- approaches sub-tree -----------------------------------------------------
@@ -116,9 +127,14 @@ def main() -> int:
                 continue  # retired — the hub is now the React app's job
             aslug = md_file.stem.lower()
             a_md = md_file.read_text(encoding="utf-8")
-            _emit(out / "approaches" / aslug, depth=4, md=a_md,
-                  title=_first_h1(a_md) or md_file.stem.replace("-", " "),
-                  back_href="../", back_text="← Approaches")
+            a_title = _first_h1(a_md) or md_file.stem.replace("-", " ")
+            # depth 4: Portfolio › Musings › MSL (../../) › Approaches (../) › <page>
+            _emit(out / "approaches" / aslug, depth=4, md=a_md, title=a_title,
+                  crumbs=_root_crumbs(4) + [
+                      (muse_title, "../../"),
+                      ("Approaches", "../"),
+                      (a_title, None),
+                  ])
             built += 1
 
     # --- explorations sub-tree (static HTML, copied — no render step) ------------

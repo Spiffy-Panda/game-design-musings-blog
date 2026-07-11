@@ -25,8 +25,13 @@ derivations), candidate IV "The Grimoire" (interactive lemma cache).
 
 ## Invariants
 
-- Every page is self-contained and `file://`-openable — no external assets, both themes
-  inline. Keep it that way when adding pages.
+- Every page is self-contained — no external assets, both themes inline. Keep it that way
+  when adding pages. Each page hand-authors the **site-wide breadcrumb** (`nav.crumbs`,
+  rooted at the portfolio; see `../musing-tech-notes.md` "Navigation: the breadcrumb
+  standard") using this musing's own tokens (`--teal` links, `--line2` separators, `--ink3`
+  current). The page body renders standalone from disk; only the "Game Design Musings" crumb
+  is site-relative (resolves on the served site / preview, not a raw `file://` open). Note
+  `pitch.html` also has a separate in-page section-jump `nav` — that is not the breadcrumb.
 - **`pitch.html` §8 is the constants contract**: stroke rate, grace tide, and every
   headline price. Future pages cite or amend that table — never fork the numbers (the
   MDYN "constants agree across pages" discipline).

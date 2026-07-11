@@ -37,7 +37,16 @@ code{font-family:var(--font-mono);font-size:.86em;background:var(--ink-800);bord
 .spark{margin:1.6rem 0;padding:.9rem 1.2rem;border-left:2px solid var(--accent);background:linear-gradient(90deg,var(--accent-soft),transparent 80%);
   font-size:1.06rem;color:var(--fog-100);font-style:italic;border-radius:0 6px 6px 0}
 .spark b{font-style:normal;color:var(--accent)}
-.crumbs{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);text-transform:uppercase;letter-spacing:.16em;margin-top:2.2rem;border-top:1px solid var(--line);padding-top:1.1rem}
+.lineage-foot{font-family:var(--font-mono);font-size:.72rem;color:var(--fog-500);text-transform:uppercase;letter-spacing:.16em;margin-top:2.2rem;border-top:1px solid var(--line);padding-top:1.1rem}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
 hr.rule{border:0;border-top:1px solid var(--line);margin:2.6rem 0}
 
 .card{border:1px solid var(--line);background:var(--ink-850);border-radius:10px;padding:1.1rem 1.2rem;margin:1.2rem 0}
@@ -129,6 +138,7 @@ button.btn:active{transform:translateY(1px)}
 .readout b{color:var(--accent)}
 
 /* scorecard */
+.tablewrap{overflow-x:auto}
 .score-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:.6rem;font-size:.9rem}
 .score-table th{text-align:left;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--fog-500);padding:.4rem .6rem;border-bottom:1px solid var(--line);font-weight:500}
 .score-table td{padding:.7rem .6rem;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fog-300)}
@@ -157,6 +167,16 @@ ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--accent);f
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">Does a Utility AI Fit?</span></li>
+    </ol>
+  </nav>
 
   <header class="hero">
     <p class="eyebrow">technique audit · utility AI</p>
@@ -295,6 +315,7 @@ ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--accent);f
   <p>Utility AI is not a verdict on the game; it's a verdict per decision-maker. It earns its keep in exactly one slot.</p>
 
   <div class="card" style="padding:.4rem .5rem">
+  <div class="tablewrap">
   <table class="score-table">
     <thead><tr><th>Decision-maker</th><th>Fit</th><th>Why — and the honest cost</th></tr></thead>
     <tbody>
@@ -316,6 +337,7 @@ ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--accent);f
     </tbody>
   </table>
   </div>
+  </div>
 
   <h3>The one-line takeaway</h3>
   <div class="spark" style="font-size:1.1rem">Utility AI earns its keep in <b>exactly one place</b>: the faction as a disembodied directive-issuer whose contract board is a utility landscape it reshapes. It is the <b>wrong tool</b> for the enemy, whose dumbness is the design. A fair <em>yes here, no there</em>.</div>
@@ -323,7 +345,7 @@ ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--accent);f
   <h3>Determinism footnote (APR.5)</h3>
   <p class="footnote">Utility AI is compatible with MSL's hard determinism constraint <em>only</em> under discipline: response curves evaluated in fixed-point (no float drift across platforms), considerations summed in a <strong>fixed iteration order</strong>, ties in the argmax broken by a stable key (contract id), and any reseed driven by the one seeded PRNG. The lab here uses JavaScript floats for display convenience; a shipping implementation would quantize every curve output to a fixed integer scale before summing. Get that wrong and "deterministic" quietly becomes "deterministic on my machine."</p>
 
-  <div class="crumbs">
+  <div class="lineage-foot">
     emerald lineage · technique audit (cross-cutting) &nbsp;·&nbsp; Minimalist Space Logistics &nbsp;·&nbsp; slug: utility-ai-fit<br>
     reference: PandasAutonome (public, AI-authored hierarchical utility AI) · summarized transformatively
   </div>

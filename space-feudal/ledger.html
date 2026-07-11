@@ -33,9 +33,15 @@
       radial-gradient(48% 44% at 4% 100%, var(--old-wash), transparent 70%);
   }
   .wrap{max-width:960px; margin-inline:auto; padding:clamp(44px,9vh,96px) clamp(18px,4.5vw,44px) 72px}
-  .crumb{font:600 12.5px/1.4 var(--sans); margin:0 0 26px; display:flex; gap:18px; flex-wrap:wrap}
-  .crumb a{color:var(--ink3); text-decoration:none; border-bottom:1px solid var(--line2)}
-  .crumb a:hover{color:var(--ink2)}
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--new); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--new); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
   .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
   h1{font:600 clamp(32px,6vw,52px)/1.08 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
   .sub{font-style:italic; font-size:clamp(16px,2.1vw,18.5px); color:var(--ink2); max-width:66ch; margin:0 0 26px}
@@ -88,7 +94,14 @@
 </head>
 <body>
   <div class="wrap">
-    <p class="crumb"><a href="index.html">← Space Feudal · the brief</a><a href="sieges.html">the siege page →</a></p>
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Space Feudal</a></li>
+        <li><span aria-current="page">The Ledger</span></li>
+      </ol>
+    </nav>
     <p class="eyebrow">Space Feudal · the alignment page · SF.1 – SF.27</p>
     <h1>The Ledger of Correspondences</h1>
     <p class="sub">How the old and the to-be line up. The left column is history; the right

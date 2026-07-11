@@ -238,6 +238,17 @@
   footer .wrap{padding-top:22px; padding-bottom:56px}
   footer p{font:13px/1.9 var(--sans); color:var(--ink3); max-width:74ch; margin:0 0 10px}
   footer a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--teal); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
 </style>
 </head>
 <body>
@@ -257,6 +268,14 @@
 
 <header class="hero">
   <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Logical Magic (LoMa)</a></li>
+        <li><span aria-current="page">The Pitch</span></li>
+      </ol>
+    </nav>
     <p class="eyebrow"><b>LoMa</b> · a magic-system pitch · one page, self-contained</p>
     <div class="hero-grid">
       <div>

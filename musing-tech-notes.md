@@ -100,10 +100,11 @@ mechanics are just relative-link bookkeeping, and `musing_render.render_page` ha
   (`site/musings/<slug>/index.html`) is **depth 2** (`../../style.css`); a sub-page one folder
   deeper is depth 3; a sub-sub-page is depth 4. Get this wrong and the stylesheet 404s on
   Pages while looking fine locally.
-- **Parent back-links.** `back_href`/`back_text` set the top-of-page backlink. They default to
-  the home link ("← All musings") for a top-level musing; a sub-page should point one level up
-  to its parent instead — e.g. `back_href="../", back_text="← Approaches"`. `../` resolves to
-  the parent directory's `index.html` (same directory-index convention the landing cards use).
+- **Breadcrumb trail.** `render_page(crumbs=[(label, href), …])` emits the site-wide
+  `.crumbs` breadcrumb nav (see "Navigation: the breadcrumb standard" below). The last crumb
+  is the current page (`href=None`); earlier crumbs point up the tree with depth-aware `../`
+  hrefs. The legacy single `back_href`/`back_text` backlink is still accepted as a fallback
+  when `crumbs` is omitted, but new pages should pass `crumbs`.
 
 The worked example is *Minimalist Space Logistics*, and it now spans **both** rendering paths.
 Its `build-musing.py` renders `MUSING.md` at depth 2 and the three *original* Markdown approach
@@ -163,11 +164,17 @@ design-system-heavy sets where the page *is* the deliverable. Worked examples:
   verbatim to `site/musings/<slug>/` (same treatment as the MSL `explorations/` gallery);
   `.md` files are never copied. The contract is otherwise unchanged: `--out`, repo-root
   anchoring via `__file__`, non-zero exit on failure.
-- **Pages must stay self-contained and `file://`-openable** — inline CSS/JS, no external
-  assets, light + dark themes carried per page. They don't use `site/style.css` and take
-  no chrome from `musing_render.py`, so there's no depth bookkeeping — but that also means
-  **no back-link to the landing page** (deliberate: the pages must work from disk, where
-  `../../index.html` doesn't exist; precedent: the copied explorations pages).
+- **Pages must stay self-contained** — inline CSS/JS, no external assets, light + dark
+  themes carried per page. They don't use `site/style.css` and take no chrome from
+  `musing_render.py`, so they hand-author their own copy of the breadcrumb (see
+  "Navigation: the breadcrumb standard" below). The page body still renders standalone from
+  a raw `file://` open; the one nav link that does **not** resolve on a raw disk open is the
+  "Game Design Musings" landing crumb (it is site-relative — correct on the served site and
+  the local preview, where the landing exists at the right depth). That is an accepted,
+  deliberate relaxation of the old "no landing back-link" rule: coherent wayfinding rooted
+  at the portfolio won the trade, and the served site (or `serve_site.py`) is the canonical
+  way to view these pages. The **portfolio** crumb is an absolute cross-site URL and works
+  everywhere, including disk.
 - **Cross-musing links** use the shape `../<other-slug>/<page>.html`. That resolves
   identically in the repo (folder beside folder) and on the site (slug beside slug under
   `site/musings/`) — keep folder name == slug (lowercase) for these musings so the
@@ -180,6 +187,49 @@ design-system-heavy sets where the page *is* the deliverable. Worked examples:
 - **SVG text gotcha:** a CSS `font:` shorthand in a shared utility class overrides SVG
   `font-size` presentation attributes. Size one-off SVG text with an inline
   `style="font:…"` instead.
+
+## Navigation: the breadcrumb standard
+
+Every published page carries the **same breadcrumb trail**, rooted at the portfolio, so the
+whole site navigates coherently regardless of which of the three rendering paths built it.
+The trail is:
+
+```
+Panda's Portfolio  ›  Game Design Musings  ›  <Musing>  ›  <sub-page…>
+```
+
+- **First crumb — `Panda's Portfolio`** → the **absolute** URL `https://spiffy-panda.github.io/`.
+  This is a deliberate cross-site link (the portfolio is a *separate* Pages deploy at the org
+  root; the musings site lives at `…github.io/game-design-musings-blog/`). It is not a
+  self-link, so the "relative links only / no absolute github.io" rule doesn't apply, and it
+  resolves everywhere — disk, preview, Pages.
+- **Second crumb — `Game Design Musings`** → the musings landing, **site-relative** (depth-aware
+  `../…/index.html`). Correct on the served site and the local preview; the one link that does
+  not resolve on a raw `file://` open (accepted — see the HTML-first note above).
+- **Then** the musing and any parents (relative), ending with the **current page** as a
+  non-link `aria-current="page"`.
+
+**Markup** (identical everywhere) — a `<nav class="crumbs" aria-label="Breadcrumb"><ol>` of
+`<li>`s, each an `<a>` except the current page (`<span aria-current="page">`); the `›`
+separators are drawn by CSS (`li + li::before`), not in the markup.
+
+**Three implementations, one look:**
+
+- **Markdown pages** (`musing_render.render_page(crumbs=[(label, href), …])`) — emits the nav;
+  styled by `.crumbs` in `site/style.css`. `PORTFOLIO_HREF`/`PORTFOLIO_LABEL` constants live in
+  `musing_render.py`. The per-musing `build-musing.py` builds the trail (see MSL's `_root_crumbs`).
+- **The generated landing** (`utils/python/build_site.py`) — hard-codes the two-crumb trail
+  (`Panda's Portfolio › Game Design Musings`, current) into its `_INDEX` template.
+- **Self-contained HTML musings** (thaumodynamics, logical-magic, space-feudal) **and** the
+  copied explorations pages — hand-author the same `<nav class="crumbs">` inline, with a local
+  copy of the `.crumbs` CSS using **that page's own palette tokens** (never `site/style.css`,
+  never hard-coded colors). The **React** approaches app renders it via the shared `Page`
+  component's `crumbs` prop (`approaches-app/src/components/kit.tsx`).
+
+**Sizing/a11y (all paths):** links ≥ `.92rem` with real padding (tap target ≈ 34px), a visible
+`:focus-visible` outline, `aria-label="Breadcrumb"` on the nav, wraps at narrow widths. This
+replaced the old grab-bag of tiny back-links (a `.72rem` explorations backlink, small per-page
+`.crumb` bars, and two musings with *no* back-nav at all).
 
 ## Markdown the renderer supports
 

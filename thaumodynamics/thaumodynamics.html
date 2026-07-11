@@ -301,12 +301,31 @@
   /* footer */
   .colophon{border-top:1px solid var(--line); padding:44px 0 64px}
   .colophon p{font:13px/1.9 var(--sans); color:var(--ink3); max-width:74ch; margin:0 0 8px}
+
+  /* ── breadcrumbs ────────────────────────────────────────── */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--storm); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--storm); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
 </style>
 
 <!-- ══════════════════ HERO ══════════════════ -->
 <header class="hero">
   <canvas id="fx" aria-hidden="true"></canvas>
   <div class="wrap hero-inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Thaumodynamics</a></li>
+        <li><span aria-current="page">Monograph</span></li>
+      </ol>
+    </nav>
     <p class="eyebrow"><b>Vol.&nbsp;I · The Coupled Sector</b> · Third Edition · For the Practical Curriculum</p>
     <h1>Thaumodynamics</h1>
     <p class="sub">A field theory of <span class="fire">fire</span> &amp; <span class="bolt">lightning</span></p>

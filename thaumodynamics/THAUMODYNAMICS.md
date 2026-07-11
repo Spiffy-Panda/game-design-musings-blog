@@ -22,8 +22,12 @@ This file and `README.md` stay internal.
 
 ## Invariants
 
-- Every page is self-contained and `file://`-openable — no external assets, both themes
-  inline. Keep it that way when editing.
+- Every page is self-contained — no external assets, both themes inline. Keep it that way
+  when editing. Each page hand-authors the **site-wide breadcrumb** (`nav.crumbs`, rooted at
+  the portfolio; see `../musing-tech-notes.md` "Navigation: the breadcrumb standard") using
+  this musing's own tokens (`--storm` links, `--line2` separators, `--ink3` current). The
+  page body renders standalone from disk; only the "Game Design Musings" crumb is
+  site-relative (resolves on the served site / preview, not a raw `file://` open).
 - The three pages share one set of in-world constants; the worksheet's numbers match the
   monograph's plates deliberately. Change a constant in one page → re-audit the other two.
 - Registered in `../MUSING-CONFIG.json` (card + sublinks). Everything in `*.html` deploys

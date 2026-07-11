@@ -104,6 +104,7 @@ svg{display:block;width:100%;height:auto;touch-action:manipulation}
 .arch-desc .trade{color:var(--warn)}
 
 .note{font-size:.82rem;color:var(--fog-400)}
+.tablewrap{overflow-x:auto}
 table.cmp{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.86rem}
 table.cmp th,table.cmp td{border:1px solid var(--line);padding:.5rem .6rem;text-align:left;vertical-align:top}
 table.cmp th{background:var(--ink-800);font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fog-400);font-weight:600}
@@ -116,10 +117,29 @@ table.cmp td b{color:var(--fog-100)}
 .pill.rear{color:var(--rear);border-color:color-mix(in oklab,var(--rear) 40%,var(--line))}
 .pill.mid{color:var(--mid);border-color:color-mix(in oklab,var(--mid) 40%,var(--line))}
 .pill.fwd{color:var(--fwd);border-color:color-mix(in oklab,var(--fwd) 40%,var(--line))}
+.crumbs{margin:0 0 1.6rem;font:500 .92rem/1.5 var(--font-sans)}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center}
+.crumbs li{display:flex;align-items:center;min-height:34px}
+.crumbs li+li::before{content:"\203A";margin:0 .1rem;color:var(--fog-500);user-select:none}
+.crumbs a{color:var(--accent);text-decoration:none;padding:.4rem .3rem;border-radius:3px}
+.crumbs a:hover{text-decoration:underline}
+.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crumbs [aria-current="page"]{color:var(--fog-400);padding:.4rem .3rem}
+@media (max-width:420px){ .crumbs{font-size:.86rem} }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../../../index.html">Game Design Musings</a></li>
+      <li><a href="../../">Minimalist Space Logistics</a></li>
+      <li><a href="../">Explorations</a></li>
+      <li><span aria-current="page">The Jumpgate Web</span></li>
+    </ol>
+  </nav>
 
   <span class="chip"><span class="dot"></span>M2 · topology</span>
   <div class="kicker">the jumpgate web</div>
@@ -208,6 +228,7 @@ table.cmp td b{color:var(--fog-100)}
   <p>Each button above is a real game's answer to "how do ships get between stars," distilled to a topology you can
   stress-test. One sentence each on where it comes from:</p>
 
+  <div class="tablewrap">
   <table class="cmp">
     <thead><tr><th style="width:9.5rem">Archetype · source</th><th>Shape</th><th>Front behaviour &amp; tradeoff</th></tr></thead>
     <tbody>
@@ -238,6 +259,7 @@ table.cmp td b{color:var(--fog-100)}
       </tr>
     </tbody>
   </table>
+  </div>
 
   <p>Two games sit at the edges of this space and define it by contrast. <strong>Stellaris</strong> proved topology
   only matters if you <em>enforce</em> it: while warp drives and wormhole generators let fleets opt out of the

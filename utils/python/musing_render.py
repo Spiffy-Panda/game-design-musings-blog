@@ -187,12 +187,43 @@ _PAGE = """<!doctype html>
 </head>
 <body>
   <main class="prose">
-    <p class="backlink"><a href="{back_href}">{back_text}</a></p>
+{nav_html}
 {body}
   </main>
 </body>
 </html>
 """
+
+# The site-wide breadcrumb root: the portfolio landing (a deliberate cross-site
+# ABSOLUTE link — it is not a self-link, so it is exempt from the "relative links
+# only" rule, and it resolves everywhere: disk, local preview, and Pages).
+PORTFOLIO_HREF = "https://spiffy-panda.github.io/"
+PORTFOLIO_LABEL = "Panda's Portfolio"
+
+
+def _render_crumbs(crumbs: "list[tuple[str, str | None]]") -> str:
+    """Render a breadcrumb trail to the shared ``.crumbs`` nav markup.
+
+    ``crumbs`` is an ordered list of ``(label, href)`` pairs; a pair whose ``href``
+    is ``None`` is the current page (rendered as a non-link ``aria-current``). The
+    styling lives in ``site/style.css`` (``.crumbs``); every self-contained musing
+    page mirrors this exact structure so navigation is coherent site-wide.
+    """
+    items = []
+    for label, href in crumbs:
+        label_html = html.escape(label, quote=False)
+        if href is None:
+            items.append('      <li><span aria-current="page">%s</span></li>' % label_html)
+        else:
+            items.append(
+                '      <li><a href="%s">%s</a></li>'
+                % (html.escape(href, quote=True), label_html)
+            )
+    return (
+        '  <nav class="crumbs" aria-label="Breadcrumb">\n'
+        "    <ol>\n" + "\n".join(items) + "\n    </ol>\n"
+        "  </nav>"
+    )
 
 
 def render_page(
@@ -204,26 +235,36 @@ def render_page(
     description: "str | None" = None,
     back_href: "str | None" = None,
     back_text: str = "← All musings",
+    crumbs: "list[tuple[str, str | None]] | None" = None,
 ) -> str:
     """Wrap a rendered HTML fragment in the standard musing page shell.
 
     ``css_href``/``home_href`` are relative because the site is served under a
     sub-path on Pages (see ``musing-tech-notes.md``); pick the right depth of
-    ``../`` for where the page lands. ``back_href``/``back_text`` control the
-    top-of-page backlink: they default to the home link ("← All musings"), but a
-    sub-page (e.g. an approaches page nested under a musing) can point one level
-    up to its parent instead — e.g. ``back_href="../", back_text="← Approaches"``.
+    ``../`` for where the page lands.
+
+    ``crumbs`` (preferred) is an ordered breadcrumb trail of ``(label, href)``
+    pairs rendered as the site-wide ``.crumbs`` nav — the first crumb should be the
+    portfolio root (see ``PORTFOLIO_HREF``/``PORTFOLIO_LABEL``) and the last should
+    be the current page (``href=None``). If ``crumbs`` is omitted, the older single
+    ``back_href``/``back_text`` backlink is emitted for backward compatibility.
     """
     meta_desc = ""
     if description:
         meta_desc = '\n  <meta name="description" content="%s">' % html.escape(description, quote=True)
-    if back_href is None:
-        back_href = home_href
+    if crumbs is not None:
+        nav_html = _render_crumbs(crumbs)
+    else:
+        if back_href is None:
+            back_href = home_href
+        nav_html = '  <p class="backlink"><a href="%s">%s</a></p>' % (
+            html.escape(back_href, quote=True),
+            html.escape(back_text, quote=False),
+        )
     return _PAGE.format(
         title=html.escape(title, quote=False),
         meta_desc=meta_desc,
         css_href=html.escape(css_href, quote=True),
-        back_href=html.escape(back_href, quote=True),
-        back_text=html.escape(back_text, quote=False),
+        nav_html=nav_html,
         body=body_html,
     )

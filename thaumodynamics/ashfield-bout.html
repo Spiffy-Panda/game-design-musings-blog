@@ -197,6 +197,17 @@
   .ledger tr:last-child td{border-bottom:0}
   .ledger .mono{font:12.5px/1.7 var(--mono); white-space:nowrap}
   .fin{font:600 13px/1.6 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--ink2)}
+
+  /* ── breadcrumbs ────────────────────────────────────────── */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--storm); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--storm); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
 </style>
 
 <div id="deck">
@@ -217,6 +228,14 @@
     <!-- ═════════ 1 · TITLE ═════════ -->
     <section class="slide title-slide on" data-phase="pre" aria-label="Slide 1 of 11: title">
       <div class="inner">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+            <li><a href="../../index.html">Game Design Musings</a></li>
+            <li><a href="index.html">Thaumodynamics</a></li>
+            <li><span aria-current="page">The Bout</span></li>
+          </ol>
+        </nav>
         <p class="byline">A duel in seven exchanges · cinderwork against needlework</p>
         <h1>The Ashfield Bout</h1>
         <p class="sub">Being a full and honest account of the Shrovetide duel between
