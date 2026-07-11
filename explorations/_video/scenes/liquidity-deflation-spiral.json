@@ -1,0 +1,102 @@
+{
+  "slug": "liquidity-deflation-spiral",
+  "title": "The Deflation Spiral",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#7c6cff",
+  "lineage": "MINIMALIST SPACE LOGISTICS · M1 — the money macro",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The deflation spiral: a war economy can starve with full warehouses, because the money to pay for the goods has pooled and stopped moving."
+    },
+    {
+      "id": "02-idea",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "money must circulate",
+      "headline": "Money is never minted at the point of sale.",
+      "body": "Every credit you earn was sitting in someone else's account a tick ago. So the only question that matters is: is it still circulating &mdash; or has it pooled, and died?",
+      "narration": "Money is never minted when you sell. Every credit you earn was in someone else's account a tick ago. So: is it still circulating, or has it pooled and died?"
+    },
+    {
+      "id": "03-moves",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "five money moves · every tick · double-entry",
+      "headline": "One source. Money flows down, and leaks back up.",
+      "diagram": "circulation",
+      "narration": "Each tick, money makes five moves. A war bond mints credits into the treasury, the only source. It pays you bounties; you trade against the tills; the front buys output, pushing money down; and a carrying cost bleeds every till back up."
+    },
+    {
+      "id": "04-leak",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the subtle part",
+      "headline": "The upward leak is what makes the spiral real.",
+      "body": "If money only ever flowed <em>down</em>, it could never pool. The leak turns direction into a <strong>race</strong> &mdash; drain up versus pump down. Throttle the pump and the leak wins: money climbs into the treasury and goes idle, where it can't pay anyone.",
+      "narration": "That upward leak is the whole trick. If money only flowed down, it could never pool. The leak makes direction a race. Throttle the pump, and the leak wins: money climbs into the treasury and goes idle."
+    },
+    {
+      "id": "05-guards",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "the three guards",
+      "headline": "Three counter-forces keep the blood moving.",
+      "bullets": [
+        "<b>The war-bond tick</b> &mdash; a guaranteed external source. The heartbeat.",
+        "<b>The front pays the tills</b> &mdash; the pump that pushes hoarded money back down.",
+        "<b>The treasury floor</b> &mdash; a backstop that forces a minimum board so bounties never fully stop."
+      ],
+      "narration": "Three guards keep the blood pumping: the war bond, a guaranteed source; the front paying the tills, the pump that pushes money back down; and a treasury floor, the backstop that keeps bounties alive."
+    },
+    {
+      "id": "06-phase",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the phase diagram",
+      "headline": "Cross the line and the regime flips.",
+      "diagram": "phase",
+      "narration": "Plot the source against circulation, and the economy splits in two: healthy up-right, spiral down-left. Cross the line and velocity collapses, the tills drain to zero, and the board goes quiet."
+    },
+    {
+      "id": "07-aha",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the aha",
+      "headline": "The books always balanced. The money never left.",
+      "body": "Through the whole collapse, the conservation light stays <strong style=\"color:#34d399\">green</strong>. The total never changed &mdash; the money was always there. It had just stopped <em>moving</em>. <strong>Velocity is the vital sign.</strong>",
+      "narration": "Yet through the whole collapse, the books stay balanced. The money never left. It just stopped moving. Velocity is the vital sign."
+    },
+    {
+      "id": "07b-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick or single-step it (seed 4071).",
+        "<b>The dials</b> &mdash; war-bond size, front-pays-tills rate, treasury spend, the carrying-cost leak.",
+        "<b>The three guard toggles</b> &mdash; switch the war-bond, circulation, or treasury floor off.",
+        "<b>Trigger spiral &middot; Deploy a guard &middot; Na&iuml;ve model</b> &mdash; one-click demos of collapse and recovery."
+      ],
+      "narration": "Drive it yourself. Press Play to run the deterministic tick, or Step through it. Work the dials: war-bond size, the front-pays-tills rate, and the carrying-cost leak. Flip the three guards off one at a time, or hit the one-click demos to trigger a spiral and then deploy a guard to break it."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Deflation Spiral",
+      "body": "Deterministic &middot; seeded &middot; double-entry integer credits &middot; a live explorable you can poke yourself.",
+      "narration": "Deterministic, seeded, and built on double-entry integer credits. A live explorable you can poke yourself."
+    }
+  ]
+}

@@ -13,6 +13,12 @@ scrap_scripts/*
 /site/index.html
 /site/musings/
 
+# --- Exploration explainer videos (built by utils/python/build_exploration_video.py) ---
+# The pipeline + per-page scene scripts are tracked; rendered .mp4s and the per-scene
+# build dir are large binaries, treated as build artifacts. See DEV-LOG (2026-06-27).
+/explorations/_video/out/
+/explorations/_video/build/
+
 # --- Python ---
 __pycache__/
 *.py[cod]

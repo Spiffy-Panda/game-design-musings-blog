@@ -1,0 +1,94 @@
+{
+  "slug": "run-clock-integral",
+  "title": "The Endogenous Doomsday",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · HAND.2 — the AMBER run clock",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The Endogenous Doomsday. You are not racing a clock; you are racing the running sum of your own failures to cover."
+    },
+    {
+      "id": "02-no-timer",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the endogenous doomsday",
+      "headline": "There is no countdown.",
+      "body": "Most games hand you a timer ticking to zero. Here the run ends when the front <strong>overruns you</strong> &mdash; and the front advances by exactly the supply you <em>failed</em> to deliver. The clock isn't given to you; it is <span style=\"color:#f59e0b\">computed from your coverage</span>.",
+      "narration": "Most games hand you a timer ticking down. Here there is no countdown. The run ends when the front overruns you, and the front advances by exactly the supply you failed to deliver."
+    },
+    {
+      "id": "03-integral",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the model",
+      "headline": "Displacement is the area under the gap.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><line x1=\"110\" y1=\"60\" x2=\"110\" y2=\"360\" stroke=\"#2a3146\" stroke-width=\"2\"/><line x1=\"110\" y1=\"360\" x2=\"1120\" y2=\"360\" stroke=\"#2a3146\" stroke-width=\"2\"/><path d=\"M110,150 C350,110 600,200 1120,140\" fill=\"none\" stroke=\"#f87171\" stroke-width=\"3\"/><path d=\"M110,250 C350,260 600,300 1120,250\" fill=\"none\" stroke=\"#60a5fa\" stroke-width=\"3\"/><path d=\"M110,150 C350,110 600,200 1120,140 L1120,250 C600,300 350,260 110,250 Z\" fill=\"#f59e0b\" opacity=\"0.30\"/><text x=\"640\" y=\"230\" text-anchor=\"middle\" font-size=\"24\" fill=\"#f59e0b\">the gap = uncovered shortage</text><text x=\"1050\" y=\"120\" text-anchor=\"middle\" font-size=\"20\" fill=\"#f87171\">demand</text><text x=\"1040\" y=\"280\" text-anchor=\"middle\" font-size=\"20\" fill=\"#60a5fa\">coverage</text><text x=\"615\" y=\"450\" text-anchor=\"middle\" font-size=\"26\" fill=\"#c4c9d8\">displacement += gap each tick</text><text x=\"615\" y=\"490\" text-anchor=\"middle\" font-size=\"22\" fill=\"#c4c9d8\">cross the overrun line and the run ends</text></svg>",
+      "narration": "Every fixed tick, the gap is demand minus coverage, never below zero. Displacement is the running sum of that gap. When it crosses the overrun line, the run is over."
+    },
+    {
+      "id": "04-out-of-proportion",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "what you just did",
+      "headline": "Falling behind hurts out of proportion.",
+      "body": "Because displacement is an integral, a shortage you leave open doesn't cost a fixed penalty &mdash; it costs <strong>area</strong>, and area grows with time. Ten ticks uncovered isn't ten units of trouble; it's a <em>wedge</em> that widens the longer you ignore it.",
+      "narration": "Because displacement is an integral, a shortage you leave open costs you area, not a fixed penalty. Ten ticks uncovered is a wedge of trouble that widens the longer you ignore it."
+    },
+    {
+      "id": "05-hunger",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "the dangerous knob",
+      "headline": "Compounding hunger, on a dial.",
+      "bullets": [
+        "<b>Fall behind</b> &mdash; the backlog of unmet burn piles up.",
+        "<b>Demand grows</b> &mdash; with hunger on, the front eats faster precisely because you're behind.",
+        "<b>The spiral</b> &mdash; gap feeds backlog, backlog feeds demand, demand widens the gap.",
+        "<b>A slider, not a switch</b> &mdash; defaults to off; the base clock is fully fair on its own."
+      ],
+      "narration": "Turn compounding hunger up and demand grows with the backlog you let pile up. The gap feeds the backlog, the backlog feeds demand. It's a tunable dial, defaulting off, so the base clock stays fair."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick, or single-step it.",
+        "<b>Let it fester</b> &mdash; take your hands off and watch the integral lurch.",
+        "<b>Four sliders</b> &mdash; coverage rate, demand intensity, overrun threshold, compounding hunger.",
+        "<b>Demos &amp; ghosts</b> &mdash; \"cover it\", \"let it fester\", and toggle A/B ghost traces."
+      ],
+      "narration": "Drive it yourself. Press Play, or Step one tick at a time. Ride the coverage slider against demand, or drag to paint it. Hit let it fester, then toggle the ghost traces to compare two doomsdays on one seed."
+    },
+    {
+      "id": "07-two-readings",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "one fiction, two readings",
+      "headline": "The same hand, pointed at the clock.",
+      "body": "Where the solvency pages ask <em>can you afford the next delivery</em>, this one asks <strong>what does not delivering cost you, summed over the run</strong>. Same invisible hand &mdash; the market reading prices each move; the integral reading sums every move you <span style=\"color:#f87171\">didn't make</span>.",
+      "narration": "Where the solvency pages ask whether you can afford the next delivery, this page asks what not delivering costs you, summed over the whole run. Same hand, pointed at the clock instead of the wallet."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Endogenous Doomsday",
+      "body": "The doomsday is yours to author &middot; deterministic, seeded, fixed-point, one file.",
+      "narration": "The doomsday is something you author, tick by uncovered tick. Deterministic, seeded, fixed-point, and it runs offline from a single file."
+    }
+  ]
+}

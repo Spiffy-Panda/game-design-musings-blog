@@ -1,0 +1,93 @@
+{
+  "slug": "solvency-cell",
+  "title": "The Solvency Cell",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#7c6cff",
+  "lineage": "MINIMALIST SPACE LOGISTICS · M1 — the two ledgers",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.9,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The solvency cell: a single station where one hard truth gets enforced. A shortage is only worth what someone can actually pay for it."
+    },
+    {
+      "id": "02-inversion",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the two ledgers",
+      "headline": "Nothing is minted when you sell.",
+      "body": "In most trading games, you sell and coins appear. Here, every credit you earn was already in someone else's account a tick ago. You're moving money that exists between three accounts &mdash; treasury, station till, and your wallet &mdash; and the only drama is whether the ledger you're selling into has any left.",
+      "narration": "In most trading games you sell, and coins appear from nowhere. Not here. Every credit you earn was already sitting in someone else's account a tick ago. There are three accounts: the faction treasury, the station till, and your wallet. You're just moving money that already exists between them, and the whole drama is whether the till you're selling into has anything left."
+    },
+    {
+      "id": "03-gap",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "the core inversion",
+      "headline": "You are paid in the payer-gap.",
+      "diagram": "payer_gap",
+      "narration": "Here's the core inversion. The station's bid is the minimum of two things: what the market would pay, price times quantity, and what the till can actually afford. When the till can't cover the market price, the bid sags to what the books can cover. Your profit isn't the shortage. It's the solvent shortage, the slice where a hungry market and a funded till overlap. That gap is the whole game."
+    },
+    {
+      "id": "04-drain",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "shortage is not payday",
+      "headline": "A fat shortage on an empty till pays almost nothing.",
+      "body": "Sell hard into one station and the price <strong style=\"color:#f87171\">collapses</strong> &mdash; even though inventory is scarce and the front is starving. Drain the till and you prove it: scarcity alone doesn't pay you. Only solvency does.",
+      "narration": "So sell hard into one station, and watch the price collapse, even though inventory is scarce and the front is starving. Drain the till, and you've proven it: scarcity alone never pays you. Only solvency does."
+    },
+    {
+      "id": "05-hub",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "stations go broke, or go fat",
+      "headline": "Feed a till past the notch and its ceiling lifts.",
+      "diagram": "hub_threshold",
+      "narration": "A till is not a number that only goes up. Every tick it pays a small upkeep, so a rich till bleeds faster. But route demand through it, keep it stocked, and it climbs. Cross the hub threshold and its bid ceiling lifts, from twenty-two to thirty credits: big sells now clear without clipping. Stop feeding it and upkeep bleeds it straight back down. Fully reversible."
+    },
+    {
+      "id": "06-guards",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "what keeps it honest",
+      "headline": "Two guards, and a light that can't lie.",
+      "bullets": [
+        "<b>The war-bond tick</b> &mdash; the one door new credits enter, logged as a mint, never a trade.",
+        "<b>The treasury floor</b> &mdash; a reserve it won't dip below, so money keeps entering the loop.",
+        "<b>The conservation light</b> &mdash; sums all three accounts every frame; green is a continuous proof the books balance."
+      ],
+      "narration": "Two guards keep money entering the loop: a war-bond tick, the one door new credits legitimately enter through, and a treasury floor it won't dip below. And a conservation light sums all three accounts every frame. It only moves when the war-bond legitimately mints. If it ever drifted on a plain trade, the model would be lying to you."
+    },
+    {
+      "id": "07-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick, or single-step it (seed 1337).",
+        "<b>SELL / BUY</b> &mdash; trade your cargo into or out of the station's till.",
+        "<b>The dials</b> &mdash; producer rate, front demand, elasticity, market depth, war-bond size.",
+        "<b>Drain the till · Fatten the hub · Guards off</b> &mdash; one-click demos of each failure and recovery."
+      ],
+      "narration": "Drive it yourself. Press Play to run the deterministic tick, or Step through it one tick at a time. Sell and buy cargo into the till. Work the dials, producer rate, front demand, elasticity, market depth. Then hit the one-click demos: drain the till, fatten the hub, or switch the guards off and watch it deflate."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Solvency Cell",
+      "body": "Build the cell first &middot; the network is just cells that trade &middot; deterministic, seeded, double-entry.",
+      "narration": "Build the cell first. The whole network is just cells that trade. Deterministic, seeded, double-entry."
+    }
+  ]
+}

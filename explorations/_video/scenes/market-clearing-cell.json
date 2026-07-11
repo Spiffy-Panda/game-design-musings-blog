@@ -1,0 +1,98 @@
+{
+  "slug": "market-clearing-cell",
+  "title": "The Clearing Cell",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · HAND — the invisible hand (root)",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 2.2,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The clearing cell. One market, one good, no money, just a price that nobody sets and everybody pushes. You don't trade against a number, you trade against a tendency."
+    },
+    {
+      "id": "02-emerges",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the root cell",
+      "headline": "Nobody hand-places this price. It <em>emerges</em>.",
+      "body": "A producer adding stock, a starving front pulling it, and you shoving cargo across the counter &mdash; all trying to <strong>clear at once</strong>. This is the root of the amber lineage, <em>The Invisible Hand</em>. Build this one cell first: if it doesn't feel alive when you poke it, nothing built on top of it will.",
+      "narration": "Nobody hand-places this price. It emerges from three forces clearing at once: a producer adding stock, a starving front pulling it, and you shoving cargo across the counter. This is the root of the whole economy. Build this one cell first, because if it doesn't feel like a market reacting to you, nothing scales up from it."
+    },
+    {
+      "id": "03-tatonnement",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the rule",
+      "headline": "A wobble that never quite clears.",
+      "body": "Each tick the price nudges on <strong>net excess demand</strong>: consumer draw plus your buys, minus producer adds and your sells, normalized by depth. Then it's damped toward a moving equilibrium so it settles instead of ringing &mdash; but it <em>never reaches</em> it. The producer keeps adding, the front keeps pulling, so the instant it would land it's shoved off again. That permanent not-quite-cleared wobble is the gameplay.",
+      "narration": "Each tick the market totals what everyone wants. Net excess demand is consumer draw plus your buys, minus producer adds and your sells, divided by depth. The price nudges on that, then damps toward a moving equilibrium so it settles instead of ringing. But it never actually reaches equilibrium, because the producer keeps adding and the front keeps pulling. That permanent wobble around the orbit center is the whole game."
+    },
+    {
+      "id": "04-depth",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "thin vs deep",
+      "headline": "Depth is the denominator.",
+      "body": "The same order, two different worlds. A hauler's load barely tilts a <em>deep</em> market but <strong style=\"color:#f87171\">lurches</strong> a thin one. Sell forty into depth twelve and the price craters; sell forty into depth one-twenty and it barely flinches. Same goods, same order &mdash; the only difference is how much water there was to absorb the splash. Thin frontier systems are where one ship moves the price; the deep core is where it doesn't.",
+      "narration": "Depth is the denominator in that rule, and it splits the game into two worlds. The same load barely tilts a deep market but lurches a thin one. Sell forty into a thin market and the price craters; sell forty into a deep one and it barely flinches. Same goods, same order. The frontier is where one ship moves the price, and the core is where it doesn't."
+    },
+    {
+      "id": "05-edge",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "the cruel part",
+      "headline": "Your success eats your edge.",
+      "bullets": [
+        "<b>Find a fat shortage</b> &mdash; the price sits well above equilibrium, and that gap is your margin.",
+        "<b>Keep selling into it</b> &mdash; every unit you dump is supply that wasn't there a moment ago, sinking price toward eq.",
+        "<b>The gradient flattens</b> &mdash; the <em>your edge</em> gauge is literally distance from equilibrium; watch it drain to nothing.",
+        "<b>Then stop</b> &mdash; pressure gone, the price <span style=\"color:#34d399\">heals</span> back toward eq and the gap re-opens for whoever's early next."
+      ],
+      "narration": "Here's the cruel part. Find a fat shortage and keep selling into it, and you flatten the very gradient you were living on. Every unit you dump is supply the market didn't have a moment ago, so the price sinks toward equilibrium and your margin thins. You get paid for being early, for filling a gap before the invisible hand does. Then stop trading, and the price heals back toward equilibrium, re-opening the gap for the next early mover."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick, single-step it, or reset to seed 1337.",
+        "<b>SELL / BUY</b> &mdash; trade your cargo into or out of the market at the chosen trade quantity.",
+        "<b>The dials</b> &mdash; producer rate, consumer draw, elasticity, market depth, damping, trade quantity.",
+        "<b>The three demos</b> &mdash; thin vs deep, milk a margin then flatten it, and stop to watch the heal."
+      ],
+      "narration": "Drive it yourself. Press Play to run the deterministic tick, or Step through it one at a time, with Reset returning to seed thirteen thirty-seven. Sell and buy your cargo into the market. Work the dials: producer rate, consumer draw, elasticity, depth, and damping. Then run the three scripted demos: thin versus deep, milk a margin until it flattens, and stop to watch the price heal."
+    },
+    {
+      "id": "07-risks",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it can rot",
+      "headline": "Three named risks, each answered.",
+      "bullets": [
+        "<b>Legibility collapse</b> &mdash; answered by stable depth and elasticity plus a plain-language <em>why</em>-line on every move.",
+        "<b>Oscillation or runaway</b> &mdash; the damping slider is the brake, and per-tick price moves are hard-capped.",
+        "<b>Determinism rot</b> &mdash; one <code>mulberry32</code> advanced once per tick, integer math, fixed evaluation order."
+      ],
+      "narration": "Three ways it can rot. Legibility collapse, where you stop understanding why a price moved, answered by stable dials and a plain-language why-line on every tick. Oscillation or runaway, answered by the damping brake and a hard cap on per-tick moves. And determinism rot, answered by one seeded generator advanced exactly once per tick, integer math, and a fixed evaluation order: produce, consume, your orders, reprice."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Clearing Cell",
+      "body": "Build the clearing cell first &middot; the network is just cells that trade &middot; deterministic, seeded, no money.",
+      "narration": "Build the clearing cell first. The whole network is just clearing cells that trade with each other. Deterministic, seeded, and no money at all. That's the solvency cell's job."
+    }
+  ]
+}

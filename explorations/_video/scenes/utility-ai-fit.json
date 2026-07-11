@@ -1,0 +1,94 @@
+{
+  "slug": "utility-ai-fit",
+  "title": "Does a Utility AI Fit?",
+  "accent": "#34d399",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · technique audit (cross-cutting)",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 2.2,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. Does a utility AI fit? A posted bounty is not a command. It is a dent in the player's utility landscape, and a thing that only ever dents landscapes is exactly what utility AI was built to be."
+    },
+    {
+      "id": "02-engine",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the technique",
+      "headline": "Score every action, take the best one.",
+      "body": "A utility AI scores each candidate action as <strong>sum of curve of a property, times its weight</strong>, then takes the argmax. Each <em>consideration</em> reads one game property, bends it through a response curve &mdash; rising, falling, a cliff, a gate, a step &mdash; and casts a weighted vote. Clean engine. But clean for <em>what</em>?",
+      "narration": "A utility AI scores every candidate action: sum up each consideration's curve output times its weight, then pick the highest. Each consideration reads one property, bends it through a curve, rising, falling, a cliff, a gate, or a step, and casts a weighted vote. It's a clean engine. The real question is what it's clean for."
+    },
+    {
+      "id": "03-faction",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the strong fit",
+      "headline": "The faction never hauls. It changes what hauling is worth.",
+      "body": "The friendly faction posts contracts &mdash; haul this good to that system for this bounty. It is a <strong>disembodied agent</strong>: it owns no ship and moves no ore. A posted bounty is a directive that raises one haul's player-visible value. The player still takes their own argmax. The faction just dented the terrain.",
+      "narration": "Map the faction onto the architecture and it lands in one slot: a disembodied agent. It owns no ship and moves no ore. Its only verb is to post a bounty, which raises the value of one specific haul. The player still takes their own argmax. The faction just changed the terrain it runs over. That is the loop utility AI was born for."
+    },
+    {
+      "id": "04-curves",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "where it pays rent",
+      "headline": "Curves the greedy knapsack can't express.",
+      "bullets": [
+        "<b>The overrun cliff</b> &mdash; stop wanting deliveries to a drop-off about to be enemy-held, with no hand-coded skip branch.",
+        "<b>Treasury as a gate</b> &mdash; get pickier when broke, spammier when flush, as one smooth policy.",
+        "<b>Military as a step</b> &mdash; munitions outrank rations as a single tunable lever.",
+        "<b>Legibility</b> &mdash; why was this posted answers as a bar chart of named considerations."
+      ],
+      "narration": "The fit pays rent where the greedy knapsack struggles. A cliff curve on overrun risk lets the faction stop wanting deliveries it can't expect fulfilled. A gate curve on the treasury makes it pickier when broke. A step curve ranks munitions over rations. And every choice answers as a bar chart of named levers, which is arguably more legible than a knapsack's opaque sort key."
+    },
+    {
+      "id": "05-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Utility AI / Greedy baseline</b> &mdash; flip the engine toggle to post identical inputs two ways.",
+        "<b>Reseed contracts / Reset curves</b> &mdash; draw a fresh batch of deficits, or restore the defaults.",
+        "<b>Treasury budget · Board capacity</b> &mdash; the two sliders that gate how much posts.",
+        "<b>Drag the curve dots</b> &mdash; reshape any consideration; the agreement meter shows where the two boards diverge."
+      ],
+      "narration": "Drive it yourself. Flip the engine toggle between Utility AI and the Greedy baseline to post the same inputs two ways. Reseed contracts for a fresh batch, or reset the curves. Work the treasury budget and board capacity sliders. Then drag the curve dots and watch the agreement meter: where the boards diverge is the only place the curves are earning their tuning cost."
+    },
+    {
+      "id": "06-noenemy",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the wrong tool",
+      "headline": "The enemy's dumbness is the design.",
+      "body": "The enemy offensive is a keyframed <strong>schedule plus thresholds</strong> &mdash; deliberately dumb. Make it <span style=\"color:#f87171\">responsive</span> and you erase the asymmetry that is the whole game: you cannot out-trade a thing that does not trade. It also destroys the readable rhythm players learn, and spends a tuning budget to buy behavior the keyframes deliver better.",
+      "narration": "A technique fitting one decision-maker is not evidence it fits the next. The enemy planner is a keyframed schedule, deliberately dumb. Give it a utility scorer and it starts responding to your routes, erasing the asymmetry that is the whole fantasy: you cannot out-trade a thing that does not trade. It also wrecks legibility and buys opacity to replace keyframes that already work."
+    },
+    {
+      "id": "07-verdict",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the verdict",
+      "headline": "Yes here, no there.",
+      "body": "Utility AI earns its keep in <strong>exactly one place</strong>: the faction, a disembodied directive-issuer whose contract board is a utility landscape it reshapes. <span style=\"color:#f87171\">Wrong tool</span> for the enemy. Rival haulers would be the natural embodied fit, reusing the faction's curve library &mdash; but they're shelved, so rate them when they're real.",
+      "narration": "So it's a fair yes here, no there. Utility AI earns its keep in exactly one place: the faction, whose contract board is a landscape it reshapes. It is the wrong tool for the enemy, whose dumbness is the spec. Rival haulers would be the natural embodied fit, reusing the faction's curves, but they're shelved, so we rate them when they ship."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "Does a Utility AI Fit?",
+      "body": "One tool, one slot &middot; deterministic only with fixed-point curves and a pinned evaluation order.",
+      "narration": "One tool, one slot. And it stays deterministic only under discipline: fixed-point curves, a pinned summation order, and ties broken by a stable key. Get that wrong and deterministic quietly becomes deterministic on my machine."
+    }
+  ]
+}

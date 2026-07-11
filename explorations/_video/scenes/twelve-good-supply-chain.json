@@ -1,0 +1,93 @@
+{
+  "slug": "twelve-good-supply-chain",
+  "title": "The Chain Has Depth",
+  "accent": "#f59e0b",
+  "good": "#34d399",
+  "bad": "#f87171",
+  "pool": "#a78bfa",
+  "lineage": "MINIMALIST SPACE LOGISTICS · R.6 — twelve goods, three tiers",
+  "tts": "piper",
+  "voice": "en_US-amy-medium",
+  "speed": 1.7,
+  "scenes": [
+    {
+      "id": "01-title",
+      "type": "page",
+      "anchor": "",
+      "viewport": [1280, 800],
+      "narration": "Minimalist Space Logistics. The Chain Has Depth. A shortage at the front is almost never where the problem is; depth means you trace it upstream to the link that's choking."
+    },
+    {
+      "id": "02-twelve",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the model",
+      "headline": "Twelve goods, three depths, one flow.",
+      "body": "Twelve goods, <strong>six general</strong> and <strong>six military</strong>, each rising <em>raw to intermediate to finished</em>. The front only ever asks for the finished military goods, but those rest on three links of chain you never see on the contract board.",
+      "narration": "Twelve goods, six general and six military, each rising from raw to intermediate to finished. The front only ever asks for finished military goods, but those rest on three links of chain you never see."
+    },
+    {
+      "id": "03-converter",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "the engine",
+      "headline": "A stage runs at the rate of its worst-fed input.",
+      "body": "Raws are mines; intermediates and finished goods are converters. Each runs at <strong>the minimum</strong> of its own capacity and its limiting input. One starved input <span style=\"color:#f87171\">throttles the whole branch</span>, and the throttle propagates downstream to the front.",
+      "narration": "Raws are mines. Intermediates and finished goods are converters, each running at the minimum of its own capacity and its limiting input. One starved input throttles the whole branch, and the throttle propagates downstream to the front."
+    },
+    {
+      "id": "04-trace",
+      "type": "slide",
+      "layout": "diagram",
+      "kicker": "what you just did",
+      "headline": "The red light points three links back.",
+      "svg": "<svg viewBox=\"0 0 1200 540\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"monospace\"><text x=\"600\" y=\"42\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"22\">trace the shortage upstream</text><rect x=\"60\" y=\"230\" width=\"200\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#f87171\" stroke-width=\"3\"/><text x=\"160\" y=\"265\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">VOLATILES</text><text x=\"160\" y=\"292\" text-anchor=\"middle\" fill=\"#f87171\" font-size=\"18\">mine capped</text><rect x=\"360\" y=\"230\" width=\"200\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#f87171\" stroke-width=\"3\"/><text x=\"460\" y=\"265\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">FUEL</text><text x=\"460\" y=\"292\" text-anchor=\"middle\" fill=\"#f87171\" font-size=\"18\">starved</text><rect x=\"660\" y=\"230\" width=\"200\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#f59e0b\" stroke-width=\"3\"/><text x=\"760\" y=\"265\" text-anchor=\"middle\" fill=\"#c4c9d8\" font-size=\"20\">MISSILES</text><text x=\"760\" y=\"292\" text-anchor=\"middle\" fill=\"#f59e0b\" font-size=\"18\">fab is fine</text><rect x=\"960\" y=\"230\" width=\"180\" height=\"80\" rx=\"10\" fill=\"#0a0c12\" stroke=\"#f87171\" stroke-width=\"3\" stroke-dasharray=\"6 5\"/><text x=\"1050\" y=\"278\" text-anchor=\"middle\" fill=\"#f87171\" font-size=\"20\">FRONT short</text><line x1=\"260\" y1=\"270\" x2=\"360\" y2=\"270\" stroke=\"#f87171\" stroke-width=\"3\"/><line x1=\"560\" y1=\"270\" x2=\"660\" y2=\"270\" stroke=\"#f87171\" stroke-width=\"3\"/><line x1=\"860\" y1=\"270\" x2=\"960\" y2=\"270\" stroke=\"#f87171\" stroke-width=\"3\"/><text x=\"600\" y=\"400\" text-anchor=\"middle\" fill=\"#34d399\" font-size=\"20\">fix the choke, not the symptom</text></svg>",
+      "narration": "Bottleneck the volatiles mine and the front goes red on missiles. But the missile fab is fine; it's starved. Trace it, and the page walks the path to the real cause, three links back."
+    },
+    {
+      "id": "05-surface",
+      "type": "slide",
+      "layout": "statement",
+      "kicker": "why minimal holds",
+      "headline": "One red light, a deep game behind it.",
+      "body": "The player sees a price and a red light, a thin instrument. But the model underneath has real depth, so that thin reading is <strong>load-bearing</strong>: the light truly points at a branch worth untangling. The surface stays small; the game stays deep.",
+      "narration": "The player sees only a price and a red light. But because the model has real depth, that thin reading is load-bearing: the light truly points at a chain worth untangling. The surface stays small; the game stays deep."
+    },
+    {
+      "id": "06-howto",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "how to poke it",
+      "headline": "Drive it yourself.",
+      "bullets": [
+        "<b>Play / Step / Reset</b> &mdash; run the deterministic tick or single-step it (seed AMBER).",
+        "<b>Click-to-bottleneck</b> &mdash; slam any node's capacity low and watch the shortage ripple.",
+        "<b>Trace the shortage</b> &mdash; pick a finished-military good; it names the real choke.",
+        "<b>Drop relief batch &amp; the four sliders</b> &mdash; mine, intermediate, fab capacity, and front demand."
+      ],
+      "narration": "Drive it yourself. Press Play to run the deterministic tick, or Step through it. Click any node to bottleneck it, then hit Trace the shortage to name the real choke. Drop a relief batch and work the four sliders."
+    },
+    {
+      "id": "07-honest",
+      "type": "slide",
+      "layout": "bullets",
+      "kicker": "risks, named",
+      "headline": "Two risks, both answered.",
+      "bullets": [
+        "<b>Legibility</b> &mdash; twelve goods is a lot on screen; surface only the binding constraint, never the whole graph.",
+        "<b>Determinism</b> &mdash; flow invites float drift; use fixed node order and integer floor math.",
+        "<b>The discipline</b> &mdash; show one signal and one traced path, or the minimal surface has failed."
+      ],
+      "narration": "Two risks. Legibility: twelve goods is a lot, so surface only the binding constraint. Determinism: flow invites float drift, answered with fixed node order and integer math. Show one signal and one path."
+    },
+    {
+      "id": "08-outro",
+      "type": "slide",
+      "layout": "outro",
+      "kicker": "minimalist space logistics",
+      "headline": "The Chain Has Depth",
+      "body": "Keeping the war fed is keeping a multi-stage chain fed &middot; deterministic, seeded, runs offline.",
+      "narration": "Keeping the war supplied is not a parcel from A to B; it's keeping a multi-stage chain fed. The answer is always upstream. Deterministic, seeded, offline."
+    }
+  ]
+}
