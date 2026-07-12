@@ -14,14 +14,17 @@ plans, and reviews.
 
 | File | Role |
 |------|------|
-| `index.html` | Gallery/hub — the musing's landing page (published entry point); carries ghost cards for planned pages. |
+| `index.html` | Gallery/hub — the musing's landing page (published entry point); three live cards + the Grimoire ghost. |
 | `pitch.html` | Page I — the system pitch: premise (world = model; warrant in *strokes* → settlement in *flips* of grace), quantifier ladder, three audited pleas (Emberfield / Long Wish / Quarter-Day Breach), vessels (monads), the Mint (second order), the six Limits, `LOMA.n` claims, **§8 tuning table**. |
+| `loma101-worksheet1.html` | Page II — "LOMA 101 · Problem Set One": three-way toggle (blank / student M. Sedge / Reader's key, `#ws[data-mode]` gating); Section A MC ×5, Section B audits ×3 (B1 Emberfield pricing, B2 the winter wish, B3 Bellhall post-repeal), Section C theory ×2; 40 marks. All numbers cite pitch §8. |
+| `assize-of-bells.html` | Page III — "The Assize of Bells": Crown v. Fen as a 10-slide trial-duel (arrow keys / dots / `#sN` deep links). Canon established: the Rule of Sound Warrant (courts reject ⊥-tainted derivations), "no writ, no wall," conviction by ash-gap. Ledger: 38 strokes, 0 flips. |
+| `VIGNETTE-HANDOFF.md` | Internal, reusable chat handoff for everyday-life vignettes (`LVIG.n` handles): system digest, canon list, constants, guardrails, resource links. Never published. |
 | `README.md` | Human doc: reading order, design summary, consistency contract. |
 | `build-musing.py` | Verbatim copy of `*.html` → `site/musings/<slug>/` (never copies `.md`). |
 
-Planned pages (tracked in `../plans/PLAN-logical-magic.md`): II "LOMA 101 · Problem Set
-One" (worksheet w/ toggle), III "The Assize of Bells" (breach trial as dueling
-derivations), candidate IV "The Grimoire" (interactive lemma cache).
+Remaining candidate (tracked in `../plans/PLAN-logical-magic.md`): IV "The Grimoire"
+(interactive lemma cache — the LOMA.2 loop as a toy). Vignettes written via the handoff
+would join as a companion page (the Space Feudal vignette-page precedent).
 
 ## Invariants
 

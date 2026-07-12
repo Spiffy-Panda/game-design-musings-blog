@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOMA 101 · Problem Set One — Warrants &amp; Settlements</title>
+<style>
+  /* ————— tokens (the LoMa system, as on pitch.html) ————— */
+  :root{
+    --ground:#ece8dd; --surface:#f8f6ef; --card:#f3f0e6;
+    --line:#d9d3c2; --line2:#bfb7a2;
+    --ink:#262330; --ink2:#4e4a5c; --ink3:#767084;
+    --wax:#9c2f2f; --teal:#1e6e63; --gilt:#7d5f1b; --violet:#5a4fc0;
+    --hand:#3b5a92;               /* M. Sedge's pen */
+    --wax-wash:rgba(156,47,47,.07); --teal-wash:rgba(30,110,99,.08);
+    --gilt-wash:rgba(125,95,27,.09); --hand-wash:rgba(59,90,146,.07);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',Menlo,monospace;
+    --script:'Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0d0f13; --surface:#161921; --card:#1b1f29;
+      --line:#272d3a; --line2:#3d4557;
+      --ink:#e0e3ec; --ink2:#a8afc0; --ink3:#868da0;
+      --wax:#ff9082; --teal:#5ed2bc; --gilt:#e2c168; --violet:#ab9ffc;
+      --hand:#9db8e8;
+      --wax-wash:rgba(255,144,130,.06); --teal-wash:rgba(94,210,188,.06);
+      --gilt-wash:rgba(226,193,104,.07); --hand-wash:rgba(157,184,232,.08);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink); font:16.5px/1.65 var(--serif)}
+
+  /* ————— mode gating ————— */
+  #ws[data-mode="blank"]   :is(.m-s,.m-k,.m-sk){display:none !important}
+  #ws[data-mode="student"] :is(.m-b,.m-k){display:none !important}
+  #ws[data-mode="key"]     :is(.m-b,.m-s){display:none !important}
+  /* .m-sk = shown in student AND key modes */
+
+  /* ————— mode bar ————— */
+  .modebar{position:sticky; top:0; z-index:40; background:var(--surface);
+    border-bottom:1px solid var(--line)}
+  .modebar .inner{max-width:860px; margin-inline:auto; padding:10px clamp(16px,4vw,40px);
+    display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center}
+  .modebar .course{font:600 13px/1.5 var(--sans); letter-spacing:.06em; color:var(--ink3)}
+  .modebar .course b{color:var(--teal)}
+  .seg{border:1px solid var(--line2); border-radius:99px; padding:3px; margin:0; display:flex}
+  .seg legend.vh{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+  .seg input{position:absolute; opacity:0; pointer-events:none}
+  .seg label{font:600 12px/1 var(--sans); letter-spacing:.05em; padding:7px 14px;
+    border-radius:99px; cursor:pointer; color:var(--ink3)}
+  .seg input:checked + label{background:var(--teal); color:var(--surface)}
+  .seg input:focus-visible + label{outline:2px solid var(--teal); outline-offset:2px}
+  .modecap{flex-basis:100%; font:italic 13px/1.5 var(--serif); color:var(--ink3); padding:0 2px 2px}
+  .modecap .m-s{color:var(--hand)} .modecap .m-k{color:var(--teal)}
+
+  /* ————— the sheet ————— */
+  .page{max-width:860px; margin-inline:auto; padding:26px clamp(14px,4vw,40px) 70px}
+  .sheet{position:relative; background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:clamp(22px,5vw,52px)}
+  .wm{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; overflow:hidden}
+  .wm span{transform:rotate(-24deg); font:700 54px/1.2 var(--sans); letter-spacing:.12em;
+    text-transform:uppercase; color:var(--teal); opacity:.07; text-align:center; white-space:nowrap}
+
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--teal); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+
+  .inst{font:600 11px/1.6 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink3); margin:0}
+  .course-line{font:600 13.5px/1.6 var(--sans); color:var(--ink2); margin:4px 0 10px}
+  h1{font:600 clamp(26px,4.5vw,34px)/1.15 var(--serif); letter-spacing:-.01em; margin:0 0 6px}
+  .sub{font-style:italic; font-size:15px; color:var(--ink2); margin:0 0 22px}
+
+  .idrow{display:flex; flex-wrap:wrap; gap:12px 28px; margin:0 0 22px;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:12px 0}
+  .fld{display:flex; align-items:baseline; gap:8px; flex:1 1 180px}
+  .fld .lab{font:700 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3)}
+  .fld .line{flex:1; border-bottom:1px solid var(--line2); min-height:20px; padding:0 4px 1px}
+  .hand{font:15px/1.5 var(--script); color:var(--hand)}
+  .keyink{color:var(--teal); font:600 13px/1.6 var(--sans)}
+
+  .boxes{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:0 0 30px}
+  .notebox{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:14px 18px}
+  .notebox h3{margin:0 0 8px; font:700 11px/1.5 var(--sans); letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink3)}
+  .notebox ol{margin:0; padding-left:18px; font-size:14px; color:var(--ink2)}
+  .notebox ol li{margin:0 0 5px}
+  .datacard{font:13px/1.9 var(--mono); color:var(--ink2)}
+  .datacard b{color:var(--teal); font-weight:600}
+
+  /* ————— sections & questions ————— */
+  .sec{margin:34px 0 0}
+  .sec h2{display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    font:600 20px/1.3 var(--serif); margin:0 0 4px; border-bottom:2px solid var(--line2); padding-bottom:6px}
+  .sec h2 .mk{font:600 11px/1 var(--sans); letter-spacing:.1em; color:var(--ink3); white-space:nowrap}
+  .dir{font:italic 14px/1.6 var(--serif); color:var(--ink3); margin:6px 0 18px}
+
+  .q{margin:0 0 24px; break-inside:avoid}
+  .qh{display:flex; gap:10px; align-items:baseline}
+  .qno{font:700 14px/1.5 var(--sans); color:var(--teal); white-space:nowrap}
+  .qtext{font-size:15.5px}
+  .pts{margin-left:auto; font:600 11.5px/1.5 var(--sans); color:var(--ink3); white-space:nowrap}
+  .opts{list-style:none; margin:10px 0 0; padding:0 0 0 30px; font-size:15px; color:var(--ink2)}
+  .opts li{position:relative; margin:0 0 7px; padding:2px 6px; border-radius:3px}
+  .opts .letter{font:600 13px/1.5 var(--mono); color:var(--ink3); margin-right:7px}
+  /* student circles a letter */
+  #ws[data-mode="student"] .opts li.st-pick .letter{color:var(--hand)}
+  #ws[data-mode="student"] .opts li.st-pick .letter::after{
+    content:""; position:absolute; left:-2px; top:0; width:30px; height:100%;
+    border:1.6px solid var(--hand); border-radius:50%; opacity:.75}
+  /* key marks the right one */
+  #ws[data-mode="key"] .opts li.key-right{background:var(--teal-wash); color:var(--ink)}
+  #ws[data-mode="key"] .opts li.key-right .letter{color:var(--teal); font-weight:700}
+  .why{margin:8px 0 0 30px; padding:8px 12px; border-left:3px solid var(--teal);
+    background:var(--teal-wash); font-size:13.5px; color:var(--ink2)}
+  .why b{color:var(--teal)}
+
+  /* free-response areas */
+  .ans{margin:12px 0 0 30px}
+  .ruled{height:96px; border-radius:3px;
+    background:repeating-linear-gradient(to bottom, transparent 0 27px, var(--line) 27px 28px)}
+  .ruled.tall{height:152px}
+  .stwork{font:15px/1.75 var(--script); color:var(--hand); padding:2px 4px; white-space:pre-line}
+  .stwork .x{text-decoration:line-through}
+  .stnote{margin-top:6px; font:italic 12.5px/1.5 var(--serif); color:var(--ink3)}
+  .sol{padding:12px 16px; border-left:3px solid var(--teal); background:var(--teal-wash);
+    border-radius:0 3px 3px 0}
+  .sol .step{font:13.5px/1.9 var(--mono); color:var(--ink2); display:block}
+  .sol .step b{color:var(--teal); font-weight:600}
+  .sol .fin{display:block; margin-top:6px; font:600 14px/1.7 var(--serif); color:var(--ink)}
+  .sol .note{display:block; margin-top:8px; font:italic 13px/1.6 var(--serif); color:var(--ink2)}
+  .sol .note b{color:var(--wax); font-style:normal}
+  table.mini{border-collapse:collapse; margin:8px 0 2px; font-size:13px}
+  table.mini th{font:700 10px/1.4 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink3); text-align:left; border-bottom:1.5px solid var(--line2); padding:3px 14px 3px 0}
+  table.mini td{border-bottom:1px solid var(--line); padding:4px 14px 4px 0; color:var(--ink2)}
+  .colophon{max-width:860px; margin:26px auto 0; padding:0 clamp(14px,4vw,40px);
+    font:13px/1.8 var(--sans); color:var(--ink3)}
+  .colophon a{color:var(--ink2)}
+
+  @media print{
+    .modebar,.colophon{display:none}
+    body{background:#fff} .sheet{border:none; padding:0}
+  }
+</style>
+</head>
+<body>
+<div id="ws" data-mode="blank">
+
+  <!-- ── mode bar ── -->
+  <div class="modebar">
+    <div class="inner">
+      <span class="course"><b>LOMA 101</b> · Problem Set One · Warrants &amp; Settlements</span>
+      <fieldset class="seg" role="radiogroup" aria-label="Problem-set view">
+        <legend class="vh">Choose which copy of the problem set to view</legend>
+        <input type="radio" name="mode" id="m-blank" value="blank" checked>
+        <label for="m-blank">Blank</label>
+        <input type="radio" name="mode" id="m-student" value="student">
+        <label for="m-student">Student</label>
+        <input type="radio" name="mode" id="m-key" value="key">
+        <label for="m-key">Answer key</label>
+      </fieldset>
+      <span class="modecap">
+        <span class="m-b">Fresh copy, as handed out — prints cleanly if you need a real one.</span>
+        <span class="m-s">As collected: M.&nbsp;Sedge — quarter-day eve, second bell. Ungraded.</span>
+        <span class="m-k">Reader's copy. Mark the audit, not the flourish; a stroke counted twice is struck once.</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="page">
+  <div class="sheet">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Logical Magic (LoMa)</a></li>
+        <li><span aria-current="page">Problem Set One</span></li>
+      </ol>
+    </nav>
+    <div class="wm m-k" aria-hidden="true"><span>Reader's copy<br>do not circulate</span></div>
+
+    <!-- ── header ── -->
+    <p class="inst">Vell College · Chambers of the Sequent Tongue</p>
+    <p class="course-line">LOMA 101 — Warrants &amp; Settlements I · Lent term · Corvane, Reader in Warrants</p>
+    <h1>Problem Set One — Pleas, Prices, and One Broken Ward</h1>
+    <p class="sub">Text: the LoMa pitch, §§1–6; constants from the tuning table (§8) &nbsp;·&nbsp; 40 marks &nbsp;·&nbsp; 50 minutes</p>
+
+    <div class="idrow">
+      <span class="fld"><span class="lab">Name</span><span class="line">
+        <span class="hand m-s">M. Sedge</span><span class="keyink m-k">Answer key — Corvane</span>
+      </span></span>
+      <span class="fld"><span class="lab">Bench</span><span class="line">
+        <span class="hand m-s">iii</span><span class="keyink m-k">—</span>
+      </span></span>
+      <span class="fld"><span class="lab">Date</span><span class="line">
+        <span class="hand m-s">quarter-day eve</span><span class="keyink m-k">—</span>
+      </span></span>
+    </div>
+
+    <div class="boxes">
+      <div class="notebox">
+        <h3>Instructions</h3>
+        <ol>
+          <li>Answer in the spaces provided. Show the audit — marks follow the ledger, not the arrival.</li>
+          <li>Price every plea in <em>both</em> currencies. A stroke count without a flip count is half an answer.</li>
+          <li>Underline final counts. State whose ledger each cost lands on.</li>
+          <li>Constants are on the reference card and may be cited without proof.</li>
+          <li>You may not, for any question on this paper, simply wish for the answer. The Bursar has asked me to add: <em>especially</em> not with riders. — C.</li>
+        </ol>
+      </div>
+      <div class="notebox">
+        <h3>Reference card</h3>
+        <div class="datacard">
+          <div>live stroke rate ≈ <b>4 strokes/s</b> (drilled, aloud)</div>
+          <div>Schema of Ascent: survey <b>3</b> + base <b>1</b> + step <b>8</b> + invoke <b>1</b> = <b>13</b></div>
+          <div>Ball(c, 6 m): <b>905</b> cells at 1 m grain (≈450 straddle the rim); <b>904,779</b> at 1 dm</div>
+          <div>grace tide, quiet vale ≈ <b>10,000</b> flips/day</div>
+          <div>the Bellhall breach, as filed: <b>8 strokes · 0 grace</b></div>
+          <div>paraconsistent anchor: <b>4×</b> inscription price</div>
+          <div>cantrip floor: <b>1 stroke · 1 flip</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ SECTION A — MULTIPLE CHOICE ════════ -->
+    <section class="sec" aria-label="Section A, multiple choice">
+      <h2><span>Section A — Seats &amp; circles</span><span class="mk">10 marks · 2 each</span></h2>
+      <p class="dir">Circle one letter per question.</p>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A1.</span>
+          <span class="qtext">In the plea ∃x ( Gold(x) ∧ Mine(x) ), the witness for x is chosen by</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> the caster, at the moment of scoping.</li>
+          <li class="st-pick key-right"><span class="letter">(b)</span> the world, among the settlements the Miser's Law leaves standing.</li>
+          <li><span class="letter">(c)</span> the nearest Mint clerk of appropriate rank.</li>
+          <li><span class="letter">(d)</span> nobody — existential pleas have no witness.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (b)</b> The whole peril of ∃ in one sentence: the warrant is yours, the witness is not. Riders narrow the world's choices; they never take the choosing back.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A2.</span>
+          <span class="qtext">A duelist who counterspells your ward has bought which seat in its evaluation game?</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li class="st-pick"><span class="letter">(a)</span> the verifier's — they must now supply your witnesses.</li>
+          <li class="key-right"><span class="letter">(b)</span> the falsifier's — your ∀-moves are now played against you.</li>
+          <li><span class="letter">(c)</span> the Bench — they may rule on the ward's admissibility.</li>
+          <li><span class="letter">(d)</span> no seat; counterspelling is superposition of opposed wells.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (b)</b> The verifier's seat (∃) was always yours and cannot be sold. (d) is the answer to a different course — MDYN students sit two doors down, and evidently one of them wrote this option. Most-picked distractor is (a); see M.&nbsp;Sedge's paper, and half the bench's.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A3.</span>
+          <span class="qtext">Warranting a ∀ by the Schema of Ascent instead of brute instantiation reduces</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> both strokes and flips — elegance is thrift entire.</li>
+          <li class="st-pick key-right"><span class="letter">(b)</span> strokes only; the flips fall due unchanged at settlement.</li>
+          <li><span class="letter">(c)</span> flips only; the proof is unchanged.</li>
+          <li><span class="letter">(d)</span> neither; induction is a notational courtesy.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (b)</b> Induction fixes <em>your</em> ledger, never the world's. This is the single most examinable sentence in the course.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A4.</span>
+          <span class="qtext">A rite whose outcome changes when its pourings are re-bracketed — (a ▷ b) ▷ c versus a ▷ (b ▷ c) — violates</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> the First Duty: bottle-then-pour is just the rite.</li>
+          <li class="st-pick"><span class="letter">(b)</span> the Second Duty: no free blessings.</li>
+          <li class="key-right"><span class="letter">(c)</span> the Third Duty: grouping is free; only order is fate.</li>
+          <li><span class="letter">(d)</span> no Duty — order and grouping are the same thing.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (c)</b> The perennial confusion. The Second Duty (v ▷ bottle ≡ v) forbids a rite from blessing what it merely hands back; the Third is about brackets. Re-read the coroners' preface until the difference hurts.</p>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">A5.</span>
+          <span class="qtext">No first-order description, however long, can be the true name of the river Und, because</span>
+          <span class="pts">[2]</span></div>
+        <ol class="opts">
+          <li><span class="letter">(a)</span> rivers change; the Record cannot keep pace.</li>
+          <li><span class="letter">(b)</span> the Mint refuses charters on moving water.</li>
+          <li class="st-pick key-right"><span class="letter">(c)</span> every first-order writ with an infinite reading has unmeant models — something else answers to it.</li>
+          <li><span class="letter">(d)</span> it can, but the stroke price exceeds a lifetime at 4 strokes/s.</li>
+        </ol>
+        <p class="why m-k"><b>Key · (c)</b> (d) is true of finite souls and is why name-scrolls are heirlooms — but the river is not finite, and for the infinite the failure is absolute, not economic. Pinning the Und takes a second-order clause; hence the licensing.</p>
+      </div>
+    </section>
+    <!-- ════════ SECTION B — AUDITS ════════ -->
+    <section class="sec" aria-label="Section B, calculation">
+      <h2><span>Section B — Audits</span><span class="mk">22 marks</span></h2>
+      <p class="dir">Show the ledger. State whose it is. Underline final counts.</p>
+
+      <!-- B1 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B1.</span>
+          <span class="qtext">A drillmaster orders the battle-standard Emberfield: ∀x ( In(x, Ball(c, 6&nbsp;m)) → Aflame(x) ) at 1&nbsp;m grain.
+          <b>(i)</b> Price the brute warrant in strokes and give its cast time aloud. <b>(ii)</b> Price the warrant by the Schema of
+          Ascent and give its cast time. <b>(iii)</b> One cost is identical on both routes — name it, count it, and say whose ledger it lands on.</span>
+          <span class="pts">[8]</span></div>
+
+        <div class="ans">
+          <div class="ruled tall m-b" aria-hidden="true"></div>
+
+          <div class="stwork m-s">(i) 905 cells, one stroke each = 905 strokes.
+905 ÷ 4 = 226… <span class="x">226 minutes, call it 3¾ hours</span> ≈ 4 minutes?? units. leaving it.
+(ii) base 1 + step 8 + invoke 1 = 10 strokes → 2½ s.
+(iii) the flips stay = 905, they land on the world (grace).</div>
+          <p class="stnote m-s">margin: a small sketch of a sphere with a jagged rim, labelled "sorry, front row."</p>
+
+          <div class="sol m-k">
+            <span class="step">(i) brute: 905 cells × 1 stroke = <b>905 strokes</b>; 905 ÷ 4 strokes/s = 226 s ≈ <b>3¾ minutes</b> of unbroken speech — a ritual, not a battle-cast.</span>
+            <span class="step">(ii) Ascent: survey 3 + base 1 + step 8 + invoke 1 = <b>13 strokes</b>; 13 ÷ 4 ≈ <b>3¼ s</b>.</span>
+            <span class="step">(iii) flips: <b>905</b> on either route — the settlement is the same sentence made true. They land on <b>the world's ledger</b>, drawn from local grace (905 ≈ two hours of a quiet vale's tide).</span>
+            <span class="fin">Marks: 2 + 2 + 4. The four are for (iii); the first two questions were arithmetic, the third was the course.</span>
+            <span class="note"><b>Re Sedge:</b> units in (i) — strokes per <em>second</em>, so 226 <em>seconds</em>; the crossing-out shows the right instinct losing a fair fight to panic. In (ii) the survey is forgotten, as it is every year: <em>citing the constructor is part of the proof.</em> Three strokes is cheap; assuming the domain is inductive without saying so is how crowds get burned. (iii) full marks, tersely earned.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B2 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B2.</span>
+          <span class="qtext">A client, wintering poorly, brings you the plea ∃x ( Warm(x) ∧ In(x, cottage) ) and two pennies.
+          <b>(i)</b> Exhibit two settlements of ≤ 1 flip that the Miser's Law permits and the client would regret.
+          <b>(ii)</b> Draft one rider against each, with stroke prices. <b>(iii)</b> Total the lawyered plea and name the settlement it forces.</span>
+          <span class="pts">[8]</span></div>
+
+        <div class="ans">
+          <div class="ruled tall m-b" aria-hidden="true"></div>
+
+          <div class="stwork m-s">(i) the cat — already warm, already inside. plea is TRUE already, 0 flips, nothing files, 2 strokes wasted.
+also: her bedding catches fire. warm ✓ inside ✓ one flip. bad.
+(ii) —
+(iii) base plea is 2 strokes so total 2 strokes?? it's so cheap. why is this section 8 marks</div>
+          <p class="stnote m-s">margin: "ask Brindle" circled twice.</p>
+
+          <div class="sol m-k">
+            <span class="step">(i) The null settlement: <b>her cat</b> (already Warm ∧ In) — the plea is already satisfied; <b>0 flips, nothing files</b>, the fee is wasted. The hostile settlement: <b>the bedding, alight</b> — Warm ✓, In ✓, <b>1 flip</b>, and the Miser owes her no kindness.</span>
+            <span class="step">(ii) r1 <i>"…and x is no creature, nor any thing already so"</i> — strikes the cat and every null model · <b>+4 strokes</b>. r2 <i>"…and x warms without flame upon any chattel of the house"</i> — strikes the bedding and its cousins · <b>+5 strokes</b>.</span>
+            <span class="step">(iii) 2 + 4 + 5 = <b>11 strokes</b>; cheapest surviving settlement: <b>the hearthstone itself warms</b> — 1 flip, lawful, and exactly what she meant.</span>
+            <span class="fin">Marks: 3 + 3 + 2. The trade in one line: nine extra strokes to move one flip from her bedding to her hearth.</span>
+            <span class="note"><b>Re Sedge:</b> (i) is full marks and correctly macabre. Then the paper stops, and the note in the margin — <em>"ask Brindle"</em> — is, I concede, the professionally correct instinct. But the Casebook is a bestiary, not a substitute for drafting. "It's so cheap" is how the Casebook gets new entries. <b>Riders are the answer to the question the client didn't know they were asking.</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B3 -->
+      <div class="q">
+        <div class="qh"><span class="qno">B3.</span>
+          <span class="qtext">After the Assize, the lord of Bellhall repealed W3 (the tax-collector's quarter-day writ). This quarter-day, a
+          second sapper presents last year's eight-line breach at the gate, verbatim. <b>(i)</b> Trace where the derivation now fails.
+          <b>(ii)</b> State the sapper's losses. <b>(iii)</b> Where does the tax-collector stand, and why is the crown displeased?</span>
+          <span class="pts">[6]</span></div>
+
+        <div class="ans">
+          <div class="ruled m-b" aria-hidden="true"></div>
+
+          <div class="stwork m-s">(i) the seal is still iron, so line 6 still holds, so ⊥ still comes?? the contradiction is in the FACTS.
+(ii) 8 strokes gone.
+(iii) outside. the crown wants its taxes.</div>
+
+          <div class="sol m-k">
+            <span class="step">(i) It fails at <b>line 1</b>. Crosses(taxman) was never a fact — it was <b>W3's writ</b>, and the writ is repealed. Lines 2–8 are a staircase with no ground floor: Iron(taxman) alone is a consistent, harmless truth. <b>Facts don't explode; writs do.</b></span>
+            <span class="step">(ii) A collapsed plea forfeits its warrant: <b>8 strokes, gone</b>; 0 flips either way (the breach never cost grace — that was its charm).</span>
+            <span class="step">(iii) <b>Outside the gate, lawfully refused</b> — no writ compels his crossing, W2 still bars his iron seal. The ward is now consistent and perfectly rude. The crown is displeased because the repeal that sealed the breach also sealed out the revenue: <b>the lord fixed the logic by breaking the law's errand.</b></span>
+            <span class="fin">Marks: 3 + 1 + 2.</span>
+            <span class="note"><b>Re Sedge:</b> (i) is the classic error, stated with admirable confidence: a contradiction needs <em>premises</em>, and iron was only ever half of one. Circle the derivation's line 1 and ask what rule licenses it now. Nothing does. (ii), (iii) correct — the last sentence of (iii) more so than its author suspects.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ════════ SECTION C — THEORY ════════ -->
+    <section class="sec" aria-label="Section C, short answer">
+      <h2><span>Section C — Theory</span><span class="mk">8 marks · 4 each</span></h2>
+      <p class="dir">Three sentences or fewer. A theorem cited is a sentence saved.</p>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C1.</span>
+          <span class="qtext">Silent casting is lawful mathematics — the Three Duties hold over the trivial monoid. Why then is it a crime, and how was it ever proven against anyone? Answer in terms of the Vessel of Ash.</span>
+          <span class="pts">[4]</span></div>
+        <div class="ans">
+          <div class="ruled m-b" aria-hidden="true"></div>
+          <div class="stwork m-s">Because you can't detect it, so it's banned. It was proven at the Assize because… the log was empty?</div>
+          <div class="sol m-k">
+            <span class="step">The Duties don't fail — the <b>audit</b> does. Pouring over the trivial monoid appends nothing to the ash, so the rite runs lawfully and leaves no account; jurisdictions outlaw what they cannot audit, not what the mathematics forbids.</span>
+            <span class="step">And it is proven by its <b>shape</b>: ash is continuous, so a rite poured silent leaves a gap of exactly its own length. At the Assize the Clerks read a hole eight strokes long. <b>You cannot erase the shape of an absence.</b></span>
+            <span class="note"><b>Re Sedge:</b> "you can't detect it" is precisely half a mark — the whole point is that you <em>can</em>, negatively. An empty log and a gapped log are different objects. 2/4.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="qh"><span class="qno">C2.</span>
+          <span class="qtext">State the Sundering of Ward-upon-Wards in one sentence, and name the discipline by which the Mint prevents its recurrence — being precise about what that discipline does <em>not</em> forbid.</span>
+          <span class="pts">[4]</span></div>
+        <div class="ans">
+          <div class="ruled m-b" aria-hidden="true"></div>
+          <div class="stwork m-s">A fortress ward was chartered to ward all wards that don't ward themselves, then someone asked if it warded itself, and it's still on fire. Prevention: ban second-order magic.</div>
+          <div class="sol m-k">
+            <span class="step">The Sundering: <b>a charter struck to ward all and only wards that ward not themselves, asked of itself</b> — a question with no consistent answer, still burning.</span>
+            <span class="step">The discipline is <b>predicativity</b>, not prohibition: a new word may speak only of words already struck, never of a totality that would include itself. The Mint charters second-order works daily — <b>the crime is self-inclusion, not altitude.</b></span>
+            <span class="note"><b>Re Sedge:</b> the first sentence is exam-perfect, including "still on fire." The second would abolish the Mint, the river-wardens, and this college's endowment. Half marks, and a term of caution about cures that outbid their diseases. 2/4.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /sheet -->
+  </div><!-- /page -->
+
+  <p class="colophon">LOMA 101 · Problem Set One — companion to
+    <a href="pitch.html">the LoMa pitch</a> (constants: §8, the tuning table) and
+    <a href="assize-of-bells.html">the Assize of Bells</a> (B3's history).
+    Self-contained page; light and dark themes; the blank copy prints clean.
+    Sibling pedagogy: <a href="../thaumodynamics/mdyn101-worksheet3.html">MDYN 101, Worksheet 3</a>.</p>
+
+</div><!-- /#ws -->
+
+<script>
+(function(){
+  var ws = document.getElementById('ws');
+  var radios = document.querySelectorAll('input[name="mode"]');
+  for (var i = 0; i < radios.length; i++){
+    radios[i].addEventListener('change', function(){
+      if (this.checked) ws.dataset.mode = this.value;
+    });
+  }
+})();
+</script>
+</body>
+</html>

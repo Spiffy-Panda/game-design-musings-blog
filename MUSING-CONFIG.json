@@ -43,7 +43,9 @@
       "name": "Logical Magic (LoMa)",
       "description": "A magic system where casting is proving: the world is a model, spells are sentences it does not yet satisfy, and every miracle is audited in proof-strokes and fact-flips. The metamathematical sibling of Thaumodynamics.",
       "links": [
-        { "label": "The Pitch", "href": "pitch.html" }
+        { "label": "The Pitch", "href": "pitch.html" },
+        { "label": "Worksheet", "href": "loma101-worksheet1.html" },
+        { "label": "The Assize", "href": "assize-of-bells.html" }
       ],
       "emblem": "emblem.svg",
       "theme": {

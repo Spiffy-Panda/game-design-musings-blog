@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Assize of Bells — Crown v. Fen, in five exchanges</title>
+<style>
+  /* ————— tokens (the LoMa system, as on pitch.html) ————— */
+  :root{
+    --ground:#ece8dd; --surface:#f8f6ef; --card:#f3f0e6;
+    --line:#d9d3c2; --line2:#bfb7a2;
+    --ink:#262330; --ink2:#4e4a5c; --ink3:#767084;
+    --wax:#9c2f2f;     /* the Crown · hazard · ⊥ */
+    --teal:#1e6e63;    /* the defense · warrants  */
+    --gilt:#7d5f1b;    /* the Bench · the court   */
+    --violet:#5a4fc0;  /* vessels · the ash       */
+    --wax-wash:rgba(156,47,47,.07); --teal-wash:rgba(30,110,99,.08);
+    --gilt-wash:rgba(125,95,27,.09); --violet-wash:rgba(90,79,192,.07);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0d0f13; --surface:#161921; --card:#1b1f29;
+      --line:#272d3a; --line2:#3d4557;
+      --ink:#e0e3ec; --ink2:#a8afc0; --ink3:#868da0;
+      --wax:#ff9082; --teal:#5ed2bc; --gilt:#e2c168; --violet:#ab9ffc;
+      --wax-wash:rgba(255,144,130,.06); --teal-wash:rgba(94,210,188,.06);
+      --gilt-wash:rgba(226,193,104,.07); --violet-wash:rgba(171,159,252,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--ground); color:var(--ink); font:16.5px/1.65 var(--serif);
+    display:flex; flex-direction:column}
+
+  .crumbs{font:500 .92rem/1.5 var(--sans); padding:10px clamp(16px,4vw,44px) 0}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--teal); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+
+  /* ————— slides ————— */
+  main{flex:1; display:flex; flex-direction:column; min-height:0}
+  .slide{display:none; flex:1; overflow-y:auto; padding:18px clamp(16px,4vw,44px) 26px}
+  .slide.on{display:block}
+  .inner{max-width:1000px; margin-inline:auto}
+  .duo{display:grid; grid-template-columns:1fr; gap:20px 30px}
+  @media (min-width:880px){ .duo{grid-template-columns:1.15fr .85fr} }
+
+  .kicker{font:600 12px/1.5 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink3); margin:0 0 8px}
+  .kicker b{color:var(--gilt)}
+  h1{font:600 clamp(30px,5.5vw,52px)/1.08 var(--serif); letter-spacing:-.015em; margin:0 0 10px}
+  h2{font:600 clamp(22px,3.4vw,30px)/1.2 var(--serif); letter-spacing:-.01em; margin:0 0 14px}
+  .chron p{margin:0 0 14px; max-width:66ch}
+  .pull{font-style:italic; color:var(--ink2); border-left:3px solid var(--gilt);
+    background:var(--gilt-wash); padding:10px 16px; margin:16px 0; max-width:62ch}
+  .pull .who{display:block; font:600 10.5px/2 var(--sans); letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink3); font-style:normal}
+  .scoreline{display:inline-block; margin-top:6px; font:600 12.5px/1.6 var(--sans);
+    letter-spacing:.06em; color:var(--ink3); border-top:1px solid var(--line); padding-top:8px}
+  .scoreline b{color:var(--ink)}
+  .scoreline .c{color:var(--wax)} .scoreline .d{color:var(--teal)}
+
+  /* the docket — premises/exhibits as chips */
+  .docket{background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:14px 16px; margin:0 0 16px}
+  .docket h3{margin:0 0 10px; font:700 10.5px/1.4 var(--sans); letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink3)}
+  .ch{display:inline-block; margin:0 6px 8px 0; padding:5px 10px 4px; border-radius:3px;
+    font:12.5px/1.5 var(--mono); border:1px solid var(--line2); color:var(--ink2); background:var(--card)}
+  .ch.stand{border-color:var(--teal); color:var(--teal)}
+  .ch.struck{text-decoration:line-through; color:var(--ink3); border-style:dashed}
+  .ch.dead{border-color:var(--wax); color:var(--wax); font-weight:600}
+  .ch.court{border-color:var(--gilt); color:var(--gilt)}
+
+  /* the auditors' margin */
+  .margin{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--gilt);
+    border-radius:0 4px 4px 0; padding:14px 18px}
+  .margin h3{margin:0 0 10px; font:700 10.5px/1.4 var(--sans); letter-spacing:.16em;
+    text-transform:uppercase; color:var(--gilt)}
+  .margin .ln{display:block; font:13px/1.9 var(--mono); color:var(--ink2)}
+  .margin .ln b{color:var(--ink); font-weight:600}
+  .margin .vd{margin-top:8px; padding-top:8px; border-top:1px solid var(--line);
+    font:italic 13.5px/1.6 var(--serif); color:var(--ink2)}
+  .margin .vd b{color:var(--gilt); font-style:normal}
+
+  /* derivation card (as on pitch.html) */
+  .dcard{margin:14px 0; background:var(--card); border:1px solid var(--line); border-radius:4px;
+    padding:12px 16px; overflow-x:auto}
+  .dcard table{border-collapse:collapse; font:13.5px/1.85 var(--mono); min-width:440px}
+  .dcard td{padding:0 12px 0 0; vertical-align:baseline; white-space:nowrap}
+  .dcard td.n{color:var(--ink3); text-align:right; padding-right:14px}
+  .dcard td.j{color:var(--ink3); font-size:12px; font-family:var(--sans)}
+  .dcard td.hot{color:var(--wax); font-weight:600}
+  .dcard .bar td{border-top:1px solid var(--line2); padding-top:5px}
+  .dcard caption{caption-side:top; text-align:left; font:700 10.5px/2.2 var(--sans);
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ink3)}
+
+  .cards2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:14px 0}
+  .pcard{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 18px}
+  .pcard.c{border-top:3px solid var(--wax)} .pcard.d{border-top:3px solid var(--teal)}
+  .pcard.b{border-top:3px solid var(--gilt)}
+  .pcard h3{margin:0 0 4px; font:600 18px/1.3 var(--serif)}
+  .pcard .tag{font:600 11px/1.6 var(--sans); letter-spacing:.08em; color:var(--ink3);
+    display:block; margin-bottom:8px}
+  .pcard p{margin:0; font-size:14px; color:var(--ink2)}
+
+  .figbox{background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    margin:0 0 16px; padding:10px 12px 4px}
+  .figbox svg{display:block; width:100%; height:auto}
+  .figbox figcaption{font:12px/1.7 var(--sans); color:var(--ink3); padding:6px 4px 8px}
+  .sT{stroke:var(--teal)} .sW{stroke:var(--wax)} .sG{stroke:var(--gilt)} .sV{stroke:var(--violet)}
+  .sI{stroke:var(--ink3)} .sL{stroke:var(--line2)}
+  .fT{fill:var(--teal)} .fW{fill:var(--wax)} .fG{fill:var(--gilt)} .fV{fill:var(--violet)} .fI3{fill:var(--ink3)}
+  .sl{font:11.5px var(--sans); fill:var(--ink3)}
+  .slb{font:700 10px var(--sans); fill:var(--ink2); letter-spacing:.12em; text-transform:uppercase}
+  .smo{font:12px var(--mono); fill:var(--ink2)}
+
+  table.ledger{border-collapse:collapse; width:100%; font-size:14px; margin:12px 0}
+  table.ledger th{font:700 10.5px/1.5 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink3); text-align:left; border-bottom:2px solid var(--line2); padding:6px 12px 5px 0}
+  table.ledger td{border-bottom:1px solid var(--line); padding:7px 12px 7px 0; color:var(--ink2)}
+  table.ledger td:first-child{color:var(--ink)}
+  table.ledger .num{font-family:var(--mono); font-size:13px; white-space:nowrap}
+  table.ledger .tot td{border-top:2px solid var(--line2); border-bottom:none; font-weight:600; color:var(--ink)}
+
+  /* ————— nav bar ————— */
+  .navbar{border-top:1px solid var(--line); background:var(--surface)}
+  .navrow{max-width:1000px; margin-inline:auto; padding:10px clamp(16px,4vw,44px);
+    display:flex; align-items:center; gap:14px}
+  .navbtn{font:600 13px/1 var(--sans); letter-spacing:.04em; color:var(--ink2);
+    background:var(--card); border:1px solid var(--line2); border-radius:4px;
+    padding:10px 16px; cursor:pointer}
+  .navbtn:hover:not(:disabled){border-color:var(--teal); color:var(--teal)}
+  .navbtn:disabled{opacity:.4; cursor:default}
+  .navbtn:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  #ctr{font:600 12px/1 var(--sans); color:var(--ink3); min-width:52px; text-align:center}
+  .dots{display:flex; gap:6px; margin-inline:auto; flex-wrap:wrap}
+  .dots button{width:12px; height:12px; border-radius:50%; border:1px solid var(--line2);
+    background:transparent; cursor:pointer; padding:0}
+  .dots button.on{background:var(--gilt); border-color:var(--gilt)}
+  .dots button:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .keyhint{font:11px/1.4 var(--sans); color:var(--ink3); display:none}
+  @media (min-width:700px){ .keyhint{display:block} }
+</style>
+</head>
+<body>
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+    <li><a href="../../index.html">Game Design Musings</a></li>
+    <li><a href="index.html">Logical Magic (LoMa)</a></li>
+    <li><span aria-current="page">The Assize of Bells</span></li>
+  </ol>
+</nav>
+
+<main>
+
+  <!-- ═════════ 1 · FRONTISPIECE ═════════ -->
+  <section class="slide on" aria-label="Slide 1 of 10: frontispiece">
+    <div class="inner">
+      <p class="kicker"><b>The record of the court</b> · entered by the Clerks of the Ledger · read aloud at the bell</p>
+      <h1>The Assize of Bells</h1>
+      <p class="chron" style="max-width:64ch"><em>Crown against Corb Fen, sapper, in the matter of the
+      Bellhall ward</em> — heard the quarter-day after the famous breach, before Justice Ambry; the
+      Crown by Serjeant Marrow; the accused by Advocate Quill. A trial is conducted as all trials
+      here are conducted: as a duel of derivations, each party seated as the falsifier in the
+      other's pleas, the Clerks counting strokes from the gallery.</p>
+      <div class="pull">The question before the court is not whether the accused entered Bellhall.
+      He entered by the front gate, bowing. The question is whether a man can trespass through a
+      door that the house itself, by valid derivation, opened for him.
+      <span class="who">— Justice Ambry, opening the record</span></div>
+      <p class="chron" style="max-width:64ch; color:var(--ink2)">Ten slides: the matter, the seating,
+      five exchanges, the verdict, and the ledger. Arrow keys or the buttons below. The arithmetic
+      in the margins is the Clerks'; the opinions are the gallery's.</p>
+      <span class="scoreline">Ledger at the bell: <span class="c">Crown 0</span> · <span class="d">defense 0</span> · flips <b>0</b></span>
+    </div>
+  </section>
+
+  <!-- ═════════ 2 · THE MATTER ═════════ -->
+  <section class="slide" aria-label="Slide 2 of 10: the matter and the charges">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>The Matter</b> · one year ago, at the quarter-day bell</p>
+        <h2>A ward with three axioms and one bad day</h2>
+        <p>The court takes notice of the facts, which no party disputes. Bellhall's anchor-stone
+        enforced a writ of three lines: <em>none cross uninvited</em> (W1); <em>no invited one
+        bears iron</em> (W2); and the lord's amendment, <em>the tax-collector crosses each
+        quarter-day</em> (W3). The king's seal being iron by statute, the writ contradicted itself
+        four mornings a year — and a proof-checker holding falsehood will countersign anything.</p>
+        <p>On the quarter-day in question, the accused presented the now-celebrated eight-line
+        derivation at the gate. The stone verified it — it is <em>valid</em>; no one has ever said
+        otherwise — concluded Invited(fen), and drew the bolt. Fen crossed, bowed to the
+        household, inspected the silver unhurried, and left with none of it. He was, he has said
+        since, making a point. The Crown replies that points are made in pamphlets.</p>
+        <p class="pull">Eight strokes, no grace. The cheapest entry in the history of burglary, and
+        possibly not burglary at all — which is why we are all here.
+        <span class="who">— the Clerks' preface to the trial bundle</span></p>
+      </div>
+      <div>
+        <div class="docket">
+          <h3>The charge sheet</h3>
+          <span class="ch dead">I. Trespass-by-plea upon Bellhall</span>
+          <span class="ch dead">II. Casting unashed (silent pouring)</span>
+          <span class="ch court">Rule of Sound Warrant — governs all exhibits</span>
+        </div>
+        <div class="dcard" role="figure" aria-label="The breach derivation, as entered into evidence">
+          <table>
+            <caption>Exhibit A — the breach, as filed (8 strokes)</caption>
+            <tr><td class="n">1</td><td>Crosses(taxman)</td><td class="j">W3</td></tr>
+            <tr><td class="n">2</td><td>Crosses(taxman) → Invited(taxman)</td><td class="j">W1</td></tr>
+            <tr><td class="n">3</td><td>Invited(taxman)</td><td class="j">→E 1,2</td></tr>
+            <tr><td class="n">4</td><td>Invited(taxman) → ¬Iron(taxman)</td><td class="j">W2</td></tr>
+            <tr><td class="n">5</td><td>¬Iron(taxman)</td><td class="j">→E 3,4</td></tr>
+            <tr><td class="n">6</td><td>Iron(taxman)</td><td class="j">the king's seal</td></tr>
+            <tr><td class="n">7</td><td class="hot">⊥</td><td class="j">¬E 5,6</td></tr>
+            <tr class="bar"><td class="n">8</td><td class="hot">Invited(fen)</td><td class="j">⊥E</td></tr>
+          </table>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — the matter</h3>
+          <span class="ln">breach warrant: <b>8 strokes</b> · settlement: <b>0 flips</b></span>
+          <span class="ln">the ward flipped its own bolt — its grace, its ledger</span>
+          <span class="ln">Rule of Sound Warrant: <b>no derivation through ⊥</b></span>
+          <span class="ln">&nbsp;&nbsp;establishes anything before this court</span>
+          <span class="vd"><b>Note well:</b> the stone accepts explosion; the law does not. The
+          court runs a stricter logic than the furniture. Most of what follows turns on that gap.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 3 · THE SEATING ═════════ -->
+  <section class="slide" aria-label="Slide 3 of 10: the seating, how a trial-duel works">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>The Seating</b> · how a trial is a duel</p>
+        <h2>Every plea seats two players; the court seats them fairly</h2>
+        <p>Outside these walls, the falsifier's seat is taken by force — a duelist buys into your
+        ward's game and plays your <em>for-alls</em> like a cross-examiner. In here the seating is
+        the whole architecture. The Crown pleads a sentence; the defense is <em>entitled</em> to
+        its ∀-moves. Then they trade. The Record itself sits in the witness stand: neither party
+        may assert an atomic fact — they may only <em>cite</em> one, and the Clerks fetch it.</p>
+        <p>Serjeant Marrow is a careful, unhurried pleader with a reputation for short warrants.
+        Advocate Quill has never in nine years pled a sentence longer than necessary, and is
+        said to regard the Miser's Law less as physics than as a colleague.</p>
+        <p class="pull">A court is a duel in which the world holds both seats and lends them out.
+        <span class="who">— motto of the Clerks of the Ledger</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 0</span> · <span class="d">defense 0</span> · flips <b>0</b></span>
+      </div>
+      <div>
+        <figure class="figbox">
+          <svg viewBox="0 0 340 210" role="img" aria-label="The seating: the Bench above; the Crown's lectern and the defense lectern facing each other; the Record in the witness stand between them">
+            <rect x="100" y="18" width="140" height="34" rx="4" class="fG" opacity=".18"/>
+            <rect x="100" y="18" width="140" height="34" rx="4" fill="none" class="sG" stroke-width="1.4"/>
+            <text x="170" y="39" text-anchor="middle" class="slb">the bench · Ambry</text>
+            <rect x="24" y="96" width="112" height="30" rx="4" fill="none" class="sW" stroke-width="1.4"/>
+            <text x="80" y="115" text-anchor="middle" class="slb" fill="var(--wax)">crown · ∃ own pleas</text>
+            <rect x="204" y="96" width="112" height="30" rx="4" fill="none" class="sT" stroke-width="1.4"/>
+            <text x="260" y="115" text-anchor="middle" class="slb" fill="var(--teal)">defense · ∃ own pleas</text>
+            <path d="M138,102 C 160,88 180,88 202,102" fill="none" class="sI" stroke-width="1.1" stroke-dasharray="3 4"/>
+            <path d="M202,120 C 180,134 160,134 138,120" fill="none" class="sI" stroke-width="1.1" stroke-dasharray="3 4"/>
+            <text x="170" y="86" text-anchor="middle" class="sl">∀-moves traded across the aisle</text>
+            <rect x="128" y="156" width="84" height="30" rx="4" fill="none" class="sL" stroke-width="1.3"/>
+            <text x="170" y="175" text-anchor="middle" class="slb">the record</text>
+            <text x="170" y="200" text-anchor="middle" class="sl">facts are cited, never asserted</text>
+          </svg>
+          <figcaption>The seating at the Assize — the falsifier's seat is a right, not a purchase</figcaption>
+        </figure>
+        <div class="docket">
+          <h3>Appearances</h3>
+          <span class="ch dead">Serjeant Marrow — for the Crown</span>
+          <span class="ch stand">Advocate Quill — for the accused</span>
+          <span class="ch court">Justice Ambry — the Bench</span>
+          <span class="ch court">Clerks of the Ledger — auditors</span>
+          <span class="ch">Corb Fen — the accused, unbothered</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ═════════ 4 · EXCHANGE I ═════════ -->
+  <section class="slide" aria-label="Slide 4 of 10: exchange one, the countersigned guest">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>Exchange the First</b> · the countersigned guest</p>
+        <h2>The Crown pleads trespass; the defense produces the house's signature</h2>
+        <p>Marrow opens with the shortest warrant the charge allows: <em>Fen crossed Bellhall's
+        boundary; Fen was not invited; a crossing uninvited is trespass.</em> Five strokes, spoken
+        at an unhurried four a second, each one countersigned by the Clerks as it lands. It is a
+        good plea. For most defendants it would be the whole trial.</p>
+        <p>Quill rises for the falsifier's move on <em>¬Invited(fen)</em>, and does not argue.
+        She cites. Exhibit A goes to the Bench: the anchor-stone's own verification record,
+        eight lines, concluding — in the stone's neat lithographic hand — <b>Invited(fen)</b>.
+        The house examined the accused's derivation, found it valid, and drew its own bolt.</p>
+        <p class="pull">My lord, I do not claim my client was welcome. I claim he was
+        <em>invited</em>, and I have the house's signature to it. If the Crown quarrels with the
+        invitation, its quarrel is with the stone.
+        <span class="who">— Advocate Quill, exchange the first</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 5</span> · <span class="d">defense 8</span> · flips <b>0</b></span>
+      </div>
+      <div>
+        <div class="docket">
+          <h3>The docket after exchange I</h3>
+          <span class="ch stand">Crosses(fen) — cited, stands</span>
+          <span class="ch struck">¬Invited(fen) — contested</span>
+          <span class="ch stand">Exhibit A → Invited(fen)</span>
+          <span class="ch dead">Trespass(fen) — the Crown's burden</span>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — exchange I</h3>
+          <span class="ln">Crown's plea: Crosses ∧ ¬Invited ⊢ Trespass · <b>5 strokes</b></span>
+          <span class="ln">defense re-files Exhibit A as evidence · <b>8 strokes</b></span>
+          <span class="ln">(a cited derivation is re-derived before the court —</span>
+          <span class="ln">&nbsp;&nbsp;the Clerks do not take stones at their word)</span>
+          <span class="vd"><b>Position:</b> if Exhibit A stands, ¬Invited fails and the trespass
+          plea collapses at its second premise. The whole case now hangs on eight lines of
+          lithography.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 5 · EXCHANGE II ═════════ -->
+  <section class="slide" aria-label="Slide 5 of 10: exchange two, the Rule of Sound Warrant">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>Exchange the Second</b> · the Rule of Sound Warrant</p>
+        <h2>Marrow reads line seven aloud, twice</h2>
+        <p>The Serjeant's rebuttal is three strokes and a raised eyebrow. Exhibit A is valid — he
+        concedes it cheerfully, the way one concedes that a forged note is beautifully engraved.
+        But the court's own standing rule bars any derivation that passes through falsehood:
+        <em>ex falso, everything; therefore, before this Bench, nothing.</em> Line seven of
+        Exhibit A is ⊥, naked as the bell. A conclusion bought at line eight with the coin of
+        contradiction is not evidence of invitation. It is evidence that the stone can be made
+        to say anything — which, Marrow observes, is rather the Crown's point.</p>
+        <p>Ambry sustains without retiring. The stone's countersign is struck from the record as
+        proof of invitation, admitted only as proof of <em>mechanism</em> — the how of the
+        entry, not its lawfulness.</p>
+        <p class="pull">The stone believed him invited the way a man at the bottom of a well
+        believes himself at the center of the earth: validly, from where he sits.
+        <span class="who">— Serjeant Marrow, exchange the second</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 8</span> · <span class="d">defense 8</span> · flips <b>0</b></span>
+      </div>
+      <div>
+        <div class="docket">
+          <h3>The docket after exchange II</h3>
+          <span class="ch stand">Crosses(fen)</span>
+          <span class="ch struck">Exhibit A as invitation — struck (Sound Warrant)</span>
+          <span class="ch stand">Exhibit A as mechanism — admitted</span>
+          <span class="ch dead">¬Invited(fen) — restored to play</span>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — exchange II</h3>
+          <span class="ln">motion under Sound Warrant · <b>3 strokes</b> · sustained</span>
+          <span class="ln">Exhibit A: valid at the stone, void at the bar</span>
+          <span class="ln">the stone's logic: classical (explodes)</span>
+          <span class="ln">the court's logic: relevant (contradictions stay local)</span>
+          <span class="vd"><b>Note:</b> premium anchors are cut to the court's standard —
+          paraconsistent, four times the price. Bellhall's was not. The law is, as usual,
+          the better-engineered stone.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 6 · EXCHANGE III ═════════ -->
+  <section class="slide" aria-label="Slide 6 of 10: exchange three, no writ no wall">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>Exchange the Third</b> · no writ, no wall</p>
+        <h2>Quill accepts the Rule — and hands it back edge-first</h2>
+        <p>The defense does not appeal the ruling. Quill adopts it, with a courtesy that makes
+        the Serjeant sit very still. If derivations through ⊥ establish nothing, she argues, then
+        consider what Bellhall's writ <em>was</em> on quarter-day morning: a theory that proves ⊥
+        from its own three axioms and one statute. By the Crown's freshly sharpened rule, such a
+        writ establishes nothing — no invitations, and no <em>prohibitions</em> either. There was
+        no lawful boundary in force at Bellhall that morning. And trespass, she reminds the
+        Bench, is a crossing against a boundary in force. <em>No writ, no wall.</em></p>
+        <p>Marrow objects that the manor's stones and mortar were plainly in force. Quill agrees
+        the mortar was innocent; her client is not charged with trespassing against mortar. The
+        Bench takes the point under advisement, which from Ambry is a form of applause.</p>
+        <p class="pull">The Crown cannot have it halved and whole: if the stone's ⊥ voids my
+        client's invitation, it voids the wall he was invited through.
+        <span class="who">— Advocate Quill, exchange the third</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 8</span> · <span class="d">defense 12</span> · flips <b>0</b></span>
+      </div>
+      <div>
+        <div class="docket">
+          <h3>The docket after exchange III</h3>
+          <span class="ch stand">Crosses(fen)</span>
+          <span class="ch struck">the Bellhall writ, as boundary-in-force — contested</span>
+          <span class="ch dead">both parties now agree: the writ held ⊥ that day</span>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — exchange III</h3>
+          <span class="ln">defense argument, filed as derivation · <b>4 strokes</b></span>
+          <span class="ln">status: under advisement (not yet ruled)</span>
+          <span class="ln">observed: the parties dispute only <b>who inherits</b></span>
+          <span class="ln">&nbsp;&nbsp;the wreckage of an inconsistent writ</span>
+          <span class="vd"><b>Position:</b> the trespass charge is now a race — the Crown must
+          find a boundary that never touched the broken writ, or the wall is gone and the
+          charge with it.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 7 · EXCHANGE IV ═════════ -->
+  <section class="slide" aria-label="Slide 7 of 10: exchange four, the old well">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>Exchange the Fourth</b> · the old well</p>
+        <h2>The Crown pleads on the Bedrock — and the falsifier names the well</h2>
+        <p>Marrow abandons the stone entirely, as a good pleader abandons a lost square. He
+        pleads trespass at common law, beneath any writ: <em>there exists a standing intent of
+        the household, declared in the survey of the manor, such that every entry against it is
+        trespass.</em> A second-circle sentence — his ∃ to name the intent, then Quill's ∀ to
+        test it against every entry. He names the survey of Bellhall, sealed and archived,
+        eleven strokes of careful pleading. It covers the gate, the walls, the windows, the
+        cellar-door, the chimneys. It is a very good survey.</p>
+        <p>Quill, in the falsifier's seat, is entitled to name one entry. She names the old
+        well in the orchard — dry since before the survey was drawn, deeded with the orchard,
+        surveyed never. The court sends a Clerk. The Clerk returns with cobwebs on his cuffs
+        and a nod. The survey is silent on the well; Marrow's step-proof cannot close over it;
+        the plea collapses mid-cast, strokes forfeit. It is the first true silence the Serjeant
+        has produced all day.</p>
+        <p class="pull">Every writ with an unread corner has a door in it. My client merely
+        reads to the end.
+        <span class="who">— Advocate Quill, exchange the fourth</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 19 (11 forfeit)</span> · <span class="d">defense 14</span> · flips <b>0</b></span>
+      </div>
+      <div>
+        <div class="docket">
+          <h3>The docket after exchange IV</h3>
+          <span class="ch struck">common-law trespass plea — collapsed mid-cast</span>
+          <span class="ch stand">the old well — unsurveyed, admitted</span>
+          <span class="ch dead">charge I (trespass) — no boundary left standing</span>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — exchange IV</h3>
+          <span class="ln">Crown's Σ₂ plea: ∃ intent ∀ entries · <b>11 strokes</b></span>
+          <span class="ln">falsifier names: the well · <b>2 strokes</b></span>
+          <span class="ln">step-proof fails to cover the named entry →</span>
+          <span class="ln">&nbsp;&nbsp;<b>plea collapses; 11 strokes forfeit; 0 flips</b></span>
+          <span class="vd"><b>Verdict of the margin:</b> a collapsed plea is the cleanest ruin
+          in law — nothing settles, nothing files, and everyone saw you fall. The accused did
+          not enter by the well. That was never the point. The survey had to answer for it
+          anyway.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ═════════ 8 · EXCHANGE V ═════════ -->
+  <section class="slide" aria-label="Slide 8 of 10: exchange five, the shape of the hole">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>Exchange the Fifth</b> · the shape of the hole</p>
+        <h2>The Bench subpoenas the ash</h2>
+        <p>With the trespass charge bleeding out on the floor, Justice Ambry turns, unprompted,
+        to the second count — the one the gallery had forgotten and the Clerks had not. The
+        court's prerogative: a subpoena of the Vessel of Ash for the accused's residue across
+        the week before the breach. Every pour a mage makes appends a line to the ash,
+        ineffaceable, dull as tide-tables. The Clerks unroll Fen's week: brewing, mending, a
+        prepared warrant inscribed on the Tuesday — and then, the night before quarter-day,
+        <em>nothing</em>. Not an empty stretch. A <b>gap</b>: the log's continuity broken and
+        rejoined around a hole with edges, exactly eight strokes long.</p>
+        <p>Somebody had rehearsed the breach — poured a reconnaissance rite through the ward's
+        writ to find its bad morning — and had done it in the trivial monoid, where the ash
+        takes no imprint. Silent casting: lawful mathematics, and a crime in every jurisdiction
+        that can spell it. Quill, for the first time, has no move; there is no falsifier's seat
+        at a subpoena. Fen, from the dock, is heard to say the eight strokes were "tidy work,"
+        which his advocate does not adopt.</p>
+        <p class="pull">You cannot erase the shape of an absence. The ash remembers even what
+        it was not permitted to see — it remembers the length of not seeing it.
+        <span class="who">— the Clerks of the Ledger, reading the residue</span></p>
+        <span class="scoreline">Ledger: <span class="c">Crown 19</span> · <span class="d">defense 14</span> · the court <b>5</b> · flips <b>0</b></span>
+      </div>
+      <div>
+        <figure class="figbox">
+          <svg viewBox="0 0 340 150" role="img" aria-label="The ash log as a timeline of residue ticks, with one gap of exactly eight strokes highlighted the night before quarter-day">
+            <line x1="18" y1="75" x2="322" y2="75" class="sV" stroke-width="1.4"/>
+            <g class="sV" stroke-width="1.2">
+              <line x1="30" y1="66" x2="30" y2="84"/><line x1="44" y1="66" x2="44" y2="84"/>
+              <line x1="52" y1="66" x2="52" y2="84"/><line x1="74" y1="66" x2="74" y2="84"/>
+              <line x1="90" y1="66" x2="90" y2="84"/><line x1="98" y1="66" x2="98" y2="84"/>
+              <line x1="118" y1="66" x2="118" y2="84"/><line x1="132" y1="66" x2="132" y2="84"/>
+              <line x1="150" y1="66" x2="150" y2="84"/><line x1="163" y1="66" x2="163" y2="84"/>
+              <line x1="176" y1="66" x2="176" y2="84"/>
+              <line x1="262" y1="66" x2="262" y2="84"/><line x1="276" y1="66" x2="276" y2="84"/>
+              <line x1="296" y1="66" x2="296" y2="84"/><line x1="310" y1="66" x2="310" y2="84"/>
+            </g>
+            <rect x="186" y="58" width="66" height="34" rx="3" fill="none" class="sW" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="219" y="50" text-anchor="middle" class="slb" fill="var(--wax)">the gap · 8 strokes</text>
+            <text x="219" y="108" text-anchor="middle" class="sl">edges rejoined — a hole, not an emptiness</text>
+            <text x="30" y="130" class="sl">the week's honest residue</text>
+            <text x="310" y="130" text-anchor="end" class="sl">quarter-day →</text>
+          </svg>
+          <figcaption>Clerks' plate — the accused's ash, the night before the breach</figcaption>
+        </figure>
+        <div class="docket">
+          <h3>The docket after exchange V</h3>
+          <span class="ch struck">charge I — trespass (no boundary in force)</span>
+          <span class="ch dead">charge II — casting unashed: proven by the gap</span>
+          <span class="ch court">subpoena of the ash — no falsifier's seat</span>
+        </div>
+        <div class="margin">
+          <h3>The Clerks' margin — exchange V</h3>
+          <span class="ln">subpoena + reading · <b>5 strokes</b> (the court's ledger)</span>
+          <span class="ln">gap length: <b>8 strokes</b> — matches Exhibit A exactly</span>
+          <span class="ln">silent pour: Duties hold, audit doesn't — <b>per se offense</b></span>
+          <span class="vd"><b>Note:</b> the reconnaissance was the crime, not the entry. He
+          walked in lawfully through a door he had unlawfully learned would open.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 9 · THE VERDICT ═════════ -->
+  <section class="slide" aria-label="Slide 9 of 10: the verdict">
+    <div class="inner">
+      <p class="kicker"><b>The Verdict</b> · read at the evening bell</p>
+      <h2>Acquitted through the door; convicted through the hole</h2>
+      <div class="cards2">
+        <div class="pcard c">
+          <h3>Charge I — trespass</h3>
+          <span class="tag">acquitted</span>
+          <p>On quarter-day morning Bellhall's writ proved ⊥ and therefore, before this court,
+          nothing — no invitation for the accused, and no boundary against him. A man cannot
+          cross a line the law cannot draw. <em>Let the record show the stone did not fail: the
+          stone did exactly as instructed, which is the oldest failure there is — and it is the
+          instruction, not the stone, this court declines to enforce.</em></p>
+        </div>
+        <div class="pcard d">
+          <h3>Charge II — casting unashed</h3>
+          <span class="tag">convicted</span>
+          <p>The gap in the accused's residue, eight strokes long on the eve of an eight-stroke
+          breach, admits one honest reading. Silent casting is proven not by what the ash
+          records but by what it was prevented from recording. The accused's observation that
+          the work was "tidy" is noted, and taxed.</p>
+        </div>
+        <div class="pcard b">
+          <h3>The sentence</h3>
+          <span class="tag">restitution in kind</span>
+          <p>The accused shall re-derive Bellhall's writ <b>paraconsistent</b> — a stone that
+          holds two truths without going mad, at the standard four-fold inscription price —
+          every stroke his own, poured <em>ashed</em>, under the Clerks' open audit. The court
+          finds it fitting that the realm's most celebrated breacher spend a season as its most
+          closely watched ward-wright.</p>
+        </div>
+      </div>
+      <p class="pull" style="max-width:70ch">And let the lords of the realm hear the dictum
+      beneath the verdict: a ward is a theory, and you are liable for its theorems. Amend your
+      writs the way you amend your rooflines — with an engineer present.
+      <span class="who">— Justice Ambry, in re Bellhall</span></p>
+      <span class="scoreline">Final ledger: <span class="c">Crown 19</span> · <span class="d">defense 14</span> · the court <b>5</b> · flips, all parties, all day: <b>0</b></span>
+    </div>
+  </section>
+
+  <!-- ═════════ 10 · THE LEDGER ═════════ -->
+  <section class="slide" aria-label="Slide 10 of 10: the ledger and the moral">
+    <div class="inner duo">
+      <div class="chron">
+        <p class="kicker"><b>The Ledger</b> · the Clerks close the book</p>
+        <h2>Thirty-eight strokes, zero flips</h2>
+        <p>The full accounting, entered and sealed. Note what is absent: grace. No party flipped
+        a single fact of the Record all day — the entire war was fought in warrants, which is
+        what courts are <em>for</em>. The most consequential magical dispute of the year cost
+        the world's ledger exactly nothing, and Bellhall's lord a paraconsistent stone he
+        should have bought the first time.</p>
+        <p>Game-design note, per the house style: every mechanic on this page appeared first in
+        the pitch — the falsifier's seat (LOMA.4), wards as theories and their three breach
+        families (LOMA.5), the ash and its holes (LOMA.6), collapsed pleas forfeiting strokes
+        (LOMA.1). The trial is the duel system re-skinned as procedure; nothing new was
+        invented to make the courtroom work. That is the claim being tested.</p>
+        <p class="pull">The bout two doors down was decided in joules. This one was decided in
+        line seven. The reader may judge which realm builds the better spectator sport.
+        <span class="who">— the Clerks' colophon</span></p>
+      </div>
+      <div>
+        <table class="ledger" aria-label="Final stroke ledger by party and exchange">
+          <tr><th>Entry</th><th>Party</th><th>Strokes</th></tr>
+          <tr><td>Trespass plea (I)</td><td>Crown</td><td class="num">5</td></tr>
+          <tr><td>Exhibit A re-derived (I)</td><td>defense</td><td class="num">8</td></tr>
+          <tr><td>Sound-Warrant motion (II)</td><td>Crown</td><td class="num">3</td></tr>
+          <tr><td>"No writ, no wall" (III)</td><td>defense</td><td class="num">4</td></tr>
+          <tr><td>Common-law Σ₂ plea (IV) — <em>forfeit</em></td><td>Crown</td><td class="num">11</td></tr>
+          <tr><td>Naming the well (IV)</td><td>defense</td><td class="num">2</td></tr>
+          <tr><td>Subpoena + reading the ash (V)</td><td>the court</td><td class="num">5</td></tr>
+          <tr class="tot"><td>Total, all parties</td><td>—</td><td class="num">38 strokes · 0 flips</td></tr>
+        </table>
+        <div class="margin">
+          <h3>Companion pages</h3>
+          <span class="ln"><a href="pitch.html" style="color:var(--teal)">The pitch</a> — the system; §3 Plea 03 is this breach</span>
+          <span class="ln"><a href="loma101-worksheet1.html" style="color:var(--teal)">Problem Set One</a> — B3 prices the repeal's aftermath</span>
+          <span class="ln"><a href="../thaumodynamics/ashfield-bout.html" style="color:var(--teal)">The Ashfield Bout</a> — the sibling system's duel</span>
+          <span class="vd">Self-contained page; light and dark; constants agree with the
+          tuning table (pitch §8) throughout.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ————— nav ————— -->
+<div class="navbar">
+  <div class="navrow">
+    <button class="navbtn" id="prev" aria-label="Previous slide">← Prev</button>
+    <span id="ctr" aria-live="polite">1 / 10</span>
+    <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+    <span class="keyhint">← → keys work too</span>
+    <button class="navbtn" id="next" aria-label="Next slide">Next →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var prev = document.getElementById('prev'), next = document.getElementById('next');
+  var ctr = document.getElementById('ctr'), dots = document.getElementById('dots');
+  var cur = 0;
+  var titles = slides.map(function(s){ return s.getAttribute('aria-label') || ''; });
+
+  for (var d = 0; d < slides.length; d++){
+    var b = document.createElement('button');
+    b.setAttribute('aria-label', 'Go to slide ' + (d+1) + ': ' + titles[d]);
+    (function(n){ b.addEventListener('click', function(){ go(n); }); })(d);
+    dots.appendChild(b);
+  }
+
+  function go(n){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    slides[cur].classList.remove('on');
+    cur = n;
+    slides[cur].classList.add('on');
+    slides[cur].scrollTop = 0;
+    sync();
+  }
+  function sync(){
+    ctr.textContent = (cur+1) + ' / ' + slides.length;
+    prev.disabled = (cur === 0);
+    next.disabled = (cur === slides.length - 1);
+    var bs = dots.children;
+    for (var i = 0; i < bs.length; i++) bs[i].className = (i === cur) ? 'on' : '';
+    if (history.replaceState) history.replaceState(null, '', '#s' + (cur+1));
+  }
+  prev.addEventListener('click', function(){ go(cur - 1); });
+  next.addEventListener('click', function(){ go(cur + 1); });
+  window.addEventListener('keydown', function(e){
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); go(cur + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if (e.key === 'End'){ e.preventDefault(); go(slides.length - 1); }
+  });
+  var m = location.hash.match(/^#s(\d+)$/);
+  if (m){ var n0 = parseInt(m[1], 10) - 1; if (n0 > 0 && n0 < slides.length){ slides[0].classList.remove('on'); cur = n0; slides[cur].classList.add('on'); } }
+  sync();
+})();
+</script>
+</body>
+</html>

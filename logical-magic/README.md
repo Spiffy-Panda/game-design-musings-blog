@@ -18,8 +18,10 @@ build step, with light + dark themes.
 | Page | File | What it is |
 |------|------|------------|
 | I · The pitch | `pitch.html` | The system in one page: premise (world = model, spell = sentence, warrant → settlement), the quantifier ladder (circles = alternation depth), three fully-audited pleas (Emberfield / the Long Wish / the Quarter-Day Breach), vessels (monads) for ritual magic, the Mint (second-order enchantment), the six Limits (Gödel, Tarski, Löb, Rice, compactness, Löwenheim–Skolem), design payoffs `LOMA.1`–`LOMA.7`, tuning constants, roadmap. |
-| II · planned | — | "LOMA 101 · Problem Set One" — the worksheet, mirroring MDYN 101 Worksheet 3 (blank / attempt / key toggle). |
-| III · planned | — | "The Assize of Bells" — the application: a ward-breach trial chronicled as a duel of derivations. |
+| II · The pedagogy | `loma101-worksheet1.html` | "LOMA 101 · Problem Set One" — MC (seats & circles), three priced audits (Emberfield two ways / the winter wish / Bellhall after the repeal), theory shorts; blank / M. Sedge's attempt / Reader's key toggle, mirroring MDYN 101 Worksheet 3. |
+| III · The application | `assize-of-bells.html` | "The Assize of Bells" — Crown v. Fen: the Bellhall breach tried as a duel of derivations (Rule of Sound Warrant, "no writ, no wall," the old well, the ash-gap conviction); 10-slide chronicle, Clerks' stroke ledger per exchange, 38 strokes / 0 flips. |
+| IV · candidate | — | "The Grimoire" — interactive lemma cache (the LOMA.2 progression loop as a toy). |
+| (internal) | `VIGNETTE-HANDOFF.md` | Reusable chat handoff for everyday-life vignettes (`LVIG.n`): system digest, canon, constants, guardrails, resources. Not published. |
 
 Game-design reading: the set is an exercise in **abstraction-first worldbuilding** — take
 mathematical logic literally, price it in countable units, and let the theorems be the

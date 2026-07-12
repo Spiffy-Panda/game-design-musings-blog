@@ -30,10 +30,16 @@ Rule 6 applies. Mnemonic (Rule 8): **`LOMA`**.
       design payoffs (`LOMA.1`–`LOMA.7`), tuning constants, roadmap.
 - [x] `logical-magic/index.html` — gallery card + planned-page ghosts.
 - [x] `logical-magic/README.md` — staging note, mnemonic, page table.
-- [ ] Page II — "LOMA 101, Problem Set One" (worksheet w/ blank/attempt/key
-      toggle, mirroring MDYN 101 Worksheet 3).
-- [ ] Page III — the application (a breach or duel chronicled as derivations —
-      candidate: "The Assize of Bells").
+- [x] Page II — **done 2026-07-12**: `loma101-worksheet1.html` ("LOMA 101 ·
+      Problem Set One") — blank / M. Sedge's attempt / Reader's key toggle,
+      40 marks, every number cited from pitch §8.
+- [x] Page III — **done 2026-07-12**: `assize-of-bells.html` ("The Assize of
+      Bells") — Crown v. Fen as a 10-slide trial-duel; establishes the Rule of
+      Sound Warrant, "no writ, no wall," and conviction by ash-gap; 38 strokes,
+      0 flips. (Open question resolved: yes, game semantics is the spine.)
+- [x] Vignette pipeline opened — `VIGNETTE-HANDOFF.md` (2026-07-12): reusable
+      chat handoff for everyday-life vignettes (`LVIG.n`); prompts + prose happen
+      in a separate chat, canon + constants stay defined here.
 - [x] Decide promotion: **done 2026-07-10** — registered as an HTML-first musing
       (verbatim-copy `build-musing.py`, gallery `index.html` as entry, nav spec
       `LOGICAL-MAGIC.md`), same day as `thaumodynamics/`, when the landing page

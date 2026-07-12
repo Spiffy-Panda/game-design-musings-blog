@@ -20,6 +20,41 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-12 — LoMa completes the THAU trio: worksheet + trial-duel + a vignette handoff
+
+**Context:** Panda asked for three things in sequence: a reusable handoff doc so a
+*separate* chat can write everyday-life LoMa vignettes (that chat proposes the
+abstracts/prompts and the prose; this repo supplies the system and canon), then the two
+pages that make LoMa match the thaumodynamics set — the problem set and the duel.
+**Recon surprise:** this worktree was sitting on a stale local `main` (4e2fe00) with three
+*uncommitted* DEV-LOG entries from some other session's Space Feudal **vignette** work
+(VIG.6–8, "companion page V", a LOOM.6 split ruling + "two-system atlas") — whose files
+exist neither here nor on `origin/main`. Preserved them in `git stash`
+("stranded DEV-LOG entries: Space Feudal vignette session"), then fast-forwarded to
+`origin/main` (3469a42, PR #2 merged + breadcrumbs + themed landing rows + Space Feudal).
+🐼Panda: that stash is yours to reconcile — the vignette session's files live elsewhere.
+**Choice / what was built:** (1) `logical-magic/VIGNETTE-HANDOFF.md` — self-contained
+briefing (system digest as lived experience, glossary, the §8 constants verbatim, canon
+cast incl. the new pages', texture inventory, guardrails, `LVIG.n` handle convention —
+distinct from SF's `VIG.n`). (2) `loma101-worksheet1.html` — LOMA 101 Problem Set One,
+mirroring MDYN 101's blank/student/key toggle; student is M. Sedge; all numbers cite
+pitch §8 (the Ascent's forgotten survey strokes and the 226 s/226 min unit slip are the
+teaching errors). (3) `assize-of-bells.html` — Crown v. Fen as a 10-slide trial-duel
+mirroring the Ashfield Bout's deck; new canon minted deliberately: the **Rule of Sound
+Warrant** (courts run relevance logic — ⊥-tainted derivations establish nothing at the
+bar, even though stones explode), **"no writ, no wall"**, conviction by **ash-gap**
+(the 8-stroke hole), total ledger 38 strokes / 0 flips. Both new pages carry the
+breadcrumb standard and the LoMa tokens; gallery cards went live; registry sublinks,
+README, nav spec, and plan synced.
+**Why this shape:** the worksheet and trial reuse only mechanics the pitch already
+claims (LOMA.1/.4/.5/.6) — the point of the set is that the courtroom and the classroom
+fall out of the same ten rules, the way MDYN's worksheet and bout fall out of its field
+equations.
+**Notes:** the Assize deliberately resolves the pitch's Plea 03 aftermath and the
+worksheet's B3 cites the repeal — the three pages now form one continuity. The vignette
+chat should return `LVIG.n` Markdown; integration as a companion page is a later,
+separate step.
+
 ## 2026-07-11 — Landing page: one themed row per musing, with hand-drawn SVG emblems
 
 **Context:** Panda asked that the landing directory give each musing its own full-width
