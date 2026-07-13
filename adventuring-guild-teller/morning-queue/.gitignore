@@ -1,0 +1,7 @@
+# Godot 4 import cache + editor-local state — regenerated on open, never committed.
+.godot/
+# Web/desktop export artifacts (a deliberate `export/` build step will place these; keep them out of git).
+export/
+*.tmp
+# DevHarness viewport screenshots (validation aid) — carries its own .gdignore too.
+.captures/

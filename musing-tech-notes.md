@@ -168,6 +168,15 @@ design-system-heavy sets where the page *is* the deliverable. Worked examples:
   verbatim to `site/musings/<slug>/` (same treatment as the MSL `explorations/` gallery);
   `.md` files are never copied. The contract is otherwise unchanged: `--out`, repo-root
   anchoring via `__file__`, non-zero exit on failure.
+- **A musing may carry a non-published subfolder.** `glob("*.html")` is top-level only, so
+  a subfolder (tooling, a source project, working files) is invisible to the site build —
+  it lives in the repo but never deploys. First instance: `adventuring-guild-teller/morning-queue/`,
+  a self-contained **Godot 4.6 (GDScript-only)** desk-shift prototype. If such a subfolder
+  later produces a *web build* meant to embed in a page, that's a deliberate new copy step
+  (and the moment Rule 6 applies to the artifact). Godot note: keep it GDScript + the
+  `gl_compatibility` renderer — the `.mono` editor can't Web-export .NET, and Godot 4 Web
+  needs COOP/COEP headers GitHub Pages can't set, so any embed targets the **local**
+  `serve_site.py` preview, not Pages.
 - **Pages must stay self-contained** — inline CSS/JS, no external assets, light + dark
   themes carried per page. They don't use `site/style.css` and take no chrome from
   `musing_render.py`, so they hand-author their own copy of the breadcrumb (see
@@ -322,6 +331,22 @@ musing folder just because it's hidden.
 - **Config errors fail loudly.** `MUSING-CONFIG.json` must be valid JSON (no comments, no
   trailing commas). A missing `build-musing.py` or a failing render is reported per-musing;
   the rest of the site still builds.
+- **Self-contained pages must style the base `a`.** HTML-first pages carry their own
+  CSS, so any content link you don't explicitly color falls back to browser-default
+  blue — easy to miss in a light-theme spot check, glaring in dark mode (bit the AGT
+  pitch page's inline "desk research" link). Give every page a base
+  `a{color:var(--<accent>)}` rule alongside the crumb/card/footer link styles.
+- **Web MIDI / WebAudio pages** (worked example: `midi-drum/coach.html`):
+  `navigator.requestMIDIAccess()` needs a secure context and should be called from a
+  click (Firefox prompts; Safari doesn't ship the API; the *embedded preview browser
+  auto-denies* it — so feature-detect, render the denied/unsupported states properly, and
+  never gate the page on hardware: keep a keyboard/click input path feeding the same
+  event pipeline, which is also what makes the page verifiable headlessly). Create/resume
+  the `AudioContext` inside a user gesture. For musical timing use the lookahead-scheduler
+  pattern (a ~25 ms `setInterval` scheduling ~250 ms ahead on the audio clock) — never
+  per-note `setTimeout`. To judge live input against the audio clock, bridge clocks via a
+  sampled offset (`performance.now()/1000 − ctx.currentTime`); `MIDIMessageEvent.timeStamp`
+  is on the `performance.now()` clock.
 
 ## Where the pieces live
 

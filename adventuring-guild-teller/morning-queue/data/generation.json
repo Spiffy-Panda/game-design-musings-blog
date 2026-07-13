@@ -1,0 +1,172 @@
+{
+  "_about": "Generation config — the knobs the procedural visit generator (ShiftGenerator) reads to COMPOSE a shift's visits from the banks (book/postings/ciphers/drops/archive in references.json + townees.json + adventurers.json). Day 0 = the curated visitors.json (tutorial shift); day > 0 = generate_shift(day) with a seeded RNG (seed = day) so a week is 7 deterministic, non-repeating shifts. Output must match the visitors.json schema exactly. BANK D FILLED (Phase 2, 2026-07-13): weights, invalid-rate (+ optional per-day ramp), failure-axis weights, per-task composition contract, and sizable walk-in name pools all authored. See ../CONTENT-BANKS.md §Visit-Generation Algorithm.",
+  "mnemonic": "GEN",
+
+  "shift": {
+    "day0_source": "visitors.json",
+    "visits_min": 12,
+    "visits_max": 16,
+    "seed_basis": "day",
+    "id_prefix": "gen-d{day}-{n}",
+    "note": "Generated visit ids are gen-d<day>-<n> (n = 1-based queue position), never colliding with the curated 16. `order` = n."
+  },
+
+  "task_weights": {
+    "item_check":        30,
+    "rank_gate":         20,
+    "dungeon_drop":      12,
+    "quest_file":        12,
+    "roster_change":     10,
+    "completion_claim":  8,
+    "rank_up":           8
+  },
+  "task_weights_note": "Sum = 100 (read as relative weights; need not sum to 100). item_check leads because it is the mechanically richest loop — the ONLY task where BOTH the Glass (book_item) and the Scale (order limit) are load-bearing — and the one the curated tutorial teaches. rank_gate is the second pillar (fast rank/dues reads). The adventurer-directory tasks (rank_gate 20 + rank_up 8 + roster_change 10 = 38) draw without replacement from 16 adventurers → ~5.3 draws in a 14-visit shift, comfortably inside the pool. The townee tasks (dungeon_drop 12 + quest_file 12 = 24) draw townees → ~3.4 draws; quest_file needs an OWNER (11 of 16 qualify), dungeon_drop any directory townee. completion_claim + rank_up are the rarest (thin token/logbook material, and the pre-seeded fail actors are few) so they stay low to avoid obvious repetition across a week.",
+
+  "invalid_rate": 0.45,
+  "invalid_rate_note": "Fraction of a shift's visits that are INVALID (a reject/hold/conditional under 4-verdict; a reject under STRICT_BINARY). ~55% clean approvals keeps the desk in flow (AGT.5) while giving reliable falsifiers. Scalar default; invalid_rate_by_day overrides it for a listed day.",
+  "invalid_rate_by_day": {
+    "_note": "OPTIONAL per-day override — a gentle difficulty ramp across the week (mean ~0.45, matching the scalar). If a day is absent, fall back to `invalid_rate`. Generator: rate = invalid_rate_by_day.get(str(day), invalid_rate).",
+    "1": 0.38,
+    "2": 0.40,
+    "3": 0.43,
+    "4": 0.45,
+    "5": 0.48,
+    "6": 0.50,
+    "7": 0.52
+  },
+
+  "failure_axis_weights": {
+    "identity":      14,
+    "authenticity":  12,
+    "rank":          12,
+    "dues":          12,
+    "season":        8,
+    "fieldability":  8,
+    "amount":        6,
+    "unverifiable":  6,
+    "claimant":      6,
+    "paperwork":     6,
+    "duplicate":     6,
+    "reach":         6
+  },
+  "failure_axis_note": "Weights are sampled ONLY among the axes a given task_type admits (see per_task[*].failure_axes) and renormalized over that subset — so absolute values matter only RELATIVE to the other axes a task allows. `identity` (herb/beast-part confusion) tops the table as the signature deduction; `authenticity` (forged seals/relics), `rank`, and `dues` sit just below as the everyday rejects. `dues` and `amount` are the two NEW axes this expansion adds to the existing enum. Rarer axes (unverifiable/claimant/paperwork/duplicate/reach) stay low because their triggering material is deliberately scarce in the banks (few pre-seeded dup logbooks, few no-card walk-ins).",
+
+  "per_task": {
+    "item_check": {
+      "actor_pool": "townee_walkin",
+      "actor_note": "A courier/deliverer presenting an item against a standing order. Name from name_pools (a one-off walk-in); the ORDER is owned by a directory townee but item_check does NOT gate on that owner's dues — the order already exists and is paid.",
+      "affiliation": "townee",
+      "subject": "standing_order_item",
+      "subject_note": "Pick a standing_order posting; its `item` is the claimed item; compare Glass->Book(item) and Scale->order limit.",
+      "failure_axes": ["identity", "amount", "authenticity", "paperwork"],
+      "failure_axes_note": "authenticity only when book[item].forgery_glass exists; paperwork only when the order carries a `requires` (e.g. warded-transport-order's hazard seal). The generator drops an inadmissible axis and renormalizes.",
+      "checks_template": ["book:<claimed-item>", "posting:<order-id>", "book:<confusable-item> (identity fail only)"],
+      "glass_subject_kind": "book_item",
+      "scale_relevant_when": "amount",
+      "quantity": {
+        "_note": "How the generator derives inspections.scale.amount (unit = book[item].unit). The window is the order's limit in references.json — `accept {min,max}` or `total {needed}`.",
+        "valid_within": "sample rng-uniform inside the accept window (or == needed for a `total` order)",
+        "amount_fail_directions": ["over", "under"],
+        "amount_fail_note": "over -> max+delta; under -> min-delta (or < needed). delta = rng.randi_range(1,3) in the order's unit.",
+        "decoy_when_not_amount": "for a non-amount visit the Scale still reads a within-window quantity (decoy); relevant=false"
+      }
+    },
+    "rank_gate": {
+      "actor_pool": "adventurer_directory",
+      "affiliation": "adventure",
+      "subject": "gate_posting",
+      "subject_note": "Pick a posting carrying rank_min; compare actor rank vs gate and actor dues.",
+      "failure_axes": ["rank", "dues", "unverifiable"],
+      "failure_axes_note": "dues fail needs an `owing` adventurer (adv-nima-green / adv-perrin-saltcrag / adv-sable-thorn). unverifiable = a name_pools walk-in claiming a rank with NO directory entry (mirrors ganton-reeve) — the one rank_gate branch that uses a walk-in instead of a directory actor.",
+      "checks_template": ["adventurer_directory:<adv-id>", "posting:<posting-id>"],
+      "glass_subject_kind": "rank_card",
+      "scale_relevant_when": "never"
+    },
+    "quest_file": {
+      "actor_pool": "townee_owner",
+      "actor_note": "A townee filing/posting a quest they own (actor drawn from townees whose `owns` is non-empty). THIS is the primary dues gate: an `owing` owner cannot post.",
+      "affiliation": "townee",
+      "subject": "owned_posting",
+      "subject_note": "Pick one of the actor's owned posting ids; prefer a ward_required posting so the fieldability branch has material.",
+      "failure_axes": ["dues", "fieldability"],
+      "failure_axes_note": "dues fail needs an `owing` owner (townee-sarai-quillon / townee-garrick-tallow / townee-old-perrin own postings). fieldability fail = dues current but no roster party carries the required ward/reach (mirrors sister-coll).",
+      "checks_template": ["townee_directory:<townee-id>", "posting:<posting-id>", "roster:*"],
+      "glass_subject_kind": "filing",
+      "scale_relevant_when": "never"
+    },
+    "completion_claim": {
+      "actor_pool": "mixed",
+      "actor_note": "Valid + authenticity branches: claimant = the posting's assigned party (resolve archive[token].posting -> its assigned_to). claimant-fail branch: claimant = a DIFFERENT actor (another directory adventurer or a name_pools walk-in), so payee != assigned party.",
+      "affiliation": "townee",
+      "subject": "completion_token",
+      "subject_note": "A token in the archive for an assigned posting; valid iff seal genuine AND claimant == assigned party.",
+      "failure_axes": ["claimant", "authenticity"],
+      "checks_template": ["archive:<token-id>", "posting:<posting-id>"],
+      "glass_subject_kind": "completion_token",
+      "scale_relevant_when": "never"
+    },
+    "rank_up": {
+      "actor_pool": "adventurer_directory",
+      "affiliation": "adventure",
+      "subject": "logbook",
+      "subject_note": "The actor's logbook archive summary vs references.json.rankup_thresholds[from->to]. distinct_seals >= threshold ⇒ approve. (Thresholds live in references.json, NOT here.)",
+      "failure_axes": ["duplicate", "rank", "dues"],
+      "failure_axes_note": "duplicate = distinct_seals < entries (pre-seeded: adv-castor-thorn 3/2, adv-sable-thorn 8/7). rank = entries < threshold, too few completions (pre-seeded: adv-lysa-ironquill 1, adv-tessa-hollow 2). dues = an `owing` submitter. The generator should bias toward these pre-seeded actors when it wants the matching fail.",
+      "checks_template": ["archive:<logbook-archive-id>", "adventurer_directory:<adv-id>"],
+      "glass_subject_kind": "logbook",
+      "scale_relevant_when": "never"
+    },
+    "roster_change": {
+      "actor_pool": "adventurer_directory",
+      "affiliation": "adventure",
+      "subject": "transfer_seal",
+      "subject_note": "A transfer card from the actor's chapter; valid iff the card's mark+seal match cipher_table[chapter] AND dues current. Valid ⇒ roster_write.",
+      "failure_axes": ["authenticity", "dues"],
+      "failure_axes_note": "authenticity = a COMPOSED forged reading — borrow another chapter's `mark`, or swap the seal medium (wax->ink) — mirrors sable-lorn. dues (secondary) = cipher matches but the card's dues stamp is stale (an `owing` actor).",
+      "checks_template": ["cipher:<chapter>", "adventurer_directory:<adv-id>"],
+      "glass_subject_kind": "transfer_seal",
+      "scale_relevant_when": "never"
+    },
+    "dungeon_drop": {
+      "actor_pool": "townee_directory",
+      "actor_note": "A townee commissioning a fetch — ANY directory townee (the pure-commissioner townees cuthbert-lyle / goodman-fenn / elga-thorne / piers-danglow / mother-ashby exist for this; `owns` is not required). Dues-gated: an owing commissioner fails BEFORE the quote pipeline runs.",
+      "affiliation": "townee",
+      "subject": "drop",
+      "subject_note": "A drop_table item; the quote pipeline is dues -> is_drop -> season -> reach -> payout arithmetic (payout formula in references.json).",
+      "failure_axes": ["dues", "season", "reach", "identity"],
+      "failure_axes_note": "dues short-circuits before the pipeline (needs an owing townee: goodman-fenn is the pure commissioner, sarai/garrick/old-perrin also owing). season = drop.season != the day's season (from season_schedule). reach = drop.floor > deepest roster reach_floor. identity = item is not a genuine drop (shop-craftable).",
+      "checks_template": ["townee_directory:<townee-id>", "drop_table:<item>", "season:<item>", "roster:*"],
+      "glass_subject_kind": "filing",
+      "scale_relevant_when": "never"
+    }
+  },
+  "actor_pools_note": "actor_pool vocabulary the generator resolves: `townee_walkin` = a one-off name composed from name_pools (no directory row; used by item_check couriers and the rank_gate `unverifiable` / completion_claim `claimant` branches). `townee_owner` = a townees.json entry with non-empty `owns`. `townee_directory` = any townees.json entry. `adventurer_directory` = any adventurers.json entry. `mixed` = per-branch (see completion_claim actor_note). Directory pools sample WITHOUT replacement within a single shift (CONTENT-BANKS §4.4b); walk-ins are unbounded.",
+
+  "name_pools": {
+    "_note": "For one-off walk-ins (townee_walkin: item_check couriers, plus the rank_gate unverifiable and completion_claim claimant-fail branches) that are NOT directory actors. Directory-drawn actors use their authored names. A given + a surname are combined at random. 44 x 44 = 1936 full-name combinations — a week's ~30 walk-ins never obviously repeat a full name, and 44 of each keeps single-name recurrence subtle. All fictional, fantasy, no real people; deliberately distinct from the directory names so a walk-in reads as anonymous. No dead names or real surnames (Rule 7).",
+    "given": [
+      "Corin", "Bettany", "Halden", "Mieke", "Rowan", "Tibb", "Ysolde", "Nedry",
+      "Falk", "Greta", "Osric", "Pell", "Wilda", "Jocelyn", "Hark", "Nesta",
+      "Aldous", "Bryndle", "Cass", "Delph", "Emeric", "Fenna", "Gower", "Hesper",
+      "Ivo", "Jessa", "Ketch", "Lorne", "Marrow", "Nolt", "Orla", "Petrel",
+      "Quill", "Rhoda", "Selby", "Tamsin", "Ulric", "Vinca", "Wrenna", "Yorick",
+      "Zeb", "Merit", "Brannock", "Cotter"
+    ],
+    "surname": [
+      "Ashdown", "Greenmantle", "Fenwick", "Harrowgate", "Colt", "Wickley", "Dunmore", "Pryce",
+      "Sallow", "Tanner", "Reedmark", "Whitlow", "Barrowman", "Crane", "Fettle", "Lund",
+      "Marlow", "Ostrey", "Pallant", "Quorn", "Ravenscroft", "Stoke", "Thistlewaite", "Underhill",
+      "Varley", "Winnick", "Bramwell", "Cawley", "Denby", "Elmsworth", "Farrow", "Godwick",
+      "Halloway", "Inglebright", "Jarrow", "Kelmscott", "Lattimer", "Mossgrave", "Norbrook", "Oldacre",
+      "Prewitt", "Rushton", "Standish", "Wexley"
+    ]
+  },
+
+  "season_schedule": {
+    "_note": "Which season each generated day runs in (gates dungeon_drop). Day 0 uses references.json season.current (summer). day>0 walks the wheel so a week spans seasons and drop validity shifts. Every by_day value must be in `wheel`.",
+    "wheel": ["spring", "summer", "autumn", "winter"],
+    "by_day": { "1": "summer", "2": "summer", "3": "autumn", "4": "autumn", "5": "winter", "6": "winter", "7": "spring" }
+  },
+
+  "_validator_note": "DeckLoader additions (impl phase): task_weights keys ⊆ the task_type enum; every per_task[*].failure_axes entry is in the (extended) axis enum; per_task actor_pool ∈ {townee_walkin, townee_owner, townee_directory, adventurer_directory, mixed}; season_schedule.by_day values ∈ wheel; invalid_rate and every invalid_rate_by_day value in [0,1]. See ../CONTENT-BANKS.md §Validator additions."
+}

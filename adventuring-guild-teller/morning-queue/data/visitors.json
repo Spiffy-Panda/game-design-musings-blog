@@ -1,0 +1,443 @@
+{
+  "_about": "The Morning Queue — one desk shift for the Adventuring Guild Teller (AGT musing). Sixteen visitors, in queue order. Every `check` resolves against an entry in references.json, so the desk is actually verifiable, not just narrated. Each visitor also carries an `inspections` block — the readings the Glass (examine) and Scale (weigh) tools return for THIS visitor's item; see ../INSPECTION-TOOLS.md for the tool + limit design. Data is prototype canon (2026-07-13); correct by `id`. Enemies are wild-magic apparitions / mana beasts by design — nothing that depopulates. See ../MORNING-QUEUE.md for the schema contract.",
+  "schema": {
+    "affiliation": ["townee", "adventure"],
+    "task_type": ["item_check", "rank_gate", "quest_file", "completion_claim", "rank_up", "roster_change", "dungeon_drop"],
+    "stamp": ["approve", "reject", "hold", "conditional"],
+    "binary": ["approve", "reject"],
+    "failure.axis": ["identity", "rank", "unverifiable", "claimant", "authenticity", "paperwork", "duplicate", "fieldability", "season", "reach", null],
+    "check.consult": ["book", "posting", "ledger", "cipher", "drop_table", "season", "roster", "archive"],
+    "inspection.tool": ["glass", "scale"],
+    "inspection.shape": "inspections { glass { reading, relevant }, scale { reading, amount, unit, relevant } } — reading is required content prose; amount/unit/relevant are authored metadata; `relevant` is design-only and NEVER shown to the player (see ../INSPECTION-TOOLS.md §2-3).",
+    "standing_order.limit": ["accept { min, max, unit }", "total { needed, unit }"]
+  },
+  "visitors": [
+    {
+      "id": "wren-sixpence",
+      "order": 1,
+      "name": "Wrenna Sixpence",
+      "affiliation": "townee",
+      "profession": "Herbalist",
+      "task_type": "item_check",
+      "portrait": null,
+      "claim": {
+        "summary": "A jar of \"moonwort\" delivered against the apothecary's standing order.",
+        "asserts": { "item": "moonwort", "against": "apothecary-standing-order" }
+      },
+      "truth": { "valid": true, "stamp": "approve", "binary": "approve", "failure": null },
+      "checks": [
+        { "consult": "book", "entry": "moonwort", "compare": ["silver underside", "five lobes", "cold to touch"], "against": "the jar's leaf", "result": "match" },
+        { "consult": "posting", "entry": "apothecary-standing-order", "compare": ["accept 2-4 dram"], "against": "weighed amount", "result": "within range" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Silver underside, five lobes, cold to the touch.", "relevant": true },
+        "scale": { "reading": "The jar settles at 3 drams.", "amount": 3, "unit": "dram", "relevant": true }
+      },
+      "player_story": "Flip the book to Moonwort — silver underside, five lobes, cold to the touch. Hold the leaf to the lamp: silver, five lobes. Weigh it — 3 drams, and the order takes 2 to 4. Stamp APPROVED.",
+      "notes": "The easy opener that teaches the loop: one Glass-vs-Book identity check, one Scale-vs-limit amount check, clean yes. The one shipped visitor where the amount is a real (passing) check."
+    },
+    {
+      "id": "hulbr-odd-eye",
+      "order": 2,
+      "name": "Hulbr Odd-Eye",
+      "affiliation": "adventure",
+      "profession": "Skirmisher",
+      "task_type": "rank_gate",
+      "portrait": null,
+      "claim": {
+        "summary": "Rank Bronze, taking the \"Cistern wisp-swarm\" posting (Bronze or better).",
+        "asserts": { "rank": "bronze", "posting": "cistern-wisp-swarm" }
+      },
+      "truth": { "valid": true, "stamp": "approve", "binary": "approve", "failure": null },
+      "checks": [
+        { "consult": "ledger", "entry": "hulbr-odd-eye", "compare": ["bronze", "dues current"], "against": "his card", "result": "match" },
+        { "consult": "posting", "entry": "cistern-wisp-swarm", "compare": ["rank_min: bronze"], "against": "his rank", "result": "meets" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A bronze guild card, corner-worn; the dues column freshly inked.", "relevant": false },
+        "scale": { "reading": "Card and case together: 2 drams.", "amount": 2, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Pull his card from the rank ledger — Bronze, dues current. Posting slip says Bronze-or-better. Ranks clear, posting open. Stamp ASSIGNED.",
+      "notes": "Second clean yes, different check type — teaches the rank ledger before any reject. Both tools are decoys: the card looks bronze, but only the ledger is authoritative."
+    },
+    {
+      "id": "pell-marrow",
+      "order": 3,
+      "name": "Pell Marrow",
+      "affiliation": "townee",
+      "profession": "Courier",
+      "task_type": "item_check",
+      "portrait": null,
+      "claim": {
+        "summary": "A pressed \"kingsfoil\" sprig for the infirmary's standing order.",
+        "asserts": { "item": "kingsfoil", "against": "infirmary-standing-order" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "identity", "reason": "It is common yarrow. Same flat white head, but kingsfoil's stem is square and yarrow's is round — the book calls the square stem the only sure tell." }
+      },
+      "checks": [
+        { "consult": "book", "entry": "kingsfoil", "compare": ["square stem", "feathered leaf", "flat white head"], "against": "the sprig", "result": "mismatch: round stem" },
+        { "consult": "book", "entry": "yarrow", "compare": ["round stem", "flat white head"], "against": "the sprig", "result": "match" },
+        { "consult": "posting", "entry": "infirmary-standing-order", "compare": ["total 1 sprig"], "against": "weighed amount", "result": "meets — but identity fails" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Round stem, feathered leaf, flat white head.", "relevant": true },
+        "scale": { "reading": "One sprig on the pan — a single stem.", "amount": 1, "unit": "sprig", "relevant": false }
+      },
+      "player_story": "Book to Kingsfoil — square stem. Roll the stem: round. Cross-check yarrow — match. Stamp REJECTED, note \"yarrow, not kingsfoil.\"",
+      "notes": "First reject. The tell is in the reference, not memory — rewards actually looking it up. Amount decoy: the sprig meets the order's total, but the plant is wrong — Scale reassures, Glass condemns."
+    },
+    {
+      "id": "doss-yellowknife",
+      "order": 4,
+      "name": "Doss Yellowknife",
+      "affiliation": "adventure",
+      "profession": "Sellsword",
+      "task_type": "rank_gate",
+      "portrait": null,
+      "claim": {
+        "summary": "Rank Silver, wants the \"Barrow gloam\" posting (Gold or better).",
+        "asserts": { "rank": "silver", "posting": "barrow-gloam" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "rank", "reason": "Under-ranked. Silver card, Gold gate — one rung short." }
+      },
+      "checks": [
+        { "consult": "ledger", "entry": "doss-yellowknife", "compare": ["silver"], "against": "his card", "result": "match" },
+        { "consult": "posting", "entry": "barrow-gloam", "compare": ["rank_min: gold"], "against": "silver", "result": "below" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A silver card, edges bright, lately issued.", "relevant": false },
+        "scale": { "reading": "Card and case together: 2 drams.", "amount": 2, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Ledger card reads Silver. Posting reads Gold-or-better. One rung short. Stamp REFUSED, hand back the slip.",
+      "notes": "The rank gate as a hard line — the desk doesn't bend it; that's Floor work. Both tools decoy: the card is genuinely silver; the gate, not the card, is the fail."
+    },
+    {
+      "id": "ivy-threnody",
+      "order": 5,
+      "name": "Ivy Threnody",
+      "affiliation": "townee",
+      "profession": "Scribe",
+      "task_type": "completion_claim",
+      "portrait": null,
+      "claim": {
+        "summary": "A completion token for \"Recover the ledger of Ashford Mill\" — brings a ledger, asks the bounty be paid to her.",
+        "asserts": { "posting": "ashford-mill-ledger", "token": "genuine", "payee": "ivy-threnody" }
+      },
+      "truth": {
+        "valid": false, "stamp": "hold", "binary": "reject",
+        "failure": { "axis": "claimant", "reason": "The token is real; the quest was assigned to a different party (Odd-Eye's, still afield). She found the ledger loose on the road — right proof, wrong claimant." }
+      },
+      "checks": [
+        { "consult": "archive", "entry": "ashford-mill-ledger-token", "compare": ["seal genuine"], "against": "the token", "result": "match" },
+        { "consult": "posting", "entry": "ashford-mill-ledger", "compare": ["assigned_to: odd-eyes-party", "status: afield"], "against": "the payee", "result": "mismatch: payee is not the assigned party" }
+      ],
+      "inspections": {
+        "glass": { "reading": "The archive-seal is genuine — clean, unbroken, the true impression.", "relevant": false },
+        "scale": { "reading": "The token disc: 4 drams of good brass.", "amount": 4, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Match the token's seal — genuine. Pull the quest slip: assigned, party out, not returned. Payee doesn't match. Stamp HELD, \"return to assigned party.\"",
+      "notes": "Real proof, wrong claimant — a second axis (who) beyond the usual what. Glass decoy: it truthfully confirms the seal is genuine, and the answer is still reject — the fail is on the posting, not the token. Under STRICT_BINARY this hold judges as reject (its binary field)."
+    },
+    {
+      "id": "bartholomew-quill",
+      "order": 6,
+      "name": "Bartholomew Quill",
+      "affiliation": "adventure",
+      "profession": "Cartographer",
+      "task_type": "item_check",
+      "portrait": null,
+      "claim": {
+        "summary": "A \"griffon primary feather\" as proof for the \"Cliff-nest survey\" bounty.",
+        "asserts": { "item": "griffon-feather", "as": "proof", "posting": "cliff-nest-survey" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "authenticity", "reason": "Forgery. A goose quill dyed with saffron; a true primary is twin-barbed and won't hold dye evenly, and its rachis is hollow." }
+      },
+      "checks": [
+        { "consult": "book", "entry": "griffon-feather", "compare": ["twin-barbed", "dye-fast", "hollow rachis"], "against": "the feather", "result": "mismatch: dye lifts, rachis solid" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Single-barbed; the dye lifts under a wet cloth; the rachis is solid, not hollow.", "relevant": true },
+        "scale": { "reading": "Barely a quarter-dram — feather-light.", "amount": 0.25, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Book to Griffon Feather — twin-barbed, dye-fast, hollow rachis. Wet cloth down the vane: color lifts. Bend the rachis: solid. Two tells fail. Stamp REJECTED, flag \"dyed goose quill.\"",
+      "notes": "First deliberate deception — the item is real-looking but engineered to pass a lazy glance. Scale decoy: proof-of-survey has no standing order, so the weight measures against nothing — the Glass carries the whole check."
+    },
+    {
+      "id": "sister-coll",
+      "order": 7,
+      "name": "Sister Coll",
+      "affiliation": "townee",
+      "profession": "Cleric",
+      "task_type": "quest_file",
+      "portrait": null,
+      "claim": {
+        "summary": "Files a quest: \"Cleanse the well-shrine of the drowned saint\" — a water-bound apparition; requires a cleric- or water-warded taker.",
+        "asserts": { "posting": "well-shrine-drowned-saint", "ward_required": ["cleric", "water"] }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "fieldability", "reason": "No cleric- or water-warded party is registered as active in the guild at all. Not \"none in today\" — no one on the roster could ever take it." }
+      },
+      "checks": [
+        { "consult": "posting", "entry": "well-shrine-drowned-saint", "compare": ["ward_required: cleric|water"], "against": "the request", "result": "ward required" },
+        { "consult": "roster", "entry": "*", "compare": ["wards contains cleric or water"], "against": "every active party", "result": "no eligible party registered" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A filing slip, not a specimen — only ink under the lens.", "relevant": false },
+        "scale": { "reading": "Paper weighs nothing worth a reading.", "amount": null, "unit": null, "relevant": false }
+      },
+      "player_story": "Item n/a, rank n/a — fieldability. Scan the roster's ward column: no active party carries a cleric or water ward. No eligible taker on the books, whenever they come or go. Stamp UNFIELDABLE, \"no warded party registered.\"",
+      "notes": "The third check as a roster-capability question, not a scheduling one. What you enroll (see Vane) changes this. Both tools decoy: a spoken filing has nothing to examine or weigh — the check is entirely on the roster."
+    },
+    {
+      "id": "ganton-reeve",
+      "order": 8,
+      "name": "Ganton Reeve",
+      "affiliation": "adventure",
+      "profession": "Ranger",
+      "task_type": "rank_gate",
+      "portrait": null,
+      "claim": {
+        "summary": "Rank Gold, but his ledger card is missing — asks you to take his word for the \"Wyrm-scale collection\" posting (Gold).",
+        "asserts": { "rank": "gold", "posting": "mana-wyrm-sheddings", "proof": "none" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "unverifiable", "reason": "No card, no dues record; word alone isn't proof at the desk." }
+      },
+      "checks": [
+        { "consult": "ledger", "entry": "ganton-reeve", "compare": ["any card on file"], "against": "the ledger", "result": "no card under Reeve or the alias offered" }
+      ],
+      "inspections": {
+        "glass": { "reading": "He lays no card down — nothing to examine but his word.", "relevant": false },
+        "scale": { "reading": "Nothing on the pan.", "amount": null, "unit": null, "relevant": false }
+      },
+      "player_story": "Search the ledger — no card under Reeve, or the alias. Nothing to check against. Stamp WITHHELD, \"present rank card.\"",
+      "notes": "Absence of proof is its own reject — the desk verifies, it doesn't trust. The tools return empty readings, which is itself the tell: there is no item to inspect."
+    },
+    {
+      "id": "odile-vantry",
+      "order": 9,
+      "name": "Odile Vantry",
+      "affiliation": "townee",
+      "profession": "Alchemist",
+      "task_type": "item_check",
+      "portrait": null,
+      "claim": {
+        "summary": "A vial of \"quicksilver tears\" (mercuric) against a warded order.",
+        "asserts": { "item": "quicksilver-tears", "against": "warded-transport-order" }
+      },
+      "truth": {
+        "valid": false, "stamp": "conditional", "binary": "reject",
+        "failure": { "axis": "paperwork", "reason": "The substance is correct; the order requires a hazard seal she hasn't paid for — right goods, incomplete request." }
+      },
+      "checks": [
+        { "consult": "book", "entry": "quicksilver-tears", "compare": ["beads", "splits", "silver"], "against": "the vial", "result": "match" },
+        { "consult": "posting", "entry": "warded-transport-order", "compare": ["accept 1-2 dram", "hazard seal present"], "against": "the vial", "result": "amount within range; no hazard seal" }
+      ],
+      "inspections": {
+        "glass": { "reading": "It beads, it splits, it shows silver — true quicksilver.", "relevant": false },
+        "scale": { "reading": "The vial reads 2 drams.", "amount": 2, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Book confirms the vial — beads, splits, silver. Substance right. Weigh it: 2 drams, within the order. But the order reads \"hazard-sealed transport\": no seal. Stamp CONDITIONAL, \"correct goods, obtain hazard seal.\"",
+      "notes": "Right item, right amount, incomplete request — a softer half-fail that pressures the strictly-binary desk (AGT.5). Both tools pass and it is STILL a reject: the missing hazard seal lives only on the posting, not on any tool. Under STRICT_BINARY this conditional judges as reject (its binary field)."
+    },
+    {
+      "id": "two-rivers",
+      "order": 10,
+      "name": "Two-Rivers",
+      "affiliation": "adventure",
+      "profession": "Initiate",
+      "task_type": "rank_up",
+      "portrait": null,
+      "claim": {
+        "summary": "A rank-up application: Copper to Bronze, with a logbook of three completed Copper postings.",
+        "asserts": { "from": "copper", "to": "bronze", "logged_completions": 3 }
+      },
+      "truth": { "valid": true, "stamp": "approve", "binary": "approve", "failure": null },
+      "checks": [
+        { "consult": "archive", "entry": "two-rivers-logbook", "compare": ["3 sealed entries", "all distinct", "all his"], "against": "archived quest slips", "result": "match" },
+        { "consult": "ledger", "entry": "rankup-threshold", "compare": ["copper->bronze: 3"], "against": "3 completions", "result": "meets" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Three slips, three distinct seals — each grain its own.", "relevant": true },
+        "scale": { "reading": "The logbook: 6 drams of vellum.", "amount": 6, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Not a quest — a rank-up (AGT.4's second desk job). Count sealed entries: three. Cross-check each seal against archived slips: all match, all his. Stamp PROMOTED, issue Bronze card.",
+      "notes": "A satisfying yes after a run of nos; introduces the archive cross-check the next visitor subverts. The Glass reads the seals as distinct — the identity tool works on paperwork too, checked against the Archive."
+    },
+    {
+      "id": "marn-culpepper",
+      "order": 11,
+      "name": "Marn Culpepper",
+      "affiliation": "townee",
+      "profession": "Farmer",
+      "task_type": "rank_up",
+      "portrait": null,
+      "claim": {
+        "summary": "A rank-up logbook, Copper to Bronze — three postings, one seal reused twice.",
+        "asserts": { "from": "copper", "to": "bronze", "logged_completions": 3 }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "duplicate", "reason": "Forged padding. Two of the three entries carry the same seal impression from one posting; only two distinct completions exist — threshold not met." }
+      },
+      "checks": [
+        { "consult": "archive", "entry": "culpepper-logbook", "compare": ["3 entries", "distinct seals"], "against": "the logbook", "result": "mismatch: two seals identical" },
+        { "consult": "archive", "entry": "duplicated-seal", "compare": ["one archived slip per seal"], "against": "the reused seal", "result": "only one slip exists" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Three slips — but two seals share one grain, struck from a single die.", "relevant": true },
+        "scale": { "reading": "The logbook: 6 drams of vellum.", "amount": 6, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Count entries: three. But two seals are identical to the grain — same posting logged twice. Archive shows one slip for that seal. Threshold not met. Stamp DENIED, flag \"duplicated seal.\"",
+      "notes": "The subtle forgery — Quill's trick applied to paperwork; rewards a careful eye on the seals. The Glass is the load-bearing tool: it reveals the duplicated grain the Archive then confirms."
+    },
+    {
+      "id": "widow-ashe",
+      "order": 12,
+      "name": "The Widow Ashe",
+      "affiliation": "townee",
+      "profession": "Petitioner",
+      "task_type": "quest_file",
+      "portrait": null,
+      "claim": {
+        "summary": "Files a quest: \"Retrieve my late husband's blade from the Sunken Barrow\" — the barrow where Odd-Eye's party is still afield.",
+        "asserts": { "posting": "sunken-barrow-blade", "location": "sunken-barrow" }
+      },
+      "truth": {
+        "valid": true, "stamp": "approve", "binary": "approve",
+        "failure": null,
+        "flag_floor": "Retrieval match — a party (Odd-Eye's) is already in that barrow; there may be a blade waiting to be matched to a returning party. This is the gear-left-behind seed the pitch names."
+      },
+      "checks": [
+        { "consult": "roster", "entry": "*", "compare": ["a party is at sunken-barrow"], "against": "active parties", "result": "match: odd-eyes-party afield there" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A spoken petition — nothing under the lens.", "relevant": false },
+        "scale": { "reading": "Nothing to weigh.", "amount": null, "unit": null, "relevant": false }
+      },
+      "player_story": "Item n/a; rank n/a; fieldability — yes, a party's already in that barrow. Stamp FILED, and tag it for the Floor as a retrieval match.",
+      "notes": "The closer: a clean desk-stamp that hands a thread to Pillar II — the seam between the two chairs. Tools decoy: a filing has nothing to inspect; the roster carries it."
+    },
+    {
+      "id": "perrick-vane",
+      "order": 13,
+      "name": "Perrick Vane",
+      "affiliation": "adventure",
+      "profession": "Warden",
+      "task_type": "roster_change",
+      "portrait": null,
+      "claim": {
+        "summary": "Presents a transfer card from the Hollowmere chapter; asks to be entered on the active roster as Silver.",
+        "asserts": { "action": "welcome", "chapter": "hollowmere", "rank": "silver" }
+      },
+      "truth": {
+        "valid": true, "stamp": "approve", "binary": "approve",
+        "failure": null,
+        "roster_write": { "party": "vane", "rank": "silver", "wards": ["water"] }
+      },
+      "checks": [
+        { "consult": "cipher", "entry": "hollowmere", "compare": ["mark: triple-notched wave", "seal: pressed wax"], "against": "the card", "result": "match" },
+        { "consult": "ledger", "entry": "vane-dues", "compare": ["dues stamped current"], "against": "the card", "result": "match" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A triple-notched wave pressed in wax; dues stamped and dated.", "relevant": true },
+        "scale": { "reading": "Transfer card: 3 drams of waxed board.", "amount": 3, "unit": "dram", "relevant": false }
+      },
+      "player_story": "New task type — welcome. Book to the chapter-cipher table: Hollowmere's mark is a triple-notched wave; the seal matches to the notch. Dues stamped and dated. Copy his name, rank, and wards into the roster book; stamp ENROLLED.",
+      "notes": "The roster is a thing you WRITE to. Enrolling Vane (a water ward) is what would make Sister Coll's shrine fieldable next time — the mechanics interlock. The Glass examines the card's seal, checked against the Chapter Ciphers — the same examine loop as an herb."
+    },
+    {
+      "id": "sable-lorn",
+      "order": 14,
+      "name": "\"Sable\" (card: Cassius Lorn)",
+      "affiliation": "adventure",
+      "profession": "Sellsword",
+      "task_type": "roster_change",
+      "portrait": null,
+      "claim": {
+        "summary": "A transfer card from the Ironquill chapter; asks to join as Gold.",
+        "asserts": { "action": "welcome", "chapter": "ironquill", "rank": "gold" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "authenticity", "reason": "Forged card. Ironquill's cipher is a five-bar comb; this seal has four bars, and the dues date is stamped in ink — Ironquill seals in wax, not ink. An impostor claiming a rank he never held." }
+      },
+      "checks": [
+        { "consult": "cipher", "entry": "ironquill", "compare": ["mark: five-bar comb", "seal: pressed wax"], "against": "the card", "result": "mismatch: four bars, ink not wax" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Four bars on the comb-mark, and the dues line is ink — not pressed wax.", "relevant": true },
+        "scale": { "reading": "Transfer card: 3 drams of board.", "amount": 3, "unit": "dram", "relevant": false }
+      },
+      "player_story": "Cipher table to Ironquill: five bars, wax seal. Count the bars: four. The dues mark is ink, not pressed wax. Two tells fail. Do NOT write to the roster; stamp REJECTED, flag \"forged Ironquill card.\"",
+      "notes": "Welcome's failure mode — the forgery check now guards who gets ADDED, not just who gets paid. The Glass reveals four bars / ink; the Chapter Ciphers say five bars / wax — a Glass-vs-Rulebook mismatch, exactly like the yarrow tell."
+    },
+    {
+      "id": "goodwife-tamsin",
+      "order": 15,
+      "name": "Goodwife Tamsin",
+      "affiliation": "townee",
+      "profession": "Apothecary",
+      "task_type": "dungeon_drop",
+      "portrait": null,
+      "claim": {
+        "summary": "Commissions the guild to fetch \"phoenix-ember resin\" and asks what it will cost.",
+        "asserts": { "item": "phoenix-ember-resin", "action": "commission" }
+      },
+      "truth": {
+        "valid": true, "stamp": "approve", "binary": "approve",
+        "failure": null,
+        "quote": { "base": 40, "depth_multiplier": 2.0, "in_season_premium": 10, "total": 90, "currency": "g" }
+      },
+      "checks": [
+        { "consult": "drop_table", "entry": "phoenix-ember-resin", "compare": ["is_drop: true"], "against": "the commission", "result": "genuine drop, not shop-craftable" },
+        { "consult": "season", "entry": "phoenix-ember-resin", "compare": ["season: summer", "current: summer"], "against": "the season wheel", "result": "in season" },
+        { "consult": "drop_table", "entry": "phoenix-ember-resin", "compare": ["floor: 4"], "against": "the drop table", "result": "Floor 4" },
+        { "consult": "roster", "entry": "*", "compare": ["reach_floor >= 4"], "against": "active parties", "result": "match: a Gold party reaches Floor 5" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A commission slip — the resin itself is still down in the deep.", "relevant": false },
+        "scale": { "reading": "Nothing on the pan; this is a request, not a delivery.", "amount": null, "unit": null, "relevant": false }
+      },
+      "player_story": "Fifth task type — dungeon-drop request, a small pipeline: (1) real drop? yes. (2) in season? summer, yes. (3) floor? Floor 4. (4) can we reach it? a party rated to Floor 5. Then the payout: base 40g x Floor-4 depth multiplier (2.0) + in-season premium 10g = 90g. Stamp QUOTED, log the commission.",
+      "notes": "The multi-gate calc loop — first task with arithmetic. Heavier than a binary stamp; may belong to a later shift rank. Tools decoy: there is no item in hand to examine or weigh — a commission is measured by the Drop / Season / Roster / Payout tables."
+    },
+    {
+      "id": "ostler-bram",
+      "order": 16,
+      "name": "Ostler Bram",
+      "affiliation": "townee",
+      "profession": "Smith",
+      "task_type": "dungeon_drop",
+      "portrait": null,
+      "claim": {
+        "summary": "Commissions \"frost-lily petal\" for a quench-bath and expects a quote.",
+        "asserts": { "item": "frost-lily-petal", "action": "commission" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "season", "reason": "Real drop, but out of season — frost-lily only forms when the low floors ice over in deep winter; it's summer. (Second fail: it's on Floor 7 and the deepest active party reaches Floor 6 — the reach gate fails too.)", "secondary_axis": "reach" }
+      },
+      "checks": [
+        { "consult": "drop_table", "entry": "frost-lily-petal", "compare": ["is_drop: true"], "against": "the commission", "result": "genuine drop" },
+        { "consult": "season", "entry": "frost-lily-petal", "compare": ["season: winter", "current: summer"], "against": "the season wheel", "result": "out of season — short-circuits the quote" },
+        { "consult": "drop_table", "entry": "frost-lily-petal", "compare": ["floor: 7"], "against": "the drop table", "result": "Floor 7" },
+        { "consult": "roster", "entry": "*", "compare": ["reach_floor >= 7"], "against": "active parties", "result": "no party reaches Floor 7 (deepest is 6)" }
+      ],
+      "inspections": {
+        "glass": { "reading": "A commission slip — the petal itself is still afield.", "relevant": false },
+        "scale": { "reading": "Nothing on the pan; a request, not a delivery.", "amount": null, "unit": null, "relevant": false }
+      },
+      "player_story": "Same pipeline: (1) real drop? yes. (2) in season? winter-only, and it's summer — gate fails here. (Further: Floor 7, deepest party reaches Floor 6 — a second fail.) No payout possible. Stamp DECLINED, \"out of season\" (+ \"beyond current reach\").",
+      "notes": "The drop pipeline short-circuits — one failed gate kills the quote before you even reach the arithmetic. Tools decoy: nothing in hand; the Season Wheel and Roster reach carry the reject."
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventuring Guild Teller — a musing on the person behind the counter</title>
+<style>
+  :root{
+    --ground:#f1ecdc; --surface:#f9f6ec; --line:#dcd2b6; --line2:#c3b795;
+    --ink:#2a2419; --ink2:#57503f; --ink3:#7a6f58;
+    --green:#2f6b4f; --red:#9c3122; --brass:#8a6d1f;
+    --green-wash:rgba(47,107,79,.07); --brass-wash:rgba(138,109,31,.08);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101310; --surface:#171b17; --line:#2b2f27; --line2:#434a3e;
+      --ink:#e5e1d3; --ink2:#b5af9e; --ink3:#8f8a78;
+      --green:#6fc59c; --red:#ff937e; --brass:#d5b45f;
+      --green-wash:rgba(111,197,156,.06); --brass-wash:rgba(213,180,95,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.68 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 2%, var(--brass-wash), transparent 70%),
+      radial-gradient(50% 44% at 4% 100%, var(--green-wash), transparent 70%);
+  }
+  .wrap{max-width:840px; margin-inline:auto; padding:clamp(44px,9vh,100px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:640 clamp(32px,6vw,52px)/1.06 var(--serif); letter-spacing:-.015em; margin:0 0 14px}
+  .sub{font-size:clamp(16.5px,2.2vw,19px); color:var(--ink2); max-width:62ch; margin:0 0 14px}
+  .prose p{margin:0 0 15px; color:var(--ink2); max-width:70ch}
+  strong{color:var(--ink)}
+  code{font:14px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+  a{color:var(--green); text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  h2{font:640 22px/1.3 var(--serif); margin:42px 0 10px}
+
+  .cards{display:grid; gap:16px; margin-top:18px}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--surface);
+         border:1px solid var(--line); border-top:3px solid var(--green); border-radius:4px;
+         padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease}
+  a.card.alt{border-top-color:var(--brass)}
+  a.card:hover{border-color:var(--line2); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--green); outline-offset:3px}
+  .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .card h3{font:650 23px/1.25 var(--serif); margin:8px 0 6px}
+  .card h3 .arrow{color:var(--ink3); font-weight:400}
+  .card p{margin:0; font-size:15px; color:var(--ink2); max-width:66ch}
+  .ghost{border:1.5px dashed var(--line2); border-radius:4px; padding:20px 24px 18px; color:var(--ink3)}
+  .ghost h3{font:650 20px/1.25 var(--serif); margin:8px 0 6px; color:var(--ink2)}
+  .ghost p{margin:0; font-size:14.5px; max-width:66ch}
+
+  .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:72ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--green); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><span aria-current="page">Adventuring Guild Teller</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow">A game-design musing · pitch stage</p>
+    <h1>Adventuring Guild Teller</h1>
+    <p class="sub">Every adventuring town has one desk everything crosses: quests filed,
+    proofs presented, ranks checked. This musing pitches the game where <strong>you are
+    that desk</strong> — teller by day, town-shaper by night, and, if you want, author of
+    the very characters whose paperwork you stamp.</p>
+
+    <div class="prose">
+      <p>Three parts, three lineages: a <strong>procedural checking loop</strong> built
+      for flow (Papers, Please hands, Strange Horticulture materials), an
+      <strong>after-hours guild floor</strong> where every real decision lives (Stardew's
+      social half), and a <strong>townee fishbowl</strong> of autonomous characters you
+      can author yourself and read about each morning (Tomodachi Life by way of Popup
+      Dungeon).</p>
+    </div>
+
+    <h2>The pages</h2>
+    <div class="cards">
+      <a class="card" href="pitch.html">
+        <span class="no">I · start here</span>
+        <h3>The Pitch — read back for correction <span class="arrow">→</span></h3>
+        <p>The concept in full: the shape of a day, the three pillars, the one distinctive
+        design move — and twelve numbered claims (<code>AGT.1</code>–<code>AGT.12</code>),
+        each tagged by how much is brief and how much is inference. Correction round 1 is
+        folded in: nine settled, three open (<code>AGT.1</code> · <code>AGT.5</code> ·
+        <code>AGT.7</code>).</p>
+      </a>
+      <a class="card alt" href="research.html">
+        <span class="no">II · the precedents</span>
+        <h3>Desk Research — what the neighbors built <span class="arrow">→</span></h3>
+        <p>A pillar-by-pillar precedent scan — checking games, indirect-control and social
+        sims, authored-cast fishbowls, and the guild-receptionist fantasy itself — ending
+        in the positioning gap and a risk register (<code>AGR.1</code>–<code>AGR.6</code>).</p>
+      </a>
+      <div class="ghost">
+        <span class="no">III · candidate</span>
+        <h3>The Morning Queue</h3>
+        <p>A playable paper-prototype of one desk shift: a stack of requests, a reference
+        booklet, two stamps, and a score — the fastest way to find out if the checking
+        loop actually flows. Unlocks once the last three claims settle.</p>
+      </div>
+    </div>
+
+    <p class="foot">Handles <code>AGT.n</code> (pitch claims) and <code>AGR.n</code>
+    (research risks) are stable and append-only — cite them from other pages and chats.
+    This musing is at pitch stage: correction round 1 is folded in; mechanics notes
+    follow once <code>AGT.1</code>/<code>.5</code>/<code>.7</code> settle.</p>
+  </div>
+</body>
+</html>

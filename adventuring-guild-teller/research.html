@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventuring Guild Teller — desk research: precedents by pillar</title>
+<style>
+  :root{
+    --ground:#f1ecdc; --surface:#f9f6ec; --line:#dcd2b6; --line2:#c3b795;
+    --ink:#2a2419; --ink2:#57503f; --ink3:#7a6f58;
+    --green:#2f6b4f; --red:#9c3122; --brass:#8a6d1f;
+    --green-wash:rgba(47,107,79,.07); --brass-wash:rgba(138,109,31,.08);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101310; --surface:#171b17; --line:#2b2f27; --line2:#434a3e;
+      --ink:#e5e1d3; --ink2:#b5af9e; --ink3:#8f8a78;
+      --green:#6fc59c; --red:#ff937e; --brass:#d5b45f;
+      --green-wash:rgba(111,197,156,.06); --brass-wash:rgba(213,180,95,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; background:var(--ground); color:var(--ink); font:16.5px/1.66 var(--serif);
+       background-image:radial-gradient(46% 40% at 90% 2%, var(--brass-wash), transparent 70%)}
+  .wrap{max-width:860px; margin-inline:auto; padding:clamp(38px,7vh,80px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 12px}
+  h1{font:640 clamp(28px,5vw,42px)/1.1 var(--serif); letter-spacing:-.01em; margin:0 0 12px}
+  .sub{font-size:17.5px; color:var(--ink2); max-width:66ch; margin:0 0 8px}
+  h2{font:640 22px/1.3 var(--serif); margin:46px 0 4px; padding-top:14px; border-top:3px double var(--line2)}
+  .h2sub{font:500 12px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 16px}
+  p{max-width:70ch; margin:0 0 14px; color:var(--ink2)}
+  strong{color:var(--ink)}
+  code{font:13.5px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+  a{color:var(--green); text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+
+  .game{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 18px 12px; margin:0 0 12px}
+  .game h3{font:650 17.5px/1.3 var(--serif); margin:0 0 5px}
+  .game .meta{font:500 12px/1 var(--mono); color:var(--ink3); font-weight:400; white-space:nowrap}
+  .game p{margin:0 0 8px; font-size:14.5px; line-height:1.6}
+  .game .verdict{margin:0; border-top:1px dashed var(--line); padding-top:8px; font-size:14px; line-height:1.65}
+  .verdict b{font:700 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; margin-right:.35em}
+  .verdict b.take{color:var(--green)} .verdict b.skip{color:var(--red)}
+  .verdict span.sep{display:block; height:4px}
+  .oneliners{font-size:14px; color:var(--ink3); font-style:italic}
+
+  .lessons{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--green);
+           border-radius:4px; padding:14px 20px 6px; margin:16px 0 6px}
+  .lessons .lt{font:700 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--green); display:block; margin:2px 0 10px}
+  .lessons ul{margin:0 0 10px; padding-left:18px}
+  .lessons li{font-size:14.5px; line-height:1.6; color:var(--ink2); margin-bottom:7px}
+
+  .risks{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:11px}
+  .risks li{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--red);
+            border-radius:4px; padding:13px 17px 12px}
+  .risks .hd{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:4px}
+  .risks .id{font:600 11.5px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+             border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .risks .ttl{font:650 16px/1.35 var(--serif)}
+  .risks p{margin:0; font-size:14.5px}
+  .risks .xref{font:500 11.5px/1 var(--mono); color:var(--brass)}
+  .risks .snote{margin:8px 0 0; border-top:1px dashed var(--line); padding-top:8px; font-size:14px; color:var(--ink2)}
+  .risks .snote::before{content:"Settled — "; font:700 10px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+  s{color:var(--ink3); text-decoration-color:var(--red)}
+
+  .foot{margin-top:48px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.9 var(--sans); color:var(--ink3); max-width:76ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--green); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Adventuring Guild Teller</a></li>
+        <li><span aria-current="page">Desk Research</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow">Desk research · precedents by pillar</p>
+    <h1>What the neighbors already built</h1>
+    <p class="sub">A precedent scan for <a href="pitch.html">the pitch</a>, organized by
+    its three pillars, plus the trope the fantasy comes from and a risk register. Each
+    entry ends with what AGT should <strong>take</strong> and what it should
+    <strong>skip</strong>. Facts spot-checked July 2026; anything still fuzzy is phrased
+    to match its fuzziness.</p>
+
+    <h2>I · The Desk — checking games</h2>
+    <p class="h2sub">the papers-please-likes: one verb, growing reference material</p>
+
+    <div class="game" id="papers-please">
+      <h3>Papers, Please <span class="meta">— Lucas Pope, 2013</span></h3>
+      <p>The founding text. An immigration booth where rules accrete day over day, the core
+      verb is <em>find the discrepancy</em>, and feedback is instant (the citation slip).
+      Its famous move is injecting moral dilemmas straight into the checking loop — rules
+      say deny, the sob story says approve — against a salary-and-family clock.</p>
+      <p class="verdict"><b class="take">Take</b>escalating rulebook; inspect-mode UI
+      (tap two facts, get the contradiction); end-of-day ledger; shift pacing.
+      <span class="sep"></span><b class="skip">Skip</b>the dilemma injection (AGT evicts
+      discretion to the Floor — the pitch's spine) and the misery economy.</p>
+    </div>
+
+    <div class="game" id="strange-horticulture">
+      <h3>Strange Horticulture / Strange Antiquities <span class="meta">— Bad Viking, 2022 / 2025</span></h3>
+      <p>The confirmed "strange apothecary" pair (AGT.6, settled). A plant shop where
+      identification <em>is</em> the game: match the specimen on the counter to the field
+      guide by elimination — leaf shape, smell, habitat — for customers who describe what
+      they need sideways. Cozy-occult; mistakes raise a dread meter and mislead you rather
+      than fail-stating. <em>Strange Antiquities</em> (September 2025, same Undermere
+      world) reruns the verb on occult antiques — proof the identification-shop loop
+      survives a domain swap, which is exactly AGT's bet: herbs today, any quest proof
+      tomorrow.</p>
+      <p class="verdict"><b class="take">Take</b>cross-referencing paper tools as the whole
+      verb; the tactile ledger; vague customer requests as difficulty; gentle failure.
+      <span class="sep"></span><b class="skip">Skip</b>nothing major — these are the
+      closest models for AGT's whole desk.</p>
+    </div>
+
+    <div class="game" id="potion-craft">
+      <h3>Potion Craft <span class="meta">— niceplay games, 2021 EA / 1.0 2022</span></h3>
+      <p>Alchemist sim where customers state symptoms, not products — you diagnose, then
+      brew by physically navigating an alchemy map. Request-parsing as a soft check, plus a
+      haggling minigame.</p>
+      <p class="verdict"><b class="take">Take</b>NPC vagueness as a tunable dial on desk
+      difficulty. <span class="sep"></span><b class="skip">Skip</b>crafting depth — AGT's
+      teller verifies, she doesn't manufacture.</p>
+    </div>
+
+    <div class="game" id="desk-likes">
+      <h3>The rest of the booth <span class="meta">— four quick files</span></h3>
+      <p><strong>Death and Taxes</strong> (Placeholder Gameworks, 2020): grim-reaper desk
+      job; profile-judging under quotas — quota pressure is a clean pacing knob.
+      <strong>Not Tonight</strong> (PanicBarn, 2018): bouncer papers-like; venue modifiers
+      keep one verb fresh across a long game. <strong>Mind Scanners</strong> (The Outer
+      Zone, 2021): diagnosis via gadget micro-skills under time — tool dexterity as
+      variety. <strong>No Umbrellas Allowed</strong> (Hoochoo Game Studio, 2021): pawnshop
+      appraisal against a manual with drifting market values — appraisal-vs-reference is
+      literally AGT's herb check, and daily price drift shows how to keep a fixed check
+      fresh.</p>
+      <p class="verdict"><b class="take">Take</b>one lesson each, as noted.
+      <span class="sep"></span><b class="skip">Skip</b>their shared dystopian register —
+      see the synthesis below.</p>
+    </div>
+
+    <div class="game" id="yes-your-grace">
+      <h3>Yes, Your Grace <span class="meta">— Brave At Night, 2020</span></h3>
+      <p>Petitioners file past the throne; resources are scarce; every audience is triage.
+      Relevant as the <em>counter-example</em>: it's all discretion and no verification —
+      exactly what AGT's desk is not — but its intake-under-scarcity is the closest model
+      for "judging what quests are valid based on current availability."</p>
+      <p class="verdict"><b class="take">Take</b>availability as a visible, finite resource
+      the teller checks against. <span class="sep"></span><b class="skip">Skip</b>making
+      every audience a judgment call.</p>
+    </div>
+
+    <div class="lessons">
+      <span class="lt">Booth lessons</span>
+      <ul>
+        <li>Depth comes from the <strong>reference material growing</strong>, not from new
+        verbs — the rulebook is the difficulty curve.</li>
+        <li>Feedback must be immediate and physical: citation slip, stamp, dread meter.</li>
+        <li>Authored papers-likes run short (a few evenings); a long-tail cozy game needs
+        <strong>procedurally generated requests and proofs</strong> — see AGR.1.</li>
+        <li>The genre defaults to bleak. The cozy seat is nearly empty — that's the
+        opening.</li>
+      </ul>
+    </div>
+
+    <h2>II · The Floor — social, management, indirect control</h2>
+    <p class="h2sub">after-hours verbs: routing, favors, introductions</p>
+
+    <div class="game" id="stardew">
+      <h3>Stardew Valley <span class="meta">— ConcernedApe, 2016 (non-farming half)</span></h3>
+      <p>The named reference for pillar II. What its social half actually runs on: NPCs
+      with <em>legible daily schedules</em> (you can find anyone, so relationships feel
+      pursued), friendship hearts gating authored vignettes, gifts as the currency, and a
+      festival calendar as the town's clock.</p>
+      <p class="verdict"><b class="take">Take</b>legible routines; content gated by
+      friendship depth; the calendar heartbeat. <span class="sep"></span>
+      <b class="skip">Skip</b>gifting-as-vending — two loved gifts a week is a toothless
+      economy; AGT's favors should cost something real (AGR.4).</p>
+    </div>
+
+    <div class="game" id="recettear">
+      <h3>Recettear: An Item Shop's Tale <span class="meta">— EasyGameStation, 2007 / EN 2010</span></h3>
+      <p>Item-shop sim where adventurers are your regulars: what you sell and lend them
+      shapes the dungeon runs they take (and that you can tag along on). The proto-model
+      for "my counter choices equip the town."</p>
+      <p class="verdict"><b class="take">Take</b>adventurers-as-regulars; gear provenance
+      you can trace ("that's the sword I sold her"). <span class="sep"></span>
+      <b class="skip">Skip</b>accompanying them into the dungeon — AGT stays behind the
+      counter on purpose.</p>
+    </div>
+
+    <div class="game" id="potionomics">
+      <h3>Potionomics <span class="meta">— Voracious Games, 2022</span></h3>
+      <p>Potion shop where socializing has mechanical teeth: relationships with a fixed
+      cast unlock haggling cards, and befriended heroes go adventuring to fetch you
+      ingredients. (Corrected note from checking: Quinn is the ingredients <em>vendor</em>;
+      the adventuring is its own befriend-and-send system.)</p>
+      <p class="verdict"><b class="take">Take</b>relationships that pay off in play;
+      send-a-friend-out as a loop. <span class="sep"></span><b class="skip">Skip</b>
+      negotiation-as-card-combat at the desk — that's a flow-breaker in AGT's booth.</p>
+    </div>
+
+    <div class="game" id="majesty">
+      <h3>Majesty <span class="meta">— Cyberlore Studios, 2000</span></h3>
+      <p>The grandfather of indirect control: you can't command heroes, only post bounty
+      flags and let class personalities decide (rangers wander, rogues chase gold). This is
+      AGT's quest board with a kingdom budget — and its frustrations are the genre's
+      textbook: when you can't tell <em>why</em> nobody took the bounty, charm curdles.</p>
+      <p class="verdict"><b class="take">Take</b>incentives as the only steering wheel;
+      personality-driven refusal. <span class="sep"></span><b class="skip">Skip</b>opaque
+      intent — refusals must come with readable reasons (AGR.2).</p>
+    </div>
+
+    <div class="game" id="bar-games">
+      <h3>VA-11 Hall-A / Coffee Talk <span class="meta">— Sukeban Games, 2016 / Toge Productions, 2020</span></h3>
+      <p>Bartending as a social frame: a light mixing task keeps your hands busy while
+      regulars talk. The counter as confessional — the exact register AGT's guild floor
+      wants at night, where listening <em>is</em> the content and agency is deliberately
+      low.</p>
+      <p class="verdict"><b class="take">Take</b>the serve-and-listen rhythm for
+      after-hours scenes; regulars whose stories advance on their own clock.
+      <span class="sep"></span><b class="skip">Skip</b>full VN linearity — AGT's cast is
+      procedural-ish and player-authored.</p>
+    </div>
+
+    <div class="game" id="roster-mgmt">
+      <h3>Darkest Dungeon <span class="meta">— Red Hook Studios, 2016 (the embark half)</span></h3>
+      <p>Not the combat — the <em>roster</em>: quirks, stress, provisioning, and the party
+      you assemble before anyone leaves town. Proof that team assembly alone carries
+      expressive weight, and that visible quirks make refusals and failures legible.</p>
+      <p class="verdict"><b class="take">Take</b>quirks as the vocabulary that explains
+      behavior; loadout-before-embark as the player's authored fingerprint on a run.
+      <span class="sep"></span><b class="skip">Skip</b>the stress-grind economy.</p>
+    </div>
+
+    <div class="game" id="dungeon-village">
+      <h3>Dungeon Village <span class="meta">— Kairosoft, 2012</span></h3>
+      <p>The RPG town seen from the town's side: adventurers visit, you make the place
+      attractive, outfit them, and watch them level and settle. Charm-loop proof that
+      "town as attractor" sustains a whole game.</p>
+      <p class="verdict"><b class="take">Take</b>town appeal as a slow stat; adventurers
+      who immigrate because of your work. <span class="sep"></span><b class="skip">Skip</b>
+      the spreadsheet flatness — Kairosoft casts are interchangeable; AGT's must not
+      be.</p>
+    </div>
+
+    <p class="oneliners">Adjacent one-liners: <strong>Moonlighter</strong> (Digital Sun,
+    2018) is the inversion — shopkeep who <em>is</em> the dungeon-diver; useful only as a
+    boundary marker. <strong>Guild of Dungeoneering</strong> (Gambrinous, 2015) and
+    <strong>Loop Hero</strong> (Four Quarters, 2021): more indirect-control kin — you shape
+    the world, the hero walks it.</p>
+
+    <div class="lessons">
+      <span class="lt">Floor lessons</span>
+      <ul>
+        <li>Influence-not-command is a proven pleasure <em>if</em> intent and refusal are
+        readable.</li>
+        <li>Favors need costs. A hand-delivered quest should move jealousy, board economy,
+        or reputation — otherwise it's a menu, not a decision.</li>
+        <li>After-hours socializing works best as its own register (bar-time), not as a
+        management screen with dialogue on top.</li>
+      </ul>
+    </div>
+
+    <h2>III · The Roster — authored casts and fishbowls</h2>
+    <p class="h2sub">create, release, read about it at dawn</p>
+
+    <div class="game" id="popup-dungeon">
+      <h3>Popup Dungeon <span class="meta">— Triple.B.Titles, 2020</span></h3>
+      <p>The named bar for the creator (AGT.9): make heroes, abilities, enemies from your
+      own images, numbers, and writing — papercraft minis on a tabletop — and the game
+      folds them into play and quotes your text back at you. Also the cautionary tale: the
+      creator's breadth took a Kickstarter half a decade to ship.</p>
+      <p class="verdict"><b class="take">Take</b>creator = portrait/paperdoll + small stat
+      block + <em>prose the game can quote</em> — the nightly summary should splice the
+      player's own backstory lines into reports. <span class="sep"></span>
+      <b class="skip">Skip</b>ability scripting and effect editors (AGR.5).</p>
+    </div>
+
+    <div class="game" id="tomodachi">
+      <h3>Tomodachi Life <span class="meta">— Nintendo, 2013/2014</span></h3>
+      <p>Create Miis, drop them on an island, watch. You service requests and can
+      <em>nudge</em> — including literally introducing residents to each other, AGT's
+      floor verb — but residents refuse, drift, and surprise. The news-and-dreams reports
+      are the tonal model for AGT's summary: absurdly specific, socially juicy, useless as
+      data.</p>
+      <p class="verdict"><b class="take">Take</b>the gossip-report register; nudge-able but
+      refusable relationships. <span class="sep"></span><b class="skip">Skip</b>the pure
+      toybox — AGT's fishbowl still has jobs to do (quests, ranks, a town economy).</p>
+    </div>
+
+    <div class="game" id="sims-wildermyth">
+      <h3>The Sims / Wildermyth <span class="meta">— Maxis, 2000 / Worldwalker Games, 2021</span></h3>
+      <p><strong>The Sims</strong> wrote the fishbowl contract: autonomous wants + free
+      will = lives worth watching that don't need you. Its wants system is the hook AGT can
+      service via quest routing ("Brindle wants a forest job"). <strong>Wildermyth</strong>
+      is the state of the art in making players care about generated people fast: heroes
+      accrue scars, relationships, and comic-panel history that <em>persists on the
+      character sheet</em>.</p>
+      <p class="verdict"><b class="take">Take</b>wants as routable hooks; visible
+      consequence-marks on the paperdoll (the scar from the job you posted).
+      <span class="sep"></span><b class="skip">Skip</b>direct control of anyone,
+      ever.</p>
+    </div>
+
+    <p class="oneliners">One-liners: <strong>RimWorld</strong> (Ludeon, 2018) is the
+    anecdote-engine benchmark — systems tuned to produce tellable stories. <strong>Football
+    Manager</strong>'s text match reports prove reading-about-it can bond you to generated
+    people harder than watching it would — encouraging for a summary that's prose on
+    purpose.</p>
+
+    <div class="lessons">
+      <span class="lt">Roster lessons</span>
+      <ul>
+        <li>Author-then-watch is the strongest ownership loop there is — but only if the
+        world visibly <em>uses</em> what was authored.</li>
+        <li>Reports should quote the player's own writing back (Popup Dungeon's trick,
+        pointed at Tomodachi's register).</li>
+        <li>Consequences belong on the character sheet, where attachment lives — not in a
+        stats screen.</li>
+      </ul>
+    </div>
+
+    <h2>IV · The seat itself — and its audience</h2>
+    <p class="h2sub">the guild receptionist is already a beloved fantasy</p>
+
+    <p>The counter seat AGT proposes is a fixture of JRPG-adjacent fiction: the guild
+    receptionist who registers the party, posts the notice, and knows everyone — Guild
+    Girl in <em>Goblin Slayer</em>, Luna at <em>Konosuba</em>'s counter. It even carries a
+    whole series: <em>I May Be a Guild Receptionist, but I'll Solo Any Boss to Clock Out
+    on Time</em> (Mato Kousaka, Dengeki Bunko, 2021; CloverWorks anime, early 2025) — whose
+    receptionist heroine secretly solos bosses because stalled dungeons mean overtime.
+    The joke works because the audience already believes the premise underneath: <strong>the
+    desk is where the adventuring world actually runs.</strong> AGT plays that premise
+    straight and never picks up the war hammer.</p>
+    <p>Meanwhile the games nearest the fantasy all sit in a different chair: shopkeeper
+    games (Recettear, Moonlighter, Potionomics) put a counter between you and adventurers
+    but sell to them; guild-management games make you the guildmaster moving units.
+    The <em>teller</em> seat — verify, route, influence, never command — appears to be
+    unshipped. That's rare.</p>
+
+    <h2>V · Synthesis — the gap, and the risk register</h2>
+    <p class="h2sub">where AGT stands, and what precedent warns about</p>
+
+    <p><strong>The positioning gap:</strong> checking games skew dystopian; cozy games
+    don't check anything. A <em>warm bureaucracy</em> — Papers, Please's hands on Stardew's
+    town square, with Strange Horticulture (cozy-dark) as the nearest proof the blend
+    holds — is close to unclaimed shelf space. The risk register below is append-only,
+    handles <code>AGR.n</code>, each tied to the pitch claim it pressures.</p>
+
+    <ol class="risks">
+      <li id="agr-1">
+        <div class="hd"><span class="id">AGR.1</span><span class="ttl">Content fatigue at the desk.</span><span class="xref">→ AGT.4, AGT.5</span></div>
+        <p>Authored papers-likes ship 2–6 hour arcs and stop; AGT wants a long cozy tail.
+        Requests and proofs must generate procedurally against a growing reference
+        library without turning into rule soup — the desk's hardest engineering
+        problem.</p>
+        <p class="snote">helped by round 1: lost gear persists in the dungeon and seeds
+        retrieval quests (AGT.12) — failure itself now feeds the request generator. The
+        rule-soup half stays open.</p>
+      </li>
+      <li id="agr-2">
+        <div class="hd"><span class="id">AGR.2</span><span class="ttl">Indirect control curdles when intent is opaque.</span><span class="xref">→ AGT.8</span></div>
+        <p>Majesty's lesson: autonomy delights until the player can't tell why the bounty
+        sat untaken. Every refusal needs a readable reason on the surface ("she won't take
+        swamp jobs; ask her brother").</p>
+        <p class="snote">the round-1 mechanism makes causes citable by construction:
+        acceptance is two visible affinities — teller-trust and target-liking (AGT.8).
+        Surfacing them is now UI work, not AI archaeology.</p>
+      </li>
+      <li id="agr-3">
+        <div class="hd"><span class="id">AGR.3</span><span class="ttl">Summary utility creep — in either direction.</span><span class="xref">→ AGT.10</span></div>
+        <p>If nightly reports carry signal, optimizers grind them into homework; if
+        they're pure noise, attachment fades. Tomodachi holds the line with surreal
+        specificity; Football Manager proves prose bonds. <s>Tune to <em>quotable, barely
+        actionable</em> — and keep it there on purpose.</s></p>
+        <p class="snote">reframed by round 1: summaries may be actionable ("her sword
+        failed to penetrate the hide"); the anti-homework line is held by
+        always-available in-game bios instead — never memory, never out-of-game notes
+        (AGT.10). The risk moves to bio UX: the sheet must answer every question the
+        summary raises.</p>
+      </li>
+      <li id="agr-4">
+        <div class="hd"><span class="id">AGR.4</span><span class="ttl">Favoritism needs teeth.</span><span class="xref">→ AGT.7</span></div>
+        <p>Hand-delivering a quest must trade something off — board liquidity, other
+        adventurers' jealousy, the teller's reputation for fairness — or routing is a menu
+        cosplaying as a decision. Stardew's toothless gifting is the warning.</p>
+      </li>
+      <li id="agr-5">
+        <div class="hd"><span class="id">AGR.5</span><span class="ttl">Creator scope creep.</span><span class="xref">→ AGT.9</span></div>
+        <p>Popup Dungeon spent years shipping its editors. AGT's creator should stay a
+        paperdoll, a small stat block, and prose cards the game can quote — never an
+        ability scripter. The nightly summary is what makes shallow authoring feel deep.</p>
+      </li>
+      <li id="agr-6">
+        <div class="hd"><span class="id">AGR.6</span><span class="ttl">Tone is decided by the stakes policy.</span><span class="xref">→ AGT.12</span></div>
+        <p>The genre's bleakness is a choice, not a law — but so is coziness. Permadeath
+        would break the warm register; zero stakes would make the desk's rigor
+        decorative. <s>Injury-and-recovery (visible on the paperdoll, per Wildermyth) is
+        the obvious middle; unresolved until AGT.12 gets a call.</s></p>
+        <p class="snote">ruled — <strong>no death</strong>: a downed adventurer respawns
+        gearless at the dungeon entrance, and the gear stays where it fell, becoming
+        future quest hooks (AGT.12). Cozy holds; the desk keeps real stakes through
+        material loss and story.</p>
+      </li>
+    </ol>
+
+    <p class="foot">Companion to <a href="pitch.html">the pitch</a> · hub
+    <a href="index.html">here</a>. Handles <code>AGR.1</code>–<code>AGR.6</code> are stable
+    and append-only. Spot-checks used: <a href="https://en.wikipedia.org/wiki/Dungeon_Village">Wikipedia — Dungeon Village</a>,
+    <a href="https://en.wikipedia.org/wiki/I_May_Be_a_Guild_Receptionist,_But_I%27ll_Solo_Any_Boss_to_Clock_Out_on_Time">Wikipedia — I May Be a Guild Receptionist…</a>,
+    <a href="https://en.wikipedia.org/wiki/Strange_Antiquities">Wikipedia — Strange Antiquities</a>,
+    <a href="https://store.steampowered.com/app/1301390/No_Umbrellas_Allowed/">Steam — No Umbrellas Allowed</a>,
+    <a href="https://potionomics.fandom.com/wiki/Adventure">Potionomics wiki — Adventure</a>.
+    Everything else is genre knowledge; flag anything that reads off and it gets
+    re-checked.</p>
+  </div>
+</body>
+</html>

@@ -20,6 +20,339 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-13 — Session close-out: docs synced + AGT-scoped commit
+
+**Context:** closing the Morning Queue build session. Captured the only-in-chat backlog
+(day-advance hub, "pay dues" floor interaction, richer Glass for card/seal subjects, a
+curated amount-fail visitor) into `plans/PLAN-adventuring-guild-teller.md`, marked the
+Morning Queue plan item `[x]`, and recorded that **AGT.5 is mechanically settled** (the desk
+ships binary). Refreshed `MORNING-QUEUE.md`'s status line.
+
+**Commit scoping (would surprise the next person):** the working tree also carried
+*pre-existing, unrelated* WIP from earlier sessions — `logical-magic/` (vignettes) and
+`midi-drum/` (a whole new musing), plus their entangled entries in `MUSING-CONFIG.json` and
+root `PLAN.md`. I committed **only the Morning Queue work** — `adventuring-guild-teller/`,
+`plans/PLAN-adventuring-guild-teller.md`, `DEV-LOG.md`, `musing-tech-notes.md` — on a branch,
+and left the other musings and the shared `MUSING-CONFIG.json` / root `PLAN.md` **uncommitted**
+(couldn't verify they're commit-ready, and committing the AGT registration would drag in the
+still-uncommitted midi-drum folder). **Consequence:** the committed AGT musing is not yet
+registered in the committed `MUSING-CONFIG.json`, so a fresh checkout won't build it into the
+site until that entry is committed alongside the other musings. Not pushed.
+
+## 2026-07-13 — Morning Queue: week-of-content banks + procedural visit generator
+
+**Context:** Panda's four asks — generalize the Glass, fill reference material to a week's
+breadth, add a townee directory (townees pay dues to post), and a basic data-driven
+procedural visit generator pulling from the banks.
+
+**How it was built:** a three-phase workflow (Design → Banks×4 parallel → Generator),
+6 agents, 0 errors. Design pinned every id + cross-reference so the four parallel Banks
+agents couldn't drift; all phases returned plain text (the last workflow died gating a
+files-on-disk phase behind a strict output schema — not repeated).
+
+**What shipped:**
+- **Banks (all JSON):** `references.json` broadened to 24 Book items across 5 categories
+  (each with an authored `glass` examined-description — the generalization — + optional
+  `forgery_glass`), 20 postings, 6 chapter ciphers (each with `glass`), 10 drops, an
+  enlarged archive (per-adventurer logbooks + tokens), one added earth-warded roster party.
+  Two NEW directory files: `townees.json` (16 townees; dues current/owing) and
+  `adventurers.json` (16; rank/dues/chapter/logbook). `generation.json` = the generator's
+  config (task weights, invalid_rate 0.45 + per-day ramp, failure-axis weights, 44×44 name
+  pools). All existing ids preserved byte-for-byte; the curated 16 still resolve.
+- **Generalized Glass:** the Glass now examines any subject kind (book item / transfer seal
+  / completion token / logbook / rank card / filing), reading derived from the bank data,
+  compared against the matching rulebook page.
+- **Dues mechanic:** new `dues` failure axis (+ `amount`). Owing townees can't post
+  (`quest_file`/`dungeon_drop` reject); owing adventurers fail `rank_gate`/`rank_up`. Two
+  new reference tabs — **Townee Directory** and **Adventurer Directory** — so the teller
+  looks up dues; a dues-fail check deep-links to the owing row.
+- **Generator (`scripts/gen/ShiftGenerator.gd`, ~700 lines):** `generate_shift(day)` seeded
+  by day (deterministic — a week is 7 reproducible shifts). Composes each visit
+  actor→task→subject→valid/invalid→failure, emitting the EXACT `visitors.json` schema so
+  card/panel/verdict/scoreboard consume generated visits unchanged. `Deck.START_DAY`/`day`
+  selects: 0 = curated tutorial (visitors.json), >0 = generated.
+
+**Verified:** boot self-check `[gen-selfcheck] 7 days, 97 visits, 0 problems`; curated day 0
+= 16/16; generated day 1 = 14 coherent visits, all correct, zero errors. Read captures of
+generated visitors (walk-in "Greta Inglebright" delivering Troll Bile vs the Tannery
+Standing Order; approved as gen-d1-1, the same order rejected as gen-d1-12) and the Townee
+Directory showing Sarai Quillon **owing 15**. Left shipped: `START_DAY=0`,
+`DevHarness.enabled=false`, panel default = first reference tab (reverted the temp
+capture-only tweaks).
+
+**Note:** `ShiftGenerator` is a new `class_name` → the global-class-cache `--import` gotcha
+applies. Design contract: `CONTENT-BANKS.md`.
+
+## 2026-07-13 — Morning Queue: binary desk + inspection tools + standing-order limits
+
+**Context:** Panda's three fixes — (1) hold/conditional are confusing and absent from the
+genre; cut them "for now"; (2) some tabs should be *inspection tools* that reveal more about
+the current item (herb characteristics), with decoy data like an irrelevant weight; (3) the
+"jar of <item> vs <item>, unit drams" framing is misleading — standing orders should be a
+total or min–max limit the item is measured against, via a scale tool.
+
+**Design (in `morning-queue/INSPECTION-TOOLS.md`):** the Papers-Please loop split in two —
+the **Rulebook** (static reference tables: what a thing *should* be) vs **Inspection Tools**
+(visitor-scoped: what *this* item actually is). Two tools ship: **The Glass** (examine —
+the item's tells) and **The Scale** (weigh — the measured amount). Every visitor carries
+both readings; a hidden `relevant` flag marks which one decides (never shown), so most
+readings are decoys — e.g. a rank-card weighed at "2 drams," or Pell's yarrow at a clean "1
+sprig" (right amount, wrong plant). Standing orders became `accept {min,max,unit}` or
+`total {needed,unit}`; an `item_check` is now two independent checks — identity (Glass vs
+Book) and amount (Scale vs limit). Binary via the existing `STRICT_BINARY` dial = true
+(reversible; the two former half-fails already carry `binary: reject`).
+
+**How it was built:** a two-phase workflow — Model+Data, then Implement.
+
+**What broke and the lesson:** the Model+Data agent did ALL its file work (data rewrite,
+validator, the full design doc) and then failed to emit its **StructuredOutput** return,
+hitting the retry cap (5) — which aborted the whole workflow before the Implement phase.
+The *work* was fine and on disk; the *typed return* was the failure. **Lesson: for a phase
+whose real deliverable is files on disk (not a data payload the next phase consumes), don't
+gate it behind a strict output schema.** Recovery: verified the data booted clean, then ran
+the Implement phase as a plain Agent (free-text report, no schema) — it completed cleanly.
+
+**Verified (via the DevHarness capture loop):** binary desk shows only APPROVE/REJECT;
+`ivy-threnody`/`odile-vantry` judge as reject; 16/16, zero errors/warnings. Read the Glass
+capture ("Silver underside, five lobes, cold to the touch" under "Examine — what the item
+actually is") and the Scale capture ("The jar settles at 3 drams." + green "within the
+order's limit"). New additive method `ReferencePanel.set_inspection_target(visitor)`, wired
+in `Main._on_visitor_changed`; no frozen signature changed.
+
+**Note:** used a throwaway `_select_tab("glass"/"scale")` default-tab tweak to make the
+harness auto-capture a tool page (it captures the default tab; tools aren't the default),
+then reverted it. Left `DevHarness.enabled=false` (Panda's resting default).
+
+## 2026-07-13 — Morning Queue: localization prep + a viewport-capture dev harness
+
+**Context:** display text was inconsistent (Title-Cased in some places, raw slugs like
+`rank_order` / `item_check` leaking in others) because the data stores identifiers and the
+UI prettified some but not all — and the prettifier was copy-pasted across three
+components. Separately, validating via the OS screenshotter was painful (other windows get
+masked over the game).
+
+**Localization prep (spawned agent):** centralized every user-facing string into one
+`scripts/loc.gd` (`class_name Loc`) — the six duplicated formatters collapsed into a single
+`humanize()` + a keyed `chrome`/`vocab`/`overrides` table, called statically like Palette.
+Two layers, explicit: (a) translatable UI chrome + the finite enum/slug vocabulary → `Loc`;
+(b) procedural content (names, summaries, player_story) → stays in the JSON. Identifiers are
+never mutated — `checks[].entry` still resolves by exact string; only the *rendered* label
+is humanized, with an `overrides` table for proper nouns the humanizer gets wrong. en is the
+only locale; a second is one added dictionary. Chose a `Loc` module over Godot's native
+`tr()`+CSV because the UI is 100% code-built and needs a *dynamic* slug humanizer a static
+CSV can't express.
+
+**DevHarness (`scripts/dev/DevHarness.gd`):** a validation aid on Main.tscn that (1)
+captures the whole viewport to `.captures/*.png` — a folder readable directly, no OS
+screenshotter, no window-masking — and (2) auto-steps the shift on a timer by invoking the
+same handler a stamp-press fires, shooting one frame per visitor + the summary. Toggle via
+the **Enabled** checkbox on the node (on by default so a bare `run_project` yields a full
+capture set; untick to play manually). This is the edit→run→read loop Panda asked for.
+
+**Consistency fix the harness immediately surfaced:** the end-of-shift ledger showed "Wren
+Sixpence" (id `wren-sixpence` humanized) while the card showed the authored "Wrenna
+Sixpence". Fixed additively — `Session` verdict-log entries now carry `name`, and the
+Scoreboard prefers it. No frozen signature changed.
+
+**Verified:** headless import + boot = zero errors; a full auto-stepped run scored 16/16 and
+wrote 17 captures; read the summary PNG back to confirm the ledger now reads "Wrenna
+Sixpence" and every reference tab is Title-Case ("Rank Ladder", not `rank_order`).
+
+**Notes:** `.captures/` carries a `.gdignore` (Godot skips importing the shots) and is
+`.gitignore`d. `Loc` is a new `class_name`, so the same class-cache gotcha applies — the
+agent ran `--import` to register it.
+
+## 2026-07-13 — Morning Queue: components built via workflow + playtest-verified
+
+**Context:** with the scaffold + frozen contracts in place, built out the four UI components
++ theme.
+
+**Choice:** fanned out one agent per component (card / reference / verdict / score / theme)
+in a Workflow, each owning a disjoint file pair against the frozen interfaces, each
+self-reviewing after building. Then integrated (wired `ThemeFactory.build()` into Main) and
+playtested in Godot myself.
+
+**Why the file-per-component split:** the frozen contract (methods/signals in
+MORNING-QUEUE.md) + one `.tscn`+`.gd` per component meant five agents wrote in parallel with
+zero merge conflicts. The self-review stage caught three real bugs the build missed: an Array
+routed to a Dictionary-typed param in ReferencePanel (would crash on `set_references`), a
+`get_node` result needing an `as ColorRect` cast in VerdictBar, and a base-class shadow.
+
+**Verified:** booted maximized, stamped APPROVE on visitor 1 (Wren) → advanced to visitor 2
+(Odd-Eye), score 0→1, verdict log `wren-sixpence -> approve : right`; headless smoke still
+16/16. Screenshotted the running desk.
+
+**Notes (would surprise the next person):** `class_name` globals (`Palette`,
+`ThemeFactory`) live in `.godot/global_script_class_cache.cfg`, which ONLY the editor
+regenerates — running via the MCP right after adding a new `class_name` script died with
+`Identifier "Palette" not declared`. Fix: `godot --headless --path . --import` once (or open
+the editor) to rebuild the cache; it's gitignored so a fresh clone needs it too. Both stamp
+models ship behind `Session.STRICT_BINARY` (default false = four verdicts) per Panda's
+"build both, decide by playtest" call on AGT.5.
+
+## 2026-07-12 — The Morning Queue: first Godot/code tier + 16-visitor data
+
+**Context:** Panda greenlit building the Morning Queue (the ghost-card candidate) — one
+desk shift as a playable prototype — and asked for the 16 visitors coded to JSON, a Godot
+project stood up, and a wireframe good enough to allocate sub-agents against.
+
+**Options considered (project home + engine target):**
+- (A) Pure GDScript + `gl_compatibility` renderer, under `adventuring-guild-teller/morning-queue/`.
+- (B) C#/.NET (the installed editor is a `.mono` build).
+- (C) A top-level `src/`-style tier, standing up `CodeDocs/` + `CODE-DESIGN.md` per Rule 2.
+
+**Choice:** (A). Project lives inside the musing folder as a self-contained Godot 4.6
+project; `build-musing.py` globs only top-level `*.html`, so the subfolder never reaches
+Pages. Documented it with a project `README.md` (code-doc, following the `approaches-app`
+precedent) + `MORNING-QUEUE.md` (agent-nav spec: data schema, frozen interfaces,
+sub-agent allocation) rather than standing up the repo-wide `CodeDocs/` tier for one
+prototype.
+
+**Why:** the `.mono` editor **cannot Web-export** (.NET has no Web target); GDScript can.
+Keeping it GDScript-only on the Compatibility renderer preserves the option to embed a Web
+build in the **local** site later (not Pages — Godot 4 Web needs COOP/COEP headers Pages
+can't serve; this matches Panda's "local not github pages" framing). Following the
+`approaches-app` README-as-code-doc precedent keeps the zero-dependency-elsewhere posture
+without a premature tier.
+
+**Data shape:** two files — `visitors.json` (the queue) and `references.json` (the
+rulebook every `check` resolves against), so the desk is actually *verifiable*, not
+narrated. 16 visitors span all seven task types (incl. two new ones Panda added:
+welcome/farewell roster changes, and multi-gate dungeon-drop commissions with a payout
+calc) and eight failure axes. Two half-fails (`hold`/`conditional`) deliberately pressure
+the "is the desk strictly binary?" question (AGT.5) via a `Session.STRICT_BINARY` dial.
+
+**Corrections folded from chat:** all enemy targets are wild-magic apparitions / mana
+beasts (no rats/vermin — nothing that depopulates); Sister Coll's fieldability check is
+"no cleric/water-warded party *registered active*," independent of when anyone returns.
+
+**Verified:** headless smoke drive scored 16/16 on correct stamps and 0 on a wrong stamp,
+no load errors — the autoloads, flow state machine, and scoring work end-to-end. The four
+component scenes are functional stubs with live plumbing, awaiting build-out per the
+allocation table in `MORNING-QUEUE.md`.
+
+**Notes:** renamed a `Session.log` member (shadowed GDScript's built-in `log()`). If the
+site ever embeds a Web export, that artifact becomes a public surface — gate it under
+Rule 6 then.
+
+---
+
+## 2026-07-12 — AGT correction round 1: nine claims settled
+
+**Context:** Panda ruled on the pitch read-back by handle (AGT.2/3/4/6/8/9/10/11/12);
+AGT.1/.5/.7 remain open.
+**Choice:** folded rulings in place per the append-only protocol — a `settled` chip plus
+a green "Settled —" line per claim, superseded text struck (never renumbered); the
+research page got matching "Settled" notes on AGR.1/2/3/6, and the Bad Viking entry
+became the Horticulture + Antiquities pair (2022 / Sept 2025, web-verified). Rulings
+archived in `plans/PLAN-adventuring-guild-teller.md`.
+**Why this shape:** provenance stays auditable — the original given/read/gap tag and
+text remain visible under each ruling, so the page records the *dialogue*, not just the
+outcome.
+**Notes:** the rulings that most change the design: (1) the floor **never ticks** — no
+time limits or affection decay; pillar II's rule gained "And no clock, ever." (2) no
+death — gearless respawn at the dungeon entrance, and gear left behind seeds retrieval
+quests, turning failure into desk content (AGR.1) and settling tone (AGR.6). (3)
+summaries may be actionable, but every stat lives in in-game bios — anti-homework moves
+from summary-tuning to bio UX (AGR.3). (4) suggestion acceptance = teller-trust ×
+target-liking, giving refusal legibility a mechanism (AGR.2). One judgment call: the
+full-town ruling arrived addressed to AGT.2 but answers AGT.9's questions — filed under
+AGT.9, flagged in chat.
+
+## 2026-07-12 — New musing: Adventuring Guild Teller (pitch stage, read-back format)
+
+**Context:** Panda's brief — a guild-teller game: papers-please desk / stardew-social
+floor / tomodachi fishbowl with a popup-dungeon creator layer; asked for a landing page,
+a dressed-up pitch page containing *my breakdown of the brief so misconceptions can be
+corrected*, and a functional desk-research page.
+**Options considered:** (a) Markdown musing; (b) HTML-first set (thaumodynamics/LoMa/MDC
+pattern); (c) one long pitch page, no hub.
+**Choice:** (b) — `adventuring-guild-teller/`: hub + `pitch.html` + `research.html`,
+verbatim-copy build. The pitch is a **read-back**: twelve claims `AGT.1`–`AGT.12`, each
+tagged by provenance (given = restates brief · read = my inference · gap = brief silent)
+with a per-claim "correct me" line — MDC's claims pattern, pointed at correction instead
+of assertion. The research page gives every precedent a take/skip verdict and ends in
+risk register `AGR.1`–`AGR.6`, each risk citing the claim it pressures.
+**Why:** the ask was literally "so I can correct any misconceptions" — provenance tags +
+stable append-only handles make corrections cheap and precise. Two mnemonics (AGT/AGR)
+because Rule 8 scopes handles per page.
+**Notes:** (1) The design spine I read into the brief — discretion *evicted* from the
+desk, the inverse of Papers, Please's dilemma injection — is claim AGT.5, flagged as
+inference, not fact. (2) Research facts were web-spot-checked; caught that Potionomics'
+Quinn is the ingredient *vendor* (hero-adventuring is a separate befriend-and-send
+system) before publishing the wrong version. (3) Stakes policy (adventurer death/injury)
+deliberately left unset as Panda's call — AGT.12 flags it, AGR.6 records why it decides
+the game's tone.
+
+## 2026-07-12 — MDC follow-up: MIDI-learn remapper (Map pads)
+
+**Context:** Panda's kit's MIDI spec doesn't put the hi-hat on the GM notes the coach
+expects (42/44/46) — the plan's "MIDI-learn pad mapping" candidate got pulled forward the
+same day.
+**Options considered:** (a) a static note-number table you type into; (b) MIDI-learn
+(click the lane, hit the drum); (c) per-kit presets.
+**Choice:** (b). *Map pads* mode in `coach.html`: arming a lane binds the next incoming
+note-on to it (`USERMAP` overrides GM; `laneFor()` resolves user-first), bindings render
+on each pad, double-click clears a lane, one button resets all; persisted as
+`localStorage["mdc:map"]`. The unmapped monitor line now says "use Map pads."
+**Why:** learn-by-hitting needs zero knowledge of the kit's manual and works for any
+number of zones; presets are a maintenance treadmill; typing note numbers is (a) with
+extra steps. Binding *consumes* the hit (no sound-through into judging) and plays the
+lane's voice once as confirmation — you hear what you just taught it.
+**Notes:** keyboard/click pads never bind (only MIDI notes reach the learn branch), so
+the feature is inert without hardware; verified by calling the same `handleNote()` the
+MIDI callback uses. A GM note re-bound to a different lane stops counting for its GM
+lane (`n in USERMAP` guard). Export/import of the map stays on the plan.
+
+**Context:** Panda's brief — "a webpage musing that connects to a MIDI device and provides
+suggested rhythms; let's get there for now." First musing whose deliverable is a *tool*
+(Web MIDI in, WebAudio out), not prose or a static explorable.
+**Options considered:** (a) Markdown musing + separate app page; (b) HTML-first hub +
+self-contained app page (the thaumodynamics/logical-magic pattern); (c) app-only, prose in
+a sidebar.
+**Choice:** (b). `midi-drum/` — hub `index.html` carries the musing (claims `MDC.1`–`MDC.5`:
+instrument-as-controller, *legible director*, notation-as-UI, judge-the-gap, practice-as-core-loop);
+`coach.html` is the tool: GM-mapped pad monitor, 13 grooves as step grids (16ths + one
+12-cell triplet shuffle, levels 1–5 in families), synthesized kit + click on a lookahead
+scheduler, practice judging at ±30/±70/±120 ms with signed rush/drag bias, and a
+director whose five rules (R1–R5) print the reason each suggestion fired.
+**Why:** the game-design content *is* the director — DDA you can audit and override — so
+the prose page frames exactly that and the tool demonstrates it. HTML-first because the
+page must open from disk and stay dependency-free like its siblings.
+**Notes:** (1) The whole input path is device-optional: on-screen pads + keyboard feed the
+same `hit()` pipeline, so the page demos with zero hardware — also how it was verified
+(machine-timed hits injected through the real pipeline: 100%/±0 ms run → R2 escalation;
+50 ms-early run → all "good", −50 ms bias, R3 "you're rushing" + slower-BPM card).
+(2) The embedded preview browser auto-denies `requestMIDIAccess`, so the granted path
+needs a real browser + kit — untested until Panda plugs in; denied/unsupported paths are
+exercised and graceful. (3) A manual input-latency slider (localStorage `mdc:calib`)
+stands in for auto-calibration, deferred to the plan. (4) Judging windows are fixed-ms,
+not tempo-scaled — rhythm-game convention; revisit if slow practice feels punishing.
+
+**Context:** The reusable vignette handoff (`VIGNETTE-HANDOFF.md`) had done its job in a
+*separate* chat — three finished everyday-life vignettes (`LVIG.1`–`LVIG.3`: Transcription
+Nights, The Letter Kept, Crack and Splint) came back as Markdown. This session did the
+deferred "separate step" the handoff always named: integrate them into the published set.
+**Choice / what was built:** a new hand-authored `logical-magic/vignettes.html`
+("Everyday Records") — self-contained, both themes, LoMa tokens, the site-wide breadcrumb,
+the three vignettes at stable anchors `#lvig-1`–`#lvig-3`, each with its `LVIG.n` handle,
+italic abstract, and body. Prose is **verbatim** from the handoff chat (typographic
+conversion only — curly quotes, em-dashes, `<em>`; no rewriting, per the brief). Wired per
+the HTML-first new-page checklist: a fourth live gallery card, a "Vignettes" registry
+sublink, the nav-spec file-map row, the plan tick — plus the **`LVIG`** mnemonic declared
+(Rule 8, append-only; next is `LVIG.4`).
+**Why this shape:** it mirrors Space Feudal's `loom.html` *role* (several self-contained
+vignettes on one companion page, one citable handle apiece) without copying its skin — LoMa
+keeps its own palette, leaning on the gilt "grace/settlement" accent the everyday pieces
+turn on (a mend is 12 flips; a vale lays down 10,000/day). Framed the card as a
+**companion**, not a numbered chapter, so the "IV · candidate — the Grimoire" ghost stays
+untouched.
+**Notes:** numbers were checked against pitch §8 (Mending 22 strokes / 12 flips, 4
+strokes/s, 10,000 flips/day, ~10⁶-fact true names) — the vignettes only *spend* constants,
+never mint them. Doc resync ran slightly past the brief's file list: refreshed the stale
+root `PLAN.md` "Next: worksheet + application pages" line (those shipped earlier today) and
+added the `README.md` page-table row, so the index and human doc match the built set.
+
 ## 2026-07-12 — LoMa completes the THAU trio: worksheet + trial-duel + a vignette handoff
 
 **Context:** Panda asked for three things in sequence: a reusable handoff doc so a

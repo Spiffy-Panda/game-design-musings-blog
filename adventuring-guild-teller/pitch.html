@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventuring Guild Teller — the pitch, read back for correction</title>
+<style>
+  :root{
+    --ground:#f1ecdc; --surface:#f9f6ec; --line:#dcd2b6; --line2:#c3b795;
+    --ink:#2a2419; --ink2:#57503f; --ink3:#7a6f58;
+    --green:#2f6b4f; --red:#9c3122; --brass:#8a6d1f;
+    --green-wash:rgba(47,107,79,.07); --red-wash:rgba(156,49,34,.06); --brass-wash:rgba(138,109,31,.08);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101310; --surface:#171b17; --line:#2b2f27; --line2:#434a3e;
+      --ink:#e5e1d3; --ink2:#b5af9e; --ink3:#8f8a78;
+      --green:#6fc59c; --red:#ff937e; --brass:#d5b45f;
+      --green-wash:rgba(111,197,156,.06); --red-wash:rgba(255,147,126,.05); --brass-wash:rgba(213,180,95,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.68 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 2%, var(--brass-wash), transparent 70%),
+      radial-gradient(50% 44% at 4% 100%, var(--green-wash), transparent 70%);
+  }
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(40px,8vh,92px) clamp(20px,5vw,48px) 76px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:640 clamp(34px,6vw,56px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 16px}
+  .sub{font-size:clamp(16.5px,2.2vw,19.5px); color:var(--ink2); max-width:60ch; margin:0 0 18px}
+  h2{font:640 24px/1.3 var(--serif); margin:52px 0 6px; padding-top:14px;
+     border-top:3px double var(--line2)}
+  h2 + .lede{margin-top:6px}
+  p{max-width:70ch}
+  .prose p, .lede{margin:0 0 15px; color:var(--ink2)}
+  strong{color:var(--ink)}
+  em{color:inherit}
+  code{font:14px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+  a{color:var(--green); text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+
+  /* hero + received-stamp */
+  .hero{position:relative; padding-right:170px}
+  .stamp{
+    position:absolute; top:8px; right:0; transform:rotate(-7deg);
+    border:2px solid var(--red); outline:1.5px solid var(--red); outline-offset:3px;
+    border-radius:4px; padding:9px 13px 8px; color:var(--red); opacity:.85;
+    font:700 10.5px/1.55 var(--sans); letter-spacing:.16em; text-transform:uppercase; text-align:center;
+  }
+  .stamp .big{font-size:14px; letter-spacing:.24em; display:block}
+  @media (max-width:740px){
+    .hero{padding-right:0}
+    .stamp{position:static; display:inline-block; margin:2px 0 18px; transform:rotate(-3deg)}
+  }
+  .triad{font:600 12.5px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+         color:var(--ink3); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+         padding:9px 2px; margin:0 0 6px; max-width:640px}
+  .triad b{color:var(--ink2); font-weight:650}
+  .triad .dot{color:var(--line2); padding:0 .45em}
+
+  /* the day strip */
+  .day{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0 8px; padding:0; list-style:none}
+  .day li{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:13px 14px 12px}
+  .day li:nth-child(1){border-top:3px solid var(--green)}
+  .day li:nth-child(2){border-top:3px solid var(--brass)}
+  .day li:nth-child(3){border-top:3px solid var(--line2)}
+  .day li:nth-child(4){border-top:3px solid var(--red)}
+  .day .no{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .day h3{font:650 16.5px/1.3 var(--serif); margin:7px 0 5px}
+  .day p{margin:0; font-size:13.5px; line-height:1.55; color:var(--ink2)}
+  .daynote{font-size:13.5px; color:var(--ink3); font-style:italic; margin:8px 0 0}
+  @media (max-width:740px){ .day{grid-template-columns:1fr 1fr} }
+  @media (max-width:460px){ .day{grid-template-columns:1fr} }
+
+  /* pillars */
+  .pillars{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px}
+  .pillar{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:18px 19px 15px;
+          display:flex; flex-direction:column}
+  .pillar .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .pillar h3{font:650 20px/1.25 var(--serif); margin:8px 0 3px}
+  .pillar .ref{font:500 11.5px/1.5 var(--mono); color:var(--brass); margin:0 0 9px}
+  .pillar p{margin:0 0 12px; font-size:14.5px; line-height:1.6; color:var(--ink2)}
+  .pillar .rule{margin-top:auto; border-top:1px solid var(--line); padding-top:9px;
+                font-style:italic; font-size:14px; color:var(--ink)}
+  .pillar:nth-child(1) h3{color:var(--green)} .pillar:nth-child(2) h3{color:var(--brass)} .pillar:nth-child(3) h3{color:var(--red)}
+  @media (max-width:860px){ .pillars{grid-template-columns:1fr} .pillar .rule{margin-top:2px} }
+
+  /* callout */
+  .callout{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--red);
+           border-radius:4px; padding:18px 22px 15px; margin-top:16px}
+  .callout p{margin:0 0 12px; color:var(--ink2)}
+  .callout p:last-child{margin-bottom:0}
+
+  /* claims ledger */
+  .legend{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:12px 0 16px;
+          font:500 12.5px/1.5 var(--sans); color:var(--ink3)}
+  .tag{display:inline-block; font:700 10px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+       border-radius:3px; padding:4px 7px 3px; border:1px solid}
+  .tag.given{color:var(--green); border-color:var(--green); background:var(--green-wash)}
+  .tag.read{color:var(--brass); border-color:var(--brass); background:var(--brass-wash)}
+  .tag.gap{color:var(--red); border-color:var(--red); background:var(--red-wash)}
+  .tag.settled{color:var(--surface); border-color:var(--green); background:var(--green)}
+  .claims{list-style:none; margin:0; padding:0; display:grid; gap:12px}
+  .claims li{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:15px 19px 13px}
+  .claims .hd{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:6px}
+  .claims .id{font:600 12px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+              border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .claims .ttl{font:650 17px/1.35 var(--serif)}
+  .claims p{margin:0 0 8px; font-size:15px; line-height:1.62; color:var(--ink2)}
+  .claims .cm{margin:0; font-size:13.5px; font-style:italic; color:var(--ink3);
+              border-top:1px dashed var(--line); padding-top:8px}
+  .claims .cm::before{content:"Correct me — "; font-style:normal; font:700 10.5px/1 var(--sans);
+                      letter-spacing:.14em; text-transform:uppercase; color:var(--red)}
+  .claims .st{margin:0; font-size:14px; color:var(--ink2);
+              border-top:1px dashed var(--line); padding-top:8px}
+  .claims .st::before{content:"Settled — "; font:700 10.5px/1 var(--sans);
+                      letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+  .claims s, s{color:var(--ink3); text-decoration-color:var(--red)}
+
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+        font:13px/1.8 var(--sans); color:var(--ink3); max-width:72ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--green); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Adventuring Guild Teller</a></li>
+        <li><span aria-current="page">The Pitch</span></li>
+      </ol>
+    </nav>
+
+    <header class="hero">
+      <div class="stamp" aria-hidden="true"><span class="big">Received</span>guild counter<br>no. AGT-01</div>
+      <p class="eyebrow">A game-design musing · the pitch, read back for correction</p>
+      <h1>Adventuring Guild Teller</h1>
+      <p class="sub">You are the person behind the guild counter. Stamp what's true, post
+      what's worthy, and — after hours — quietly decide who this town's heroes become.</p>
+      <p class="triad"><b>Papers, Please</b> hands<span class="dot">·</span><b>Stardew</b> heart<span class="dot">·</span><b>Tomodachi Life</b> soul</p>
+    </header>
+
+    <div class="prose">
+      <p>The working title is the brief's own phrasing. This page is the pitch <em>as I
+      understand it</em>: first the shape, then twelve numbered claims — each one tagged by
+      how much of it is your words versus my inference, so any misreading can be corrected
+      by handle. <strong>Correction round 1 (2026-07-12) is folded in below:</strong> nine
+      claims settled, three still open — AGT.1, AGT.5, AGT.7. The
+      <a href="research.html">desk research</a> page holds the precedent studies these
+      claims lean on.</p>
+
+      <h2>The shape of a day</h2>
+      <p class="lede">The town runs continuously underneath; this is the order the
+      <em>player</em> meets it:</p>
+      <ol class="day">
+        <li><span class="no">I · day shift</span>
+          <h3>The Desk</h3>
+          <p>Requests filed, proofs across the counter. Reference books open. Right or wrong.</p></li>
+        <li><span class="no">II · after hours</span>
+          <h3>The Floor</h3>
+          <p>The board, the favors, the loadout advice, the introductions. Your call.</p></li>
+        <li><span class="no">III · offscreen</span>
+          <h3>The Night</h3>
+          <p>Parties go down into the dark. You don't. The sim resolves without you.</p></li>
+        <li><span class="no">IV · at dawn</span>
+          <h3>The Summary</h3>
+          <p>How your characters fared, told as gossip — the hard numbers wait in every
+          bio.</p></li>
+      </ol>
+      <p class="daynote">Skeleton confirmed as the player-facing cadence; underneath it,
+      expeditions run async and can span multiple days (AGT.3).</p>
+
+      <h2>Three pillars</h2>
+      <div class="pillars">
+        <section class="pillar">
+          <span class="no">Pillar I · the hook</span>
+          <h3>The Desk</h3>
+          <p class="ref">after Papers, Please × Strange Horticulture</p>
+          <p>The main loop and the thing most players come for: the procedural day-to-day
+          of validating questing. Check collected herbs against their descriptions, check
+          an adventurer's rank against a quest's demands, judge whether a request is even
+          valid given what the guild can currently field.</p>
+          <p>Mostly objective, mostly checkable — so a practiced teller can drop into flow
+          the way a Papers, Please veteran reads passports.</p>
+          <p class="rule">At the counter there is a right answer.</p>
+        </section>
+        <section class="pillar">
+          <span class="no">Pillar II · the decisions</span>
+          <h3>The Floor</h3>
+          <p class="ref">after Stardew Valley's non-farming half</p>
+          <p>Hanging out in the guild afterward — and this is where <em>all</em> the real
+          decisions live. Which of today's validated quests goes up on the open board?
+          Which gets hand-delivered to a befriended adventurer? Plus the rest of running
+          the place.</p>
+          <p>The social verbs live here too: suggest loadouts, introduce one regular to
+          another, and through that shape which parties form and go down. And the floor
+          never ticks — no time limits, no decaying affections; linger, or don't
+          (AGT.11).</p>
+          <p class="rule">Influence, never orders. And no clock, ever.</p>
+        </section>
+        <section class="pillar">
+          <span class="no">Pillar III · the fishbowl</span>
+          <h3>The Roster</h3>
+          <p class="ref">after Popup Dungeon × Tomodachi Life</p>
+          <p>For creators who want more: author the cast itself — starting attributes,
+          models and paperdolls, a backstory apiece. Done mostly outside play sessions,
+          Popup Dungeon-style.</p>
+          <p>Then the town plays with your toys: a nightly summary reports how your
+          characters fared in the dungeon. It may flag real events — a sword that
+          wouldn't bite — but the details always live on the character sheets in-game.
+          Flavor forward, zero homework (AGT.10).</p>
+          <p class="rule">The summary is gossip, not telemetry.</p>
+        </section>
+      </div>
+
+      <h2>The one distinctive move</h2>
+      <div class="callout">
+        <p><strong>Papers, Please generates its drama by smuggling dilemmas into the
+        checking loop</strong> — the rules say deny, the sob story says approve, your
+        family starves either way. This design does the opposite, and I think that's its
+        spine: <strong>discretion is evicted from the counter.</strong> The desk stays
+        objectively checkable so it can be <em>flow</em>; every judgment call is deferred
+        to the guild floor, where there's time, tea, and consequence.</p>
+        <p>Same person, two chairs, two kinds of thinking: at the desk you ask <em>"am I
+        right?"</em>, on the floor you ask <em>"what do I want for these people?"</em> If a
+        moral dilemma shows up at the counter, it's either a bug in the day — or a very
+        deliberate, very rare scripted exception.</p>
+      </div>
+
+      <h2>My read, in twelve claims</h2>
+      <p class="lede">Each claim is tagged: <span class="tag given">given</span> restates
+      your brief, <span class="tag read">read</span> is my interpretation of it, and
+      <span class="tag gap">gap</span> marks something the brief doesn't settle. A
+      <span class="tag settled">settled</span> chip means a correction-round ruling is
+      folded in — struck text is superseded, the ruling sits on the green line. Handles
+      are stable and append-only — correct by number.</p>
+
+      <ol class="claims">
+        <li id="agt-1">
+          <div class="hd"><span class="id">AGT.1</span><span class="tag given">given</span><span class="ttl">The seat is the counter.</span></div>
+          <p>You play the guild's teller — not the guildmaster, not a party member.
+          Registering requests and confirming completions is the job; the fantasy is quiet
+          competence plus total context, because everything and everyone in town crosses
+          your desk eventually.</p>
+          <p class="cm">if the player is meant to hold formal authority beyond the counter
+          (hiring, budgets, guild policy) rather than authority-by-influence.</p>
+        </li>
+        <li id="agt-2">
+          <div class="hd"><span class="id">AGT.2</span><span class="tag given">given</span><span class="tag settled">settled</span><span class="ttl">Three parts, three genres.</span></div>
+          <p>One part procedural job sim (Papers, Please), one part social/management
+          (Stardew's non-farming parts), one part townee-fishbowl (Tomodachi Life, The
+          Sims). My one framing addition: the fishbowl is the <em>substrate</em> the other
+          two act on — autonomous townsfolk are what make desk stamps and floor favors
+          matter.</p>
+          <p class="st">confirmed as framed — fishbowl-as-substrate included. (The
+          full-town ruling that arrived with this confirmation lives under AGT.9.)</p>
+        </li>
+        <li id="agt-3">
+          <div class="hd"><span class="id">AGT.3</span><span class="tag read">read</span><span class="tag settled">settled</span><span class="ttl">The day skeleton.</span></div>
+          <p>Desk shift while parties are out → guild floor in the evening → runs resolve
+          overnight → summary at dawn. The brief never states the order; I stitched it from
+          "day-to-day," "hanging out afterward," and "nightly summary."</p>
+          <p class="st">mostly yes — but expeditions can span multiple days, and
+          departures aren't pinned to a morning tick; the fishbowl runs async beneath
+          the daily loop, and returns queue at the desk whenever they land.</p>
+        </li>
+        <li id="agt-4">
+          <div class="hd"><span class="id">AGT.4</span><span class="tag read">read</span><span class="tag settled">settled</span><span class="ttl">The desk has two sides.</span></div>
+          <p><strong>Intake:</strong> register incoming requests, judging validity against
+          rank rules and current availability. <strong>Verification:</strong> confirm
+          completions against the request's own description — the herb check. I read
+          "validating adventure rank" as checking a taker's rank against a quest's
+          requirement; the alternate reading is auditing <em>rank-up applications</em>,
+          which would make a great rare desk event.</p>
+          <p class="st">both — rank gate-checks are routine desk work, and rank-up
+          audits are real (rarer) desk events.</p>
+        </li>
+        <li id="agt-5">
+          <div class="hd"><span class="id">AGT.5</span><span class="tag read">read</span><span class="ttl">The desk is objective on purpose.</span></div>
+          <p>"Mostly right vs wrong answers so the player can go into a flow" — I take
+          this as a hard commitment, the spine of the pitch (the callout above): the desk
+          is not the dilemma engine, and "mostly" buys occasional variety, not routine
+          moral squeeze.</p>
+          <p class="cm">if you do want Papers, Please-style conscience pressure at the
+          counter itself.</p>
+        </li>
+        <li id="agt-6">
+          <div class="hd"><span class="id">AGT.6</span><span class="tag read">read</span><span class="tag settled">settled</span><span class="ttl">"Strange apothecary" = Strange Horticulture.</span></div>
+          <p>I'm reading the desk's stated inspiration as Bad Viking's <em>Strange
+          Horticulture</em> — identify the specimen on the counter by cross-referencing a
+          lovely reference book, cozy-occult register, mistakes mislead rather than
+          fail-state. The research page leans on it accordingly.</p>
+          <p class="st">confirmed — and doubled: <em>Strange Antiquities</em> (Bad
+          Viking's 2025 occult-antiques follow-up) is co-canon with <em>Strange
+          Horticulture</em>. The research page now covers the pair.</p>
+        </li>
+        <li id="agt-7">
+          <div class="hd"><span class="id">AGT.7</span><span class="tag given">given</span><span class="ttl">Evenings route the day's quests.</span></div>
+          <p>Every quest received that day gets a routing decision: the open board, or
+          straight into the hands of a befriended adventurer — favoritism as a first-class
+          verb, with the board as the neutral default. "Other management of the guild" is
+          in the brief but unspecified; I've assumed fees/upgrades/scheduling-scale
+          housekeeping.</p>
+          <p class="cm">on what's actually in the "other management" bucket.</p>
+        </li>
+        <li id="agt-8">
+          <div class="hd"><span class="id">AGT.8</span><span class="tag read">read</span><span class="tag settled">settled</span><span class="ttl">Influence, never orders.</span></div>
+          <p>Loadout suggestions and introductions are <em>suggestions</em>: adventurers
+          are autonomous residents who can decline, and the ownership feeling ("that team
+          exists because of me") comes precisely from the fact that they didn't have to
+          listen. This is the fishbowl contract applied to the social verbs.</p>
+          <p class="st">confirmed, with the mechanism: acceptance rides on two affinity
+          scores — the suggestee's affinity for <em>the player</em> (teller trust), and
+          their affinity for <em>what's being suggested</em> (the person, the loadout).
+          Refusals get a citable cause by construction (AGR.2).</p>
+        </li>
+        <li id="agt-9">
+          <div class="hd"><span class="id">AGT.9</span><span class="tag given">given</span><span class="tag settled">settled</span><span class="ttl">The creator authors the cast, out-of-loop.</span></div>
+          <p>Starting attributes, models/paperdolls, backstories — built mostly outside
+          play time, with Popup Dungeon named as the bar to clear. The authored characters
+          then live in the town like everyone else.</p>
+          <p class="st">ruled (it arrived under the AGT.2 reply): the game ships with a
+          full town, and the creator covers adventurers, quest-posters, and anyone else —
+          customization always available well beyond anything required.</p>
+        </li>
+        <li id="agt-10">
+          <div class="hd"><span class="id">AGT.10</span><span class="tag given">given</span><span class="tag settled">settled</span><span class="ttl">The nightly summary is flavor — and staying that way.</span></div>
+          <p>"Does not provide too much that is useful and is more for flavor" — I read
+          that as a <em>discipline</em>, not a shortcoming. The report is an attachment
+          device in the Tomodachi register; the moment it carries real signal, optimizers
+          turn it into homework. <s>The version I'd commit to: quotable, barely
+          actionable.</s></p>
+          <p class="st">refined: the summary <em>may</em> carry genuinely actionable
+          events ("her sword failed to penetrate the hide") — that's fine. The
+          anti-homework guarantee lives elsewhere: every detailed stat sits in each
+          character's in-game bio, always available, so the player never has to remember
+          or write down anything. All of it stays in-game.</p>
+        </li>
+        <li id="agt-11">
+          <div class="hd"><span class="id">AGT.11</span><span class="tag read">read</span><span class="tag settled">settled</span><span class="ttl">Three audiences, concentric.</span></div>
+          <p>Desk players (everyone — the flow hook) ⊃ floor players (the town-shapers) ⊃
+          creators (the customization tail). Implied by that ordering: the floor needs a
+          light default path — "post everything to the board" — so desk-first players
+          aren't punished for skipping the socializing.</p>
+          <p class="st">ruled, and stronger than my read: the floor <strong>never has a
+          ticking clock</strong> — no time limits, no decaying affection, ever. Another
+          round of papers plus a low-effort floor is always a legitimate day, even
+          mid-team-setup, at zero social cost.</p>
+        </li>
+        <li id="agt-12">
+          <div class="hd"><span class="id">AGT.12</span><span class="tag gap">gap</span><span class="tag settled">settled</span><span class="ttl">Stakes are unset.</span></div>
+          <p>The brief doesn't say whether adventurers can fail, get hurt, or die —
+          including the ones a creator lovingly authored. This is the biggest open lever I
+          see: permadeath collides with cozy, zero stakes makes desk rigor and floor
+          favors weightless. <s>Injury-and-recovery is the obvious middle, but it's your
+          call, not mine.</s></p>
+          <p class="st">ruled: <strong>no death</strong> — a downed adventurer respawns
+          gearless at the dungeon entrance. The gear stays where it fell, and lost gear
+          can seed future retrieval quests: failure generates desk content instead of
+          grief (AGR.1, AGR.6).</p>
+        </li>
+      </ol>
+
+      <h2>What happens with corrections</h2>
+      <p>Reply by handle ("AGT.6 is wrong, I meant …"). Corrections get folded back into
+      this page; superseded readings are struck, not renumbered — new claims take new
+      numbers. <strong>Round 1 (2026-07-12) settled nine claims</strong>; the rulings sit
+      on the green lines above. Still open: <strong>AGT.1</strong> (does the teller hold
+      any formal authority beyond the counter?), <strong>AGT.5</strong> (the desk stays
+      dilemma-free — the pitch's spine), and <strong>AGT.7</strong> (what's actually in
+      the "other management" bucket). Once those settle, the natural next pages are a
+      deeper mechanics note on the desk loop and a playable paper-prototype of one
+      morning shift.</p>
+    </div>
+
+    <p class="foot">Handles <code>AGT.1</code>–<code>AGT.12</code> are stable and
+    append-only; cite them from other pages and chats. Precedent studies live in the
+    <a href="research.html">desk research</a>; the musing hub is
+    <a href="index.html">here</a>.</p>
+  </div>
+</body>
+</html>

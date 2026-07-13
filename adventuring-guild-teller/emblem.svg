@@ -1,0 +1,37 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- A quest form on the counter: ruled request sheet, two verdict rows already
+       marked (a check and a cross), and the guild's wax seal overlapping the
+       corner. Stroke-led; colors via the row's --m-* vars. -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- the sheet, with a folded corner -->
+    <path d="M48 26 h74 l16 16 v122 h-90 z" stroke="var(--m-ink, #2a2419)" stroke-width="2.5"/>
+    <path d="M122 26 v16 h16" stroke="var(--m-ink, #2a2419)" stroke-width="2.5"/>
+    <!-- header rule -->
+    <line x1="60" y1="58" x2="112" y2="58" stroke="var(--m-muted, #7a6f58)" stroke-width="3"/>
+    <!-- ruled request rows -->
+    <g stroke="var(--m-line, #dcd2b6)" stroke-width="2.5">
+      <line x1="74" y1="80"  x2="126" y2="80"/>
+      <line x1="74" y1="102" x2="126" y2="102"/>
+      <line x1="74" y1="124" x2="112" y2="124"/>
+    </g>
+    <!-- verdicts: approved row, denied row -->
+    <path d="M58 76 l5 6 l9 -11" stroke="var(--m-accent, #2f6b4f)" stroke-width="3.5"/>
+    <g stroke="var(--m-accent2, #9c3122)" stroke-width="3.5">
+      <line x1="59" y1="97" x2="70" y2="108"/>
+      <line x1="70" y1="97" x2="59" y2="108"/>
+    </g>
+    <!-- third row pending: empty box -->
+    <rect x="58" y="118" width="12" height="12" rx="2" stroke="var(--m-muted, #7a6f58)" stroke-width="2.5"/>
+    <!-- the wax seal, scalloped, overlapping the sheet corner -->
+    <circle cx="138" cy="146" r="30" stroke="var(--m-accent2, #9c3122)" stroke-width="3"
+            stroke-dasharray="6.1 3.4"/>
+    <circle cx="138" cy="146" r="21" stroke="var(--m-accent2, #9c3122)" stroke-width="2"/>
+    <!-- seal device: a counter bell -->
+    <path d="M126 152 a12 12 0 0 1 24 0 z" stroke="var(--m-accent2, #9c3122)" stroke-width="2.5"/>
+    <line x1="138" y1="136" x2="138" y2="140" stroke="var(--m-accent2, #9c3122)" stroke-width="2.5"/>
+    <circle cx="138" cy="134" r="2.2" fill="var(--m-accent2, #9c3122)" stroke="none"/>
+    <!-- ribbon tails from under the seal -->
+    <path d="M118 168 l-10 14" stroke="var(--m-accent3, #8a6d1f)" stroke-width="3"/>
+    <path d="M130 174 l-4 16" stroke="var(--m-accent3, #8a6d1f)" stroke-width="3"/>
+  </g>
+</svg>

@@ -1,0 +1,160 @@
+{
+  "_about": "The desk's rulebook for The Morning Queue — the truth tables every visitor `check` in visitors.json resolves against (the ReferencePanel renders these as lookup tabs). Prototype canon 2026-07-12; BANKS-EXPANDED 2026-07-13 to a week's breadth (see ../CONTENT-BANKS.md §7): 24 Book items across 5 categories (each carries an authored `glass` examined-description), 20 postings, 6 chapter ciphers, 10 dungeon drops, an enlarged Completion Archive, and one added earth-warded roster party. The curated 16-visitor day-0 shift's ids are PRESERVED byte-for-byte in meaning — nothing renamed or removed; every addition is additive.",
+
+  "rank_order": ["copper", "bronze", "silver", "gold", "platinum"],
+
+  "book": {
+    "_tab": "Reference Book — items by their tells (Strange-Antiquities register: mistakes mislead, they don't error out)",
+    "_note": "Each item carries `category` (herb|beast_part|reagent|mineral|relic), the rulebook `tells`, and `glass` — the authored examined-description a GENUINE specimen returns under the Glass (the derivation source for a valid visit's inspections.glass.reading). `confusable_with` drives identity fails (the look-alike's `glass` is read instead); `forgery_glass` (+ `forgery_tells`) drives authenticity fails; `unit` is required for any standing-order item.",
+
+    "moonwort": { "category": "herb", "tells": ["silver underside", "five lobes", "cold to touch"], "glass": "Silver underside, five lobes, cold to the touch.", "confusable_with": [], "unit": "dram" },
+    "kingsfoil": { "category": "herb", "tells": ["square stem", "feathered leaf", "flat white head"], "glass": "Square stem, feathered leaf, a flat white head.", "sure_tell": "square stem", "confusable_with": ["yarrow"], "unit": "sprig" },
+    "yarrow": { "category": "herb", "tells": ["round stem", "feathered leaf", "flat white head"], "glass": "Round stem, feathered leaf, a flat white head.", "sure_tell": "round stem", "confusable_with": ["kingsfoil"] },
+    "sunwort": { "category": "herb", "tells": ["golden ray-petals", "resinous stem", "warm to touch"], "glass": "Golden ray-petals, a resinous stem, warm to the touch.", "sure_tell": "resinous stem, warm to touch", "confusable_with": ["gravebloom"], "unit": "sprig" },
+    "gravebloom": { "category": "herb", "tells": ["ashen ray-petals", "hollow stem", "cold and odourless"], "glass": "Ashen ray-petals, a hollow stem, cold and odourless.", "sure_tell": "hollow stem, no scent", "confusable_with": ["sunwort"] },
+    "marsh-ivy": { "category": "herb", "tells": ["three-lobed leaf", "waxen sheen", "clings by rootlets"], "glass": "Three-lobed waxen leaves that cling by fine rootlets.", "confusable_with": [] },
+
+    "griffon-feather": { "category": "beast_part", "tells": ["twin-barbed", "dye-fast", "hollow rachis"], "glass": "Twin-barbed vane, dye fast under a wet cloth, the rachis hollow.", "confusable_with": ["cockatrice-plume"], "forgery_tells": ["single-barbed", "dye lifts when wet", "solid rachis"], "forgery_glass": "Single-barbed; the dye lifts under a wet cloth; the rachis is solid, not hollow." },
+    "cockatrice-plume": { "category": "beast_part", "tells": ["twin-barbed vane", "oily green sheen", "solid green-tinged rachis"], "glass": "Twin-barbed like a griffon's, but an oily green sheen and a solid, green-tinged rachis.", "sure_tell": "green-tinged solid rachis", "confusable_with": ["griffon-feather"] },
+    "basilisk-claw": { "category": "beast_part", "tells": ["blackened keratin", "triple back-ridge", "venom groove"], "glass": "Blackened keratin, a triple ridge down the back, a fine venom groove.", "sure_tell": "venom groove", "confusable_with": ["direwolf-fang"] },
+    "direwolf-fang": { "category": "beast_part", "tells": ["ivory-white", "single blood groove", "worn root"], "glass": "Ivory-white, one blood groove, the root worn smooth.", "sure_tell": "single blood groove", "confusable_with": ["basilisk-claw"] },
+    "wyvern-scale": { "category": "beast_part", "tells": ["keeled and overlapping", "iridescent oil-sheen", "warm, horn-hard"], "glass": "Keeled and overlapping, an oil-sheen that shifts colour, horn-hard and warm.", "confusable_with": [], "forgery_tells": ["paint flakes at the keel", "cold and brittle", "no true keel ridge"], "forgery_glass": "A fish-scale painted to mimic the sheen — the paint flakes at the keel, and it lies cold and brittle with no true ridge." },
+
+    "quicksilver-tears": { "category": "reagent", "tells": ["beads", "splits", "silver"], "glass": "It beads, it splits, it shows silver — true quicksilver.", "confusable_with": [], "hazard": true, "unit": "dram" },
+    "sulfur-bloom": { "category": "reagent", "tells": ["crusted yellow bloom", "brittle crystals", "match-reek when broken"], "glass": "A crusted yellow bloom, brittle crystals, a match-reek when broken.", "confusable_with": [], "hazard": true },
+    "nightshade-oil": { "category": "reagent", "tells": ["clear amber oil", "faint violet cast", "bitter-almond scent"], "glass": "Clear amber oil with a faint violet cast; a bitter-almond scent.", "sure_tell": "violet cast, bitter-almond scent", "confusable_with": ["aqua-vitae"], "hazard": true },
+    "aqua-vitae": { "category": "reagent", "tells": ["clear spirit", "no colour cast", "sharp clean scent"], "glass": "A clear spirit, no colour cast, a sharp clean scent.", "sure_tell": "no colour cast", "confusable_with": ["nightshade-oil"] },
+    "troll-bile": { "category": "reagent", "tells": ["viscous green-black", "faint healing sheen", "reeks of moss and iron"], "glass": "Viscous green-black, a faint healing sheen, reeking of moss and iron.", "confusable_with": [], "unit": "dram" },
+
+    "star-iron-ore": { "category": "mineral", "tells": ["blue-black lustre", "starry inclusions", "heavy for its size"], "glass": "Blue-black lustre shot through with starry inclusions; heavy for its size.", "sure_tell": "starry inclusions, dense heft", "confusable_with": ["bog-iron"], "unit": "dram" },
+    "bog-iron": { "category": "mineral", "tells": ["rusty brown crust", "porous and light", "flakes to red dust"], "glass": "A rusty brown crust, porous and light, flaking to red dust.", "sure_tell": "porous, light, flakes red", "confusable_with": ["star-iron-ore"] },
+    "cinnabar": { "category": "mineral", "tells": ["vermilion-red", "heavy crystalline", "mercury glint within"], "glass": "Vermilion-red crystalline stone; heavy, with a mercury glint inside.", "confusable_with": [], "hazard": true },
+    "moonstone": { "category": "mineral", "tells": ["milky blue adularescence", "cool translucence", "smooth cabochon"], "glass": "A milky stone with a floating blue sheen; cool and translucent.", "confusable_with": [] },
+
+    "ashford-signet": { "category": "relic", "tells": ["mill-and-wheel device", "worn silver", "Ashford motto on the rim"], "glass": "A worn silver signet: the Ashford mill-and-wheel, the house motto round the rim.", "sure_tell": "motto on the rim", "confusable_with": ["hollow-king-coin"] },
+    "hollow-king-coin": { "category": "relic", "tells": ["crowned-skull device", "debased silver", "no legend, a hollow crown"], "glass": "A debased silver coin: a crowned skull, a hollow crown, and no legend at all.", "sure_tell": "no legend", "confusable_with": ["ashford-signet"] },
+    "drowned-saints-medal": { "category": "relic", "tells": ["verdigris bronze", "saint bound in reeds", "salt-pitted face"], "glass": "Verdigris bronze; a saint bound in reeds, the face salt-pitted.", "confusable_with": [] },
+    "wax-effigy": { "category": "relic", "tells": ["moulded tallow figure", "hair-and-nail binding", "cold pressed seal at the base"], "glass": "A moulded tallow figure, a binding of hair and nail, a cold seal pressed at the base.", "confusable_with": [], "forgery_tells": ["smeared thumb-seal, not pressed", "machine-cast seams", "wrong tallow, bleeds oil"], "forgery_glass": "The seal at the base is a smeared thumbprint, not a true press; the tallow is machine-cast, seams still on it, and it bleeds oil." }
+  },
+
+  "postings": {
+    "_tab": "Quest Board — postings, their gates, and standing orders",
+    "cistern-wisp-swarm": { "target": "minor mana apparition", "rank_min": "bronze", "ward_required": [] },
+    "barrow-gloam": { "target": "revenant-light apparition", "rank_min": "gold", "ward_required": [] },
+    "mana-wyrm-sheddings": { "type": "collection", "target": "shed scale of a living mana-wyrm", "rank_min": "gold", "ward_required": [] },
+    "cliff-nest-survey": { "type": "survey", "proof_item": "griffon-feather", "rank_min": "bronze" },
+    "well-shrine-drowned-saint": { "target": "water-bound apparition", "ward_required": ["cleric", "water"], "rank_min": "silver" },
+    "sunken-barrow-blade": { "type": "retrieval", "location": "sunken-barrow", "rank_min": "bronze" },
+    "ashford-mill-ledger": { "type": "retrieval", "assigned_to": "odd-eyes-party", "status": "afield", "token": "ashford-mill-ledger-token" },
+    "gloomfen-lurker": { "target": "fen-bound stalker apparition", "rank_min": "silver", "ward_required": [] },
+    "ember-drake-roost": { "target": "roosting ember-drake (minor fire-elemental beast)", "rank_min": "gold", "ward_required": [] },
+    "tanglewood-survey": { "type": "survey", "proof_item": "cockatrice-plume", "rank_min": "bronze" },
+    "crypt-of-bells-cleanse": { "target": "bell-tolling revenant apparition", "ward_required": ["cleric"], "rank_min": "silver" },
+    "millpond-retrieval": { "type": "retrieval", "location": "millpond", "rank_min": "bronze" },
+    "collapsed-mine-rescue": { "type": "rescue", "location": "collapsed-mine", "ward_required": ["earth"], "rank_min": "silver" },
+    "saltmarsh-haunt": { "target": "salt-bound apparition", "ward_required": ["water"], "rank_min": "bronze" },
+    "apothecary-standing-order": { "type": "standing_order", "item": "moonwort", "accept": { "min": 2, "max": 4, "unit": "dram" } },
+    "infirmary-standing-order": { "type": "standing_order", "item": "kingsfoil", "total": { "needed": 1, "unit": "sprig" } },
+    "warded-transport-order": { "type": "standing_order", "item": "quicksilver-tears", "accept": { "min": 1, "max": 2, "unit": "dram" }, "requires": ["hazard seal"] },
+    "forge-standing-order": { "type": "standing_order", "item": "star-iron-ore", "accept": { "min": 3, "max": 6, "unit": "dram" } },
+    "temple-standing-order": { "type": "standing_order", "item": "sunwort", "total": { "needed": 2, "unit": "sprig" } },
+    "tannery-standing-order": { "type": "standing_order", "item": "troll-bile", "accept": { "min": 2, "max": 5, "unit": "dram" } }
+  },
+
+  "rank_ledger": {
+    "_tab": "Rank Ledger — adventurer cards on file (null = no card)",
+    "hulbr-odd-eye": { "rank": "bronze", "dues": "current" },
+    "doss-yellowknife": { "rank": "silver", "dues": "current" },
+    "ganton-reeve": null
+  },
+
+  "rankup_thresholds": {
+    "_tab": "Rank-Up Schedule — distinct sealed completions required",
+    "copper->bronze": 3,
+    "bronze->silver": 5,
+    "silver->gold": 8,
+    "gold->platinum": 13
+  },
+
+  "archive": {
+    "_tab": "Completion Archive — sealed quest slips, one per genuine completion",
+    "ashford-mill-ledger-token": { "seal": "genuine", "posting": "ashford-mill-ledger" },
+    "two-rivers-logbook": { "entries": 3, "distinct_seals": 3, "all_owner": "two-rivers" },
+    "culpepper-logbook": { "entries": 3, "distinct_seals": 2, "note": "one seal impression appears twice; archive holds a single slip for it" },
+
+    "_tokens_note": "Completion tokens for completion_claim visits — each { seal, posting, assigned_to }; the claimant must match assigned_to for an approve (a genuine seal held by the wrong party is the claimant fail, see ivy-threnody). assigned_to values resolve in the roster's party ids.",
+    "saltmarsh-haunt-token": { "seal": "genuine", "posting": "saltmarsh-haunt", "assigned_to": "the-quiet-three" },
+    "millpond-retrieval-token": { "seal": "genuine", "posting": "millpond-retrieval", "assigned_to": "brackwater-hunt" },
+    "crypt-of-bells-token": { "seal": "genuine", "posting": "crypt-of-bells-cleanse", "assigned_to": "odd-eyes-party" },
+    "tanglewood-survey-token": { "seal": "genuine", "posting": "tanglewood-survey", "assigned_to": "the-quiet-three" },
+    "gloomfen-lurker-token": { "seal": "genuine", "posting": "gloomfen-lurker", "assigned_to": "brackwater-hunt" },
+
+    "_logbooks_note": "One <adv-id>-logbook per Adventurer Directory entry, mirroring adventurers.json.logbook { entries, distinct_seals, all_owner }. distinct_seals < entries marks a duplicate-seal fail (castor-thorn 3/2, sable-thorn 8/7); entries below the rank-up threshold marks an under-threshold fail (lysa-ironquill 1, tessa-hollow 2).",
+    "adv-brek-hollow-logbook": { "entries": 3, "distinct_seals": 3, "all_owner": "adv-brek-hollow" },
+    "adv-yria-saltcrag-logbook": { "entries": 5, "distinct_seals": 5, "all_owner": "adv-yria-saltcrag" },
+    "adv-torvald-ember-logbook": { "entries": 8, "distinct_seals": 8, "all_owner": "adv-torvald-ember" },
+    "adv-nima-green-logbook": { "entries": 5, "distinct_seals": 5, "all_owner": "adv-nima-green" },
+    "adv-castor-thorn-logbook": { "entries": 3, "distinct_seals": 2, "all_owner": "adv-castor-thorn", "note": "one seal impression appears twice — a reused seal; archive holds a single slip for it" },
+    "adv-lysa-ironquill-logbook": { "entries": 1, "distinct_seals": 1, "all_owner": "adv-lysa-ironquill" },
+    "adv-brand-hollow-logbook": { "entries": 8, "distinct_seals": 8, "all_owner": "adv-brand-hollow" },
+    "adv-perrin-saltcrag-logbook": { "entries": 5, "distinct_seals": 5, "all_owner": "adv-perrin-saltcrag" },
+    "adv-oona-ember-logbook": { "entries": 5, "distinct_seals": 5, "all_owner": "adv-oona-ember" },
+    "adv-huld-green-logbook": { "entries": 3, "distinct_seals": 3, "all_owner": "adv-huld-green" },
+    "adv-sable-thorn-logbook": { "entries": 8, "distinct_seals": 7, "all_owner": "adv-sable-thorn", "note": "one seal impression appears twice — a reused seal; archive holds a single slip for it" },
+    "adv-miro-ironquill-logbook": { "entries": 13, "distinct_seals": 13, "all_owner": "adv-miro-ironquill" },
+    "adv-tessa-hollow-logbook": { "entries": 2, "distinct_seals": 2, "all_owner": "adv-tessa-hollow" },
+    "adv-garret-saltcrag-logbook": { "entries": 3, "distinct_seals": 3, "all_owner": "adv-garret-saltcrag" },
+    "adv-vesk-ember-logbook": { "entries": 5, "distinct_seals": 5, "all_owner": "adv-vesk-ember" },
+    "adv-wynn-green-logbook": { "entries": 8, "distinct_seals": 8, "all_owner": "adv-wynn-green" }
+  },
+
+  "cipher_table": {
+    "_tab": "Chapter Ciphers — how a genuine transfer card from each chapter is sealed",
+    "_note": "`mark` + `seal` are the genuine transfer-card impression; `glass` is the examined-description a GENUINE seal returns (the derivation source for a valid roster_change). A forged reading is composed by the generator — borrow another chapter's mark, or swap the seal medium wax->ink (see sable-lorn's Ironquill forgery: four bars in ink, not five in wax).",
+    "hollowmere": { "mark": "triple-notched wave", "seal": "pressed wax", "glass": "A triple-notched wave pressed deep in wax; the impression clean and unbroken." },
+    "ironquill": { "mark": "five-bar comb", "seal": "pressed wax", "glass": "A five-bar comb pressed in wax, each bar crisp and even." },
+    "greenhollow": { "mark": "twin-leaf sprig", "seal": "pressed wax", "glass": "A twin-leaf sprig pressed in green wax; the veins struck sharp." },
+    "saltcrag": { "mark": "three-peaked crag", "seal": "pressed wax", "glass": "Three jagged peaks pressed in grey wax, salt-flecked at the edges." },
+    "emberwatch": { "mark": "banked-flame", "seal": "pressed wax", "glass": "A banked-flame device pressed in red wax, still faintly warm." },
+    "thornwatch": { "mark": "crossed-briar", "seal": "pressed wax", "glass": "Two crossed briars pressed in wax; the thorns bite clean into the seal." }
+  },
+
+  "drop_table": {
+    "_tab": "Dungeon Drops — what is a genuine drop, its floor, and its season",
+    "phoenix-ember-resin": { "is_drop": true, "floor": 4, "season": "summer", "base_bounty": 40 },
+    "frost-lily-petal": { "is_drop": true, "floor": 7, "season": "winter", "base_bounty": 55 },
+    "shadow-moss": { "is_drop": true, "floor": 2, "season": "spring", "base_bounty": 20 },
+    "ember-drake-scale": { "is_drop": true, "floor": 5, "season": "summer", "base_bounty": 45 },
+    "glacier-pearl": { "is_drop": true, "floor": 6, "season": "winter", "base_bounty": 50 },
+    "mandrake-root": { "is_drop": true, "floor": 3, "season": "autumn", "base_bounty": 30 },
+    "basilisk-eye": { "is_drop": true, "floor": 8, "season": "autumn", "base_bounty": 70 },
+    "sunfire-opal": { "is_drop": true, "floor": 5, "season": "summer", "base_bounty": 50 },
+    "wraithsilk": { "is_drop": true, "floor": 4, "season": "autumn", "base_bounty": 40 },
+    "deeproot-amber": { "is_drop": true, "floor": 3, "season": "spring", "base_bounty": 35 }
+  },
+
+  "season": {
+    "_tab": "Season Wheel — the current turn of the year gates which drops can spawn",
+    "current": "summer",
+    "wheel": ["spring", "summer", "autumn", "winter"]
+  },
+
+  "payout": {
+    "_tab": "Payout Rule — how a dungeon-drop commission is quoted",
+    "formula": "total = round(base_bounty * depth_multiplier) + in_season_premium",
+    "depth_multiplier": "1 + 0.25 * floor",
+    "in_season_premium": 10,
+    "note": "Only quotable when the drop is genuine, in season, and a registered party's reach_floor >= the drop's floor."
+  },
+
+  "roster": {
+    "_tab": "Active Roster — parties registered in the guild right now (read by fieldability, reach, and welcome/farewell)",
+    "parties": [
+      { "id": "odd-eyes-party", "lead": "hulbr-odd-eye", "rank": "gold", "reach_floor": 5, "wards": [], "status": "afield", "location": "sunken-barrow" },
+      { "id": "brackwater-hunt", "lead": "mira-brack", "rank": "silver", "reach_floor": 6, "wards": ["fire"], "status": "in" },
+      { "id": "the-quiet-three", "lead": "no-name", "rank": "bronze", "reach_floor": 3, "wards": [], "status": "in" },
+      { "id": "ironquill-delvers", "lead": "adv-miro-ironquill", "rank": "platinum", "reach_floor": 6, "wards": ["earth"], "status": "in" }
+    ],
+    "_note": "No party carries a cleric or water ward -> the well-shrine (cleric|water) stays unfieldable, and enrolling a water-warded taker (Perrick Vane / adv-oona-ember) would flip it. One earth-warded party (Ironquill Delvers) is registered, so collapsed-mine-rescue (earth) is fieldable; crypt-of-bells-cleanse (cleric) stays gated until a cleric taker enrols. Deepest reach is still Floor 6 -> the Floor-7 frost-lily and Floor-8 basilisk-eye stay unreachable."
+  }
+}
