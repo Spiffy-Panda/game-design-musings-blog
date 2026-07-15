@@ -1,0 +1,47 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- A drum head as a 16-step sequencer ring: the money beat on the rim
+       (kick at 12 & 6 o'clock, snare at 3 & 9, hats on the other even ticks),
+       crossed sticks over the head. Stroke-led; colors via the row's --m-* vars. -->
+  <g fill="none" stroke-linecap="round">
+    <!-- 16 step ticks (quarters longer/heavier) -->
+    <g stroke="var(--m-line, #ddd3bf)" stroke-width="2.5">
+      <line x1="129.1" y1="29.7" x2="132.1" y2="22.5"/>
+      <line x1="153.7" y1="46.3" x2="159.4" y2="40.6"/>
+      <line x1="170.3" y1="70.9" x2="177.5" y2="67.9"/>
+      <line x1="170.3" y1="129.1" x2="177.5" y2="132.1"/>
+      <line x1="153.7" y1="153.7" x2="159.4" y2="159.4"/>
+      <line x1="129.1" y1="170.3" x2="132.1" y2="177.5"/>
+      <line x1="70.9" y1="170.3" x2="67.9" y2="177.5"/>
+      <line x1="46.3" y1="153.7" x2="40.6" y2="159.4"/>
+      <line x1="29.7" y1="129.1" x2="22.5" y2="132.1"/>
+      <line x1="29.7" y1="70.9" x2="22.5" y2="67.9"/>
+      <line x1="46.3" y1="46.3" x2="40.6" y2="40.6"/>
+      <line x1="70.9" y1="29.7" x2="67.9" y2="22.5"/>
+    </g>
+    <g stroke="var(--m-muted, #7b7263)" stroke-width="3">
+      <line x1="100" y1="30" x2="100" y2="18"/>
+      <line x1="170" y1="100" x2="182" y2="100"/>
+      <line x1="100" y1="170" x2="100" y2="182"/>
+      <line x1="30" y1="100" x2="18" y2="100"/>
+    </g>
+    <!-- the head + tension ring -->
+    <circle cx="100" cy="100" r="56" stroke="var(--m-ink, #26221c)" stroke-width="2.5"/>
+    <circle cx="100" cy="100" r="47" stroke="var(--m-line, #ddd3bf)" stroke-width="1.5"/>
+    <!-- crossed sticks (tips beaded) -->
+    <line x1="60" y1="146" x2="146" y2="56" stroke="var(--m-ink, #26221c)" stroke-width="4.5"/>
+    <line x1="56" y1="62" x2="144" y2="148" stroke="var(--m-ink, #26221c)" stroke-width="4.5"/>
+  </g>
+  <circle cx="146" cy="56" r="6" fill="var(--m-ink, #26221c)"/>
+  <circle cx="144" cy="148" r="6" fill="var(--m-ink, #26221c)"/>
+  <!-- the money beat on the rim: kick (accent), snare (accent2), hats (muted) -->
+  <circle cx="100" cy="24" r="8" fill="var(--m-accent, #d4552a)"/>
+  <circle cx="100" cy="176" r="8" fill="var(--m-accent, #d4552a)"/>
+  <circle cx="176" cy="100" r="8" fill="var(--m-accent2, #b9821f)"/>
+  <circle cx="24" cy="100" r="8" fill="var(--m-accent2, #b9821f)"/>
+  <g fill="none" stroke="var(--m-muted, #7b7263)" stroke-width="2.5">
+    <circle cx="153.7" cy="46.3" r="4.5"/>
+    <circle cx="153.7" cy="153.7" r="4.5"/>
+    <circle cx="46.3" cy="153.7" r="4.5"/>
+    <circle cx="46.3" cy="46.3" r="4.5"/>
+  </g>
+</svg>

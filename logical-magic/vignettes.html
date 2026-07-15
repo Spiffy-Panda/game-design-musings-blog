@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logical Magic — Everyday Records</title>
+<style>
+  /* ————————————————— tokens (the LoMa set) ————————————————— */
+  :root{
+    --ground:#ece8dd; --surface:#f8f6ef; --card:#f3f0e6;
+    --line:#d9d3c2; --line2:#bfb7a2;
+    --ink:#262330; --ink2:#4e4a5c; --ink3:#767084;
+    --wax:#9c2f2f;     /* ∃ · the world's seat · hazard  */
+    --teal:#1e6e63;    /* ∀ · the warrant · the caster   */
+    --gilt:#7d5f1b;    /* grace · flips · settlement     */
+    --violet:#5a4fc0;  /* vessels · the second order     */
+    --wax-wash:rgba(156,47,47,.07); --teal-wash:rgba(30,110,99,.08);
+    --gilt-wash:rgba(125,95,27,.09);
+    --serif:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0d0f13; --surface:#161921; --card:#1b1f29;
+      --line:#272d3a; --line2:#3d4557;
+      --ink:#e0e3ec; --ink2:#a8afc0; --ink3:#868da0;
+      --wax:#ff9082; --teal:#5ed2bc; --gilt:#e2c168; --violet:#ab9ffc;
+      --wax-wash:rgba(255,144,130,.06); --teal-wash:rgba(94,210,188,.06);
+      --gilt-wash:rgba(226,193,104,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.7 var(--serif);
+    background-image:
+      radial-gradient(44% 40% at 88% 3%, var(--teal-wash), transparent 70%),
+      radial-gradient(48% 44% at 6% 100%, var(--gilt-wash), transparent 70%);
+  }
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(44px,9vh,96px) clamp(20px,5vw,48px) 72px}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--teal); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+
+  /* ————————————————— hero ————————————————— */
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  .eyebrow b{color:var(--gilt)}
+  h1{font:600 clamp(34px,6.5vw,56px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 16px}
+  .intro{font-size:clamp(16px,2.2vw,18.5px); color:var(--ink2); max-width:66ch; margin:0 0 8px}
+  .intro b{color:var(--ink)}
+
+  /* ————————————————— vignettes ————————————————— */
+  .vig{background:var(--surface); border:1px solid var(--line); border-top:3px solid var(--gilt);
+    border-radius:5px; margin:30px 0; padding:22px 26px 20px; overflow-wrap:break-word}
+  .vig:target{border-color:var(--gilt); box-shadow:0 0 0 1px var(--gilt)}
+  .vhead{display:flex; align-items:baseline; gap:8px 14px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:16px}
+  .handle{font:600 12.5px/1 var(--mono); letter-spacing:.04em; white-space:nowrap}
+  .handle a{color:var(--gilt); text-decoration:none; border-bottom:1px solid var(--line2); padding-bottom:1px}
+  .handle a:hover{border-bottom-color:var(--gilt)}
+  .handle a:focus-visible{outline:2px solid var(--gilt); outline-offset:2px}
+  .vhead h2{font:600 clamp(22px,3.4vw,29px)/1.2 var(--serif); margin:0; letter-spacing:-.01em}
+  .abstract{font-style:italic; color:var(--ink2); font-size:16.5px; line-height:1.6;
+    max-width:64ch; margin:0 0 20px; padding-left:16px; border-left:2px solid var(--line2)}
+  .body{max-width:68ch}
+  .body p{margin:0 0 16px; font-size:16.5px}
+  .body p:last-child{margin-bottom:0}
+  .body em, .abstract em{font-style:italic}
+
+  /* ————————————————— foot ————————————————— */
+  .foot{margin-top:48px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.85 var(--sans); color:var(--ink3); max-width:72ch}
+  .foot a{color:var(--ink2)}
+  .foot code{font:12px var(--mono)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Logical Magic (LoMa)</a></li>
+        <li><span aria-current="page">Everyday Records</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow"><b>LoMa</b> · companion page · everyday lives · LVIG.1–3</p>
+    <h1>Everyday Records</h1>
+    <p class="intro">Three ordinary days, filed low — the same law that audits the fireball and
+    the wish, run through a dying woman's name-scroll, a boundary treaty kept too well, and a
+    clean-broken arm. The strokes are few here and the flips fewer; the world reads every word
+    all the same.</p>
+
+    <!-- ══════════════════ LVIG.1 ══════════════════ -->
+    <article class="vig" id="lvig-1">
+      <div class="vhead">
+        <span class="handle"><a href="#lvig-1">LVIG.1</a></span>
+        <h2>Transcription Nights</h2>
+      </div>
+      <p class="abstract">A granddaughter takes her family shift on the heirloom name-scroll,
+      copying her dying grandmother a few thousand facts at a time, in a house where a soul is a
+      document you finish together.</p>
+      <div class="body">
+        <p>The scroll lived in a fruitwood case with a parish seal on the clasp, and it did not
+        leave the house. To hold another's name-scroll without right is to hold the person, and
+        the assizes are plain about that. So on the nights it was Wenna's turn she carried it only
+        as far as the table by the bed, unrolled the working leaf, trimmed the pen, and copied
+        until the candle guttered. A few thousand facts, some nights. It sounds like a great many.
+        It is nothing against a life.</p>
+
+        <p>Most of what she set down she was only copying. The old leaves had gone soft at the
+        folds and the ink was foxing, and an heirloom that means to last another keeping has to be
+        renewed — a fair hand onto fresh vellum, fact for fact, nothing added and nothing let fall.
+        That part went quickly. Copying is not living; you can lay down a thousand true things in a
+        night, if someone has already been to the trouble of making them true.</p>
+
+        <p>The making had taken Gran Merrild eighty years.</p>
+
+        <p>A true name runs near a million facts — the old count, give or take; the scribes round
+        it and so does everyone. Not grand facts. That she was left-handed. That she took her tea
+        over-steeped and complained of it and steeped it so again. The name of a dog forty years
+        dead. Her grandmother's holding, and the bound of it, and the year the beck shifted. Every
+        one had to be lived before it could be entered, and witnessed before it could be warranted,
+        because you cannot wish a fact onto a name-scroll. The world will not warrant a kindness
+        about a person that is not already so. A name is the one document that cannot be flattered.</p>
+
+        <p>Wenna had asked once, small, why a person could be finished and not the beck that ran
+        below the house. Her aunt had said: no one has ever finished a river. A river does not end,
+        and what does not end cannot be held entire — only people are small enough for that. It had
+        sounded like a sad thing to be told. She knew now it was the opposite.</p>
+
+        <p>They were finishing the name because a finished name is the surest instrument there is.
+        When the estate was read the clerk would want the dead woman named to the letter — not
+        <em>a</em> Merrild, of whom the rolls held four, but this one, under no reading of the word
+        that was not her. When the little ones were blessed as Merrild's own, someone would have to
+        hold Merrild in the saying, precisely, or the blessing would go wandering off and settle on
+        a stranger. An unfinished name has gaps. Gaps are where the wrong person gets in.</p>
+
+        <p>None of it was against her dying, and Wenna kept herself clear on the point, the way her
+        mother had been clear with her. The scroll does not argue with the Bedrock. Gran would die
+        on some plain afternoon like anyone, and stay dead, that being the oldest law and, they say,
+        the kindest, though it does not wear the face of kindness. What the scroll kept was not her
+        breath. It was her name — so that afterward, speaking of her, they would be speaking of her
+        and of no one else.</p>
+
+        <p>At the end there were only the last facts left, and those Wenna could copy from nowhere.
+        They had to come from Gran.</p>
+
+        <p>“Say it for the leaf,” she said, the pen ready. “The Harrow debt.”</p>
+
+        <p>“Forgiven.” The voice was down to a thread, but it was hers. “Say I forgave it. It's true
+        now. Now you may write it.”</p>
+
+        <p>Wenna wrote it. It was true now, so she could.</p>
+
+        <p>That was the hard seam of the work, and no one in the house pretended otherwise: to
+        finish a person is to have her complete and to be done, in the one stroke. The last leaf of
+        a name-scroll and the last day of the named are the same edge; you do not reach the one
+        without the other. She caught herself writing slower as the leaf filled, which helped
+        nothing, and which her mother, come to take the next shift, did not remark upon.</p>
+
+        <p>They finished it together, which is the only way it is ever finished — a hand at a time,
+        night over night, the pen going round the household as everything did that was worth keeping
+        and could not be plowed. That was how the keeping passed, too: not written into any will,
+        only learned at the table, one shift at a time, until the youngest hand was the steady one.
+        When the clerk took the completed scroll into the rolls he did not call it a soul. He called
+        it a sound name, sound to the Vell standard, entered and sealed. The house kept the other
+        word. A soul, they held, is a document you finish together — and then you have her whole.
+        Not returned; never that. But whole, which is the most and the least that can be done for
+        anyone, and enough.</p>
+      </div>
+    </article>
+
+    <!-- ══════════════════ LVIG.2 ══════════════════ -->
+    <article class="vig" id="lvig-2">
+      <div class="vhead">
+        <span class="handle"><a href="#lvig-2">LVIG.2</a></span>
+        <h2>The Letter Kept</h2>
+      </div>
+      <p class="abstract">A hedge-farmer's boundary treaty is being honored perfectly and horribly
+      by a fae reading nobody meant, and the visiting treaty lawyer must find the interpretation
+      before dark.</p>
+      <div class="body">
+        <p>The geese were where the widow had not put them.</p>
+
+        <p>Every dawn for a fortnight, Mave Cardew had found her flock stood in a neat rank along
+        the old ditch — the dead line, thirty paces inside her own field — watered and minded,
+        beaks all one way. Nothing had harmed them. Something had <em>kept</em> them. And the
+        milk-bowl she set at the yard gate each night was carried, by no hand she ever saw, out to
+        the fallen gatepost by the old well, and left there full and sweet: exactly as the accord
+        said milk should be left, at a gate, nightly. Only not her gate. Not this century's gate.</p>
+
+        <p>“They've not touched a feather,” she told the advocate. “That's the maddening of it. My
+        grandmother's grandmother signed the accord, and the fae have kept it to the letter every
+        night since. It's only the letter's gone… old.”</p>
+
+        <p>Advocate Serrel had ridden out from the assizes with a satchel of stamped writ-paper on
+        her knees, and she did not look up from the treaty-stone at the gate. She was reading it —
+        all of it, down past the fair clauses a farmer keeps by heart, through the copied-forward
+        boilerplate, to the last worn line. The way you read a thing when you have stopped hoping
+        the trouble lies in the part anyone bothers to read.</p>
+
+        <p>“Here.” She tapped a clause rubbed nearly smooth. “‘The fair folk shall keep to their
+        side of the hedge, and mind the marches and the beasts upon them.’ Your meant hedge is the
+        quick-set your people laid at the last survey. Sensible. Fixed on the ground.” She
+        straightened. “But the writ never says <em>which</em> hedge. It says ‘the hedge,’ and
+        trusts you to know. This stone has carried that trust two hundred years and never once been
+        asked to defend it.”</p>
+
+        <p>“There's only the one hedge,” said Mave.</p>
+
+        <p>“There is now. There was another.” Serrel nodded at the ditch. “That dead line your geese
+        are minded to — that was the boundary before the survey moved it. It predates the writing.
+        And a name no one pinned down will take any shape that fits it.” She said it the way one
+        says water runs downhill. “Out past your ditch lies a reading of this accord in which ‘the
+        hedge’ is the old line, and every clause of it is true, and something patient keeps house
+        there — leaving its milk, minding your beasts, never once breaking a term. You can't
+        out-argue it. The fault isn't a lie; it's a room your treaty left unlocked.”</p>
+
+        <p>Mave looked at the ditch, and at the light already going amber over it. “Can you lock
+        it?”</p>
+
+        <p>“I can narrow the meaning until only your hedge fits.” Serrel was already drawing paper.
+        “A definition rider — one clause, laid on the stone, fixing ‘the hedge’ as the quick-set
+        standing at the last survey, and no line before it. Once the writ says so, the old reading
+        stops being a reading of it at all. Their side goes back to being their side.” She glanced
+        west. “It must lie on the stone before dusk. The nightly clause settles at dark — that's
+        when they keep. A rider filed before then binds tonight's keeping to the meaning you meant.
+        Filed after, your geese walk to the old well one more night, and I've missed the fair with
+        you.”</p>
+
+        <p>She wrote standing, and she wrote short — for every clause added is a clause to be proved
+        consistent, and proof is paid in strokes, one to a step. Fewer things claimed, fewer steps
+        to warrant before her breath ran out. She read it through twice, counting the steps; then
+        she spoke it to the stone at a drilled four strokes a second, laying down the proof that the
+        narrowed accord still agreed with the Bedrock, and with itself. The stone took it. There was
+        no thunder — there is never thunder, only a boundary quietly ceasing to be true where it had
+        been true, a handful of facts turning over, nothing a vale that makes ten thousand a day
+        would feel.</p>
+
+        <p>The amber went to gray. Out at the old ditch the flock stirred, milled, and — finding no
+        line there any longer to be kept to — came wandering home to the water Mave had always meant
+        them.</p>
+
+        <p>“They'll bring your bowl to this gate tonight,” Serrel said, latching the satchel.
+        “They're honest. They were always honest. That was never the trouble.”</p>
+
+        <p>At the cart she paused. “Keep the rider with your deed. And read the whole of a thing
+        before you sign it renewed — down to the last line, the parts no one reads. That is the
+        whole of my trade.” She almost smiled. “The great Treaty they all keep under says as much,
+        at the top: <em>We do not fear the mage who breaks the law. We fear the one who reads it to
+        the end.</em> Your neighbors out past the ditch read yours to the end. My work is only to
+        get there first.”</p>
+      </div>
+    </article>
+
+    <!-- ══════════════════ LVIG.3 ══════════════════ -->
+    <article class="vig" id="lvig-3">
+      <div class="vhead">
+        <span class="handle"><a href="#lvig-3">LVIG.3</a></span>
+        <h2>Crack and Splint</h2>
+      </div>
+      <p class="abstract">A chirurgeon-logician's mending rite cracks clean (strokes forfeit, arm
+      untouched, exactly as promised), and patient and healer sit with the everyday arithmetic: pay
+      22 strokes again, or six weeks in a splint.</p>
+      <div class="body">
+        <p>The forearm was a good clean break, which Mistress Halder said aloud the way a
+        wheelwright says a good clean spoke — approvingly, and to no one. Tamsin, who coopered
+        barrels for the brewery on Cask Row and had felt a slipped hoop kick a stave up into her arm
+        that morning, did not find it good. But she had come to the right window. The plate by the
+        door read CHIRURGEON-LOGICIAN, VESSEL-CERTIFIED, and beneath it, smaller: <em>mends bottled
+        — never poured raw.</em></p>
+
+        <p>“Hold it as it lies.” Halder scoped the arm — this bone, these two ends, the sound shape
+        it wanted — and began to say the rite.</p>
+
+        <p>It is not a long saying. The Rite of Mending runs twenty-two strokes, and Halder said
+        them at the drilled four a second, so the whole of it took not quite six seconds: a low even
+        recitation, each step poured into the next — knit ▷ seat ▷ true ▷ close — nothing touching
+        the world yet, all of it held in the vessel until the last word would bottle it. Tamsin
+        braced for the warmth everyone promised came at the end, the small deep click of a bone
+        remembering where it lived.</p>
+
+        <p>It did not come. Halder reached the bottle, and the rite cracked.</p>
+
+        <p>She felt it decline to close — the warrant went to seat against the last step, found no
+        purchase, and rather than force it she let the whole pour fall. Twelve flips the world would
+        have spent on a mend; it spent none. The Record did not move. Tamsin's arm was exactly as
+        the morning had left it: broken, unmended, not one whit worse.</p>
+
+        <p>“Cracked,” Halder said, unbothered, already turning the arm to the light. “Good. That's
+        the vessel earning its keep — it mends you all the way or not at all. The mends that
+        frighten me are the ones that take when they shouldn't.” She pressed along the bone, two
+        inches above the fresh break, at a faint old ridge. “You broke this arm before. Long ago.
+        Set by hand?”</p>
+
+        <p>Tamsin had forgotten it entirely — a hayloft, a childhood, a bonesetter with a splint and
+        no rite, because rites were for people with coin. It had healed crooked by a hair, and she
+        had coopered on it twenty years without a thought.</p>
+
+        <p>“There it is.” Halder nodded, satisfied the way a healer is by a symptom that confesses.
+        “My scope told the world your bone was whole before this morning. It wasn't — it had an old
+        lie set into it. The rite went looking for the sound shape to mend you back toward, met that
+        ridge, and couldn't warrant the last step honestly. So it cracked. Cleanly. As it's built
+        to.” She said it like a proverb, and it was in fact a theorem: <em>a rite that cracks leaves
+        the world as it found it.</em></p>
+
+        <p>“So — is it mended?”</p>
+
+        <p>“It's untouched. The strokes are spent — I said them, the labor was real, those don't
+        come back — but nothing settled, so the world charged you nothing it didn't burn. Nothing at
+        all.” Halder wiped her hands. “And now I know the truth of the bone, I can scope it honestly:
+        mend the new break, leave the old ridge where it's lived its life. Same rite. Twenty-two
+        strokes again.”</p>
+
+        <p>Here was the arithmetic, and Tamsin did it the way everyone does — aloud and badly. “Six
+        seconds of talking, and I pay the same twice.”</p>
+
+        <p>“Six seconds of <em>saying</em>,” Halder agreed. “You're not paying for the seconds; any
+        fool can make noise for six seconds. You're paying that I can prove the saying sound before
+        I pour it — the certification, the vessel, the years I spent learning to crack instead of to
+        maim. The raw menders down Cask Row will pour you for a third of my fee, and every so often
+        they mend an arm to the wrong shape and name it the arm's fault.” She let it sit. “The
+        world's part in this is nothing. Twelve flips. The vale lays down ten thousand a day and
+        would never feel yours. It's my share that costs — the saying, not the settling.”</p>
+
+        <p>“And the splint?”</p>
+
+        <p>“No strokes, no coin. Six weeks. A cooper works one-handed for six weeks, or she doesn't
+        work.” Halder shrugged, kind and unsentimental. “That's the whole sum. My fee, and it's done
+        before you've buttoned your coat — or free and slow, and you nurse it through the summer
+        trade.”</p>
+
+        <p>Tamsin looked at the arm; at the old ridge she'd carried all this time unknowing; at the
+        door, and the barrels waiting on Cask Row. It was, in the end, the plainest kind of decision
+        — the sort the world leaves to ordinary people, having declined, cleanly, to make it for
+        them.</p>
+
+        <p>“Say it again,” she said. “The right way, this time.”</p>
+      </div>
+    </article>
+
+    <p class="foot">Three vignettes, filed low. The numbers keep the pitch's §8 contract — a mend
+    is twelve flips, a vale lays down ten thousand a day, a drilled hand runs four strokes a
+    second — because the everyday is where those constants are actually spent. Handles
+    <code>LVIG.1–3</code> are stable page furniture; cite them as you would the
+    <a href="pitch.html">pitch</a>'s <code>LOMA.n</code>. Back to <a href="index.html">the LoMa
+    set</a>. The mathematics is real; the lives are fiction.</p>
+  </div>
+</body>
+</html>

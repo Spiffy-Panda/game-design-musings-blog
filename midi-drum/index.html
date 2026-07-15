@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIDI Drum Coach — a practice tool as a game director</title>
+<style>
+  :root{
+    --ground:#efeadb; --surface:#f9f5ea; --line:#ddd3bf; --line2:#c2b79d;
+    --ink:#26221c; --ink2:#544d40; --ink3:#7b7263;
+    --orange:#d4552a; --amber:#a97a17; --green:#3f7d5c; --blue:#3568b8;
+    --orange-wash:rgba(212,85,42,.07); --amber-wash:rgba(169,122,23,.08);
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0f0e13; --surface:#17161d; --line:#2b2933; --line2:#413e4b;
+      --ink:#eae6dc; --ink2:#b3ada0; --ink3:#8f887a;
+      --orange:#ff7a45; --amber:#e8b45a; --green:#7ac89b; --blue:#7aa8f0;
+      --orange-wash:rgba(255,122,69,.06); --amber-wash:rgba(232,180,90,.05);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:16.5px/1.65 var(--sans);
+    background-image:
+      radial-gradient(44% 40% at 88% 4%, var(--orange-wash), transparent 70%),
+      radial-gradient(48% 44% at 6% 100%, var(--amber-wash), transparent 70%);
+  }
+  .wrap{max-width:860px; margin-inline:auto; padding:clamp(44px,9vh,100px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:650 clamp(32px,6vw,54px)/1.06 var(--sans); letter-spacing:-.02em; margin:0 0 14px}
+  h1 .brk{color:var(--ink3); font-weight:400}
+  .sub{font-size:clamp(16px,2.2vw,19px); color:var(--ink2); max-width:62ch; margin:0 0 40px}
+  h2{font:650 22px/1.3 var(--sans); letter-spacing:-.01em; margin:44px 0 12px}
+  p{max-width:70ch}
+  .prose p{margin:0 0 16px; color:var(--ink2)}
+  .prose strong{color:var(--ink)}
+  code{font:14px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+
+  /* claims */
+  .claims{list-style:none; margin:18px 0 0; padding:0; display:grid; gap:12px}
+  .claims li{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--orange);
+             border-radius:4px; padding:14px 18px 13px}
+  .claims li:nth-child(2n){border-left-color:var(--amber)}
+  .claims .hd{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px}
+  .claims .id{font:600 12px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+              border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .claims .ttl{font:640 16.5px/1.35 var(--sans)}
+  .claims p{margin:0; font-size:15px; color:var(--ink2)}
+
+  /* cards */
+  .cards{display:grid; gap:16px; margin-top:20px}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--surface);
+         border:1px solid var(--line); border-top:3px solid var(--orange); border-radius:4px;
+         padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease}
+  a.card:hover{border-color:var(--line2); border-top-color:var(--orange); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--orange); outline-offset:3px}
+  .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .card h3{font:640 23px/1.25 var(--sans); margin:8px 0 6px}
+  .card h3 .arrow{color:var(--ink3); font-weight:400}
+  .card p{margin:0; font-size:15px; color:var(--ink2); max-width:66ch}
+  .ghost{border:1.5px dashed var(--line2); border-radius:4px; padding:20px 24px 18px; color:var(--ink3)}
+  .ghost h3{font:640 20px/1.25 var(--sans); margin:8px 0 6px; color:var(--ink2)}
+  .ghost p{margin:0; font-size:14.5px; max-width:66ch}
+
+  .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:72ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--orange); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><span aria-current="page">MIDI Drum Coach</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow">A musing + a playable coach · self-contained, no build</p>
+    <h1><span class="brk">[</span>M<span class="brk">]</span>IDI <span class="brk">[</span>D<span class="brk">]</span>rum <span class="brk">[</span>C<span class="brk">]</span>oach</h1>
+    <p class="sub">Plug an electronic kit into the browser and get told what to play next.
+    The interesting design object isn't the notation or the sounds — it's the suggestion
+    engine, treated as a <strong>game director that shows its reasoning</strong>.</p>
+
+    <div class="prose">
+      <h2>The bet</h2>
+      <p>Rhythm games spend most of their budget faking an instrument — plastic guitars,
+      quantized lanes, charts that must be authored song by song — and the player's ceiling
+      is the chart's ceiling. An electronic drum kit inverts both halves for free. The
+      instrument is real, and it already speaks in clean events: a note number per pad, a
+      velocity, a millisecond timestamp. Web MIDI hands that stream to a webpage. Nobody
+      plugging in wants a chart; they want to get better. What's left to design is exactly
+      the part games are good at: <strong>the loop that decides what you should try
+      next</strong>.</p>
+      <p>That decider is a game director — dynamic difficulty adjustment wearing a
+      practical hat. Directors earn trust by being <em>legible</em>: the coach's director
+      is five rules you can read on the page, and every suggestion arrives with the rule
+      that fired, spoken plainly ("92% twice in a row at 96 BPM — same family, one level
+      up"). And it is <em>overridable</em>: the full pattern library sits right under the
+      suggestions, filters and all. A director you can audit and ignore is advice; one you
+      can't is a difficulty slider with delusions.</p>
+      <p>Everything else is presentation, borrowed from machines drummers already read.
+      Grooves render as step grids, not staves. Hits are judged in fixed millisecond
+      windows, and the score that matters is not the percentage but the <em>signed
+      bias</em> — whether you rush or drag — because that's the one number a human can act
+      on next loop.</p>
+
+      <h2 id="claims">Five claims</h2>
+      <ol class="claims">
+        <li id="mdc-1">
+          <div class="hd"><span class="id">MDC.1</span><span class="ttl">The kit is already the controller.</span></div>
+          <p>E-drums emit note-mapped, velocity-tagged, timestamped events — the hard input
+          problem rhythm games spend peripherals on is solved before the page loads. Design
+          effort belongs downstream of the instrument, not in imitating one.</p>
+        </li>
+        <li id="mdc-2">
+          <div class="hd"><span class="id">MDC.2</span><span class="ttl">Suggestion is a director problem — and directors should be legible.</span></div>
+          <p>Picking the next pattern from observed play <em>is</em> dynamic difficulty
+          adjustment. The coach's director is five visible rules, each suggestion cites the
+          rule that fired, and the library remains one click away. Auditable, overridable.</p>
+        </li>
+        <li id="mdc-3">
+          <div class="hd"><span class="id">MDC.3</span><span class="ttl">Notation is interface.</span></div>
+          <p>The 16-step machine grid says "play this" at a glance where a stave says
+          "decode this first." Meter lives in the layout: a shuffle isn't a new lesson, it's
+          a 12-cell grid — subdivision taught by the shape of the page.</p>
+        </li>
+        <li id="mdc-4">
+          <div class="hd"><span class="id">MDC.4</span><span class="ttl">Judge the gap, not the hit.</span></div>
+          <p>Windows in milliseconds (±30 perfect, ±70 good, ±120 off), misses and strays
+          tallied — but the coachable number is the signed mean: rushing or dragging, and by
+          how much. Accuracy scores the past; bias instructs the next bar.</p>
+        </li>
+        <li id="mdc-5">
+          <div class="hd"><span class="id">MDC.5</span><span class="ttl">Practice is already a core loop.</span></div>
+          <p>Count-in → loop → judge → suggest is a game loop with the fantasy of getting
+          better for real. Progression is pattern <em>families</em> — new textures, not just
+          faster tempos — so "level up" means the ghosted 'e', the open-hat off-beat, the
+          leaving of the hats for the toms.</p>
+        </li>
+      </ol>
+
+      <h2>The pages</h2>
+      <div class="cards">
+        <a class="card" href="coach.html">
+          <span class="no">I · The tool</span>
+          <h3>The Coach — plug in and play <span class="arrow">→</span></h3>
+          <p>Connect a kit over Web MIDI (or use the keyboard and on-screen pads — no
+          hardware required), monitor your hits, audition thirteen grooves as step grids
+          with a synthesized kit, then practice: count-in, millisecond judging, rush/drag
+          bias, and a director that suggests the next groove and says why.</p>
+        </a>
+        <div class="ghost">
+          <span class="no">II · candidate</span>
+          <h3>The Fill Director</h3>
+          <p>Suggest one-bar fills as <em>transitions</em> between grooves and judge the
+          re-entry downbeat — the moment fills exist to protect. The director learns which
+          exits you can land.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="foot">The coach runs entirely in the page — hits are processed locally and
+    never leave the tab. Web MIDI works in Chromium browsers and Firefox; Safari hasn't
+    shipped it, so there the keyboard/click pads carry the demo (the grids and sounds work
+    everywhere). Handles <code>MDC.1</code>–<code>MDC.5</code> above are stable and
+    append-only; cite them from other pages.</p>
+  </div>
+</body>
+</html>

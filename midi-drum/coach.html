@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Coach — MIDI Drum Coach</title>
+<style>
+  :root{
+    --ground:#efeadb; --surface:#f9f5ea; --panel:#fdfaf1; --line:#ddd3bf; --line2:#c2b79d;
+    --ink:#26221c; --ink2:#544d40; --ink3:#7b7263;
+    --orange:#d4552a; --amber:#a97a17; --green:#3f7d5c; --blue:#3568b8; --red:#b03434;
+    --orange-wash:rgba(212,85,42,.07); --amber-wash:rgba(169,122,23,.08);
+    --cell:#efe8d6; --cell-line:#e2d8c2;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0f0e13; --surface:#17161d; --panel:#1c1b23; --line:#2b2933; --line2:#413e4b;
+      --ink:#eae6dc; --ink2:#b3ada0; --ink3:#8f887a;
+      --orange:#ff7a45; --amber:#e8b45a; --green:#7ac89b; --blue:#7aa8f0; --red:#f08a8a;
+      --orange-wash:rgba(255,122,69,.06); --amber-wash:rgba(232,180,90,.05);
+      --cell:#232230; --cell-line:#2e2c3a;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:15.5px/1.6 var(--sans);
+    background-image:
+      radial-gradient(44% 40% at 88% 4%, var(--orange-wash), transparent 70%),
+      radial-gradient(48% 44% at 6% 100%, var(--amber-wash), transparent 70%);
+  }
+  .wrap{max-width:1080px; margin-inline:auto; padding:clamp(30px,5vh,56px) clamp(18px,4vw,44px) 72px}
+  h1{font:650 clamp(26px,4.5vw,38px)/1.1 var(--sans); letter-spacing:-.015em; margin:0 0 6px}
+  .sub{color:var(--ink2); margin:0 0 24px; max-width:74ch}
+  h2{font:650 16px/1.3 var(--sans); letter-spacing:.02em; margin:0 0 10px}
+  .eyebrow{font:600 11px/1.4 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 10px}
+  code{font:13px var(--mono)}
+  button{font:600 13.5px/1 var(--sans); color:var(--ink); background:var(--panel);
+         border:1px solid var(--line2); border-radius:5px; padding:9px 14px; cursor:pointer}
+  button:hover{border-color:var(--ink3)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+  button[disabled]{opacity:.45; cursor:default}
+  button.primary{background:var(--orange); border-color:var(--orange); color:#fff}
+  @media (prefers-color-scheme: dark){ button.primary{color:#1a120c} }
+  select,input[type=number]{font:14px var(--sans); color:var(--ink); background:var(--panel);
+      border:1px solid var(--line2); border-radius:5px; padding:7px 8px}
+  label.ck{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--ink2); user-select:none}
+
+  /* ————— breadcrumb ————— */
+  .crumbs{margin:0 0 1.4rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--orange); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+
+  /* ————— MIDI bar ————— */
+  .bar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;
+       background:var(--surface); border:1px solid var(--line); border-radius:6px;
+       padding:12px 14px; margin:0 0 14px}
+  .chip{display:inline-flex; align-items:center; gap:7px; font:600 13px/1 var(--sans); color:var(--ink2)}
+  .chip .dot{width:9px; height:9px; border-radius:50%; background:var(--ink3); flex:none}
+  .chip.ok .dot{background:var(--green)} .chip.warn .dot{background:var(--amber)} .chip.err .dot{background:var(--red)}
+  .lastev{font:12px var(--mono); color:var(--ink3); min-width:0}
+  .calib{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink3)}
+  .calib input{accent-color:var(--orange)}
+  .spacer{flex:1}
+
+  /* ————— pads ————— */
+  .pads{display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:8px; margin:0 0 20px}
+  .pad{position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+       background:var(--surface); border:1px solid var(--line); border-radius:6px;
+       padding:10px 11px 9px; cursor:pointer; user-select:none; -webkit-user-select:none;
+       touch-action:manipulation; transition:transform .06s ease}
+  .pad:active{transform:scale(.97)}
+  .pad .pname{font:600 13px/1.2 var(--sans)}
+  .pad .pkey{font:11px var(--mono); color:var(--ink3); border:1px solid var(--line); border-radius:3px; padding:1px 5px}
+  .pad .pvel{position:absolute; left:0; bottom:0; height:3px; width:0%; background:var(--lane,var(--orange));
+             border-radius:0 0 0 6px; transition:width .08s ease}
+  .pad.lit{border-color:var(--lane,var(--orange)); box-shadow:inset 0 0 0 1.5px var(--lane,var(--orange))}
+  .pad.stray{border-color:var(--red); box-shadow:inset 0 0 0 1.5px var(--red)}
+  .pad .pnotes{display:none; font:10px var(--mono); color:var(--ink3); letter-spacing:.02em}
+  .pads.mapping .pad .pnotes{display:block}
+  .pads.mapping .pad{cursor:crosshair}
+  .pad.learn{border-color:var(--amber); box-shadow:inset 0 0 0 1.5px var(--amber)}
+  .maphelp{display:none; font-size:12.5px; color:var(--ink2); background:var(--surface);
+           border:1px dashed var(--line2); border-radius:6px; padding:9px 12px; margin:-6px 0 14px;
+           align-items:center; gap:10px; flex-wrap:wrap}
+  .maphelp.on{display:flex}
+  .maphelp button{padding:5px 10px; font-size:12px; flex:none}
+  .maphelp span{max-width:72ch}
+
+  /* ————— columns ————— */
+  .cols{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:18px}
+  @media (max-width:980px){ .cols{grid-template-columns:1fr} }
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:16px 18px}
+
+  /* ————— pattern grid ————— */
+  .pmeta{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+  .pmeta h2{font-size:20px; margin:0}
+  .pmeta .tag{font:600 11px/1 var(--sans); letter-spacing:.06em; text-transform:uppercase; color:var(--ink3)}
+  .teaches{color:var(--ink2); font-size:13.5px; margin:6px 0 14px; max-width:70ch}
+  .gridwrap{overflow-x:auto; padding-bottom:4px}
+  .pgrid{display:grid; gap:2px; align-items:center; width:max-content}
+  .pgrid .rlab{font:600 11px/1 var(--sans); letter-spacing:.04em; color:var(--ink3);
+               padding-right:8px; text-align:right; white-space:nowrap}
+  .pgrid .clab{font:10.5px var(--mono); color:var(--ink3); text-align:center; padding-bottom:2px}
+  .cell{position:relative; width:26px; height:26px; background:var(--cell);
+        border:1px solid var(--cell-line); border-radius:4px}
+  @media (max-width:560px){ .cell{width:22px; height:22px} }
+  .cell.bstart{border-left:2px solid var(--line2)}
+  .cell::after{content:""; position:absolute; inset:0; margin:auto; border-radius:50%;
+               width:0; height:0; background:var(--lane,var(--orange))}
+  .cell.v1::after{width:8px; height:8px; opacity:.55}
+  .cell.v2::after{width:14px; height:14px}
+  .cell.v3::after{width:16px; height:16px; box-shadow:0 0 0 2.5px var(--cell), 0 0 0 4px var(--lane,var(--orange))}
+  .cell.ph{background:var(--panel); border-color:var(--ink3)}
+  .cell.jP{outline:2.5px solid var(--green); outline-offset:-2px}
+  .cell.jG{outline:2.5px solid var(--amber); outline-offset:-2px}
+  .cell.jO{outline:2.5px solid var(--orange); outline-offset:-2px}
+  .cell.jM{outline:2.5px dashed var(--red); outline-offset:-2px}
+
+  .transport{display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin:14px 0 8px}
+  .bpm{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--ink2)}
+  .bpm input{width:64px}
+  .statline{font:12.5px var(--mono); color:var(--ink2); margin:4px 0 0; min-height:1.2em}
+  .statline .P{color:var(--green)} .statline .B{color:var(--amber)}
+  details.how{margin-top:12px; font-size:12.5px; color:var(--ink3)}
+  details.how summary{cursor:pointer; font-weight:600}
+  details.how ul{margin:6px 0 0; padding-left:18px}
+
+  /* ————— director ————— */
+  .dirnote{font-size:13px; color:var(--ink2); font-style:italic; border-left:3px solid var(--amber);
+           padding:2px 0 2px 10px; margin:0 0 12px; min-height:1.2em}
+  .dcards{display:grid; gap:10px}
+  .dcard{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--orange);
+         border-radius:5px; padding:11px 13px}
+  .dcard.alt{border-left-color:var(--line2)}
+  .dcard .nm{font:640 15px/1.3 var(--sans)}
+  .dcard .mt{font:11.5px var(--mono); color:var(--ink3); margin:2px 0 5px}
+  .dcard .why{font-size:12.5px; color:var(--ink2); font-style:italic; margin:0 0 8px}
+  .dcard button{padding:6px 11px; font-size:12.5px}
+  .listen{font:12px var(--mono); color:var(--ink3); margin-top:12px; border-top:1px dashed var(--line); padding-top:9px}
+
+  /* ————— library ————— */
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px}
+  .chips button{padding:5px 10px; font-size:12px; border-radius:99px}
+  .chips button.on{background:var(--ink); color:var(--ground); border-color:var(--ink)}
+  .lib{display:grid; gap:7px; max-height:430px; overflow-y:auto; padding-right:2px}
+  .lrow{display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+        background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:9px 12px}
+  .lrow:hover{border-color:var(--line2)}
+  .lrow.cur{border-color:var(--orange); box-shadow:inset 0 0 0 1px var(--orange)}
+  .lrow .lnm{font:640 13.5px/1.25 var(--sans)}
+  .lrow .lmt{font:11px var(--mono); color:var(--ink3)}
+  .lrow .lvl{margin-left:auto; font:11px var(--mono); color:var(--amber); letter-spacing:.12em; flex:none}
+
+  .foot{margin-top:36px; border-top:1px solid var(--line); padding-top:14px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:78ch}
+  .foot a{color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../index.html">Game Design Musings</a></li>
+      <li><a href="index.html">MIDI Drum Coach</a></li>
+      <li><span aria-current="page">The Coach</span></li>
+    </ol>
+  </nav>
+
+  <h1>The Coach</h1>
+  <p class="sub">Plug in an e-kit — or don't: the on-screen pads and keyboard feed the same
+  pipeline. Audition a groove, practice it against the click, and the director will tell
+  you what to try next, and why.</p>
+
+  <div class="bar">
+    <span class="chip" id="midiChip"><span class="dot"></span><span id="midiTxt">MIDI: not connected</span></span>
+    <button class="primary" id="btnMidi">Enable MIDI</button>
+    <select id="devSel" hidden aria-label="MIDI input device"><option value="all">All devices</option></select>
+    <button id="btnMap">Map pads</button>
+    <span class="lastev" id="lastEv"></span>
+    <span class="spacer"></span>
+    <span class="calib" title="If judgments read late even when you're on the click, raise this until the bias reads ~0.">
+      input latency <input type="range" id="calib" min="-150" max="150" step="5" value="0"> <span id="calibVal">0 ms</span>
+    </span>
+  </div>
+
+  <div class="maphelp" id="mapHelp">
+    <span id="mapMsg"></span>
+    <button id="btnMapReset">Reset custom map</button>
+  </div>
+
+  <div class="pads" id="pads"></div>
+
+  <div class="cols">
+    <section class="panel" id="patPanel">
+      <div class="pmeta">
+        <h2 id="pName"></h2>
+        <span class="tag" id="pTag"></span>
+      </div>
+      <p class="teaches" id="pTeaches"></p>
+      <div class="gridwrap"><div class="pgrid" id="pGrid"></div></div>
+      <div class="transport">
+        <button id="btnDemo">&#9654; Demo</button>
+        <button class="primary" id="btnPractice">&#9679; Practice</button>
+        <button id="btnStop" disabled>&#9632; Stop</button>
+        <span class="bpm">BPM <input type="number" id="bpm" min="40" max="220" step="1"></span>
+        <label class="ck"><input type="checkbox" id="ckMet" checked> click</label>
+        <label class="ck"><input type="checkbox" id="ckGuide" checked> guide</label>
+        <label class="ck"><input type="checkbox" id="ckThru" checked> pad sounds</label>
+      </div>
+      <p class="statline" id="loopLine">&nbsp;</p>
+      <p class="statline" id="rollLine">&nbsp;</p>
+      <details class="how">
+        <summary>How judging works</summary>
+        <ul>
+          <li>Windows: <b>±30 ms</b> perfect · <b>±70 ms</b> good · <b>±120 ms</b> off · beyond = stray. Unplayed steps = miss.</li>
+          <li><b>Bias</b> is the signed mean of your hit errors: positive = dragging (late), negative = rushing. It's the number to coach — see <a href="index.html#mdc-4">MDC.4</a>.</li>
+          <li>Only the lanes in the current grid are judged; everything else is free.</li>
+          <li>E-kit through an interface? Set the <b>input latency</b> slider until on-the-click playing reads bias ≈ 0.</li>
+        </ul>
+      </details>
+    </section>
+
+    <div style="display:grid; gap:18px; align-content:start">
+      <section class="panel">
+        <p class="eyebrow">The director</p>
+        <p class="dirnote" id="dirNote"></p>
+        <div class="dcards" id="dCards"></div>
+        <p class="listen" id="listenLine">Listening for free play…</p>
+      </section>
+      <section class="panel">
+        <p class="eyebrow">The library</p>
+        <div class="chips" id="styleChips"></div>
+        <div class="lib" id="lib"></div>
+      </section>
+    </div>
+  </div>
+
+  <p class="foot">Everything runs in the page: hits are processed locally and never leave the
+  tab (the latency setting and your pad map are the only things kept, in this browser's
+  storage). Web MIDI needs Chromium or Firefox and a permission grant; pads default to the
+  General MIDI drum map (kick 35/36, snare 37/38/40, hats 42/44/46, toms 41–50, cymbals
+  49–59) — if your kit speaks something else (hi-hats are notorious), the monitor line
+  shows the raw note and <b>Map pads</b> rebinds it by ear: click the lane, hit the drum.
+  Sounds are
+  synthesized on the spot; the first click anywhere wakes the audio engine. Part of the
+  <a href="index.html">MIDI Drum Coach</a> musing — the director's rules R1–R5 are the point
+  (<a href="index.html#mdc-2">MDC.2</a>).</p>
+</div>
+
+<script>
+'use strict';
+/* ============================== data ============================== */
+const LANE_ORDER = ['ohat','hat','ride','crash','tom1','tom2','snare','kick'];
+const LANES = {
+  kick :{label:'Kick',    key:' ', keyLabel:'space', color:'var(--orange)'},
+  snare:{label:'Snare',   key:'f', keyLabel:'F',     color:'var(--amber)'},
+  hat  :{label:'Hi-hat',  key:'j', keyLabel:'J',     color:'var(--blue)'},
+  ohat :{label:'Open hat',key:'k', keyLabel:'K',     color:'var(--blue)'},
+  tom1 :{label:'Tom hi',  key:'d', keyLabel:'D',     color:'var(--green)'},
+  tom2 :{label:'Tom lo',  key:'l', keyLabel:'L',     color:'var(--green)'},
+  crash:{label:'Crash',   key:'s', keyLabel:'S',     color:'var(--blue)'},
+  ride :{label:'Ride',    key:'i', keyLabel:'I',     color:'var(--blue)'},
+};
+const GM = {35:'kick',36:'kick',37:'snare',38:'snare',40:'snare',
+            42:'hat',44:'hat',46:'ohat',
+            48:'tom1',50:'tom1',47:'tom1',45:'tom2',43:'tom2',41:'tom2',
+            51:'ride',53:'ride',59:'ride',49:'crash',57:'crash',55:'crash',52:'crash'};
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+/* user note->lane bindings (Map pads) override the GM defaults */
+let USERMAP = {};
+try{ USERMAP = JSON.parse(localStorage.getItem('mdc:map')||'{}') || {}; }catch(e){ USERMAP = {}; }
+function saveMap(){ localStorage.setItem('mdc:map', JSON.stringify(USERMAP)); }
+function laneFor(note){ return USERMAP[note] || GM[note]; }
+
+/* step values: 0 off · 1 ghost · 2 hit · 3 accent */
+const PATTERNS = [
+ {id:'money', name:'The Money Beat', style:'rock', family:'money', level:1, bpm:92, grid:16,
+  hook:'the bedrock backbeat',
+  teaches:'Straight 8ths on the hat, backbeat on 2 & 4, kick on 1 & 3 — the beat under half of pop music.',
+  lanes:{hat:[3,0,2,0,3,0,2,0,3,0,2,0,3,0,2,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0]}},
+ {id:'fourfloor', name:'Four on the Floor', style:'dance', family:'floor', level:1, bpm:118, grid:16,
+  hook:'the floor does the counting',
+  teaches:'Kick on every quarter, open hat breathing on the off-beats. The count is in your foot now.',
+  lanes:{ohat:[0,0,2,0,0,0,2,0,0,0,2,0,0,0,2,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0]}},
+ {id:'halftime', name:'Half-Time', style:'rock', family:'feel', level:2, bpm:78, grid:16,
+  hook:'double the room, same tempo',
+  teaches:'Snare only on 3. Nothing else changed, but the bar is suddenly twice as wide.',
+  lanes:{hat:[3,0,2,0,2,0,2,0,3,0,2,0,2,0,2,0],
+         snare:[0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0]}},
+ {id:'motown', name:'Motown Four', style:'soul', family:'orbit', level:2, bpm:108, grid:16,
+  hook:'four snares a bar',
+  teaches:'Snare on every quarter, leaning into 2 & 4 — the tambourine trick played as a drum part.',
+  lanes:{hat:[2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0],
+         snare:[2,0,0,0,3,0,0,0,2,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0]}},
+ {id:'kickand', name:'The & of 3', style:'rock', family:'money', level:2, bpm:96, grid:16,
+  hook:'one kick off the expected line',
+  teaches:'The money beat plus a single kick on the "&" of 3 — syncopation 101, one note at a time.',
+  lanes:{hat:[3,0,2,0,3,0,2,0,3,0,2,0,3,0,2,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,3,0,2,0,0,0,0,0]}},
+ {id:'money16', name:'Sixteenth Money', style:'pop', family:'money', level:2, bpm:84, grid:16,
+  hook:'two hands on the hat',
+  teaches:'Both hands share the hat in 16ths; the right hand leaves for the backbeat and returns without the time wobbling.',
+  lanes:{hat:[3,2,2,2,3,2,2,2,3,2,2,2,3,2,2,2],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0]}},
+ {id:'disco', name:'Pea Soup Disco', style:'dance', family:'floor', level:3, bpm:116, grid:16,
+  hook:'the open-hat off-beat',
+  teaches:'Closed hat on the beat, open on every "&" — the hat pedal does the dancing while the kick holds the floor.',
+  lanes:{hat:[2,0,0,0,2,0,0,0,2,0,0,0,2,0,0,0],
+         ohat:[0,0,3,0,0,0,3,0,0,0,3,0,0,0,3,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0]}},
+ {id:'funkghost', name:'Ghost Notes', style:'funk', family:'funk', level:3, bpm:98, grid:16,
+  hook:'whispered snares',
+  teaches:'Ghosted snares tucked between the backbeats — dynamics as rhythm. The small notes make the big ones land.',
+  lanes:{hat:[3,0,2,0,3,0,2,0,3,0,2,0,3,0,2,0],
+         snare:[0,0,0,1,3,0,0,1,0,0,0,0,3,1,0,0],
+         kick:[3,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0]}},
+ {id:'shuffle', name:'The Shuffle', style:'blues', family:'feel', level:3, bpm:100, grid:12,
+  hook:'the triplet grid',
+  teaches:'Twelve cells, middle one silent — swing as geometry. Same backbeat, rounder corners.',
+  lanes:{hat:[3,0,2,3,0,2,3,0,2,3,0,2],
+         snare:[0,0,0,3,0,0,0,0,0,3,0,0],
+         kick:[3,0,0,0,0,0,3,0,0,0,0,0]}},
+ {id:'tomgroove', name:'Leave the Hats', style:'tribal', family:'orbit', level:3, bpm:104, grid:16,
+  hook:'the ostinato leaves the hats',
+  teaches:'The 8th-note engine moves to the floor tom, with a two-note answer on the high tom each bar. The hat’s job was portable all along.',
+  lanes:{tom1:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2],
+         tom2:[3,0,2,0,2,0,2,0,3,0,2,0,2,0,0,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0]}},
+ {id:'funk16', name:'Sixteenth Funk', style:'funk', family:'funk', level:4, bpm:100, grid:16,
+  hook:'kicks on "e" and "&" under 16ths',
+  teaches:'Unbroken 16ths above, kicks landing on the "e" of 2 and the "&" of 3 below — independence, priced honestly.',
+  lanes:{hat:[3,2,2,2,3,2,2,2,3,2,2,2,3,2,2,2],
+         snare:[0,0,0,0,3,0,0,1,0,1,0,0,3,0,0,0],
+         kick:[3,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0]}},
+ {id:'boombap', name:'Boom Bap', style:'hip-hop', family:'breaks', level:4, bpm:90, grid:16,
+  hook:'the storytelling kick',
+  teaches:'The kick talks between the backbeats — 1, the "a" of 2, the "&" of 3 — with a ghost sneaking into the turnaround.',
+  lanes:{hat:[3,0,2,0,3,0,2,0,3,0,2,0,3,0,2,0],
+         snare:[0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,1],
+         kick:[3,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0]}},
+ {id:'amen', name:'Break Skeleton', style:'breaks', family:'breaks', level:5, bpm:136, grid:16,
+  hook:'the displaced backbeat',
+  teaches:'The snare’s last hit lands on the "&" of 4, not on 4 — the backbeat itself moves. The skeleton under a thousand jungle records.',
+  lanes:{hat:[2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0],
+         snare:[0,0,0,0,3,0,0,0,0,2,0,0,0,0,3,0],
+         kick:[3,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0]}},
+];
+const byId = Object.fromEntries(PATTERNS.map(p=>[p.id,p]));
+
+/* ============================== state ============================== */
+const $ = s => document.querySelector(s);
+const S = {
+  pat: PATTERNS[0], bpm: PATTERNS[0].bpm, mode:'idle',
+  calib: +(localStorage.getItem('mdc:calib')||0),
+  midi:null, devFilter:'all',
+  mapping:false, learnLane:null,
+  history:[],            // finalized loops: {patId, acc, bias, bpm, counts}
+  played:{},             // patId -> #finalized loops
+  listen:[],             // free-play hits: {lane, t(ms)}
+  styleFilter:'all',
+};
+
+/* ============================== audio ============================== */
+const A = {ctx:null, master:null, noise:null, perfOffset:0};
+function ensureCtx(){
+  if(A.ctx) { if(A.ctx.state==='suspended') A.ctx.resume(); return A.ctx; }
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  A.ctx = new Ctx();
+  A.master = A.ctx.createGain(); A.master.gain.value = .9; A.master.connect(A.ctx.destination);
+  const len = A.ctx.sampleRate; const buf = A.ctx.createBuffer(1, len, A.ctx.sampleRate);
+  const d = buf.getChannelData(0); for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+  A.noise = buf;
+  A.perfOffset = performance.now()/1000 - A.ctx.currentTime;
+  return A.ctx;
+}
+function env(g, t, peak, decay){ g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(peak, t+.003);
+  g.gain.exponentialRampToValueAtTime(.0001, t+decay); }
+function osc(type, f0, f1, slide, t, peak, decay){
+  const o=A.ctx.createOscillator(), g=A.ctx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f0,t);
+  if(f1) o.frequency.exponentialRampToValueAtTime(f1, t+slide);
+  env(g,t,peak,decay); o.connect(g); g.connect(A.master); o.start(t); o.stop(t+decay+.05);
+}
+function noiseHit(t, peak, decay, filtType, freq, q){
+  const src=A.ctx.createBufferSource(); src.buffer=A.noise; src.loop=true;
+  const f=A.ctx.createBiquadFilter(); f.type=filtType; f.frequency.value=freq; if(q) f.Q.value=q;
+  const g=A.ctx.createGain(); env(g,t,peak,decay);
+  src.connect(f); f.connect(g); g.connect(A.master); src.start(t); src.stop(t+decay+.05);
+}
+function voice(lane, vel, t){        // vel 0..1
+  if(!A.ctx) return; t = t || A.ctx.currentTime;
+  const v = .25 + .75*Math.pow(vel,1.4);
+  switch(lane){
+    case 'kick' : osc('sine',150,48,.09,t,.95*v,.24); noiseHit(t,.25*v,.012,'highpass',1500,0); break;
+    case 'snare': noiseHit(t,.5*v,.16,'bandpass',1800,.8); osc('triangle',192,120,.06,t,.4*v,.09); break;
+    case 'hat'  : noiseHit(t,.42*v,.045,'highpass',7500,0); break;
+    case 'ohat' : noiseHit(t,.38*v,.3,'highpass',7000,0); break;
+    case 'tom1' : osc('sine',210,124,.14,t,.7*v,.24); break;
+    case 'tom2' : osc('sine',140,82,.16,t,.75*v,.3); break;
+    case 'crash': noiseHit(t,.4*v,.9,'highpass',4500,0); break;
+    case 'ride' : noiseHit(t,.22*v,.4,'highpass',6200,0); noiseHit(t,.15*v,.09,'bandpass',5200,6); break;
+  }
+}
+function click(t, accent){ osc('square', accent?2100:1650, 0, 0, t, accent?.4:.28, .035); }
+
+/* ============================== pads / hits ============================== */
+const padEls = {};
+function buildPads(){
+  const host = $('#pads');
+  for(const lane of ['kick','snare','hat','ohat','tom1','tom2','crash','ride']){
+    const L = LANES[lane];
+    const b = document.createElement('button');
+    b.className='pad'; b.style.setProperty('--lane', L.color);
+    b.innerHTML = `<span class="pname">${L.label}</span><span class="pkey">${L.keyLabel}</span><span class="pnotes"></span><span class="pvel"></span>`;
+    b.addEventListener('pointerdown', e=>{
+      e.preventDefault(); ensureCtx();
+      if(S.mapping){ armLearn(lane); return; }
+      hit(lane,.8,performance.now());
+    });
+    b.addEventListener('dblclick', ()=>{
+      if(!S.mapping) return;
+      for(const n in USERMAP) if(USERMAP[n]===lane) delete USERMAP[n];
+      saveMap(); if(S.learnLane===lane) S.learnLane=null;
+      $('#mapMsg').textContent=`${L.label}: custom notes cleared — GM defaults back for this lane.`;
+      renderPadNotes();
+    });
+    host.appendChild(b); padEls[lane]=b;
+  }
+}
+const padTimers = {};
+function flashPad(lane, vel, cls){
+  const el = padEls[lane]; if(!el) return;
+  el.classList.remove('lit','stray'); void el.offsetWidth; el.classList.add(cls||'lit');
+  el.querySelector('.pvel').style.width = Math.round(vel*100)+'%';
+  clearTimeout(padTimers[lane]);
+  padTimers[lane] = setTimeout(()=>{ el.classList.remove('lit','stray');
+    el.querySelector('.pvel').style.width='0%'; }, 160);
+}
+/* one hit pipeline for MIDI + keyboard + pointer */
+function hit(lane, vel, tPerfMs){
+  flashPad(lane, vel);
+  if($('#ckThru').checked && A.ctx) voice(lane, vel, 0);
+  S.listen.push({lane, t:tPerfMs});
+  if(S.listen.length>400) S.listen.splice(0, S.listen.length-400);
+  renderListen();
+  if(S.mode==='practice') judge(lane, vel, tPerfMs);
+}
+document.addEventListener('keydown', e=>{
+  if(e.repeat) return;
+  const t = e.target;
+  if(t && (t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON')) return;
+  const k = e.key===' ' ? ' ' : e.key.toLowerCase();
+  for(const lane in LANES){ if(LANES[lane].key===k){ e.preventDefault(); ensureCtx(); hit(lane,.8,performance.now()); return; } }
+});
+
+/* ============================== MIDI ============================== */
+function midiChip(cls, txt){ const c=$('#midiChip'); c.className='chip '+(cls||''); $('#midiTxt').textContent=txt; }
+function noteName(n){ return NOTE_NAMES[n%12] + (Math.floor(n/12)-1); }
+function wireInputs(){
+  if(!S.midi) return;
+  const ins=[...S.midi.inputs.values()];
+  for(const inp of ins) inp.onmidimessage = onMidi;
+  const sel=$('#devSel');
+  const cur=S.devFilter;
+  sel.innerHTML='<option value="all">All devices</option>' +
+    ins.map(i=>`<option value="${i.id}">${i.name||('input '+i.id)}</option>`).join('');
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all'; S.devFilter=sel.value;
+  sel.hidden = ins.length===0;
+  if(ins.length===0) midiChip('warn','MIDI on — no input devices found (plug in and it will appear)');
+  else midiChip('ok', `MIDI: ${ins.length} input${ins.length>1?'s':''} — ${ins.map(i=>i.name||'?').join(', ').slice(0,60)}`);
+}
+function onMidi(e){
+  if(S.devFilter!=='all' && e.target && e.target.id!==S.devFilter) return;
+  const d=e.data; if(!d || d.length<3) return;
+  const type=d[0]&0xf0, note=d[1], vel=d[2];
+  if(type!==0x90 || vel===0) return;              // note-on only
+  const tp = (e.timeStamp && e.timeStamp>0) ? e.timeStamp : performance.now();
+  handleNote(note, vel, tp);
+}
+function handleNote(note, vel, tp){
+  if(S.learnLane){                                 // Map pads: bind and consume
+    const lane=S.learnLane;
+    USERMAP[note]=lane; saveMap(); S.learnLane=null;
+    if(A.ctx) voice(lane, .8, 0);
+    flashPad(lane, vel/127);
+    $('#mapMsg').textContent=`Bound note ${note} (${noteName(note)}) → ${LANES[lane].label}. Click another pad to keep going, or press Done mapping.`;
+    $('#lastEv').textContent=`note ${note} (${noteName(note)}) · vel ${vel} · bound → ${LANES[lane].label}`;
+    renderPadNotes();
+    return;
+  }
+  const lane = laneFor(note);
+  $('#lastEv').textContent = `note ${note} (${noteName(note)}) · vel ${vel} · ${lane?LANES[lane].label:'unmapped — use Map pads'}`;
+  if(lane) hit(lane, vel/127, tp);
+}
+function armLearn(lane){
+  S.learnLane = (S.learnLane===lane) ? null : lane;
+  $('#mapMsg').textContent = S.learnLane
+    ? `Waiting… hit the drum you want bound to ${LANES[lane].label}. (Click the pad again to cancel; double-click clears its custom notes.)`
+    : 'Click a pad below, then hit the drum you want bound to it. Double-click a pad to clear its custom notes.';
+  renderPadNotes();
+}
+function renderPadNotes(){
+  for(const lane in padEls){
+    const el=padEls[lane];
+    el.classList.toggle('learn', S.learnLane===lane);
+    const mine=Object.keys(USERMAP).filter(n=>USERMAP[n]===lane);
+    const gm=Object.keys(GM).filter(n=>GM[n]===lane && !(n in USERMAP));
+    el.querySelector('.pnotes').textContent =
+      S.learnLane===lane ? 'hit a pad…' : (mine.length ? 'yours: '+mine.join(' ') : 'GM only');
+    el.title = `${LANES[lane].label} — notes: ${[...mine, ...gm.map(n=>n+' (GM)')].join(', ')||'none'}`;
+  }
+}
+$('#btnMidi').addEventListener('click', async ()=>{
+  ensureCtx();
+  if(!navigator.requestMIDIAccess){ midiChip('err','Web MIDI unavailable in this browser — pads and keys still work'); $('#btnMidi').disabled=true; return; }
+  try{
+    S.midi = await navigator.requestMIDIAccess();
+    S.midi.onstatechange = wireInputs;
+    wireInputs();
+    $('#btnMidi').textContent='Rescan';
+  }catch(err){ midiChip('err','MIDI permission denied — pads and keys still work'); }
+});
+$('#devSel').addEventListener('change', e=>{ S.devFilter=e.target.value; });
+$('#btnMap').addEventListener('click', ()=>{
+  S.mapping=!S.mapping;
+  if(!S.mapping) S.learnLane=null;
+  $('#pads').classList.toggle('mapping', S.mapping);
+  $('#mapHelp').classList.toggle('on', S.mapping);
+  const b=$('#btnMap'); b.textContent=S.mapping?'Done mapping':'Map pads'; b.classList.toggle('primary', S.mapping);
+  if(S.mapping) $('#mapMsg').textContent = (S.midi ? '' : 'Enable MIDI first so your kit can be heard. ')+
+    'Click a pad below, then hit the drum you want bound to it. Your bindings show on each pad; GM defaults still apply underneath. Double-click a pad to clear its custom notes.';
+  renderPadNotes();
+});
+$('#btnMapReset').addEventListener('click', ()=>{
+  USERMAP={}; saveMap(); S.learnLane=null; renderPadNotes();
+  $('#mapMsg').textContent='Custom map cleared — GM defaults back in force.';
+});
+
+/* ============================== pattern grid ============================== */
+let cellsByStep = [];   // step -> [{el, lane, v}]
+function spb(p){ return p.grid/4; }
+function countLabel(p, s){
+  const b = Math.floor(s/spb(p))+1, k = s%spb(p);
+  if(spb(p)===4) return [''+b,'e','&','a'][k];
+  return [''+b,'t','l'][k];
+}
+function renderPattern(){
+  const p=S.pat;
+  $('#pName').textContent=p.name;
+  $('#pTag').textContent=`${p.style} · level ${p.level} · ${p.grid===12?'triplet grid':'16th grid'}`;
+  $('#pTeaches').textContent=p.teaches;
+  $('#bpm').value=S.bpm;
+  const host=$('#pGrid'); host.innerHTML='';
+  host.style.gridTemplateColumns=`auto repeat(${p.grid}, auto)`;
+  cellsByStep = Array.from({length:p.grid},()=>[]);
+  // header row
+  host.appendChild(el('div',''));
+  for(let s=0;s<p.grid;s++){ host.appendChild(el('div',countLabel(p,s),'clab')); }
+  // lane rows
+  for(const lane of LANE_ORDER){
+    if(!(lane in p.lanes)) continue;
+    host.appendChild(el('div', LANES[lane].label, 'rlab'));
+    for(let s=0;s<p.grid;s++){
+      const v=p.lanes[lane][s]||0;
+      const c=document.createElement('div');
+      c.className='cell'+(v?(' v'+v):'')+(s%spb(p)===0?' bstart':'');
+      c.style.setProperty('--lane', LANES[lane].color);
+      cellsByStep[s].push({el:c, lane, v});
+      host.appendChild(c);
+    }
+  }
+  renderLib();
+}
+function el(tag, txt, cls){ const d=document.createElement(tag); if(cls)d.className=cls; d.textContent=txt; return d; }
+function clearCol(s, all){
+  for(const c of (cellsByStep[s]||[])) c.el.classList.remove('ph', ...(all?['jP','jG','jO','jM']:[]));
+}
+function cellAt(lane, s){ return (cellsByStep[s]||[]).find(c=>c.lane===lane); }
+
+/* ============================== transport / scheduler ============================== */
+const T = {timer:null, raf:null, t0:0, stepDur:0, loopDur:0, n:0, lastCol:-1,
+           expected:[], strays:{}, finalized:new Set(), loopsDone:0};
+function setMode(m){
+  S.mode=m;
+  $('#btnStop').disabled = m==='idle';
+  $('#btnDemo').disabled = m!=='idle';
+  $('#btnPractice').disabled = m!=='idle';
+}
+function start(mode){
+  stop();
+  ensureCtx();
+  const p=S.pat;
+  T.stepDur = 60/S.bpm/spb(p);
+  T.loopDur = T.stepDur*p.grid;
+  const countIn = (mode==='practice') ? 4*(60/S.bpm) : 0;
+  T.t0 = A.ctx.currentTime + .15 + countIn;
+  T.n = 0; T.lastCol=-1; T.expected=[]; T.strays={}; T.finalized=new Set(); T.loopsDone=0;
+  A.perfOffset = performance.now()/1000 - A.ctx.currentTime;
+  for(let s=0;s<p.grid;s++) clearCol(s,true);
+  if(mode==='practice'){
+    for(let b=0;b<4;b++) click(T.t0 - countIn + b*(60/S.bpm), b===0);
+    $('#loopLine').textContent='count-in…';
+  } else $('#loopLine').textContent='demo…';
+  setMode(mode);
+  T.timer = setInterval(tick, 25); tick();
+  T.raf = requestAnimationFrame(playhead);
+}
+function stop(){
+  if(T.timer){ clearInterval(T.timer); T.timer=null; }
+  if(T.raf){ cancelAnimationFrame(T.raf); T.raf=null; }
+  if(S.mode!=='idle'){ if(T.lastCol>=0) clearCol(T.lastCol); setMode('idle'); }
+}
+function tick(){
+  const p=S.pat, now=A.ctx.currentTime, horizon=.28;
+  while(T.t0 + T.n*T.stepDur < now + horizon){
+    scheduleStep(T.n); T.n++;
+    if(T.n > 40000) { stop(); break; }             // runaway guard
+  }
+  if(S.mode==='practice') finalizeLoops(now);
+}
+function scheduleStep(n){
+  const p=S.pat, s=n%p.grid, loop=Math.floor(n/p.grid), tn=T.t0+n*T.stepDur;
+  if($('#ckMet').checked && s%spb(p)===0) click(tn, s===0);
+  for(const lane in p.lanes){
+    const v=p.lanes[lane][s]||0; if(!v) continue;
+    const vel = v===1?.32 : v===2?.7 : 1;
+    if(S.mode==='demo') voice(lane, vel, tn);
+    else if(S.mode==='practice'){
+      if($('#ckGuide').checked) voice(lane, vel*.45, tn);
+      T.expected.push({lane, v, tn, s, loop, hit:null});
+    }
+  }
+}
+function playhead(){
+  T.raf = requestAnimationFrame(playhead);
+  if(!A.ctx || S.mode==='idle') return;
+  const now=A.ctx.currentTime;
+  if(now < T.t0){
+    if(S.mode==='practice'){
+      const left = Math.ceil((T.t0-now)/(60/S.bpm));
+      $('#loopLine').textContent = 'count-in… '+left;
+    }
+    return;
+  }
+  const g = Math.floor((now-T.t0)/T.stepDur);
+  const col = ((g % S.pat.grid)+S.pat.grid)%S.pat.grid;
+  if(col!==T.lastCol){
+    if(T.lastCol>=0) clearCol(T.lastCol);
+    clearCol(col, S.mode==='practice');           // entering a column clears last loop's marks
+    for(const c of cellsByStep[col]) c.el.classList.add('ph');
+    T.lastCol=col;
+  }
+}
+/* ============================== judging ============================== */
+function judge(lane, vel, tPerfMs){
+  const tA = tPerfMs/1000 - A.perfOffset - S.calib/1000;
+  if(tA < T.t0 - .16) return;                      // before the bar starts: free
+  let best=null, bd=Infinity;
+  for(const e of T.expected){
+    if(e.lane!==lane || e.hit) continue;
+    const d=tA-e.tn, ad=Math.abs(d);
+    if(ad<bd){ bd=ad; best=e; }
+  }
+  const laneJudged = lane in S.pat.lanes;
+  if(!laneJudged) return;                          // free lane
+  if(best && bd<=.12){
+    const j = bd<=.03?'P' : bd<=.07?'G' : 'O';
+    best.hit={d:tA-best.tn, j};
+    const c=cellAt(lane, best.s);
+    if(c){ c.el.classList.remove('jP','jG','jO','jM'); c.el.classList.add('j'+j); }
+  } else {
+    const loop = Math.max(0, Math.floor((tA-T.t0)/T.loopDur));
+    T.strays[loop]=(T.strays[loop]||0)+1;
+    flashPad(lane, vel, 'stray');
+  }
+}
+function finalizeLoops(now){
+  const done={};
+  for(const e of T.expected){
+    const end=T.t0+(e.loop+1)*T.loopDur;
+    if(now > end+.22 && !T.finalized.has(e.loop)) (done[e.loop]=done[e.loop]||[]).push(e);
+  }
+  for(const k in done){
+    const loop=+k; T.finalized.add(loop);
+    const ent=done[k];
+    let P=0,G=0,O=0,M=0,sum=0,nj=0;
+    for(const e of ent){
+      if(!e.hit){ M++; const c=cellAt(e.lane,e.s); if(c && !c.el.classList.contains('ph')) c.el.classList.add('jM'); }
+      else{ sum+=e.hit.d; nj++; if(e.hit.j==='P')P++; else if(e.hit.j==='G')G++; else O++; }
+    }
+    const total=ent.length, strays=T.strays[loop]||0;
+    const acc = total? (P + .7*G + .25*O)/total : 0;
+    const bias = nj? Math.round(sum/nj*1000) : 0;
+    T.expected = T.expected.filter(e=>e.loop!==loop);
+    T.loopsDone++;
+    S.history.push({patId:S.pat.id, acc, bias, bpm:S.bpm, P,G,O,M,strays});
+    if(S.history.length>40) S.history.shift();
+    S.played[S.pat.id]=(S.played[S.pat.id]||0)+1;
+    const biasTxt = bias===0?'±0 ms':(bias>0?`+${bias} ms dragging`:`${bias} ms rushing`);
+    $('#loopLine').innerHTML =
+      `loop ${T.loopsDone} · <span class="P">${Math.round(acc*100)}%</span> · `+
+      `${P}✦ ${G}✓ ${O}~ ${M}✗${strays?` ${strays} stray`:''} · <span class="B">${biasTxt}</span>`;
+    const r=rolling();
+    if(r) $('#rollLine').textContent =
+      `rolling (${r.n} loops): ${Math.round(r.acc*100)}% · bias ${r.bias>0?'+':''}${r.bias} ms`;
+    renderDirector('loop');
+  }
+}
+function rolling(){
+  const h=S.history.filter(x=>x.patId===S.pat.id).slice(-3);
+  if(!h.length) return null;
+  return {n:h.length,
+    acc:h.reduce((a,x)=>a+x.acc,0)/h.length,
+    bias:Math.round(h.reduce((a,x)=>a+x.bias,0)/h.length)};
+}
+
+/* ============================== the director ============================== */
+function familyStep(pat, dir){
+  const fam=PATTERNS.filter(p=>p.family===pat.family && p.id!==pat.id);
+  const want=pat.level+dir;
+  let c=fam.filter(p=>dir>0?p.level>pat.level:p.level<pat.level)
+         .sort((a,b)=>Math.abs(a.level-want)-Math.abs(b.level-want))[0];
+  if(!c) c=PATTERNS.filter(p=>p.id!==pat.id && (dir>0?p.level===pat.level+1:p.level===pat.level-1))
+                   .sort((a,b)=>(S.played[a.id]||0)-(S.played[b.id]||0))[0];
+  return c||null;
+}
+function altPicks(exclude, level, n){
+  return PATTERNS.filter(p=>!exclude.includes(p.id))
+    .sort((a,b)=>(Math.abs(a.level-level)-Math.abs(b.level-level)) ||
+                 ((S.played[a.id]||0)-(S.played[b.id]||0)))
+    .slice(0,n);
+}
+function renderDirector(cause){
+  const cards=[]; let note='';
+  const r=rolling(), pct=r?Math.round(r.acc*100):0;
+  const recent=S.listen.filter(h=>performance.now()-h.t<60000);
+  if(r && r.n>=2 && r.acc>=.9){
+    const nx=familyStep(S.pat,+1);
+    note=`R2 · Held ${pct}% twice at ${S.bpm} BPM — time to add a texture.`;
+    if(nx) cards.push({p:nx, why:`Same ladder, one rung up: ${nx.hook}.`});
+  } else if(r && r.acc>=.6 && r.n>=2){
+    if(Math.abs(r.bias)>15){
+      const dirW=r.bias>0?'dragging':'rushing';
+      note=`R3 · ${pct}%, but you're ${dirW} by ${Math.abs(r.bias)} ms — the fix is tempo, not notes.`;
+      cards.push({p:S.pat, bpmOverride:Math.max(40,Math.round(S.bpm*.92)), why:`Same groove at ${Math.max(40,Math.round(S.bpm*.92))} BPM; aim the bias at ±0 before speeding back up.`});
+    } else {
+      note=`R3 · ${pct}% and steady — one more clean pass, or a sibling for variety.`;
+      const sib=altPicks([S.pat.id], S.pat.level, 1)[0];
+      cards.push({p:S.pat, why:'One more pass; two loops over 90% moves you up.'});
+      if(sib) cards.push({p:sib, why:`Sidestep at level ${sib.level}: ${sib.hook}.`});
+    }
+  } else if(r && r.n>=2){
+    const dn=familyStep(S.pat,-1);
+    note=`R4 · ${pct}% — no shame in it: shrink the problem, keep the groove.`;
+    if(dn) cards.push({p:dn, why:`One rung down: ${dn.hook}. Or retry slower (button below loads ${Math.round(S.bpm*.85)} BPM).`});
+    cards.push({p:S.pat, bpmOverride:Math.max(40,Math.round(S.bpm*.85)), why:`Same groove, ${Math.max(40,Math.round(S.bpm*.85))} BPM — accuracy first, speed later.`});
+  } else if(!r && recent.length>=8){
+    const lanes=new Set(recent.map(h=>h.lane));
+    const core=['hat','snare','kick'].filter(l=>!lanes.has(l));
+    if(core.length){
+      const miss=core[0];
+      const sug=PATTERNS.filter(p=>p.level<=2 && miss in p.lanes).sort((a,b)=>a.level-b.level)[0];
+      note=`R5 · Heard ${recent.length} free hits but no ${LANES[miss].label.toLowerCase()} — grooves need all three legs.`;
+      if(sug) cards.push({p:sug, why:`Puts the ${LANES[miss].label.toLowerCase()} to work: ${sug.hook}.`});
+    } else {
+      const gaps=[...recent].sort((a,b)=>a.t-b.t); let ds=[];
+      for(let i=1;i<gaps.length;i++){ const d=gaps[i].t-gaps[i-1].t; if(d>40&&d<2000) ds.push(d); }
+      ds.sort((a,b)=>a-b); const med=ds.length?Math.round(ds[Math.floor(ds.length/2)]):0;
+      const busy=med&&med<180;
+      const sug=altPicks([S.pat.id], busy?3:1, 1)[0];
+      note=`R5 · Free play heard (median gap ${med||'—'} ms) — you're ${busy?'busy: here’s something with sixteenth traffic':'sparse: start from the bedrock'}.`;
+      if(sug) cards.push({p:sug, why:busy?`Matches your density: ${sug.hook}.`:`Ground floor: ${sug.hook}.`});
+    }
+  } else {
+    note='R1 · Nothing heard yet — start at the bedrock. Practice puts a click under you; two clean loops and I’ll raise the stakes.';
+    cards.push({p:byId.money, why:'The beat under half of pop music; everything else here is a mutation of it.'});
+  }
+  for(const alt of altPicks(cards.map(c=>c.p.id), (cards[0]?cards[0].p.level:1), 3-cards.length))
+    cards.push({p:alt, why:`Also on the shelf: ${alt.hook}.`, alt:true});
+  $('#dirNote').textContent=note;
+  const host=$('#dCards'); host.innerHTML='';
+  for(const c of cards.slice(0,3)){
+    const d=document.createElement('div'); d.className='dcard'+(c.alt?' alt':'');
+    const bpmTxt=c.bpmOverride?`${c.bpmOverride} BPM (suggested)`:`${c.p.bpm} BPM`;
+    d.innerHTML=`<div class="nm">${c.p.name}</div>
+      <div class="mt">${c.p.style} · level ${c.p.level} · ${bpmTxt}</div>
+      <p class="why">"${c.why}"</p>`;
+    const b=document.createElement('button');
+    b.textContent = c.p.id===S.pat.id && !c.bpmOverride ? 'Reload' : 'Load it';
+    b.addEventListener('click',()=>loadPattern(c.p.id, c.bpmOverride));
+    d.appendChild(b); host.appendChild(d);
+  }
+}
+let listenTimer=null;
+function renderListen(){
+  if(listenTimer) return;
+  listenTimer=setTimeout(()=>{
+    listenTimer=null;
+    const recent=S.listen.filter(h=>performance.now()-h.t<60000);
+    if(!recent.length){ $('#listenLine').textContent='Listening for free play…'; return; }
+    const lanes=[...new Set(recent.map(h=>h.lane))].map(l=>LANES[l].label).join(' · ');
+    $('#listenLine').textContent=`free play (60 s): ${recent.length} hits · ${lanes}`;
+    if(S.mode!=='practice') renderDirector('listen');
+  }, 600);
+}
+
+/* ============================== library ============================== */
+function renderLib(){
+  const styles=['all',...new Set(PATTERNS.map(p=>p.style))];
+  const ch=$('#styleChips'); ch.innerHTML='';
+  for(const s of styles){
+    const b=document.createElement('button'); b.textContent=s;
+    b.className=S.styleFilter===s?'on':'';
+    b.addEventListener('click',()=>{ S.styleFilter=s; renderLib(); });
+    ch.appendChild(b);
+  }
+  const host=$('#lib'); host.innerHTML='';
+  for(const p of PATTERNS){
+    if(S.styleFilter!=='all' && p.style!==S.styleFilter) continue;
+    const b=document.createElement('button'); b.className='lrow'+(p.id===S.pat.id?' cur':'');
+    b.innerHTML=`<span><span class="lnm">${p.name}</span><br><span class="lmt">${p.style} · ${p.bpm} BPM · ${p.grid===12?'triplets':'16ths'}</span></span>
+                 <span class="lvl">${'●'.repeat(p.level)}${'○'.repeat(5-p.level)}</span>`;
+    b.addEventListener('click',()=>loadPattern(p.id));
+    host.appendChild(b);
+  }
+}
+function loadPattern(id, bpmOverride){
+  stop();
+  S.pat=byId[id]; S.bpm=bpmOverride||S.pat.bpm;
+  $('#loopLine').innerHTML='&nbsp;'; $('#rollLine').innerHTML='&nbsp;';
+  renderPattern();
+  renderDirector('load');
+}
+
+/* ============================== wiring ============================== */
+$('#btnDemo').addEventListener('click',()=>start('demo'));
+$('#btnPractice').addEventListener('click',()=>start('practice'));
+$('#btnStop').addEventListener('click',stop);
+$('#bpm').addEventListener('change',e=>{
+  const v=Math.max(40,Math.min(220,Math.round(+e.target.value||S.bpm)));
+  e.target.value=v;
+  if(v!==S.bpm){ S.bpm=v; if(S.mode!=='idle'){ stop(); $('#loopLine').textContent='tempo changed — press play again'; } }
+});
+const calibEl=$('#calib');
+calibEl.value=S.calib; $('#calibVal').textContent=S.calib+' ms';
+calibEl.addEventListener('input',e=>{
+  S.calib=+e.target.value; $('#calibVal').textContent=S.calib+' ms';
+  localStorage.setItem('mdc:calib', String(S.calib));
+});
+if(!navigator.requestMIDIAccess) midiChip('warn','Web MIDI unavailable in this browser — pads and keys still work');
+else midiChip('', 'MIDI: not connected');
+
+buildPads();
+renderPadNotes();
+renderPattern();
+renderDirector('init');
+</script>
+</body>
+</html>

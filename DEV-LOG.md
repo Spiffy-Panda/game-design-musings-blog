@@ -6,6 +6,22 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — LoMa vignette page ships; MIDI Drum Coach registered as new musing
+
+**LoMa `vignettes.html`:** "Everyday Records" companion page carries the three
+finished vignettes (`LVIG.1`–`LVIG.3`: Transcription Nights / The Letter Kept /
+Crack and Splint) over from the `VIGNETTE-HANDOFF.md` chat as a verbatim-copy HTML
+page. Registered in `MUSING-CONFIG.json` (new "Vignettes" link), gallery card and
+nav spec (`LOGICAL-MAGIC.md`) synced, `LVIG` mnemonic declared append-only. The
+Grimoire (IV) stays the only remaining candidate on `PLAN-logical-magic.md`.
+
+**MIDI Drum Coach (`midi-drum/`):** New HTML-first musing — a drum practice tool
+framed as a game-design exploration: Web MIDI in from an e-kit (or keyboard/click
+pads when kit-free), step-grid groove notation, millisecond judging, rush/drag
+bias tracking, and a director that explains its own suggestion rules out loud.
+Registered in `MUSING-CONFIG.json`, plan added at `plans/PLAN-midi-drum.md`,
+indexed in `PLAN.md`.
+
 ## 2026-07-15 — Morning Queue: amount-fail visitor, richer Glass, pay-dues floor beat
 
 **Context:** Four backlog items from the PLAN; the shift-select hub was already done.

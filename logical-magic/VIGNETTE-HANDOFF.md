@@ -141,6 +141,21 @@ across pages" is the house discipline):
 - Professions in good standing: ward-wrights, chirurgeon-logicians (vessel-certified
   healers), scroll-scribes, Mint clerks and the Mint-Warden, forensic ash-readers, seers'
   guild (they argue about ordering functions), treaty lawyers, drillmasters.
+- **The everyday vignettes** — published 2026-07-12 as the companion page `vignettes.html`
+  ("Everyday Records"); the three finished `LVIG` pieces (**new vignettes number from
+  `LVIG.4`**):
+  - **LVIG.1 · Transcription Nights** — a granddaughter takes her family shift on a dying
+    grandmother's heirloom name-scroll, a few thousand facts a night. New names: **Wenna**
+    (the granddaughter), **Gran Merrild** (the dying woman), **the Harrow debt** (forgiven
+    on the last leaf); a completed name is entered "sound to the **Vell standard**."
+  - **LVIG.2 · The Letter Kept** — a boundary treaty kept too faithfully by a fae reading
+    nobody meant, narrowed by a definition-rider before dusk. New names: **Mave Cardew**
+    (widow hedge-farmer), **Advocate Serrel** (treaty lawyer). A lived instance of the
+    Unmeant + predicate lawyering.
+  - **LVIG.3 · Crack and Splint** — a mending rite cracks clean, and patient and healer do
+    the everyday arithmetic (22 strokes again, or six weeks splinted). New names: **Mistress
+    Halder** (chirurgeon-logician), **Tamsin** (a cooper), **Cask Row** (brewery street;
+    home of the cheap raw-menders).
 
 ## 6 · Texture inventory (raw material — NOT prompts; the prompts are your job)
 
@@ -172,11 +187,14 @@ drain a vale.
   turn out to be theorems. The world is matter-of-fact about magic the way we are about
   electricity.
 - **Handles:** number finished vignettes `LVIG.1`, `LVIG.2`, … (LoMa vignettes — distinct
-  from Space Feudal's `VIG.n` series). Keep each under ~900 words unless asked otherwise.
+  from Space Feudal's `VIG.n` series). `LVIG.1`–`LVIG.3` are **published** on `vignettes.html`
+  (see §5); **new vignettes number from `LVIG.4`**. Keep each under ~900 words unless asked
+  otherwise.
 - **Workflow:** propose 6–10 one-line abstracts first (title + a sentence). Wait for
   Panda's picks. Then write. Return Markdown, one `## LVIG.n — Title` per vignette, with a
-  one-line abstract above each body (they may later become a companion page of the
-  logical-magic musing, like Space Feudal's vignette page).
+  one-line abstract above each body. Finished vignettes are integrated into the companion
+  page `vignettes.html` (the same verbatim-copy HTML-first flow as the rest of the set,
+  like Space Feudal's vignette page) — that integration is a separate step from writing.
 
 ## 8 · Resource list
 

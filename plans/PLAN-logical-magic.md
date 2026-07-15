@@ -40,6 +40,12 @@ Rule 6 applies. Mnemonic (Rule 8): **`LOMA`**.
 - [x] Vignette pipeline opened — `VIGNETTE-HANDOFF.md` (2026-07-12): reusable
       chat handoff for everyday-life vignettes (`LVIG.n`); prompts + prose happen
       in a separate chat, canon + constants stay defined here.
+- [x] Vignette companion page — **done 2026-07-12**: `vignettes.html` ("Everyday
+      Records") — the three finished vignettes `LVIG.1`–`LVIG.3` (Transcription
+      Nights / The Letter Kept / Crack and Splint), integrated from the handoff
+      chat as a verbatim-copy HTML page; gallery card + registry sublink + nav spec
+      + handoff canon synced. Mnemonic **`LVIG`** declared (append-only; next is
+      `LVIG.4`). The Grimoire (IV) stays the only remaining candidate.
 - [x] Decide promotion: **done 2026-07-10** — registered as an HTML-first musing
       (verbatim-copy `build-musing.py`, gallery `index.html` as entry, nav spec
       `LOGICAL-MAGIC.md`), same day as `thaumodynamics/`, when the landing page
