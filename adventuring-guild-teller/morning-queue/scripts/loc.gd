@@ -67,6 +67,13 @@ const _LOCALES := {
 			"data_error": "Data error",
 			"bool_yes": "Yes",
 			"bool_no": "No",
+			"desk_tiles_head": "ON THE DESK",
+			"desk_tiles_hint": "Click an inspection tool or quest listing to place it here.",
+			"floor_head": "THE FLOOR",
+			"floor_dues_intro": "Owing accounts — settle dues before the next shift opens.",
+			"floor_no_dues": "All accounts current — no dues to collect.",
+			"floor_accept_btn": "Accept %dg",
+			"floor_paid": "Paid ✓",
 		},
 
 		# --- (a) the finite enum / slug vocabulary: identifier -> display -----------

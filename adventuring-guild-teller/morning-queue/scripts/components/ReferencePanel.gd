@@ -16,6 +16,16 @@ extends PanelContainer
 ##       §6): refill the Glass/Scale tool pages with THIS visitor's `inspections`
 ##       readings. Does not touch set_references()/focus(); does not change the selected
 ##       tab (a player mid-read of a reference tab is not yanked away).
+##
+## Signal (ADDITIVE):
+##   tile_requested(tile_id, title, body, tint)  emitted when the player clicks a tool
+##       tab or a Quest Board row; Main wires this to VisitorCard.add_tile so the content
+##       appears as a placed reference tile on the main desk.
+
+## Emitted when the player clicks a tool tab (tool_id as tile_id, BRASS tint) or a
+## Quest Board posting row (posting id as tile_id, GREEN tint). Main.gd wires this to
+## VisitorCard.add_tile so the content lands on the desk.
+signal tile_requested(tile_id: String, title: String, body: String, tint: Color)
 
 ## consult (from a visitor `check`) -> top-level references.json key (the tab).
 const CONSULT_TO_TAB := {
@@ -249,7 +259,7 @@ func _add_tool_button(tool_id: String) -> void:
 	btn.add_theme_stylebox_override("focus", _tool_btn_style(false))
 	btn.add_theme_stylebox_override("pressed", _tool_btn_style(true))
 	btn.add_theme_stylebox_override("hover_pressed", _tool_btn_style(true))
-	btn.pressed.connect(_select_tab.bind(tool_id))
+	btn.pressed.connect(_on_tool_pressed.bind(tool_id))
 	_tab_list.add_child(btn)
 	_tool_buttons[tool_id] = btn
 
@@ -305,6 +315,8 @@ func _build_page(key: String, table: Variant) -> Control:
 	_rows[key] = rows
 
 	match key:
+		"postings":
+			_render_postings(col, table, rows)
 		"roster":
 			_render_roster(col, table, rows)
 		"season":
@@ -426,7 +438,159 @@ func _render_roster(col: VBoxContainer, table: Dictionary, rows: Dictionary) -> 
 		col.add_child(pad)
 
 
+## Quest Board — postings grouped by type in collapsible foldout sections. Rows are
+## clickable: clicking a posting emits tile_requested so Main posts a copy to the desk.
+## Type render order: bounty first (the main quests), then survey/retrieval/collection/
+## rescue, then standing_order; any unrecognised types append at the end.
+const _POSTING_TYPE_ORDER := ["bounty", "survey", "retrieval", "collection", "rescue", "standing_order"]
+
+func _render_postings(col: VBoxContainer, table: Dictionary, rows: Dictionary) -> void:
+	# Group posting ids by their `type` field.
+	var by_type: Dictionary = {}
+	for entry in table.keys():
+		if entry == "_tab" or entry.begins_with("_"):
+			continue
+		var value: Variant = table[entry]
+		if not (value is Dictionary):
+			continue
+		var ptype := str((value as Dictionary).get("type", "bounty"))
+		if not by_type.has(ptype):
+			by_type[ptype] = []
+		(by_type[ptype] as Array).append(entry)
+
+	# Build render order: canonical types first, then any extras.
+	var type_order: Array = []
+	for t in _POSTING_TYPE_ORDER:
+		if by_type.has(t):
+			type_order.append(t)
+	for t in by_type.keys():
+		if not type_order.has(t):
+			type_order.append(t)
+
+	for ptype in type_order:
+		var entries: Array = by_type[ptype]
+		var foldout := _make_foldout_section(Loc.humanize(ptype))
+		col.add_child(foldout["container"])
+		for entry in entries:
+			var value: Dictionary = table[entry]
+			var lines: Array = []
+			for f in value.keys():
+				if f == "_tab" or (f is String and f.begins_with("_")) or f == "type":
+					continue
+				lines.append([Loc.humanize(str(f)), _fmt(value[f]), false])
+			var row := _make_row(Loc.humanize(entry), lines)
+			# Make each posting row clickable — emit a desk tile on click.
+			row.mouse_filter = Control.MOUSE_FILTER_STOP
+			row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			# Hover tint: subtle green wash signals interactivity before click.
+			var normal_style: StyleBox = row.get_meta("normal_style")
+			row.mouse_entered.connect(func() -> void:
+				row.add_theme_stylebox_override("panel", _posting_row_hover_style())
+			)
+			row.mouse_exited.connect(func() -> void:
+				row.add_theme_stylebox_override("panel", normal_style)
+			)
+			var captured_id: String = entry
+			var captured_title: String = Loc.humanize(entry)
+			var body_parts: PackedStringArray = PackedStringArray()
+			for ln in lines:
+				var lbl: String = str(ln[0])
+				var val: String = str(ln[1])
+				if lbl != "":
+					body_parts.append("%s: %s" % [lbl, val])
+				else:
+					body_parts.append(val)
+			var captured_body: String = "\n".join(body_parts)
+			row.gui_input.connect(
+				func(ev: InputEvent) -> void:
+					if ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed \
+					   and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+						tile_requested.emit(captured_id, captured_title, captured_body, Palette.GREEN)
+			)
+			(foldout["body"] as VBoxContainer).add_child(row)
+			rows[entry] = row
+
+
+## A collapsible section header + body. Returns { "container": VBoxContainer,
+## "body": VBoxContainer }. Starts expanded (▼). Clicking the header toggles the body.
+func _make_foldout_section(label: String) -> Dictionary:
+	var container := VBoxContainer.new()
+	container.add_theme_constant_override("separation", 0)
+
+	var header := Button.new()
+	header.text = "▼  " + label
+	header.toggle_mode = true
+	header.button_pressed = true
+	header.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	header.focus_mode = Control.FOCUS_NONE
+	header.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	header.add_theme_color_override("font_color", Palette.INK2)
+	header.add_theme_color_override("font_hover_color", Palette.INK)
+	header.add_theme_color_override("font_pressed_color", Palette.INK)
+	header.add_theme_color_override("font_hover_pressed_color", Palette.INK)
+	header.add_theme_font_size_override("font_size", 13)
+	var sb_h := StyleBoxFlat.new()
+	sb_h.bg_color = Palette.GROUND
+	sb_h.border_width_bottom = 1
+	sb_h.border_color = Palette.LINE2
+	sb_h.content_margin_left = 8
+	sb_h.content_margin_right = 6
+	sb_h.content_margin_top = 5
+	sb_h.content_margin_bottom = 5
+	for state in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
+		header.add_theme_stylebox_override(state, sb_h)
+	container.add_child(header)
+
+	var body_margin := MarginContainer.new()
+	body_margin.add_theme_constant_override("margin_left", 8)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 1)
+	body_margin.add_child(body)
+	container.add_child(body_margin)
+
+	header.toggled.connect(func(open: bool) -> void:
+		body_margin.visible = open
+		header.text = ("▼  " if open else "▶  ") + label
+	)
+
+	return { "container": container, "body": body }
+
+
 # --- Inspection tools --------------------------------------------------------
+
+## Pressed handler for a tool tab button. Selects the tab (existing behaviour) and
+## also emits tile_requested so Main can post the reading to the main desk.
+func _on_tool_pressed(tool_id: String) -> void:
+	_select_tab(tool_id)
+	var reading := _tool_reading(tool_id)
+	if reading == "":
+		return
+	var title := Loc.tool_tab(tool_id)
+	var body := reading
+	if tool_id == "scale":
+		var cmp := _scale_comparison(_tool_block("scale"))
+		if cmp.get("key", "") != "":
+			body = body + "\n" + Loc.t(cmp["key"])
+	tile_requested.emit(tool_id, title, body, Palette.BRASS)
+
+
+## DEV/TEST — fires tile_requested for the named posting id exactly as a player click
+## would. Used by DeskFeatureHarness to exercise the tile plumbing without needing
+## simulated mouse input. No-op if refs have not been loaded yet.
+func dev_fire_tile_for_posting(posting_id: String) -> void:
+	var postings: Variant = _refs.get("postings", {})
+	if not (postings is Dictionary):
+		return
+	var value: Variant = (postings as Dictionary).get(posting_id, {})
+	if not (value is Dictionary):
+		return
+	var parts: PackedStringArray = PackedStringArray()
+	for f in (value as Dictionary).keys():
+		if f == "_tab" or (f is String and f.begins_with("_")) or f == "type":
+			continue
+		parts.append("%s: %s" % [Loc.humanize(str(f)), _fmt(value[f])])
+	tile_requested.emit(posting_id, Loc.humanize(posting_id), "\n".join(parts), Palette.GREEN)
+
 
 ## Refill both tool pages from the current visitor's `inspections`. No-op until the
 ## tools group exists (set_references builds it before the first visitor arrives).
@@ -683,6 +847,21 @@ func _row_style(highlighted: bool) -> StyleBoxFlat:
 		sb.set_corner_radius_all(2)
 	else:
 		sb.bg_color = Color(1, 1, 1, 0)
+	return sb
+
+
+## Subtle hover style for clickable Quest Board rows — signals interactivity.
+func _posting_row_hover_style() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 5
+	sb.content_margin_bottom = 5
+	sb.border_width_bottom = 1
+	sb.border_width_left = 2
+	sb.border_color = Palette.GREEN
+	sb.bg_color = Color(Palette.GREEN, 0.07)
+	sb.set_corner_radius_all(2)
 	return sb
 
 

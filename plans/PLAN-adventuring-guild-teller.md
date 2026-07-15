@@ -100,15 +100,15 @@
         and `scripts/gen/ShiftGenerator.gd` (`generate_shift(day)`, seeded → 7 reproducible
         days; day 0 = curated tutorial). Self-check: `7 days, 97 visits, 0 problems`.
 - [ ] **Next on the prototype** (only-in-chat backlog, recorded here):
-      - a **shift-select / day-advance hub** so the week actually plays as a week (increment
-        `Deck.day` between shifts; a between-shift summary/floor beat).
-      - a **"pay dues" interaction** (the floor side of the dues gate — let an owing townee
-        clear arrears so their post is accepted).
-      - **richer Glass readings for card/seal/token visitors** (the generalized Glass works,
-        but non-herb subjects read thinner than herbs).
-      - an **amount-fail visitor** in the curated shift (currently no curated visitor is
-        rejected on weight alone — the Scale's teeth show only via the moonwort pass + decoy;
-        would need an `amount` axis entry in `visitors.json`'s schema).
+      - [x] a **shift-select / day-advance hub** so the week actually plays as a week
+            (Next-Day button, already shipped in Main.gd day-flow).
+      - [x] a **"pay dues" interaction** — the floor beat after shift_complete lists owing
+            townees; Accept-button calls `Deck.pay_dues(id)` (runtime only), clearing arrears
+            for the next shift. Shipped 2026-07-15.
+      - [x] **richer Glass readings for card/seal/token visitors** — visitors #2 hulbr-odd-eye,
+            #4 doss-yellowknife, #5 ivy-threnody now have tactile detail. Shipped 2026-07-15.
+      - [x] an **amount-fail visitor** in the curated shift — `nessa-broom` (order 17,
+            moonwort 6 drams vs 2–4 dram cap, `failure.axis: amount`). Shipped 2026-07-15.
 - [ ] Mechanics note: the desk's procedural request/proof generator sketch (AGR.1 is the
       hard problem — reference-library growth without rule soup). **Largely superseded** by the
       shipped `ShiftGenerator` + `CONTENT-BANKS.md`; keep for the design-writeup angle.

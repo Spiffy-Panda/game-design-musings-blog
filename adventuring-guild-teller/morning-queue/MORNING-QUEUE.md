@@ -15,20 +15,31 @@ interfaces and who builds what. Not published (the site build copies only top-le
   preview only, until that changes.
 - **Run it:** open `project.godot` in Godot 4.6, or `run_project` via the godot MCP. Main
   scene is `scenes/Main.tscn`.
-- **Status (2026-07-13):** playable. Scaffold + data + all four components + theme are
-  **built and playtest-verified** — booted in Godot 4.6, drove real stamps through the queue
-  (APPROVE on visitor 1 advanced to visitor 2, score ticked 0→1), headless smoke 16/16. Both
-  stamp models ship behind `Session.STRICT_BINARY`; **it is now `true` — the desk ships
-  binary (APPROVE / REJECT only)**, reversible with a one-line flip back to `false` for the
-  four-verdict feel (the hold/conditional code paths + Loc entries are kept intact). The
-  examine/weigh loop is live: `ReferencePanel.set_inspection_target(v)` refills the Glass /
-  Scale tool pages per visitor (see INSPECTION-TOOLS.md). **A week of content + a procedural
-  visit generator now ship** (`CONTENT-BANKS.md`): broadened banks + townee/adventurer
-  directories + the `dues` axis + `ShiftGenerator.generate_shift(day)` (day 0 = curated,
-  day > 0 = generated; self-check `7 days, 97 visits, 0 problems`). AGT.5 is mechanically
-  settled (binary). Next backlog lives in `../../plans/PLAN-adventuring-guild-teller.md`:
-  a day-advance hub, a "pay dues" floor interaction, richer Glass for card/seal subjects,
-  and a curated amount-fail visitor.
+- **Status (2026-07-15, rev 3):** all usability fixes applied and verified. **12/12
+  DeskFeatureHarness assertions pass.** Full heuristic study (all 12 reference pages) in
+  session artifact. All desk-tile Priority 1–4 items resolved: ScrollContainer cap (170px),
+  per-tile × dismiss, first-use hint, hover tint on posting rows, foldout header contrast
+  (GROUND bg / LINE2 border), tile label 12px, G/S keyboard shortcuts. The examine/weigh
+  loop is live: `ReferencePanel.set_inspection_target(v)` refills the Glass / Scale tool
+  pages per visitor (see INSPECTION-TOOLS.md). **Desk tiles ship:** clicking a
+  tool tab or a Quest Board posting row emits `ReferencePanel.tile_requested`, which Main
+  wires to `VisitorCard.add_tile` — placing a named reference tile on the main desk below
+  the claim doc; tiles clear on visitor change. **Quest Board foldouts ship:** postings are
+  grouped by `type` in collapsible sections (bounty / survey / retrieval / collection /
+  rescue / standing_order); all 7 previously-untyped apparition/beast postings now carry
+  `"type": "bounty"` in `references.json`. **A week of content + a procedural visit
+  generator now ship** (`CONTENT-BANKS.md`): broadened banks + townee/adventurer directories
+  + the `dues` axis + `ShiftGenerator.generate_shift(day)` (day 0 = curated, day > 0 =
+  generated; self-check `7 days, 97 visits, 0 problems`). AGT.5 is mechanically settled
+  (binary). **Rev-3 additions:** (a) curated visitor #17 `nessa-broom` — an amount-fail
+  `item_check` (moonwort at 6 drams, over the apothecary's 2–4 dram cap; Glass passes /
+  Scale condemns; `failure.axis: amount`); (b) richer Glass readings for three thin
+  card/seal visitors (#2 hulbr-odd-eye, #4 doss-yellowknife, #5 ivy-threnody); (c) **floor
+  beat** — after shift_complete the booth shows THE FLOOR: all owing townees are listed with
+  an "Accept Xg" button; clicking clears their dues in `Deck.townees` (runtime only, JSON
+  unchanged) so the next generated shift sees them as current. `Deck.pay_dues(id)` is the
+  new method; new `Loc` chrome keys: `floor_head / floor_dues_intro / floor_no_dues /
+  floor_accept_btn / floor_paid`.
 
 ---
 
@@ -173,16 +184,19 @@ methods. Each component lives in its own `.tscn` + `.gd` pair so agents never sh
 Deck (autoload, DeckLoader.gd)      Session (autoload, GameState.gd)
   .visitors  .references              .index  .score  .verdict_log
   .count() .get_visitor(i)            .start() .current() .submit(stamp) .advance()
-  .ok  .load_errors                   signals: visitor_changed, verdict_recorded,
-  signal: loaded(ok)                            shift_complete   ·  const STRICT_BINARY
+  .load_day(d)  .pay_dues(id)         signals: visitor_changed, verdict_recorded,
+  .ok  .load_errors                             shift_complete   ·  const STRICT_BINARY
+  signal: loaded(ok)
 
                     Main.tscn / Main.gd  (integrator — builds layout, wires signals)
    ┌───────────────────────────────┬───────────────────────────────┐
    │ booth column                  │ reference column              │
    │  VisitorCard   show_visitor(v)│  ReferencePanel               │
-   │  VerdictBar    ->stamp_chosen │    set_references(refs)        │
-   │  Scoreboard    set_progress() │    focus(consult, entry)      │
-   │                show_summary() │    set_inspection_target(v)   │
+   │                add_tile(...)  │    set_references(refs)        │
+   │                clear_tiles()  │    focus(consult, entry)      │
+   │  VerdictBar    ->stamp_chosen │    set_inspection_target(v)   │
+   │  Scoreboard    set_progress() │    ->tile_requested(...)      │
+   │                show_summary() │                               │
    └───────────────────────────────┴───────────────────────────────┘
 ```
 
@@ -190,14 +204,14 @@ Component contracts (method calls IN from Main, signals OUT to Main):
 
 | Scene / script | Main calls | emits |
 |---|---|---|
-| `VisitorCard` | `show_visitor(v: Dictionary)` | `papers_examined()` (optional) |
-| `ReferencePanel` | `set_references(refs)`, `focus(consult, entry)`, `set_inspection_target(v)` *(additive — refills the Glass/Scale tool pages per visitor; INSPECTION-TOOLS.md §6)* | — |
+| `VisitorCard` | `show_visitor(v: Dictionary)`, `add_tile(tile_id, title, body, tint)` *(additive — places a reference tile below the claim)*, `clear_tiles()` *(additive — clears on visitor change)* | `papers_examined()` (optional) |
+| `ReferencePanel` | `set_references(refs)`, `focus(consult, entry)`, `set_inspection_target(v)` *(additive — refills the Glass/Scale tool pages per visitor; INSPECTION-TOOLS.md §6)* | `tile_requested(tile_id, title, body, tint)` *(additive — fired when a tool tab or Quest Board row is clicked; Main wires to `add_tile`; INSPECTION-TOOLS.md §6)*  |
 | `VerdictBar` | `set_enabled(on: bool)` | `stamp_chosen(stamp: String)` |
 | `Scoreboard` | `set_progress(index, total, score)`, `show_summary(summary)` | — |
 
 `stamp` ∈ `approve`\|`reject`\|`hold`\|`conditional`. `Main` maps `stamp_chosen` →
-`Session.submit` → `Session.advance`; `Session.visitor_changed` → `show_visitor` +
-`set_progress` + `set_enabled(true)`; `shift_complete` → `show_summary`.
+`Session.submit` → `Session.advance`; `Session.visitor_changed` → `clear_tiles` +
+`show_visitor` + `set_progress` + `set_enabled(true)`; `shift_complete` → `show_summary`.
 
 ---
 
@@ -254,9 +268,9 @@ screenshotter:
   (`Main._on_stamp_chosen`) — so it exercises the true submit→advance path, not a shortcut.
   Default stamps = each visitor's correct verdict (respecting `STRICT_BINARY`); set the
   `actions` array to script a specific case.
-- **Disable for manual play:** untick **Enabled** on the DevHarness node in the Inspector
-  (or set `enabled=false`). With it off, only the F12 hotkey remains. It is on by default so
-  a bare `run_project` produces a full capture set.
+- **Toggle auto-run/manual play:** edit `scenes/Main.tscn` on the `DevHarness` node and flip
+  the line `enabled = false` (`false` = manual play + F12 only, `true` = auto-step + capture
+  pass on startup). You can also untick/tick **Enabled** in the Inspector.
 
 The `Session` verdict-log entry gained a `name` field (`{id, name, chosen, correct,
 right}`) so the Scoreboard ledger shows the **authored** name ("Wrenna Sixpence"), not the

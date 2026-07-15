@@ -5,7 +5,7 @@
     "task_type": ["item_check", "rank_gate", "quest_file", "completion_claim", "rank_up", "roster_change", "dungeon_drop"],
     "stamp": ["approve", "reject", "hold", "conditional"],
     "binary": ["approve", "reject"],
-    "failure.axis": ["identity", "rank", "unverifiable", "claimant", "authenticity", "paperwork", "duplicate", "fieldability", "season", "reach", null],
+    "failure.axis": ["identity", "rank", "unverifiable", "claimant", "authenticity", "paperwork", "duplicate", "fieldability", "season", "reach", "dues", "amount", null],
     "check.consult": ["book", "posting", "ledger", "cipher", "drop_table", "season", "roster", "archive"],
     "inspection.tool": ["glass", "scale"],
     "inspection.shape": "inspections { glass { reading, relevant }, scale { reading, amount, unit, relevant } } — reading is required content prose; amount/unit/relevant are authored metadata; `relevant` is design-only and NEVER shown to the player (see ../INSPECTION-TOOLS.md §2-3).",
@@ -54,7 +54,7 @@
         { "consult": "posting", "entry": "cistern-wisp-swarm", "compare": ["rank_min: bronze"], "against": "his rank", "result": "meets" }
       ],
       "inspections": {
-        "glass": { "reading": "A bronze guild card, corner-worn; the dues column freshly inked.", "relevant": false },
+        "glass": { "reading": "A bronze guild card, seal pressed clean; the corners worn smooth from long handling; the dues column freshly inked and dated this quarter.", "relevant": false },
         "scale": { "reading": "Card and case together: 2 drams.", "amount": 2, "unit": "dram", "relevant": false }
       },
       "player_story": "Pull his card from the rank ledger — Bronze, dues current. Posting slip says Bronze-or-better. Ranks clear, posting open. Stamp ASSIGNED.",
@@ -109,7 +109,7 @@
         { "consult": "posting", "entry": "barrow-gloam", "compare": ["rank_min: gold"], "against": "silver", "result": "below" }
       ],
       "inspections": {
-        "glass": { "reading": "A silver card, edges bright, lately issued.", "relevant": false },
+        "glass": { "reading": "A silver guild card, edges still bright and the board stiff with newness; the issue stamp dated this season — barely a month out of the registry.", "relevant": false },
         "scale": { "reading": "Card and case together: 2 drams.", "amount": 2, "unit": "dram", "relevant": false }
       },
       "player_story": "Ledger card reads Silver. Posting reads Gold-or-better. One rung short. Stamp REFUSED, hand back the slip.",
@@ -136,7 +136,7 @@
         { "consult": "posting", "entry": "ashford-mill-ledger", "compare": ["assigned_to: odd-eyes-party", "status: afield"], "against": "the payee", "result": "mismatch: payee is not the assigned party" }
       ],
       "inspections": {
-        "glass": { "reading": "The archive-seal is genuine — clean, unbroken, the true impression.", "relevant": false },
+        "glass": { "reading": "The archive wax is whole, the impression deep and clean — the true guild seal, unbroken and struck from the original archive die.", "relevant": false },
         "scale": { "reading": "The token disc: 4 drams of good brass.", "amount": 4, "unit": "dram", "relevant": false }
       },
       "player_story": "Match the token's seal — genuine. Pull the quest slip: assigned, party out, not returned. Payee doesn't match. Stamp HELD, \"return to assigned party.\"",
@@ -438,6 +438,33 @@
       },
       "player_story": "Same pipeline: (1) real drop? yes. (2) in season? winter-only, and it's summer — gate fails here. (Further: Floor 7, deepest party reaches Floor 6 — a second fail.) No payout possible. Stamp DECLINED, \"out of season\" (+ \"beyond current reach\").",
       "notes": "The drop pipeline short-circuits — one failed gate kills the quote before you even reach the arithmetic. Tools decoy: nothing in hand; the Season Wheel and Roster reach carry the reject."
+    },
+    {
+      "id": "nessa-broom",
+      "order": 17,
+      "name": "Nessa Broom",
+      "affiliation": "townee",
+      "profession": "Forager",
+      "task_type": "item_check",
+      "portrait": null,
+      "claim": {
+        "summary": "A jar of \"moonwort\" against the apothecary's standing order — a generous harvest.",
+        "asserts": { "item": "moonwort", "against": "apothecary-standing-order" }
+      },
+      "truth": {
+        "valid": false, "stamp": "reject", "binary": "reject",
+        "failure": { "axis": "amount", "reason": "Correct plant, but the apothecary's order accepts only 2 to 4 drams per delivery; this jar holds 6. The cap exists to prevent oversupply — excess moonwort spoils before it can be dispensed." }
+      },
+      "checks": [
+        { "consult": "book", "entry": "moonwort", "compare": ["silver underside", "five lobes", "cold to touch"], "against": "the jar's leaf", "result": "match" },
+        { "consult": "posting", "entry": "apothecary-standing-order", "compare": ["accept 2-4 dram"], "against": "weighed amount", "result": "over range — 6 drams exceeds the 4-dram cap" }
+      ],
+      "inspections": {
+        "glass": { "reading": "Silver underside, five lobes, cold to the touch — moonwort, certain.", "relevant": false },
+        "scale": { "reading": "The jar settles at 6 drams.", "amount": 6, "unit": "dram", "relevant": true }
+      },
+      "player_story": "Book to Moonwort — silver underside, five lobes. Correct plant. Weigh it: 6 drams, and the order takes only 2 to 4. Over the cap. Stamp REJECTED, note \"over the per-delivery limit.\"",
+      "notes": "The amount-fail complement to wren-sixpence (#1): same herb, same order, wrong weight. Glass confirms identity and decoys — it reassures with a perfect match; the Scale condemns. Teaches that right plant + wrong amount = reject, and that the Scale has teeth even when the Glass passes."
     }
   ]
 }
