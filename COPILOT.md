@@ -1,13 +1,9 @@
-# CLAUDE.md — LLM (direct) entry point
+# COPILOT.md — Copilot CLI entry point
 
-This is the LLM entry point for **Game Design Musings**, a repo of miscellaneous
+This is the **Copilot CLI** entry point for **Game Design Musings**, a repo of miscellaneous
 game-design explorations published as a browsable directory (a small static
-"blog"). Read this file first, then follow the entry-point chain at the bottom.
-
-> **Note:** If you're using **Copilot CLI**, see [`COPILOT.md`](./COPILOT.md) instead. Both entry
-> points share the same core rules (Rules 1–8); `COPILOT.md` adds Copilot-specific
-> workflow guidance (sessions, branching, automated commit discipline) while preserving
-> the architecture and framing here.
+"blog"). The conventions here mirror `CLAUDE.md` but are adapted for Copilot workspace
+workflows, sessions, and automation.
 
 **Repo shape:** prose / knowledge-base + tooling. The deliverables are **musings** —
 written game-design explorations, each authored in its own top-level `<MUSE-SLUG>/`
@@ -66,21 +62,21 @@ CWD: `Path(__file__).resolve().parents[N]` (Python) or the language equivalent.
 Never assume the invocation directory.
 
 Promotion: the moment a scrap file is depended on by anything other than (a) a
-human at the CLI or (b) an LLM agent — i.e. it produces a build artifact,
+human at the CLI or (b) a Copilot agent — i.e. it produces a build artifact,
 regenerates tracked content, or gets run often enough to justify a stable name —
 move it to `utils/<lang>/<descriptive_name>.<ext>`, drop the `NN_` prefix, give it
 a human name and a header comment, **and add a row to `utils/README.md`**.
 
-Pass this rule, **verbatim and with a stern warning**, into every subagent prompt.
-Sonnet-tier models have ignored it before.
+**Pass this rule, verbatim and with a stern warning, into every subagent prompt.**
+Larger models have ignored it before.
 
 ### Rule 2 — Production hierarchy
 
 | Tier | Where | Pattern | Purpose |
 |------|-------|---------|---------|
-| Plan | `plans/` | `PLAN-<slug>.md`, indexed by `PLAN.md` | Forward-looking. Chat dump. |
+| Plan | `plans/` | `PLAN-<slug>.md`, indexed by `PLAN.md` | Forward-looking. Session dumps. |
 | Design | `PROJECT-PITCH.md` | single narrative + decisions table | Why it is built this way. |
-| Deliverable | `<MUSE-SLUG>/` (musings); `site/` | `MUSING.md` + `<FOLDER-NAME>.md` pair (musings); `README.md` + `SITE.md` (site) | LLM-authored deliverables. Musings are authored as top-level folders and rendered into `site/`. |
+| Deliverable | `<MUSE-SLUG>/` (musings); `site/` | `MUSING.md` + `<FOLDER-NAME>.md` pair (musings); `README.md` + `SITE.md` (site) | Agent-authored deliverables. Musings are authored as top-level folders and rendered into `site/`. |
 | Code-doc | *(n/a — no `src/`)* | — | Stand up `CodeDocs/` + `CODE-DESIGN.md` only if real source is added. |
 
 `PLAN.md` is an *index only* — one line per slug.
@@ -100,10 +96,11 @@ If you find an unexpected desync: flag it to the user, say docs need a resync, a
 re-raise it at the start of every subsequent phase until handled. Force a sync check
 before any `git push`.
 
-### Rule 4 — Entry-point convention
+### Rule 4 — Entry-point convention (Copilot)
 
-- LLM: `CLAUDE.md` → `PLAN.md` / `PROJECT-PITCH.md` → per-slug plan → deliverable spec → deliverable.
-- Human: `README.md` → same downstream chain.
+- **Copilot sessions (from this entry point):** `COPILOT.md` → `PLAN.md` / `PROJECT-PITCH.md` → per-slug plan → deliverable spec → deliverable.
+- **Human entry point:** `README.md` → same downstream chain.
+- **LLM (Claude/direct chat):** `CLAUDE.md` → same downstream chain (preserved for non-Copilot workflows).
 
 ### Rule 5 — DEV-LOG vs git commits
 
@@ -138,20 +135,43 @@ not here. They are applied to every public surface under Rule 6.
 ### Rule 8 — List enumeration in pages (persistent item handles)
 
 Enumerated items that live in a **repo file** (any page — musing or not) get stable,
-referenceable handles. This is the persistent counterpart to the global chat-local
+referenceable handles. This is the persistent counterpart to the session-local
 `_<PREFIX>.<n>` rule: because a page is committed, not throwaway, the leading `_` is
 **dropped** and the item takes the page's mnemonic.
 
 - **Form:** `<PREFIX>.<n>` — a short uppercase page mnemonic, a `.`, then the item number.
   The Minimalist Space Logistics page's mnemonic is **`MSL`**, so its items are `MSL.1`,
-  `MSL.2`, … Chat-local scratch lists still keep the `_` (e.g. `_D.1`); page items never do.
-- **Scope is implicit.** Inside that page — or in a chat already scoped to it — the prefix
+  `MSL.2`, … Session-local scratch lists still keep the `_` (e.g. `_D.1`); page items never do.
+- **Scope is implicit.** Inside that page — or in a Copilot session already scoped to it — the prefix
   is understood: reference items by `.<n>` or the bare number. Qualify with the prefix
-  (`MSL.1`) only when crossing scopes (from another page, or an unscoped chat).
+  (`MSL.1`) only when crossing scopes (from another page, or an unscoped session).
 - **Where the mnemonic lives.** A page declares its mnemonic in its nav spec
   (`<FOLDER-NAME>.md` for musings) so the handle is stable and discoverable.
 
 Applies to **any page**, not just musing-formatted ones.
+
+---
+
+## Copilot workflow notes
+
+### Session management
+
+- Use **local project sessions** (worktree or in-place) for sustained work on musings or tooling.
+- **Branch per task:** create a feature branch in each session (`copilot-port`, `add-musing-foo`, etc.).
+- **PR review:** use `create_pull_request` to push changes upstream and solicit review.
+- **Commit discipline:** write descriptive commit messages; include a `DEV-LOG.md` entry before committing (Rule 5).
+
+### Session-local tools
+
+- **`plan.md`** in session artifacts (not committed): Use for session-specific task tracking, pseudo-todos, and exploration notes. Keep it short; move important findings to repo files (Rule 3).
+- **Background agents** (`task` agent type, `mode: "background"`): Delegate long-running work (builds, tests, lints) to agents; you'll be notified on completion.
+- **Parallel work:** use the `create_session` or `orchestrate` tool to spawn child sessions for independent branches or workstreams.
+
+### Integration with CLAUDE.md
+
+- **COPILOT.md is not a replacement.** Both files coexist; `CLAUDE.md` remains the canonical entry point for direct LLM workflows.
+- **Cross-reference:** When Copilot sessions encounter LLM-specific guidance, they refer back to `CLAUDE.md` for detailed rules or examples.
+- **Shared rules:** Rules 1–8 apply identically to both Copilot and LLM workflows.
 
 ---
 
@@ -167,4 +187,5 @@ Applies to **any page**, not just musing-formatted ones.
 - **`approaches-app/README.md`** — the React/Tailwind sub-site (MSL approaches hub + mutation pages); the one framework-built part of the site.
 - **`scrap_scripts/README.md`** — scratch-script convention + promotion rule.
 - **`CLAUDE.local.md`** — *(gitignored)* machine paths + identity rules.
+- **`CLAUDE.md`** — LLM entry point (preserved for non-Copilot workflows).
 - **`README.md`** — human entry point.
