@@ -128,7 +128,7 @@ morning-queue/
   - Verify: `dotnet build` + `dotnet test` green; `run_project` via the godot MCP still
     boots day 0. **Dev-loop change to document:** launching the game outside the editor
     now needs `dotnet build` first (editor Play builds automatically).
-- [ ] **`MQT.3` — Domain model + validator become code**
+- [x] **`MQT.3` — Domain model + validator become code** *(executed 2026-07-15)*
   - POCOs for Visit/Claim/Truth/Check/Inspections + the five banks (System.Text.Json);
     port `_validate_banks/_validate_shift/_validate_inspections/_validate_standing_orders`
     into `Core.Validator`; add the **derive pass** that annotates every visit (curated

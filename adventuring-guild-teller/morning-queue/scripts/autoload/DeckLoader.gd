@@ -47,9 +47,16 @@ const START_DAY := 0
 ## shift. Proves the generator emits schema-valid shifts across a week. Off = no self-check.
 const GEN_SELFCHECK := true
 
-const TASK_TYPES := ["item_check", "rank_gate", "quest_file", "completion_claim", "rank_up", "roster_change", "dungeon_drop"]
-const FAILURE_AXES := ["identity", "rank", "unverifiable", "claimant", "authenticity", "paperwork", "duplicate", "fieldability", "season", "reach", "dues", "amount"]
-const ACTOR_POOLS := ["townee_walkin", "townee_owner", "townee_directory", "adventurer_directory", "mixed"]
+# Schema validation (banks + shift + inspections + standing-order limits) and the
+# scale-verdict derive pass now live in MorningQueue.Core, reached through the C#
+# CoreBridge (JSON text in, JSON text / string[] out; one Validate per boot, one
+# PrepareShift per loaded day). The enum vocabularies TASK_TYPES / FAILURE_AXES /
+# ACTOR_POOLS moved with the checks — they are Core's Validator constants now.
+
+## The GDScript <-> .NET seam. Instantiated once at boot. Because CoreBridge is a C#
+## [GlobalClass], the global-class cache must be regenerated once after it is added
+## (open the editor, or `godot --headless --path . --import`) before this resolves.
+var _bridge = null
 
 var visitors: Array = []
 var references: Dictionary = {}
@@ -62,10 +69,18 @@ var load_errors: Array = []
 
 
 func _ready() -> void:
+	_bridge = CoreBridge.new()
 	_load_all()
 	loaded.emit(ok)
 	if GEN_SELFCHECK and OS.is_debug_build():
 		_selfcheck_generated()
+
+
+## Lazily ensure the Core bridge exists (load_day may run before/without _ready in tests).
+func _get_bridge():
+	if _bridge == null:
+		_bridge = CoreBridge.new()
+	return _bridge
 
 
 func count() -> int:
@@ -85,7 +100,7 @@ func load_day(d: int) -> void:
 	day = d
 	load_errors.clear()
 	_load_shift(day)
-	_validate_shift()
+	_prepare_shift_core()
 	ok = load_errors.is_empty()
 	if not ok:
 		for e in load_errors:
@@ -122,9 +137,9 @@ func _load_all() -> void:
 	if not (gdata is Dictionary):
 		load_errors.append("generation.json: not an object")
 
-	_validate_banks()
+	_run_banks_validation()
 	_load_shift(day)
-	_validate_shift()
+	_prepare_shift_core()
 
 	ok = load_errors.is_empty()
 	if not ok:
@@ -162,122 +177,41 @@ func _load_shift(d: int) -> void:
 			load_errors.append("generator produced no visits for day %d" % d)
 
 
-# --- validation --------------------------------------------------------------
+# --- validation + derive (routed to MorningQueue.Core via CoreBridge) ---------
 
-## Light sanity pass over the loaded shift: every visitor has the fields scenes rely on and
-## carries the two inspection-tool readings the Glass/Scale surface needs. Runs over whatever
-## `visitors` currently holds (curated or generated), so a generated shift is held to the
-## same contract as the curated one.
-func _validate_shift() -> void:
-	var required := ["id", "name", "affiliation", "profession", "task_type", "claim", "truth"]
-	for v in visitors:
-		for key in required:
-			if not v.has(key):
-				load_errors.append("visitor '%s' missing field '%s'" % [v.get("id", "?"), key])
-		_validate_inspections(v)
-	_validate_standing_orders()
+## Boot-time bank validation (dues enums, owns/chapter/archive_id resolution, generation
+## knob domains, standing-order limits). Serializes the banks once and hands them to
+## Core.Validator through the bridge; appends any problems to `load_errors`. This replaces
+## the old GDScript bank + standing-order validators (now Core.Validator.ValidateBanks).
+func _run_banks_validation() -> void:
+	var payload := JSON.stringify({
+		"references": references,
+		"townees": townees,
+		"adventurers": adventurers,
+		"generation": generation,
+	})
+	var errs: PackedStringArray = _get_bridge().Validate(payload)
+	for e in errs:
+		load_errors.append(str(e))
 
 
-## Every visitor must carry `inspections.glass.reading` and `inspections.scale.reading`
-## as non-empty strings — the Glass/Scale tools have nothing to show otherwise.
-func _validate_inspections(v: Dictionary) -> void:
-	var vid: String = str(v.get("id", "?"))
-	var insp: Variant = v.get("inspections", null)
-	if not (insp is Dictionary):
-		load_errors.append("visitor '%s' missing 'inspections' object" % vid)
+## Per-day shift preparation: validate the loaded shift (required fields + inspection
+## readings) AND derive each visit's inspections.scale.verdict against its claimed order —
+## a single Core.PrepareShift call. The returned visitors carry the derived verdict; every
+## authored field is preserved. This replaces the old GDScript shift + inspection validators
+## and the scale-verdict rule formerly duplicated in ShiftGenerator / ReferencePanel.
+func _prepare_shift_core() -> void:
+	var refs_json := JSON.stringify(references)
+	var vis_json := JSON.stringify({ "visitors": visitors })
+	var out_text: String = _get_bridge().PrepareShift(refs_json, vis_json)
+	var parsed: Variant = JSON.parse_string(out_text)
+	if not (parsed is Dictionary):
+		load_errors.append("core PrepareShift returned malformed result")
 		return
-	for tool in ["glass", "scale"]:
-		var t: Variant = (insp as Dictionary).get(tool, null)
-		if not (t is Dictionary):
-			load_errors.append("visitor '%s' inspections missing '%s'" % [vid, tool])
-			continue
-		var reading: Variant = (t as Dictionary).get("reading", "")
-		if not (reading is String) or (reading as String).is_empty():
-			load_errors.append("visitor '%s' %s reading is empty" % [vid, tool])
-
-
-## Every posting of type standing_order must carry a limit the Scale measures against:
-## an `accept` window ({min,max,unit}) or a `total` ({needed,unit}).
-func _validate_standing_orders() -> void:
-	var postings: Variant = references.get("postings", null)
-	if not (postings is Dictionary):
-		return
-	for entry in (postings as Dictionary).keys():
-		if entry is String and (entry as String).begins_with("_"):
-			continue
-		var posting: Variant = (postings as Dictionary)[entry]
-		if not (posting is Dictionary):
-			continue
-		if str((posting as Dictionary).get("type", "")) != "standing_order":
-			continue
-		var has_accept: bool = (posting as Dictionary).has("accept")
-		var has_total: bool = (posting as Dictionary).has("total")
-		if not (has_accept or has_total):
-			load_errors.append("standing_order '%s' has no accept/total limit" % str(entry))
-
-
-## Validate the three new banks against the rulebook they cross-reference (CONTENT-BANKS §5):
-## dues enums, `owns`/`chapter`/`archive_id` resolution, and the generation knob domains.
-func _validate_banks() -> void:
-	var postings: Dictionary = references.get("postings", {})
-	var ciphers: Dictionary = references.get("cipher_table", {})
-	var archive: Dictionary = references.get("archive", {})
-	var rank_order: Array = references.get("rank_order", [])
-
-	for tid in townees.keys():
-		var t: Dictionary = townees[tid]
-		if not (str(t.get("dues", "")) in ["current", "owing"]):
-			load_errors.append("townee '%s' dues not current|owing" % tid)
-		if not (t.get("owed", 0) is int or t.get("owed", 0) is float):
-			load_errors.append("townee '%s' owed is not a number" % tid)
-		for oid in t.get("owns", []):
-			if not postings.has(oid):
-				load_errors.append("townee '%s' owns unknown posting '%s'" % [tid, oid])
-
-	for aid in adventurers.keys():
-		var a: Dictionary = adventurers[aid]
-		if not (str(a.get("rank", "")) in rank_order):
-			load_errors.append("adventurer '%s' rank '%s' not in rank_order" % [aid, a.get("rank", "")])
-		if not (str(a.get("dues", "")) in ["current", "owing"]):
-			load_errors.append("adventurer '%s' dues not current|owing" % aid)
-		if not ciphers.has(str(a.get("chapter", ""))):
-			load_errors.append("adventurer '%s' chapter '%s' not in cipher_table" % [aid, a.get("chapter", "")])
-		var lb: Variant = a.get("logbook", {})
-		if lb is Dictionary and not archive.has(str((lb as Dictionary).get("archive_id", ""))):
-			load_errors.append("adventurer '%s' logbook archive_id not in archive" % aid)
-
-	if generation.is_empty():
-		return
-	for tk in generation.get("task_weights", {}).keys():
-		if tk is String and (tk as String).begins_with("_"):
-			continue
-		if not (tk in TASK_TYPES):
-			load_errors.append("generation task_weights has unknown task '%s'" % tk)
-	var per_task: Dictionary = generation.get("per_task", {})
-	for tk in per_task.keys():
-		var spec: Dictionary = per_task[tk]
-		if not (str(spec.get("actor_pool", "")) in ACTOR_POOLS):
-			load_errors.append("generation per_task['%s'] actor_pool invalid" % tk)
-		for ax in spec.get("failure_axes", []):
-			if not (ax in FAILURE_AXES):
-				load_errors.append("generation per_task['%s'] axis '%s' not in enum" % [tk, ax])
-	var wheel: Array = generation.get("season_schedule", {}).get("wheel", [])
-	for dk in generation.get("season_schedule", {}).get("by_day", {}).keys():
-		if dk is String and (dk as String).begins_with("_"):
-			continue
-		var s: String = str(generation["season_schedule"]["by_day"][dk])
-		if not (s in wheel):
-			load_errors.append("generation season_schedule.by_day['%s'] = '%s' not in wheel" % [dk, s])
-	_check_rate(generation.get("invalid_rate", 0.45), "invalid_rate")
-	for dk in generation.get("invalid_rate_by_day", {}).keys():
-		if dk is String and (dk as String).begins_with("_"):
-			continue
-		_check_rate(generation["invalid_rate_by_day"][dk], "invalid_rate_by_day['%s']" % dk)
-
-
-func _check_rate(v: Variant, label: String) -> void:
-	if not (v is float or v is int) or float(v) < 0.0 or float(v) > 1.0:
-		load_errors.append("generation %s not in [0,1]" % label)
+	if (parsed as Dictionary).has("visitors"):
+		visitors = (parsed as Dictionary)["visitors"]
+	for e in (parsed as Dictionary).get("errors", []):
+		load_errors.append(str(e))
 
 
 ## Dev self-check (CONTENT-BANKS §5.4): generate every day of the week, hold each visit to

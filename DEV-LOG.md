@@ -6,6 +6,37 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT.3: typed model + validator move into core/ (with a G2 near-miss)
+
+WP-D ported the domain model, validator, and the scale-verdict derive pass into
+`MorningQueue.Core`, and wired `DeckLoader.gd`'s boot validation + day-0 load through
+`CoreBridge.Validate`/`PrepareShift`. First G2 attempt shipped 34 green tests but **failed
+the actual in-engine boot** with `The JSON value could not be converted to System.Int32.
+Path: $.accept.max` — a real gap between the test harness and reality worth recording.
+Root cause: GDScript's `JSON.stringify` re-emits every whole number with a trailing `.0`
+(`4` → `4.0`) on its round-trip through `JSON.parse_string`; strict `System.Text.Json` int
+binding rejected the float-shaped literal. None of the 34 tests caught it because they all
+fed raw file text, never the Godot-stringified payload the real boot sends across the
+bridge — the actual failure mode was in the *transport*, not the data. Fixed with a
+`TolerantIntConverter` registered repo-wide in `Json.Options` (accepts int-or-float-shaped
+JSON numbers for every `int`/`int?` model field) plus a same-fix pass over
+`ParseIntTable` (which had a matching latent bug — `rankup_thresholds` rows with `4.0`-form
+keys were being silently dropped, not just failing to convert). Added
+`BootRoundTripTests.cs`, which replays Godot's stringify float-ification over the real
+`data/` files through the actual `CoreBridge` entry points, so any future bridge payload is
+exercised the way the engine actually sends it, not just the way a `.NET` test happens to.
+
+**Lesson for future bridge work in this repo:** a green `dotnet test` run is not sufficient
+proof a GDScript↔C# JSON bridge works — test fixtures must go through the same
+serialize/deserialize round-trip the engine performs, not the raw source file. The
+coordinator's gate discipline (booting via MCP before trusting a subagent's dotnet-only
+report) caught this; it would not have surfaced from `dotnet test` alone.
+
+G2 gate (coordinator-verified after the fix): `dotnet build`/`dotnet test` 38/38 green,
+boot selfcheck unchanged, zero engine errors, `_validate_banks/_validate_shift/
+_validate_inspections/_validate_standing_orders` bodies confirmed gone from
+`DeckLoader.gd`, public Deck contract (members/signals) diff-reviewed untouched.
+
 ## 2026-07-15 — MQT execution begins: G0 kickoff + wave 1 (MQT.1 + MQT.2)
 
 Ran unattended (Panda not present at kickoff) — proceeded on the plan's recommended
