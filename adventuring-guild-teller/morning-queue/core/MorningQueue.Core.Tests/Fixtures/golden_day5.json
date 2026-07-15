@@ -1,0 +1,762 @@
+{
+  "visitors": [
+    {
+      "name": "Garrick Tallow",
+      "affiliation": "townee",
+      "profession": "Tanner",
+      "task_type": "quest_file",
+      "claim": {
+        "summary": "Files the Tannery Standing Order for posting.",
+        "asserts": {
+          "posting": "tannery-standing-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "dues",
+          "reason": "Posting rights lapsed \u2014 8g in dues outstanding; clear them before filing a new posting."
+        }
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-garrick-tallow",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "owing \u2014 8g outstanding"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A filing slip, not a specimen \u2014 only ink under the lens.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Item n/a, rank n/a. Dues owing \u2014 no new post. Stamp REJECTED.",
+      "notes": "Generated quest_file (dues).",
+      "id": "gen-d5-1",
+      "order": 1,
+      "portrait": null
+    },
+    {
+      "name": "Bryndle Crane",
+      "affiliation": "townee",
+      "profession": "Porter",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Quicksilver Tears\u0022 against the Warded Transport Order.",
+        "asserts": {
+          "item": "quicksilver-tears",
+          "against": "warded-transport-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "paperwork",
+          "reason": "The goods are right and within the limit, but the order requires Hazard Seal the deliverer never obtained \u2014 right goods, incomplete request."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "quicksilver-tears",
+          "compare": [
+            "beads",
+            "splits",
+            "silver"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "warded-transport-order",
+          "compare": [
+            "accept 1-2 dram",
+            "Hazard Seal present"
+          ],
+          "against": "the delivery",
+          "result": "amount within range; Hazard Seal absent"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "It beads, it splits, it shows silver \u2014 true quicksilver.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "The scale settles at 2 drams.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "within"
+        }
+      },
+      "player_story": "Book to Quicksilver Tears; tells match. Weigh it: 2 drams. Stamp REJECTED.",
+      "notes": "Generated item_check (paperwork).",
+      "id": "gen-d5-2",
+      "order": 2,
+      "portrait": null
+    },
+    {
+      "name": "Elga Thorne",
+      "affiliation": "townee",
+      "profession": "Weaver",
+      "task_type": "dungeon_drop",
+      "claim": {
+        "summary": "Commissions the guild to fetch \u0022Frost Lily Petal\u0022 and asks what it will cost.",
+        "asserts": {
+          "item": "frost-lily-petal",
+          "action": "commission"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "reach",
+          "reason": "In season, but on Floor 7 \u2014 the deepest active party reaches Floor 6. Beyond current reach; no quote."
+        }
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-elga-thorne",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "drop_table",
+          "entry": "frost-lily-petal",
+          "compare": [
+            "is_drop: true",
+            "floor: 7"
+          ],
+          "against": "the drop table",
+          "result": "Floor 7"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "reach_floor \u003E= 7"
+          ],
+          "against": "active parties",
+          "result": "no party reaches Floor 7 (deepest is 6)"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A commission slip \u2014 the drop itself is still down in the deep.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Drop pipeline: real drop? in season? reachable? A gate fails \u2014 stamp DECLINED.",
+      "notes": "Generated dungeon_drop (reach).",
+      "id": "gen-d5-3",
+      "order": 3,
+      "portrait": null
+    },
+    {
+      "name": "Hark Oldacre",
+      "affiliation": "townee",
+      "profession": "Courier",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Star Iron Ore\u0022 against the Forge Standing Order.",
+        "asserts": {
+          "item": "star-iron-ore",
+          "against": "forge-standing-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "identity",
+          "reason": "It is Bog Iron, not Star Iron Ore. Same family, but the tells part them \u2014 the book calls it on the look-alike."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "star-iron-ore",
+          "compare": [
+            "blue-black lustre",
+            "starry inclusions",
+            "heavy for its size"
+          ],
+          "against": "the delivered item",
+          "result": "mismatch: it is Bog Iron"
+        },
+        {
+          "consult": "book",
+          "entry": "bog-iron",
+          "compare": [
+            "rusty brown crust",
+            "porous and light",
+            "flakes to red dust"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "forge-standing-order",
+          "compare": [
+            "accept 3-6 dram"
+          ],
+          "against": "weighed amount",
+          "result": "within range \u2014 but the item is wrong"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A rusty brown crust, porous and light, flaking to red dust.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The scale settles at 6 drams.",
+          "amount": 6,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "within"
+        }
+      },
+      "player_story": "Book to Star Iron Ore; the tells fall to the look-alike. Weigh it: 6 drams. Stamp REJECTED.",
+      "notes": "Generated item_check (identity).",
+      "id": "gen-d5-4",
+      "order": 4,
+      "portrait": null
+    },
+    {
+      "name": "Piers Danglow",
+      "affiliation": "townee",
+      "profession": "Vintner",
+      "task_type": "dungeon_drop",
+      "claim": {
+        "summary": "Commissions the guild to fetch \u0022Ember Drake Scale\u0022 and asks what it will cost.",
+        "asserts": {
+          "item": "ember-drake-scale",
+          "action": "commission"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "season",
+          "reason": "A real drop, but out of season \u2014 Ember Drake Scale only forms in Summer, and it is Winter. No quote."
+        }
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-piers-danglow",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "drop_table",
+          "entry": "ember-drake-scale",
+          "compare": [
+            "is_drop: true"
+          ],
+          "against": "the commission",
+          "result": "genuine drop"
+        },
+        {
+          "consult": "season",
+          "entry": "ember-drake-scale",
+          "compare": [
+            "season: summer",
+            "current: winter"
+          ],
+          "against": "the season wheel",
+          "result": "out of season \u2014 short-circuits the quote"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A commission slip \u2014 the drop itself is still down in the deep.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Drop pipeline: real drop? in season? reachable? A gate fails \u2014 stamp DECLINED.",
+      "notes": "Generated dungeon_drop (season).",
+      "id": "gen-d5-5",
+      "order": 5,
+      "portrait": null
+    },
+    {
+      "name": "Tessa Hollowmere",
+      "affiliation": "adventure",
+      "profession": "Initiate",
+      "task_type": "rank_up",
+      "claim": {
+        "summary": "A rank-up application, Copper to Bronze, with a logbook of sealed completions.",
+        "asserts": {
+          "from": "copper",
+          "to": "bronze",
+          "logged_completions": 2
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "rank",
+          "reason": "Honest work, but 2 sealed completions is short of the 3 the Copper-\u003EBronze step requires."
+        }
+      },
+      "checks": [
+        {
+          "consult": "archive",
+          "entry": "adv-tessa-hollow-logbook",
+          "compare": [
+            "2 distinct seals"
+          ],
+          "against": "the logbook",
+          "result": "match, but too few"
+        },
+        {
+          "consult": "adventurer_directory",
+          "entry": "adv-tessa-hollow",
+          "compare": [
+            "copper-\u003Ebronze: 3"
+          ],
+          "against": "2 completions",
+          "result": "below threshold"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "2 slips, 2 distinct seals \u2014 each grain its own.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "The logbook: 6 drams of vellum.",
+          "amount": 6,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Count the sealed entries against the archive. Stamp DENIED.",
+      "notes": "Generated rank_up (rank).",
+      "id": "gen-d5-6",
+      "order": 6,
+      "portrait": null
+    },
+    {
+      "name": "Aldous Elmsworth",
+      "affiliation": "townee",
+      "profession": "Runner",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Sunwort\u0022 against the Temple Standing Order.",
+        "asserts": {
+          "item": "sunwort",
+          "against": "temple-standing-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "amount",
+          "reason": "The item is genuine, but the weighed amount is under the order\u0027s limit \u2014 1 sprig does not fill total 2 sprig."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "sunwort",
+          "compare": [
+            "golden ray-petals",
+            "resinous stem",
+            "warm to touch"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "temple-standing-order",
+          "compare": [
+            "total 2 sprig"
+          ],
+          "against": "weighed amount",
+          "result": "under the order\u0027s limit"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "Golden ray-petals, a resinous stem, warm to the touch.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "The scale settles at 1 sprig.",
+          "amount": 1,
+          "unit": "sprig",
+          "relevant": true,
+          "verdict": "under"
+        }
+      },
+      "player_story": "Book to Sunwort; tells match. Weigh it: 1 sprig. Stamp REJECTED.",
+      "notes": "Generated item_check (amount).",
+      "id": "gen-d5-7",
+      "order": 7,
+      "portrait": null
+    },
+    {
+      "name": "Quill Underhill",
+      "affiliation": "adventure",
+      "profession": "Freelancer",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Claims rank Bronze for the Cistern Wisp Swarm, but presents no card.",
+        "asserts": {
+          "rank": "bronze",
+          "posting": "cistern-wisp-swarm",
+          "proof": "none"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "unverifiable",
+          "reason": "No card, no dues record \u2014 word alone is not proof at the desk."
+        }
+      },
+      "checks": [
+        {
+          "consult": "ledger",
+          "entry": "ganton-reeve",
+          "compare": [
+            "any card on file"
+          ],
+          "against": "the ledger",
+          "result": "no card on file under that name"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "He lays no card down \u2014 nothing to examine but his word.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Search the directory \u2014 no card on file. Nothing to check against. Stamp WITHHELD.",
+      "notes": "Generated rank_gate (unverifiable).",
+      "id": "gen-d5-8",
+      "order": 8,
+      "portrait": null
+    },
+    {
+      "name": "Lysa Ironquill",
+      "affiliation": "adventure",
+      "profession": "Initiate",
+      "task_type": "roster_change",
+      "claim": {
+        "summary": "Presents a transfer card from the Ironquill chapter; asks to be entered on the roster as Copper.",
+        "asserts": {
+          "action": "welcome",
+          "chapter": "ironquill",
+          "rank": "copper"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "authenticity",
+          "reason": "Forged card: the seal carries a three-peaked crag, not the Ironquill\u0027s five-bar comb \u2014 an impostor claiming a chapter that never sealed it."
+        }
+      },
+      "checks": [
+        {
+          "consult": "cipher",
+          "entry": "ironquill",
+          "compare": [
+            "mark: five-bar comb",
+            "seal: pressed wax"
+          ],
+          "against": "the card",
+          "result": "mismatch: mark is a three-peaked crag, not the Ironquill\u0027s"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "The mark is a three-peaked crag pressed in wax where the Ironquill\u0027s five-bar comb belongs.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The transfer card: 3 drams of waxed board.",
+          "amount": 3,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Cipher table to Ironquill: five-bar comb in wax. Read the card\u0027s seal. Stamp REJECTED.",
+      "notes": "Generated roster_change (authenticity).",
+      "id": "gen-d5-9",
+      "order": 9,
+      "portrait": null
+    },
+    {
+      "name": "Nolt Tanner",
+      "affiliation": "townee",
+      "profession": "Drayman",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Kingsfoil\u0022 against the Infirmary Standing Order.",
+        "asserts": {
+          "item": "kingsfoil",
+          "against": "infirmary-standing-order"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "kingsfoil",
+          "compare": [
+            "square stem",
+            "feathered leaf",
+            "flat white head"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "infirmary-standing-order",
+          "compare": [
+            "total 1 sprig"
+          ],
+          "against": "weighed amount",
+          "result": "meets"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "Square stem, feathered leaf, a flat white head.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The scale settles at 1 sprig.",
+          "amount": 1,
+          "unit": "sprig",
+          "relevant": true,
+          "verdict": "meets"
+        }
+      },
+      "player_story": "Book to Kingsfoil; tells match. Weigh it: 1 sprig. Stamp APPROVED.",
+      "notes": "Generated item_check (clean).",
+      "id": "gen-d5-10",
+      "order": 10,
+      "portrait": null
+    },
+    {
+      "name": "Huld Greenhollow",
+      "affiliation": "adventure",
+      "profession": "Ranger",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Rank Bronze, taking the Gloomfen Lurker (Silver or better).",
+        "asserts": {
+          "rank": "bronze",
+          "posting": "gloomfen-lurker"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "rank",
+          "reason": "Under-ranked: a Bronze card against a Silver gate \u2014 a rung short. That is Floor work, not a desk exception."
+        }
+      },
+      "checks": [
+        {
+          "consult": "adventurer_directory",
+          "entry": "adv-huld-green",
+          "compare": [
+            "bronze"
+          ],
+          "against": "the directory",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "gloomfen-lurker",
+          "compare": [
+            "rank_min: silver"
+          ],
+          "against": "bronze",
+          "result": "below"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A bronze guild card, dues column inked.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "A guild card in its case: 2 drams on the pan.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Pull the card from the directory \u2014 Bronze, dues current. Posting reads Silver-or-better. Stamp REFUSED.",
+      "notes": "Generated rank_gate (rank).",
+      "id": "gen-d5-11",
+      "order": 11,
+      "portrait": null
+    },
+    {
+      "name": "Orlin Pethwick",
+      "affiliation": "townee",
+      "profession": "Infirmary Keeper",
+      "task_type": "dungeon_drop",
+      "claim": {
+        "summary": "Commissions the guild to fetch \u0022Glacier Pearl\u0022 and asks what it will cost.",
+        "asserts": {
+          "item": "glacier-pearl",
+          "action": "commission"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null,
+        "quote": {
+          "base": 50,
+          "depth_multiplier": 2.5,
+          "in_season_premium": 10,
+          "total": 135,
+          "currency": "g"
+        }
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-orlin-pethwick",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "drop_table",
+          "entry": "glacier-pearl",
+          "compare": [
+            "is_drop: true",
+            "floor: 6"
+          ],
+          "against": "the commission",
+          "result": "genuine drop, Floor 6"
+        },
+        {
+          "consult": "season",
+          "entry": "glacier-pearl",
+          "compare": [
+            "season: winter",
+            "current: winter"
+          ],
+          "against": "the season wheel",
+          "result": "in season"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "reach_floor \u003E= 6"
+          ],
+          "against": "active parties",
+          "result": "match: a party reaches Floor 6"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A commission slip \u2014 the drop itself is still down in the deep.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Drop pipeline: real drop? in season? reachable? All clear \u2014 stamp QUOTED.",
+      "notes": "Generated dungeon_drop (clean).",
+      "id": "gen-d5-12",
+      "order": 12,
+      "portrait": null
+    }
+  ],
+  "errors": []
+}

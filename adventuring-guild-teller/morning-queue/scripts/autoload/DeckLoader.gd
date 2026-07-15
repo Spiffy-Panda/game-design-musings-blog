@@ -10,9 +10,12 @@ extends Node
 ## sub-agents depend on these signatures — extend, do not rename.
 ##
 ## SHIFT SELECTION (CONTENT-BANKS.md §5): `day == 0` loads the curated tutorial shift from
-## visitors.json unchanged; `day > 0` composes the shift procedurally with
-## `ShiftGenerator.generate_shift(day)` (deterministic — seed = day), so a "week" is seven
-## reproducible days. Flip `day` (or call `load_day`) to switch; a later hub increments it.
+## visitors.json unchanged; `day > 0` composes the shift procedurally in MorningQueue.Core
+## (CoreBridge.GenerateShift — deterministic, seed = day), so a "week" is seven reproducible
+## days. The generation payload is built from the LIVE banks dicts, so runtime dues payments
+## (`pay_dues`) are visible to the next generated day. Flip `day` (or call `load_day`) to
+## switch; a later hub increments it. The old GDScript generator (scripts/gen/
+## ShiftGenerator.gd) is retired; days 1-7 are golden-pinned in the dotnet test project.
 ##
 ## Contract (what other scripts may call):
 ##   Deck.visitors            -> Array[Dictionary]   the queue, in `order`
@@ -38,20 +41,24 @@ const REFERENCES_PATH := "res://data/references.json"
 const TOWNEES_PATH := "res://data/townees.json"
 const ADVENTURERS_PATH := "res://data/adventurers.json"
 const GENERATION_PATH := "res://data/generation.json"
+const LOCALE_PATH := "res://data/locales/en.json"
 
 ## The day the desk opens on. 0 = the curated tutorial shift (visitors.json); a value > 0
 ## generates a deterministic shift. A later shift-select hub sets this before the desk builds.
 const START_DAY := 0
 
-## Dev aid: at boot, generate + validate days 1..7 and report, WITHOUT disturbing the live
-## shift. Proves the generator emits schema-valid shifts across a week. Off = no self-check.
+## Dev aid: a one-line boot smoke of the C# generation path (debug builds only). The
+## self-check's SUBSTANCE — schema validity, golden-week determinism, distribution sanity —
+## moved to `dotnet test` (core/MorningQueue.Core.Tests/GeneratorTests.cs); this boot pass
+## just proves the bridge round-trip works in-engine and keeps the historical report line.
 const GEN_SELFCHECK := true
 
-# Schema validation (banks + shift + inspections + standing-order limits) and the
-# scale-verdict derive pass now live in MorningQueue.Core, reached through the C#
-# CoreBridge (JSON text in, JSON text / string[] out; one Validate per boot, one
-# PrepareShift per loaded day). The enum vocabularies TASK_TYPES / FAILURE_AXES /
-# ACTOR_POOLS moved with the checks — they are Core's Validator constants now.
+# Schema validation (banks + shift + inspections + standing-order limits), the
+# scale-verdict derive pass AND the procedural shift composer now live in
+# MorningQueue.Core, reached through the C# CoreBridge (JSON text in, JSON text /
+# string[] out; one Validate per boot, one PrepareShift or GenerateShift per loaded
+# day). The enum vocabularies TASK_TYPES / FAILURE_AXES / ACTOR_POOLS moved with the
+# checks — they are Core's Validator constants now.
 
 ## The GDScript <-> .NET seam. Instantiated once at boot. Because CoreBridge is a C#
 ## [GlobalClass], the global-class cache must be regenerated once after it is added
@@ -100,7 +107,6 @@ func load_day(d: int) -> void:
 	day = d
 	load_errors.clear()
 	_load_shift(day)
-	_prepare_shift_core()
 	ok = load_errors.is_empty()
 	if not ok:
 		for e in load_errors:
@@ -139,7 +145,6 @@ func _load_all() -> void:
 
 	_run_banks_validation()
 	_load_shift(day)
-	_prepare_shift_core()
 
 	ok = load_errors.is_empty()
 	if not ok:
@@ -161,7 +166,9 @@ func _inject_directory(src: Variant, table_key: String, inner_key: String) -> Di
 	return inner
 
 
-## Populate `visitors` for the given day: curated file for day 0, generated otherwise.
+## Populate `visitors` for the given day: curated file for day 0 (then the Core validate +
+## derive pass), generated in Core otherwise (one coarse bridge call does compose +
+## validate + derive together).
 func _load_shift(d: int) -> void:
 	if d == 0:
 		var vdata: Variant = _read_json(VISITORS_PATH)
@@ -171,8 +178,16 @@ func _load_shift(d: int) -> void:
 		else:
 			visitors = []
 			load_errors.append("visitors.json: missing top-level 'visitors' array")
+		_prepare_shift_core()
 	else:
-		visitors = ShiftGenerator.generate_shift(d)
+		var parsed: Variant = JSON.parse_string(_get_bridge().GenerateShift(d, _banks_json(), _locale_json()))
+		if not (parsed is Dictionary):
+			visitors = []
+			load_errors.append("core GenerateShift returned malformed result")
+			return
+		visitors = (parsed as Dictionary).get("visitors", [])
+		for e in (parsed as Dictionary).get("errors", []):
+			load_errors.append(str(e))
 		if visitors.is_empty():
 			load_errors.append("generator produced no visits for day %d" % d)
 
@@ -184,15 +199,32 @@ func _load_shift(d: int) -> void:
 ## Core.Validator through the bridge; appends any problems to `load_errors`. This replaces
 ## the old GDScript bank + standing-order validators (now Core.Validator.ValidateBanks).
 func _run_banks_validation() -> void:
-	var payload := JSON.stringify({
+	var errs: PackedStringArray = _get_bridge().Validate(_banks_json())
+	for e in errs:
+		load_errors.append(str(e))
+
+
+## The banks payload (Validate + GenerateShift share the shape). Built fresh from the LIVE
+## dicts each call — pay_dues mutates `townees` at runtime and generation must see it.
+func _banks_json() -> String:
+	return JSON.stringify({
 		"references": references,
 		"townees": townees,
 		"adventurers": adventurers,
 		"generation": generation,
 	})
-	var errs: PackedStringArray = _get_bridge().Validate(payload)
-	for e in errs:
-		load_errors.append(str(e))
+
+
+var _locale_text := ""
+
+## The raw locale JSON (compose-time humanizing in Core). Read once, cached.
+func _locale_json() -> String:
+	if _locale_text.is_empty():
+		_locale_text = FileAccess.get_file_as_string(LOCALE_PATH)
+		if _locale_text.is_empty():
+			push_warning("[Deck] %s missing or empty; generated prose falls back to Title-Case" % LOCALE_PATH)
+			_locale_text = "{}"
+	return _locale_text
 
 
 ## Per-day shift preparation: validate the loaded shift (required fields + inspection
@@ -214,36 +246,29 @@ func _prepare_shift_core() -> void:
 		load_errors.append(str(e))
 
 
-## Dev self-check (CONTENT-BANKS §5.4): generate every day of the week, hold each visit to
-## the same inspections + required-field contract as the curated shift, and report. Never
-## mutates the live shift. Any failure is a real problem and prints as an error line.
+## Boot smoke of the C# generation path. The old per-field GDScript checks moved into
+## Core (Validator.ValidateShift runs inside every GenerateShift call) and into dotnet
+## tests (GeneratorTests: golden week, distribution sanity, zero fallbacks). Here we just
+## drive the real bridge round-trip for each day and surface any errors Core reported,
+## keeping the historical `[gen-selfcheck] 7 days, N visits, 0 problems` line.
 func _selfcheck_generated() -> void:
-	var required := ["id", "name", "affiliation", "profession", "task_type", "claim", "truth"]
 	var total := 0
 	var problems := 0
 	for d in range(1, 8):
-		var shift: Array = ShiftGenerator.generate_shift(d)
+		var parsed: Variant = JSON.parse_string(_get_bridge().GenerateShift(d, _banks_json(), _locale_json()))
+		if not (parsed is Dictionary):
+			push_error("[gen-selfcheck] day %d: malformed GenerateShift result" % d)
+			problems += 1
+			continue
+		var shift: Array = (parsed as Dictionary).get("visitors", [])
+		var errs: Array = (parsed as Dictionary).get("errors", [])
 		if shift.is_empty():
 			push_error("[gen-selfcheck] day %d produced no visits" % d)
 			problems += 1
-			continue
-		for v in shift:
-			total += 1
-			for key in required:
-				if not v.has(key):
-					push_error("[gen-selfcheck] day %d visit '%s' missing '%s'" % [d, v.get("id", "?"), key])
-					problems += 1
-			var insp: Variant = v.get("inspections", null)
-			if not (insp is Dictionary):
-				push_error("[gen-selfcheck] day %d visit '%s' missing inspections" % [d, v.get("id", "?")])
-				problems += 1
-				continue
-			for tool in ["glass", "scale"]:
-				var t: Variant = insp.get(tool, null)
-				var reading: Variant = t.get("reading", "") if t is Dictionary else ""
-				if not (reading is String) or (reading as String).is_empty():
-					push_error("[gen-selfcheck] day %d visit '%s' %s reading empty" % [d, v.get("id", "?"), tool])
-					problems += 1
+		total += shift.size()
+		for e in errs:
+			push_error("[gen-selfcheck] day %d: %s" % [d, str(e)])
+			problems += 1
 	print("[gen-selfcheck] 7 days, %d visits, %d problems" % [total, problems])
 
 

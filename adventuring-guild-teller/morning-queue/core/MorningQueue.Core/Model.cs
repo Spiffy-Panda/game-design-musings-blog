@@ -181,12 +181,39 @@ public sealed class SeasonSchedule
     public Dictionary<string, JsonElement>? ByDay { get; set; }
 }
 
+public sealed class ShiftSpec
+{
+    public int VisitsMin { get; set; } = 12;
+    public int VisitsMax { get; set; } = 16;
+}
+
+public sealed class NamePools
+{
+    public string[]? Given { get; set; }
+    public string[]? Surname { get; set; }
+    public string[]? Professions { get; set; }
+}
+
+public sealed class DecoyScale
+{
+    public string? Reading { get; set; }
+    // amount may be an int or null (the "default" decoy has nothing on the pan).
+    public JsonElement? Amount { get; set; }
+    public string? Unit { get; set; }
+}
+
 public sealed class GenerationConfig
 {
+    public ShiftSpec? Shift { get; set; }
     public Dictionary<string, JsonElement>? TaskWeights { get; set; }
     public JsonElement? InvalidRate { get; set; }
     public Dictionary<string, JsonElement>? InvalidRateByDay { get; set; }
+    public Dictionary<string, JsonElement>? FailureAxisWeights { get; set; }
     public Dictionary<string, PerTaskSpec>? PerTask { get; set; }
+    // decoy_scales carries a "_note" string row alongside the typed entries, so it stays a
+    // JsonElement map and the composer deserializes each non-"_" row to DecoyScale.
+    public Dictionary<string, JsonElement>? DecoyScales { get; set; }
+    public NamePools? NamePools { get; set; }
     public SeasonSchedule? SeasonSchedule { get; set; }
 }
 

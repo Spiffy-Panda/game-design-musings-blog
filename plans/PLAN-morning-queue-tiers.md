@@ -137,7 +137,7 @@ morning-queue/
     annotatedJson`. Deck drops its ~155 validation lines (keeps file-missing/parse errors).
   - Verify: validator green over the real `data/`; red-case fixture per breakage axis;
     boot output unchanged.
-- [ ] **`MQT.4` — Generator becomes code** *(the big move; executes `MQT.D2`)*
+- [x] **`MQT.4` — Generator becomes code** *(the big move; executes `MQT.D2`; executed 2026-07-15)*
   - Port `ShiftGenerator.gd` (1,151 lines) → `Core.ShiftComposer`: pure
     `Generate(day, banks, duesState)`; templates/decoys/professions read from the banks
     (`MQT.1b`); no `Deck.*` reads. `Deck.load_day(d>0)` routes through the bridge.

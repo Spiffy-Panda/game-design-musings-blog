@@ -23,7 +23,12 @@ public static class Shift
     public static string PrepareJson(string referencesJson, string visitorsPayloadJson)
     {
         var refs = References.Parse(referencesJson);
-        var result = Prepare(refs, visitorsPayloadJson);
+        return ResultToJson(Prepare(refs, visitorsPayloadJson));
+    }
+
+    /// <summary>Serialize a Result to the bridge's `{ "visitors": [...], "errors": [...] }` shape.</summary>
+    public static string ResultToJson(Result result)
+    {
         var errorsArray = new JsonArray();
         foreach (var e in result.Errors)
             errorsArray.Add(e);

@@ -1,0 +1,912 @@
+{
+  "visitors": [
+    {
+      "name": "Linnet Orrery",
+      "affiliation": "townee",
+      "profession": "Herbwife",
+      "task_type": "quest_file",
+      "claim": {
+        "summary": "Files the Temple Standing Order for posting.",
+        "asserts": {
+          "posting": "temple-standing-order"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-linnet-orrery",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "posting",
+          "entry": "temple-standing-order",
+          "compare": [
+            "posting open"
+          ],
+          "against": "the filing",
+          "result": "open"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "an eligible party is active"
+          ],
+          "against": "active parties",
+          "result": "match: a party can field it"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A filing slip, not a specimen \u2014 only ink under the lens.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Item n/a, rank n/a. Dues current; the roster can field it. Stamp FILED.",
+      "notes": "Generated quest_file (clean).",
+      "id": "gen-d3-1",
+      "order": 1,
+      "portrait": null
+    },
+    {
+      "name": "Hessa Brightwater",
+      "affiliation": "townee",
+      "profession": "Apothecary",
+      "task_type": "quest_file",
+      "claim": {
+        "summary": "Files the Apothecary Standing Order for posting.",
+        "asserts": {
+          "posting": "apothecary-standing-order"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-hessa-brightwater",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "posting",
+          "entry": "apothecary-standing-order",
+          "compare": [
+            "posting open"
+          ],
+          "against": "the filing",
+          "result": "open"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "an eligible party is active"
+          ],
+          "against": "active parties",
+          "result": "match: a party can field it"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A filing slip, not a specimen \u2014 only ink under the lens.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Item n/a, rank n/a. Dues current; the roster can field it. Stamp FILED.",
+      "notes": "Generated quest_file (clean).",
+      "id": "gen-d3-2",
+      "order": 2,
+      "portrait": null
+    },
+    {
+      "name": "Brannock Wickley",
+      "affiliation": "townee",
+      "profession": "Runner",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Kingsfoil\u0022 against the Infirmary Standing Order.",
+        "asserts": {
+          "item": "kingsfoil",
+          "against": "infirmary-standing-order"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "kingsfoil",
+          "compare": [
+            "square stem",
+            "feathered leaf",
+            "flat white head"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "infirmary-standing-order",
+          "compare": [
+            "total 1 sprig"
+          ],
+          "against": "weighed amount",
+          "result": "meets"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "Square stem, feathered leaf, a flat white head.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The scale settles at 1 sprig.",
+          "amount": 1,
+          "unit": "sprig",
+          "relevant": true,
+          "verdict": "meets"
+        }
+      },
+      "player_story": "Book to Kingsfoil; tells match. Weigh it: 1 sprig. Stamp APPROVED.",
+      "notes": "Generated item_check (clean).",
+      "id": "gen-d3-3",
+      "order": 3,
+      "portrait": null
+    },
+    {
+      "name": "Brother Anselm",
+      "affiliation": "townee",
+      "profession": "Sexton",
+      "task_type": "quest_file",
+      "claim": {
+        "summary": "Files the Crypt Of Bells Cleanse for posting.",
+        "asserts": {
+          "posting": "crypt-of-bells-cleanse",
+          "ward_required": [
+            "cleric"
+          ]
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "fieldability",
+          "reason": "No Cleric-warded party is registered as active \u2014 no one on the roster could take it, whoever comes or goes."
+        }
+      },
+      "checks": [
+        {
+          "consult": "posting",
+          "entry": "crypt-of-bells-cleanse",
+          "compare": [
+            "ward_required: Cleric"
+          ],
+          "against": "the request",
+          "result": "ward required"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "wards contains Cleric"
+          ],
+          "against": "every active party",
+          "result": "no eligible party registered"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A filing slip, not a specimen \u2014 only ink under the lens.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Item n/a, rank n/a. No warded party on the books. Stamp REJECTED.",
+      "notes": "Generated quest_file (fieldability).",
+      "id": "gen-d3-4",
+      "order": 4,
+      "portrait": null
+    },
+    {
+      "name": "Hark Winnick",
+      "affiliation": "townee",
+      "profession": "Carrier",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Quicksilver Tears\u0022 against the Warded Transport Order.",
+        "asserts": {
+          "item": "quicksilver-tears",
+          "against": "warded-transport-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "paperwork",
+          "reason": "The goods are right and within the limit, but the order requires Hazard Seal the deliverer never obtained \u2014 right goods, incomplete request."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "quicksilver-tears",
+          "compare": [
+            "beads",
+            "splits",
+            "silver"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "warded-transport-order",
+          "compare": [
+            "accept 1-2 dram",
+            "Hazard Seal present"
+          ],
+          "against": "the delivery",
+          "result": "amount within range; Hazard Seal absent"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "It beads, it splits, it shows silver \u2014 true quicksilver.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "The scale settles at 2 drams.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "within"
+        }
+      },
+      "player_story": "Book to Quicksilver Tears; tells match. Weigh it: 2 drams. Stamp REJECTED.",
+      "notes": "Generated item_check (paperwork).",
+      "id": "gen-d3-5",
+      "order": 5,
+      "portrait": null
+    },
+    {
+      "name": "Lorne Lund",
+      "affiliation": "townee",
+      "profession": "Porter",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Troll Bile\u0022 against the Tannery Standing Order.",
+        "asserts": {
+          "item": "troll-bile",
+          "against": "tannery-standing-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "amount",
+          "reason": "The item is genuine, but the weighed amount is under the order\u0027s limit \u2014 0 drams does not fill accept 2-5 dram."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "troll-bile",
+          "compare": [
+            "viscous green-black",
+            "faint healing sheen",
+            "reeks of moss and iron"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "tannery-standing-order",
+          "compare": [
+            "accept 2-5 dram"
+          ],
+          "against": "weighed amount",
+          "result": "under the order\u0027s limit"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "Viscous green-black, a faint healing sheen, reeking of moss and iron.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "The scale settles at 0 drams.",
+          "amount": 0,
+          "unit": "dram",
+          "relevant": true,
+          "verdict": "under"
+        }
+      },
+      "player_story": "Book to Troll Bile; tells match. Weigh it: 0 drams. Stamp REJECTED.",
+      "notes": "Generated item_check (amount).",
+      "id": "gen-d3-6",
+      "order": 6,
+      "portrait": null
+    },
+    {
+      "name": "Dorcas Veil",
+      "affiliation": "townee",
+      "profession": "Widow",
+      "task_type": "quest_file",
+      "claim": {
+        "summary": "Files the Sunken Barrow Blade for posting.",
+        "asserts": {
+          "posting": "sunken-barrow-blade"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "townee_directory",
+          "entry": "townee-dorcas-veil",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "dues current"
+        },
+        {
+          "consult": "posting",
+          "entry": "sunken-barrow-blade",
+          "compare": [
+            "posting open"
+          ],
+          "against": "the filing",
+          "result": "open"
+        },
+        {
+          "consult": "roster",
+          "entry": "*",
+          "compare": [
+            "an eligible party is active"
+          ],
+          "against": "active parties",
+          "result": "match: a party can field it"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A filing slip, not a specimen \u2014 only ink under the lens.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Item n/a, rank n/a. Dues current; the roster can field it. Stamp FILED.",
+      "notes": "Generated quest_file (clean).",
+      "id": "gen-d3-7",
+      "order": 7,
+      "portrait": null
+    },
+    {
+      "name": "Brek Hollowmere",
+      "affiliation": "adventure",
+      "profession": "Skirmisher",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Rank Bronze, taking the Millpond Retrieval (Bronze or better).",
+        "asserts": {
+          "rank": "bronze",
+          "posting": "millpond-retrieval"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "adventurer_directory",
+          "entry": "adv-brek-hollow",
+          "compare": [
+            "bronze",
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "millpond-retrieval",
+          "compare": [
+            "rank_min: bronze"
+          ],
+          "against": "the rank",
+          "result": "meets"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A bronze guild card, dues column inked.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "A guild card in its case: 2 drams on the pan.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Pull the card from the directory \u2014 Bronze, dues current. Posting reads Bronze-or-better. Stamp ASSIGNED.",
+      "notes": "Generated rank_gate (clean).",
+      "id": "gen-d3-8",
+      "order": 8,
+      "portrait": null
+    },
+    {
+      "name": "Sable Thornwatch",
+      "affiliation": "adventure",
+      "profession": "Sellsword",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Rank Gold, taking the Tanglewood Survey (Bronze or better).",
+        "asserts": {
+          "rank": "gold",
+          "posting": "tanglewood-survey"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "dues",
+          "reason": "The rank clears the gate, but guild dues are 20g in arrears \u2014 membership lapsed; clear the dues before taking the posting."
+        }
+      },
+      "checks": [
+        {
+          "consult": "adventurer_directory",
+          "entry": "adv-sable-thorn",
+          "compare": [
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "owing \u2014 20g outstanding"
+        },
+        {
+          "consult": "posting",
+          "entry": "tanglewood-survey",
+          "compare": [
+            "rank_min: bronze"
+          ],
+          "against": "the rank",
+          "result": "meets, but membership lapsed"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A gold guild card, dues column inked.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "A guild card in its case: 2 drams on the pan.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Pull the card from the directory \u2014 Gold, dues owing. Posting reads Bronze-or-better. Stamp REFUSED.",
+      "notes": "Generated rank_gate (dues).",
+      "id": "gen-d3-9",
+      "order": 9,
+      "portrait": null
+    },
+    {
+      "name": "Yria Saltcrag",
+      "affiliation": "adventure",
+      "profession": "Ranger",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Rank Silver, taking the Cistern Wisp Swarm (Bronze or better).",
+        "asserts": {
+          "rank": "silver",
+          "posting": "cistern-wisp-swarm"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "adventurer_directory",
+          "entry": "adv-yria-saltcrag",
+          "compare": [
+            "silver",
+            "dues current"
+          ],
+          "against": "the directory",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "cistern-wisp-swarm",
+          "compare": [
+            "rank_min: bronze"
+          ],
+          "against": "the rank",
+          "result": "meets"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "A silver guild card, dues column inked.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "A guild card in its case: 2 drams on the pan.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Pull the card from the directory \u2014 Silver, dues current. Posting reads Bronze-or-better. Stamp ASSIGNED.",
+      "notes": "Generated rank_gate (clean).",
+      "id": "gen-d3-10",
+      "order": 10,
+      "portrait": null
+    },
+    {
+      "name": "Brannock Whitlow",
+      "affiliation": "townee",
+      "profession": "Drayman",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Quicksilver Tears\u0022 against the Warded Transport Order.",
+        "asserts": {
+          "item": "quicksilver-tears",
+          "against": "warded-transport-order"
+        }
+      },
+      "truth": {
+        "valid": true,
+        "stamp": "approve",
+        "binary": "approve",
+        "failure": null
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "quicksilver-tears",
+          "compare": [
+            "beads",
+            "splits",
+            "silver"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "warded-transport-order",
+          "compare": [
+            "accept 1-2 dram"
+          ],
+          "against": "weighed amount",
+          "result": "within range"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "It beads, it splits, it shows silver \u2014 true quicksilver.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The scale settles at 2 drams.",
+          "amount": 2,
+          "unit": "dram",
+          "relevant": true,
+          "verdict": "within"
+        }
+      },
+      "player_story": "Book to Quicksilver Tears; tells match. Weigh it: 2 drams. Stamp APPROVED.",
+      "notes": "Generated item_check (clean).",
+      "id": "gen-d3-11",
+      "order": 11,
+      "portrait": null
+    },
+    {
+      "name": "Castor Thornwatch",
+      "affiliation": "adventure",
+      "profession": "Cartographer",
+      "task_type": "rank_up",
+      "claim": {
+        "summary": "A rank-up application, Copper to Bronze, with a logbook of sealed completions.",
+        "asserts": {
+          "from": "copper",
+          "to": "bronze",
+          "logged_completions": 3
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "duplicate",
+          "reason": "Padded logbook: two entries carry one seal impression \u2014 only 2 distinct completions exist, short of the 3 needed."
+        }
+      },
+      "checks": [
+        {
+          "consult": "archive",
+          "entry": "adv-castor-thorn-logbook",
+          "compare": [
+            "3 entries",
+            "distinct seals"
+          ],
+          "against": "the logbook",
+          "result": "mismatch: two seals identical"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "3 slips \u2014 but two seals share one grain, struck from a single die; only 2 are distinct.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The logbook: 6 drams of vellum.",
+          "amount": 6,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Count the sealed entries against the archive. Stamp DENIED.",
+      "notes": "Generated rank_up (duplicate).",
+      "id": "gen-d3-12",
+      "order": 12,
+      "portrait": null
+    },
+    {
+      "name": "Tibb Crane",
+      "affiliation": "townee",
+      "profession": "Courier",
+      "task_type": "item_check",
+      "claim": {
+        "summary": "A delivery of \u0022Kingsfoil\u0022 against the Infirmary Standing Order.",
+        "asserts": {
+          "item": "kingsfoil",
+          "against": "infirmary-standing-order"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "identity",
+          "reason": "It is Yarrow, not Kingsfoil. Same family, but the tells part them \u2014 the book calls it on the look-alike."
+        }
+      },
+      "checks": [
+        {
+          "consult": "book",
+          "entry": "kingsfoil",
+          "compare": [
+            "square stem",
+            "feathered leaf",
+            "flat white head"
+          ],
+          "against": "the delivered item",
+          "result": "mismatch: it is Yarrow"
+        },
+        {
+          "consult": "book",
+          "entry": "yarrow",
+          "compare": [
+            "round stem",
+            "feathered leaf",
+            "flat white head"
+          ],
+          "against": "the delivered item",
+          "result": "match"
+        },
+        {
+          "consult": "posting",
+          "entry": "infirmary-standing-order",
+          "compare": [
+            "total 1 sprig"
+          ],
+          "against": "weighed amount",
+          "result": "meets \u2014 but the item is wrong"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "Round stem, feathered leaf, a flat white head.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The scale settles at 1 sprig.",
+          "amount": 1,
+          "unit": "sprig",
+          "relevant": false,
+          "verdict": "meets"
+        }
+      },
+      "player_story": "Book to Kingsfoil; the tells fall to the look-alike. Weigh it: 1 sprig. Stamp REJECTED.",
+      "notes": "Generated item_check (identity).",
+      "id": "gen-d3-13",
+      "order": 13,
+      "portrait": null
+    },
+    {
+      "name": "Lysa Ironquill",
+      "affiliation": "adventure",
+      "profession": "Initiate",
+      "task_type": "roster_change",
+      "claim": {
+        "summary": "Presents a transfer card from the Ironquill chapter; asks to be entered on the roster as Copper.",
+        "asserts": {
+          "action": "welcome",
+          "chapter": "ironquill",
+          "rank": "copper"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "authenticity",
+          "reason": "Forged card: the seal carries a triple-notched wave, not the Ironquill\u0027s five-bar comb \u2014 an impostor claiming a chapter that never sealed it."
+        }
+      },
+      "checks": [
+        {
+          "consult": "cipher",
+          "entry": "ironquill",
+          "compare": [
+            "mark: five-bar comb",
+            "seal: pressed wax"
+          ],
+          "against": "the card",
+          "result": "mismatch: mark is a triple-notched wave, not the Ironquill\u0027s"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "The mark is a triple-notched wave pressed in wax where the Ironquill\u0027s five-bar comb belongs.",
+          "relevant": true
+        },
+        "scale": {
+          "reading": "The transfer card: 3 drams of waxed board.",
+          "amount": 3,
+          "unit": "dram",
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Cipher table to Ironquill: five-bar comb in wax. Read the card\u0027s seal. Stamp REJECTED.",
+      "notes": "Generated roster_change (authenticity).",
+      "id": "gen-d3-14",
+      "order": 14,
+      "portrait": null
+    },
+    {
+      "name": "Corin Fettle",
+      "affiliation": "adventure",
+      "profession": "Freelancer",
+      "task_type": "rank_gate",
+      "claim": {
+        "summary": "Claims rank Bronze for the Cliff Nest Survey, but presents no card.",
+        "asserts": {
+          "rank": "bronze",
+          "posting": "cliff-nest-survey",
+          "proof": "none"
+        }
+      },
+      "truth": {
+        "valid": false,
+        "stamp": "reject",
+        "binary": "reject",
+        "failure": {
+          "axis": "unverifiable",
+          "reason": "No card, no dues record \u2014 word alone is not proof at the desk."
+        }
+      },
+      "checks": [
+        {
+          "consult": "ledger",
+          "entry": "ganton-reeve",
+          "compare": [
+            "any card on file"
+          ],
+          "against": "the ledger",
+          "result": "no card on file under that name"
+        }
+      ],
+      "inspections": {
+        "glass": {
+          "reading": "He lays no card down \u2014 nothing to examine but his word.",
+          "relevant": false
+        },
+        "scale": {
+          "reading": "Nothing on the pan; a petition, not a delivery.",
+          "amount": null,
+          "unit": null,
+          "relevant": false,
+          "verdict": "no_order"
+        }
+      },
+      "player_story": "Search the directory \u2014 no card on file. Nothing to check against. Stamp WITHHELD.",
+      "notes": "Generated rank_gate (unverifiable).",
+      "id": "gen-d3-15",
+      "order": 15,
+      "portrait": null
+    }
+  ],
+  "errors": []
+}

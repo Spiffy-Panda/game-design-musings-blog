@@ -6,6 +6,49 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT.4: the generator ported to core; GDScript original retired
+
+WP-E (Fable — design authority delegated per the handoff) ported the 1,151-line
+`ShiftGenerator.gd` into `MorningQueue.Core.Composer` as a pure `Generate(day, banks,
+duesState, locales)`, executing the `MQT.D2a` rebaseline: the stream changed once (a
+self-owned PCG32, not System.Random, to keep it engine-independent), and days 1–7 are now
+golden-pinned fixtures (`GeneratorTests.cs` + `Fixtures/golden_day1..7.json`). **Visit
+count rebaselined 97 → 96** — expected under D2a, confirmed by boot. `Deck.load_day(d>0)`
+now makes one bridge call (`GenerateShift`); the live `townees`/`adventurers` dicts are
+serialized fresh per call so the pay-dues floor beat still sees runtime state, not the
+bank file's. `scripts/gen/ShiftGenerator.gd` (+ `.uid`) deleted; zero live references
+remain (grep-confirmed). Boot self-check (`_selfcheck_generated`) shrank to a smoke line;
+the substance moved into dotnet tests per the plan.
+
+**Deviation flagged by the agent, accepted:** `cs/CoreBridge.cs` wasn't in WP-E's OWNED
+list but needed one additive method (`GenerateShift`) — the bridge shape in the handoff
+explicitly anticipated a day/banks/locales generation call, and no existing bridge method
+was re-signed. Accepted as in-spirit; noting here per Rule 3 sync discipline since the
+handoff's file-ownership table undersold this.
+
+**Design call the agent made and flagged:** the naive weighted failure-axis draw never
+surfaced 3 of the required axes across a week (fieldability/claimant/reach/duplicate are
+rare) — the required "every reachable failure axis appears" distribution assert was
+unsatisfiable without sample-without-replacement bias toward fresh axes first, falling
+back to authored weights once every admissible axis has appeared once. Mirrors the
+existing actor no-repeat design in CONTENT-BANKS.md §4.
+
+**Latent oddities in the GD original, ported as-is (not this run's job to fix):** a
+hardcoded curated `ledger` entry id (`ganton-reeve`) used for a random walk-in's
+rank_gate-unverifiable check; a rank-fail case that silently degrades to a valid gate
+visit when no under-ranked material exists; dungeon_drop/quest_file dues-fail items
+falling back to `drops[0]`/`owns[0]`. CONTENT-BANKS.md §4 also describes an item_check
+*authenticity* branch the GD generator never implemented (moot — no standing-order item
+carries `forgery_glass`).
+
+G3 gate (coordinator-verified): `dotnet test` 57/57 green (golden weeks + distribution
+sanity + a live-dues-state regression test); class-name cache regenerated
+(`--headless --import`); boot selfcheck `7 days, 96 visits, 0 problems`, zero errors;
+DevHarness auto-step (toggled on for the check, flipped back off after) confirms day 0 =
+**17/17** correct (the curated shift now carries 17 visitors since `nessa-broom`'s
+rev-3 addition — the handoff's "16/16" wording predates that and is now stale, corrected
+here rather than silently smoothed over).
+
 ## 2026-07-15 — MQT.3: typed model + validator move into core/ (with a G2 near-miss)
 
 WP-D ported the domain model, validator, and the scale-verdict derive pass into

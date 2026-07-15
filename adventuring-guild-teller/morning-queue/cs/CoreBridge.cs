@@ -57,6 +57,27 @@ public partial class CoreBridge : RefCounted
         }
     }
 
+    /// <summary>
+    /// Day &gt; 0 shift generation: composes the shift in Core (Composer, seed = day), then
+    /// runs the same validate + derive pass as PrepareShift. `banksJson` is the SAME payload
+    /// shape Validate takes — built from the Deck's LIVE banks, so the pay-dues floor beat's
+    /// runtime mutations are what the next day's generation sees. `localeJson` is the raw
+    /// data/locales/en.json text (compose-time humanizing). One call per generated day.
+    /// Returns `{ "visitors": [...], "errors": [...] }`.
+    /// </summary>
+    public string GenerateShift(int day, string banksJson, string localeJson)
+    {
+        try
+        {
+            return Composer.GenerateJson(day, banksJson, localeJson);
+        }
+        catch (System.Exception e)
+        {
+            return "{\"visitors\":[],\"errors\":[\"core GenerateShift failed: "
+                   + e.Message.Replace("\"", "'") + "\"]}";
+        }
+    }
+
     /// <summary>Smoke-test hook — proves the bridge is reachable from GDScript.</summary>
     public static string Ping() => "pong";
 }
