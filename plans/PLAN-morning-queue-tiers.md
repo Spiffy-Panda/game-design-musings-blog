@@ -147,7 +147,7 @@ morning-queue/
     (`--headless --import` — the known gotcha, now in reverse).
   - Verify: MCP auto-step day 0 → 16/16 and day 1 → N/N; `dotnet test` green (the boot
     self-check may then shrink to a smoke line or move entirely into tests).
-- [ ] **`MQT.5` — De-duplicate rules out of components**
+- [x] **`MQT.5` — De-duplicate rules out of components** *(executed 2026-07-15)*
   - `ReferencePanel` consumes the precomputed `scale.verdict` (delete its ~45-line
     `accept`/`total` rule copy; keep the verdict→`Loc` key + `Palette` color mapping —
     that part *is* presentation). Sweep the other three components for rule copies

@@ -6,6 +6,26 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT.5: the accept/total limit rule is single-homed
+
+WP-F (Haiku, bounded patch-level spec) deleted `ReferencePanel._standing_order()` and
+the `accept`/`total` recomputation inside `_scale_comparison()`, replacing it with a
+lookup against `inspections.scale.verdict` (the field WP-D's Deriver now precomputes and
+WP-E's composer now emits for generated shifts too). The presentation mapping (verdict →
+`Loc` `amount_*` key → `Palette` GREEN/RED/INK3) is preserved exactly; the "nothing on the
+pan" guard (amount not present → render no line at all) stays local to the panel, since
+the verdict enum only distinguishes order-related no-op, not tool-input absence — noted
+so a future reader doesn't assume the derive pass owns that case too.
+
+G4 gate (coordinator-verified): grep confirms zero `accept`/`total` comparison logic
+remains in any component script; DeskFeatureHarness toggled on for the check (flipped
+back off after) — **12/12 pass**, zero engine errors. Did not pixel-diff
+`nessa-broom`/a total-order visitor capture against a pre-refactor baseline (no saved
+baseline capture existed to diff against, and the harness's own PASS/FAIL assertions plus
+the unit-level `Week_EveryVisitCarriesScaleVerdict` test already prove the mapping is
+byte-identical to the deleted logic) — flagging rather than silently claiming the visual
+check ran.
+
 ## 2026-07-15 — MQT.4: the generator ported to core; GDScript original retired
 
 WP-E (Fable — design authority delegated per the handoff) ported the 1,151-line

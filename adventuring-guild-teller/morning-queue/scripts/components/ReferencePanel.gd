@@ -618,53 +618,26 @@ func _tool_reading(tool_id: String) -> String:
 	return str(_tool_block(tool_id).get("reading", "")).strip_edges()
 
 
-## The claimed standing order ({} unless the visitor claims an order that carries a
-## limit). Only `accept`/`total` postings qualify — a plain posting has neither key.
-func _standing_order() -> Dictionary:
-	if _claim_against == "":
-		return {}
-	var postings: Variant = _refs.get("postings", {})
-	if not (postings is Dictionary):
-		return {}
-	var order: Variant = postings.get(_claim_against, {})
-	if not (order is Dictionary):
-		return {}
-	if order.has("accept") or order.has("total"):
-		return order
-	return {}
-
-
 ## Scale amount vs the claimed order's limit (§4). Returns { key, color } where key is a
-## Loc `amount_*` chrome key ("" = render no line). Derived purely from amount vs limit —
-## it NEVER consults `relevant`. A real weight with no order to measure against reads as
-## `amount_no_order` (the "weight when it is not needed" decoy texture, §3).
+## Loc `amount_*` chrome key ("" = render no line). Derived purely from the precomputed
+## verdict field on the scale_block.
 func _scale_comparison(scale_block: Dictionary) -> Dictionary:
 	var amount: Variant = scale_block.get("amount", null)
 	# Nothing to weigh -> no line (the reading itself already says so).
 	if not (amount is int or amount is float):
 		return { "key": "", "color": Palette.INK3 }
-	var unit := str(scale_block.get("unit", ""))
-	var order := _standing_order()
-	if order.is_empty():
-		return { "key": "amount_no_order", "color": Palette.INK3 }
-	var a := float(amount)
-	if order.has("accept"):
-		var acc: Dictionary = order["accept"]
-		if str(acc.get("unit", "")) != unit:
-			return { "key": "amount_no_order", "color": Palette.INK3 }
-		if a < float(acc.get("min", 0)):
-			return { "key": "amount_under", "color": Palette.RED }
-		if a > float(acc.get("max", 0)):
+	var verdict := str(scale_block.get("verdict", "no_order"))
+	match verdict:
+		"within":
+			return { "key": "amount_within", "color": Palette.GREEN }
+		"over":
 			return { "key": "amount_over", "color": Palette.RED }
-		return { "key": "amount_within", "color": Palette.GREEN }
-	if order.has("total"):
-		var tot: Dictionary = order["total"]
-		if str(tot.get("unit", "")) != unit:
-			return { "key": "amount_no_order", "color": Palette.INK3 }
-		if a >= float(tot.get("needed", 0)):
+		"under":
+			return { "key": "amount_under", "color": Palette.RED }
+		"meets":
 			return { "key": "amount_meets", "color": Palette.GREEN }
-		return { "key": "amount_under", "color": Palette.RED }
-	return { "key": "amount_no_order", "color": Palette.INK3 }
+		_:
+			return { "key": "amount_no_order", "color": Palette.INK3 }
 
 
 ## (Re)build one tool page: a brass caption (the tool's job), the visitor's reading (or
