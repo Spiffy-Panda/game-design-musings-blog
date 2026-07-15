@@ -24,6 +24,10 @@ var _day_label: Label
 var _skip_btn: Button
 var _next_btn: Button
 
+# Floor beat (Main-owned — shown after shift_complete; lets owing townees pay dues).
+var _floor_box: VBoxContainer
+var _floor_rows: VBoxContainer
+
 
 func _ready() -> void:
 	theme = ThemeFactory.build()  # parchment desk theme (cascades to every child Control)
@@ -43,6 +47,10 @@ func _ready() -> void:
 	var dev := get_node_or_null("DevHarness")
 	if dev:
 		dev.begin(_on_stamp_chosen)
+
+	var desk_dev := get_node_or_null("DeskFeatureHarness")
+	if desk_dev:
+		desk_dev.begin(_on_stamp_chosen)
 
 
 func _build_layout() -> void:
@@ -73,6 +81,12 @@ func _build_layout() -> void:
 	booth.add_child(_verdict)
 	booth.add_child(_score)
 
+	# Floor beat — appears after the shift summary, lets owing townees pay dues before
+	# the next shift opens. Hidden at the start of every shift; shown at shift end.
+	_floor_box = _build_floor_beat()
+	_floor_box.visible = false
+	booth.add_child(_floor_box)
+
 	# Sits under the day's ledger; only shows once the shift is stamped through.
 	_next_btn = _make_desk_button("")
 	_next_btn.visible = false
@@ -90,9 +104,11 @@ func _wire() -> void:
 	Session.verdict_recorded.connect(_on_verdict_recorded)
 	Session.shift_complete.connect(_on_shift_complete)
 	_verdict.stamp_chosen.connect(_on_stamp_chosen)
+	_reference.tile_requested.connect(_on_tile_requested)
 
 
 func _on_visitor_changed(v: Dictionary) -> void:
+	_card.clear_tiles()
 	_card.show_visitor(v)
 	_reference.set_inspection_target(v)  # refill the Glass/Scale tool pages for this visitor
 	_score.set_progress(Session.index, Deck.count(), Session.score)
@@ -105,6 +121,29 @@ func _on_stamp_chosen(stamp: String) -> void:
 	Session.advance()
 
 
+## A tool tab or Quest Board row was clicked in the ReferencePanel — post a reference
+## tile to the main desk so the player can compare it against the visitor's claim.
+func _on_tile_requested(tile_id: String, title: String, body: String, tint: Color) -> void:
+	_card.add_tile(tile_id, title, body, tint)
+
+
+## G / S keyboard shortcuts for Glass and Scale — speed path for expert play.
+## Only active while the desk is running (Deck loaded, shift not complete).
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+	var ke := event as InputEventKey
+	if not ke.pressed or ke.echo:
+		return
+	if not Deck.ok:
+		return
+	match ke.keycode:
+		KEY_G:
+			_reference._on_tool_pressed("glass")
+		KEY_S:
+			_reference._on_tool_pressed("scale")
+
+
 func _on_verdict_recorded(entry: Dictionary) -> void:
 	var mark := "right" if entry.get("right", false) else "WRONG (wanted %s)" % entry.get("correct", "?")
 	print("[verdict] %s -> %s : %s" % [entry.get("id", "?"), entry.get("chosen", "?"), mark])
@@ -114,6 +153,7 @@ func _on_shift_complete(summary: Dictionary) -> void:
 	_verdict.set_enabled(false)
 	_score.show_summary(summary)
 	_update_day_chrome(true)
+	_refresh_floor_beat()
 	print("[shift] complete: %d / %d correct" % [summary.get("correct", 0), summary.get("total", 0)])
 
 
@@ -163,6 +203,7 @@ func _on_next_day() -> void:
 ## Reload the queue for a day and re-open the desk on its first visitor. The banks
 ## (rulebook + directories) are unchanged across days, so only the shift is reloaded.
 func _go_to_day(d: int) -> void:
+	_floor_box.visible = false
 	Deck.load_day(d)
 	if not Deck.ok:
 		_card.show_visitor({ "name": Loc.t("data_error"), "claim": { "summary": "\n".join(Deck.load_errors) } })
@@ -170,6 +211,98 @@ func _go_to_day(d: int) -> void:
 	_next_btn.visible = false
 	_update_day_chrome(false)
 	Session.start()
+
+
+# ---------------------------------------------------------------- floor beat
+
+## Build the floor beat container (rule + header + dynamic rows area). Initially hidden;
+## shown by _refresh_floor_beat after the shift summary.
+func _build_floor_beat() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+
+	var rule := ColorRect.new()
+	rule.color = Palette.LINE2
+	rule.custom_minimum_size = Vector2(0, 1)
+	rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_child(rule)
+
+	var head := Label.new()
+	head.text = Loc.t("floor_head")
+	head.add_theme_font_size_override("font_size", 13)
+	head.add_theme_color_override("font_color", Palette.BRASS)
+	box.add_child(head)
+
+	_floor_rows = VBoxContainer.new()
+	_floor_rows.add_theme_constant_override("separation", 6)
+	box.add_child(_floor_rows)
+
+	return box
+
+
+## Populate the floor beat with owing townees (or a "no dues" note) and show it.
+## Safe to call only from _on_shift_complete — not from inside a button handler.
+func _refresh_floor_beat() -> void:
+	for child in _floor_rows.get_children():
+		child.queue_free()
+
+	if not Deck.ok or Deck.townees.is_empty():
+		return
+
+	var owing: Array = []
+	for tid in Deck.townees.keys():
+		if str(Deck.townees[tid].get("dues", "current")) == "owing":
+			owing.append(tid)
+
+	if owing.is_empty():
+		var lbl := Label.new()
+		lbl.text = Loc.t("floor_no_dues")
+		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_color_override("font_color", Palette.INK3)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_floor_rows.add_child(lbl)
+	else:
+		var sub := Label.new()
+		sub.text = Loc.t("floor_dues_intro")
+		sub.add_theme_font_size_override("font_size", 12)
+		sub.add_theme_color_override("font_color", Palette.INK3)
+		_floor_rows.add_child(sub)
+		for tid in owing:
+			_floor_rows.add_child(_build_dues_row(tid))
+
+	_floor_box.visible = true
+
+
+## Build one owing-townee row: name + owed amount + Accept button.
+func _build_dues_row(tid: String) -> Control:
+	var t: Dictionary = Deck.townees[tid]
+	var tname: String = str(t.get("name", Loc.humanize(tid)))
+	var owed: int = int(t.get("owed", 0))
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+
+	var lbl := Label.new()
+	lbl.text = "%s — owes %dg" % [tname, owed]
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", Palette.INK)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(lbl)
+
+	var btn := _make_desk_button(Loc.t("floor_accept_btn") % owed)
+	btn.pressed.connect(func() -> void: _on_dues_accepted(tid, btn, lbl))
+	row.add_child(btn)
+
+	return row
+
+
+## Player accepted a townee's dues payment. Clears the dues at runtime and updates
+## the row in place — the change takes effect for the next generated shift.
+func _on_dues_accepted(tid: String, btn: Button, lbl: Label) -> void:
+	Deck.pay_dues(tid)
+	btn.disabled = true
+	btn.text = Loc.t("floor_paid")
+	lbl.add_theme_color_override("font_color", Palette.INK3)
 
 
 ## A quiet brass-outlined desk button, matching the parchment theme.

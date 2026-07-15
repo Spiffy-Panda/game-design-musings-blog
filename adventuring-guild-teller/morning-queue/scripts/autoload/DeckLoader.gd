@@ -25,6 +25,7 @@ extends Node
 ##   Deck.count()             -> int                  number of visitors
 ##   Deck.get_visitor(i)      -> Dictionary          i-th visitor (0-based), or {}
 ##   Deck.load_day(d)         -> void                 reload the queue for day d (re-emits loaded)
+##   Deck.pay_dues(id)        -> void                 mark a townee's dues as paid (runtime only)
 ##   Deck.ok                  -> bool                 true if the banks + shift loaded & sane
 ##   Deck.load_errors         -> Array[String]       human-readable problems, if any
 ## Signal:
@@ -90,6 +91,14 @@ func load_day(d: int) -> void:
 		for e in load_errors:
 			push_error("[Deck] " + e)
 	loaded.emit(ok)
+
+
+## Mark a townee's dues as paid so the next generated shift treats them as current.
+## Called by the floor interlude when the player accepts a townee's dues payment.
+## Mutates the runtime `townees` dict only; the source file is unchanged.
+func pay_dues(townee_id: String) -> void:
+	if townees.has(townee_id):
+		townees[townee_id]["dues"] = "current"
 
 
 func _load_all() -> void:

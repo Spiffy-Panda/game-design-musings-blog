@@ -180,66 +180,104 @@ player's means of *gathering* the left-hand side of each comparison.
 
 ## 6. Panel presentation — Tools vs Reference (the additive method)
 
-The `ReferencePanel` gains a **second, visually distinct group** above (or clearly separated
-from) the Reference tab-list:
+The `ReferencePanel` keeps a **second, visually distinct group** above the Reference
+tab-list for the inspection tools:
 
 ```
-┌ INSPECTION TOOLS ─────────┐      ← new group header (Loc: tools_head)
+┌ INSPECTION TOOLS ─────────┐      ← brass-accented group header (Loc: tools_head)
 │  The Glass                │      ← visitor-dependent; shows THIS visitor's glass.reading
 │  The Scale                │      ← shows scale.reading (+ amount/unit)
 ├ REFERENCE DESK ───────────┤      ← existing header (Loc: reference_head)
 │  Reference Book           │      ← the rulebook tables, unchanged
-│  Quest Board              │
+│  Quest Board (foldouts)   │      ← see §9 for foldout grouping by type
 │  Rank Ledger  … etc.      │
 └───────────────────────────┘
 ```
 
-Make the two groups read as different *kinds*: a header/eyebrow per group, and a distinct
-accent — suggested: tools tinted **brass** (`Palette.BRASS`), reference tabs the existing
-green-pressed treatment. Tools are visitor-scoped ("this item"); reference is fixed ("the
-rules"). Keep the split obvious at a glance.
+**Clicking a tool spawns a desk tile.** When the player presses The Glass or The Scale, the
+panel (a) selects that tool tab (existing content in the scroll area) and (b) emits
+`tile_requested` — Main wires this to `VisitorCard.add_tile`, which places a named
+reference tile on the main desk **below the claim doc**. The tile carries the reading
+plus, for the Scale, the `amount_*` comparison line. Tiles stay until the next visitor.
+A brass tint marks the tool tile's left border.
 
-**The additive contract (do NOT change any frozen signature — ADD this one):**
+**Clicking a Quest Board row also spawns a desk tile.** Each posting row is made
+clickable (pointing-hand cursor); a left-click emits `tile_requested` with the posting's
+content and a green tint. Placing the quest details side-by-side with the visitor's claim
+is the key flow these tiles support.
+
+**Desk-tile architecture (additive):**
 
 ```gdscript
-## ReferencePanel — ADD alongside set_references()/focus(); does not replace either.
-func set_inspection_target(visitor: Dictionary) -> void
+## VisitorCard — ADDITIVE alongside show_visitor(). Does not change the frozen signature.
+func add_tile(tile_id: String, title: String, body: String, tint: Color) -> void
+func clear_tiles() -> void   # called by Main on visitor_changed
+
+## ReferencePanel — ADDITIVE alongside set_references()/focus()/set_inspection_target().
+signal tile_requested(tile_id: String, title: String, body: String, tint: Color)
 ```
 
-- `Main` calls it in `_on_visitor_changed(v)` — the one place a visitor arrives — right
-  after `_card.show_visitor(v)`: `_reference.set_inspection_target(v)`. (Additive line in
-  `Main.gd`; the frozen component signatures are untouched.)
-- The panel reads `visitor.get("inspections", {})` and refills the two tool pages with this
-  visitor's `glass.reading` and `scale.reading`. Guard defensively: a missing/empty
-  `inspections` (e.g. the data-error sparse dict) shows the `tool_empty` fallback, never a
-  crash.
-- **Selection behavior:** switching visitors should not yank the player off a Reference tab
-  they are reading. Recommended: refill the tool pages in place; if a tool tab is currently
-  selected, keep it selected and just swap its content. Do not auto-jump to a tool.
-- Optionally, when a standing-order limit exists for the claimed item, the Scale page may
-  render the comparison result (within/over/under/meets) beneath the reading, using the
-  `amount_*` Loc keys below. This is presentation sugar over `scale.amount` vs the order
-  limit; it must not reveal `relevant`.
+- Main connects `_reference.tile_requested` → `_on_tile_requested` which calls
+  `_card.add_tile(...)`.
+- `tile_id` is the tool id (`"glass"`, `"scale"`) or the posting id (e.g.
+  `"apothecary-standing-order"`) — used as a replace-key so clicking the same source
+  twice updates the tile rather than duplicating it.
+- `tint` is `Palette.BRASS` for inspection tools, `Palette.GREEN` for postings.
+- Main calls `_card.clear_tiles()` on `visitor_changed` so each shift starts fresh.
 
-**Loc keys the implementation phase must add** (this phase does not own `loc.gd`):
+**`set_inspection_target` unchanged contract:** the selection-stability rule still holds
+— switching visitors does not yank the player off a Reference tab. The tool tab content
+refills in place; the desk tiles clear via `clear_tiles()`.
+
+**Loc keys added this phase:**
 
 | layer | key | English |
 |-------|-----|---------|
-| chrome | `tools_head` | `INSPECTION TOOLS` |
-| chrome | `tool_empty` | `(nothing to examine)` |
-| vocab | `tool_tab.glass` | `The Glass` |
-| vocab | `tool_tab.scale` | `The Scale` |
-| chrome | `tool_glass_caption` | `Examine — what the item actually is` |
-| chrome | `tool_scale_caption` | `Weigh — the measured amount` |
-| chrome | `amount_within` | `within the order's limit` |
-| chrome | `amount_over` | `over the order's limit` |
-| chrome | `amount_under` | `under the order's limit` |
-| chrome | `amount_meets` | `meets the order` |
-| chrome | `amount_no_order` | `no standing order to measure against` |
+| chrome | `desk_tiles_head` | `ON THE DESK` |
+| chrome | `desk_tiles_hint` | first-use hint shown in empty tiles area |
 
-(`tool_tab.*` sits in `vocab` so a tool title routes through the same identifier→display
-path as `ref_tab.*`; the `amount_*` chrome keys are only needed if the Scale page renders the
-computed comparison.)
+**Post-fix additions (usability pass):**
+- `VisitorCard._tiles_area` is always visible; starts with a `_tiles_hint` label ("Click a
+  tool or quest posting to place a reference here") so the feature is discoverable on day 0.
+- `VisitorCard._build_tile` adds a small `×` dismiss Button per tile; calling
+  `_dismiss_tile(tile_id)` removes that tile and restores the hint if the area is now empty.
+- `VisitorCard._tiles_scroll: ScrollContainer` height-capped at 170px, `SIZE_SHRINK_BEGIN` —
+  prevents the VerdictBar from ever being pushed off-screen by tile accumulation.
+- Posting rows gain a `mouse_entered` / `mouse_exited` hover tint (subtle GREEN wash via
+  `_posting_row_hover_style()`) to signal interactivity before click.
+- Foldout section headers use `Palette.GROUND` background + `LINE2` border (previously
+  `Color(LINE, 0.4)` — too faint for reliable section boundary scanning).
+- Tile title labels 11px → 12px for typographic consistency.
+- `Main._unhandled_key_input`: `KEY_G` → `_reference._on_tool_pressed("glass")`,
+  `KEY_S` → `_reference._on_tool_pressed("scale")` (guards on `Deck.ok`).
+
+(The `tool_*` and `amount_*` keys from the previous build remain; no key was removed.)
+
+---
+
+## 9. Quest Board foldouts (new)
+
+The Quest Board tab (`postings`) groups its entries by `type` in collapsible foldout
+sections. Each type becomes a chevron-headed section (▼ = open, ▶ = collapsed). All
+sections start expanded on load. The canonical render order:
+
+| type | label | entries |
+|------|-------|---------|
+| `bounty` | Bounty | apparition/beast clearing quests — *formerly untyped, now explicit* |
+| `survey` | Survey | scouting proofs |
+| `retrieval` | Retrieval | bring-back missions |
+| `collection` | Collection | gather-from-field orders |
+| `rescue` | Rescue | persons-in-peril extractions |
+| `standing_order` | Standing Order | recurring supply orders |
+
+**Data fix:** the seven postings that had a `target` field but no `type` now carry
+`"type": "bounty"` in `references.json`: `cistern-wisp-swarm`, `barrow-gloam`,
+`well-shrine-drowned-saint`, `gloomfen-lurker`, `ember-drake-roost`,
+`crypt-of-bells-cleanse`, `saltmarsh-haunt`. Every posting now has an explicit `type`.
+
+The `_POSTING_TYPE_ORDER` const in `ReferencePanel.gd` drives the render order; any
+type not in the list is appended at the end. The `focus(consult, entry)` contract is
+unchanged — row handles stay the raw posting ids.
 
 ---
 

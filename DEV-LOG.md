@@ -6,6 +6,34 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — Morning Queue: amount-fail visitor, richer Glass, pay-dues floor beat
+
+**Context:** Four backlog items from the PLAN; the shift-select hub was already done.
+Three items are data/plumbing; one (pay-dues) required new code.
+
+**Amount-fail visitor (#17 nessa-broom):** No curated visitor ever failed on weight alone
+— the Scale had teeth in the generator but was invisible in the tutorial. Added
+`nessa-broom` (order 17): moonwort, 6 drams, against the apothecary's `accept 2–4 dram`
+cap. Identity passes (glass confirms moonwort); Scale condemns (6 > 4). `failure.axis:
+amount`. The worked-reject scenario INSPECTION-TOOLS.md §4 described explicitly was
+finally made concrete in the curated shift.
+
+**Richer Glass readings:** Thin card/seal decoy readings on visitors #2, #4, #5 — "A
+silver card, edges bright, lately issued" doesn't feel examined. Enriched all three with
+more tactile detail. Content-only change; no schema changes.
+
+**Pay-dues floor beat:** The dues gate already blocked owing townees from posting; the
+missing piece was a floor mechanic to clear arrears. Chose to add it inline to `Main.gd`
+(not a new frozen component) because the floor beat is plumbing: no frozen interface
+needed. `Deck.pay_dues(id)` mutates the runtime `Deck.townees` dict (JSON untouched);
+the next `generate_shift(day)` reads the updated dues status and stops assigning that
+townee a dues-fail visit. Floor beat appears after shift_complete, between the Scoreboard
+summary and the Next-Day button. If all accounts are current, shows a "no dues to
+collect" line (so the floor always renders). Update is in-place (button disabled, label
+dimmed) — no queue_free from a button handler.
+
+**Selfcheck:** `7 days, 97 visits, 0 problems` confirmed after all changes.
+
 ## 2026-07-13 — Morning Queue: day advance + skip-tutorial wired into the UI
 
 **Context:** Playtest — no way to reach day 1+. The week-of-shifts data/generator

@@ -29,6 +29,11 @@ var _sub_label: Label
 var _claim_label: Label
 var _fields_rule: ColorRect
 var _fields: VBoxContainer
+var _tiles_area: VBoxContainer    # always-visible desk section
+var _tiles_scroll: ScrollContainer  # height-capped scroll wrapper for tile cards
+var _tiles_list: VBoxContainer    # individual tile cards
+var _tiles_hint: Label            # shown when no tiles; hidden when tiles exist
+var _tile_map: Dictionary = {}    # tile_id -> PanelContainer (replace-on-reuse)
 
 
 func _ready() -> void:
@@ -84,6 +89,41 @@ func _ready() -> void:
 	_fields = VBoxContainer.new()
 	_fields.add_theme_constant_override("separation", 5)
 	doc_col.add_child(_fields)
+
+	# ── Tiles area (always visible) ──────────────────────────────────────────
+	# Shows a first-use hint when empty; a height-capped ScrollContainer with
+	# individual dismiss buttons when reference tiles have been placed.
+	_tiles_area = VBoxContainer.new()
+	_tiles_area.add_theme_constant_override("separation", 4)
+	col.add_child(_tiles_area)
+
+	var tiles_head := Label.new()
+	tiles_head.text = Loc.t("desk_tiles_head")
+	tiles_head.add_theme_color_override("font_color", Palette.INK3)
+	tiles_head.add_theme_font_size_override("font_size", 11)
+	_tiles_area.add_child(tiles_head)
+
+	_tiles_hint = Label.new()
+	_tiles_hint.text = Loc.t("desk_tiles_hint")
+	_tiles_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tiles_hint.add_theme_color_override("font_color", Palette.INK3)
+	_tiles_hint.add_theme_font_size_override("font_size", 12)
+	_tiles_area.add_child(_tiles_hint)
+
+	# ScrollContainer caps tile accumulation at 170px — prevents tiles from
+	# overflowing the card and pushing the VerdictBar off-screen.
+	_tiles_scroll = ScrollContainer.new()
+	_tiles_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_tiles_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_tiles_scroll.custom_minimum_size = Vector2(0, 170)
+	_tiles_scroll.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_tiles_scroll.visible = false
+	_tiles_area.add_child(_tiles_scroll)
+
+	_tiles_list = VBoxContainer.new()
+	_tiles_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tiles_list.add_theme_constant_override("separation", 5)
+	_tiles_scroll.add_child(_tiles_list)
 
 
 ## FROZEN — Main.gd calls this on the scene root for every visitor (and once with a
@@ -155,6 +195,103 @@ func _field_row(key_text: String, value_text: String) -> HBoxContainer:
 	row.add_child(value_label)
 
 	return row
+
+
+# --- desk tiles (ADDITIVE) ---------------------------------------------------
+
+## Clear all tiles from the desk (called by Main on visitor change).
+func clear_tiles() -> void:
+	for c in _tiles_list.get_children():
+		c.queue_free()
+	_tile_map.clear()
+	_tiles_scroll.visible = false
+	_tiles_hint.visible = true
+
+
+## Place a reference tile on the desk below the claim. If `tile_id` already has a
+## tile, the old one is replaced — so clicking The Glass twice gives one tile.
+## `tint` sets the left-border accent and header colour (BRASS for tools, GREEN for
+## postings). Called by Main when ReferencePanel.tile_requested fires.
+func add_tile(tile_id: String, title: String, body: String, tint: Color) -> void:
+	if _tile_map.has(tile_id):
+		var old: Variant = _tile_map[tile_id]
+		if old is Node and is_instance_valid(old):
+			(old as Node).queue_free()
+		_tile_map.erase(tile_id)
+	var tile := _build_tile(tile_id, title, body, tint)
+	_tiles_list.add_child(tile)
+	_tile_map[tile_id] = tile
+	_tiles_hint.visible = false
+	_tiles_scroll.visible = true
+
+
+## Called by the × button on an individual tile.
+func _dismiss_tile(tile_id: String) -> void:
+	if not _tile_map.has(tile_id):
+		return
+	var tile: Variant = _tile_map[tile_id]
+	_tile_map.erase(tile_id)
+	if tile is Node and is_instance_valid(tile):
+		(tile as Node).queue_free()
+	if _tile_map.is_empty():
+		_tiles_scroll.visible = false
+		_tiles_hint.visible = true
+
+
+func _build_tile(tile_id: String, title: String, body: String, tint: Color) -> PanelContainer:
+	var tile := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Palette.SURFACE
+	sb.border_color = tint
+	sb.border_width_left = 3
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	sb.set_corner_radius_all(2)
+	sb.content_margin_left = 12
+	sb.content_margin_right = 10
+	sb.content_margin_top = 7
+	sb.content_margin_bottom = 9
+	sb.shadow_color = Color(Palette.INK.r, Palette.INK.g, Palette.INK.b, 0.07)
+	sb.shadow_size = 2
+	sb.shadow_offset = Vector2(1, 1)
+	tile.add_theme_stylebox_override("panel", sb)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 3)
+	tile.add_child(box)
+
+	# Header row: title + dismiss button
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 4)
+	box.add_child(header_row)
+
+	var title_lbl := Label.new()
+	title_lbl.text = title
+	title_lbl.add_theme_color_override("font_color", tint)
+	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(title_lbl)
+
+	var dismiss_btn := Button.new()
+	dismiss_btn.text = "×"
+	dismiss_btn.flat = true
+	dismiss_btn.add_theme_font_size_override("font_size", 16)
+	dismiss_btn.add_theme_color_override("font_color", Palette.INK3)
+	dismiss_btn.add_theme_color_override("font_hover_color", Palette.INK)
+	dismiss_btn.focus_mode = Control.FOCUS_NONE
+	dismiss_btn.custom_minimum_size = Vector2(22, 0)
+	dismiss_btn.pressed.connect(_dismiss_tile.bind(tile_id))
+	header_row.add_child(dismiss_btn)
+
+	var body_lbl := Label.new()
+	body_lbl.text = body
+	body_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body_lbl.add_theme_color_override("font_color", Palette.INK2)
+	body_lbl.add_theme_font_size_override("font_size", 14)
+	box.add_child(body_lbl)
+
+	return tile
 
 
 # --- construction helpers ----------------------------------------------------
