@@ -32,110 +32,35 @@ const DEFAULT_LOCALE := "en"
 ## half-translated locale still renders — never a raw identifier.
 static var locale: String = DEFAULT_LOCALE
 
-const _LOCALES := {
-	"en": {
-		# --- (a) UI chrome: fixed strings the components used to hardcode -----------
-		"chrome": {
-			"counter_eyebrow": "AT THE COUNTER",
-			"claim_eyebrow": "CLAIM",
-			"reference_head": "REFERENCE DESK",
-			"reference_empty": "(rulebook not loaded)",
-				"tools_head": "INSPECTION TOOLS",
-				"tool_empty": "(nothing to examine)",
-				"tool_glass_caption": "Examine — what the item actually is",
-				"tool_scale_caption": "Weigh — the measured amount",
-				"amount_within": "within the order's limit",
-				"amount_over": "over the order's limit",
-				"amount_under": "under the order's limit",
-				"amount_meets": "meets the order",
-				"amount_no_order": "no standing order to measure against",
-			"no_card": "no card on file",
-			"dues_current": "dues current",
-			"dues_owing": "dues owing",
-			"current_season": "Current Season",
-			"threshold_line": "%s sealed completions",
-			"shift_complete": "SHIFT  COMPLETE",
-			"day_label_tutorial": "Day 0  ·  Tutorial shift",
-			"day_label": "Day %d",
-			"skip_tutorial": "Skip tutorial  →",
-			"next_day": "Open Day %d  →",
-			"week_done": "The week is done — a clean seven days.",
-			"progress_line": "Visitor %d / %d    ·    correct: %d",
-			"summary_sub_clean": "verdicts stamped true — a clean book",
-			"summary_sub_one": "verdicts stamped true — 1 you'll hear about",
-			"summary_sub_many": "verdicts stamped true — %d you'll hear about",
-			"data_error": "Data error",
-			"bool_yes": "Yes",
-			"bool_no": "No",
-			"desk_tiles_head": "ON THE DESK",
-			"desk_tiles_hint": "Click an inspection tool or quest listing to place it here.",
-			"floor_head": "THE FLOOR",
-			"floor_dues_intro": "Owing accounts — settle dues before the next shift opens.",
-			"floor_no_dues": "All accounts current — no dues to collect.",
-			"floor_accept_btn": "Accept %dg",
-			"floor_paid": "Paid ✓",
-		},
+## Locale data lives in data/locales/<locale>.json (see ADDING A LOCALE above); this
+## cache is populated once, lazily, on first access. A missing/broken file degrades to
+## the humanizer rather than crashing (components call Loc during _ready).
+const _LOCALES_PATH := "res://data/locales/en.json"
+static var _locales_cache: Dictionary = {}
+static var _locales_loaded := false
 
-		# --- (a) the finite enum / slug vocabulary: identifier -> display -----------
-		"vocab": {
-			# affiliation (visitors.json `affiliation`)
-			"affiliation.townee": "Townee",
-			"affiliation.adventure": "Adventurer",
-			# task_type (visitors.json `task_type`)
-			"task.item_check": "Item Check",
-			"task.rank_gate": "Rank Gate",
-			"task.quest_file": "Quest File",
-			"task.completion_claim": "Completion Claim",
-			"task.rank_up": "Rank Up",
-			"task.roster_change": "Roster Change",
-			"task.dungeon_drop": "Dungeon Drop",
-			# stamp — the button face (VerdictBar)
-			"stamp_btn.approve": "APPROVE",
-			"stamp_btn.reject": "REJECT",
-			"stamp_btn.hold": "HOLD",
-			"stamp_btn.conditional": "CONDITIONAL",
-			# stamp — the past-tense ledger form (Scoreboard summary)
-			"stamp_past.approve": "Approved",
-			"stamp_past.reject": "Rejected",
-			"stamp_past.hold": "Held",
-			"stamp_past.conditional": "Conditional",
-			# inspection-tool tab titles (routes like ref_tab: identifier -> display)
-				"tool_tab.glass": "The Glass",
-				"tool_tab.scale": "The Scale",
-				# reference-table tab titles (references.json top-level keys)
-			"ref_tab.rank_order": "Rank Ladder",
-			"ref_tab.book": "Reference Book",
-			"ref_tab.postings": "Quest Board",
-			"ref_tab.rank_ledger": "Rank Ledger",
-			"ref_tab.rankup_thresholds": "Rank-Up Schedule",
-			"ref_tab.archive": "Completion Archive",
-			"ref_tab.cipher_table": "Chapter Ciphers",
-			"ref_tab.drop_table": "Dungeon Drops",
-			"ref_tab.season": "Season Wheel",
-			"ref_tab.payout": "Payout Rule",
-			"ref_tab.roster": "Active Roster",
-			"ref_tab.townee_directory": "Townee Directory",
-			"ref_tab.adventurer_directory": "Adventurer Directory",
-			# failure-axis display (only surfaced if the verdict names the axis)
-			"failure_axis.dues": "Dues",
-			"failure_axis.amount": "Amount",
-		},
 
-		# --- proper-noun overrides for the humanizer -------------------------------
-		# Slugs the generic Title-Case humanizer would get wrong (hyphenated proper
-		# nouns, acronyms). Keyed by the raw identifier; the id is never mutated.
-		"overrides": {
-			"hulbr-odd-eye": "Hulbr Odd-Eye",
-			"odd-eyes-party": "Odd-Eyes Party",
-		},
-	},
-}
+static func _locales() -> Dictionary:
+	if _locales_loaded:
+		return _locales_cache
+	_locales_loaded = true
+	var text := FileAccess.get_file_as_string(_LOCALES_PATH)
+	if text.is_empty():
+		push_warning("Loc: could not read " + _LOCALES_PATH + "; falling back to humanizer")
+		return _locales_cache
+	var parsed = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("Loc: malformed JSON in " + _LOCALES_PATH + "; falling back to humanizer")
+		return _locales_cache
+	_locales_cache = parsed
+	return _locales_cache
 
 
 # --- locale sub-table accessors -------------------------------------------------
 
 static func _table() -> Dictionary:
-	return _LOCALES.get(locale, _LOCALES[DEFAULT_LOCALE])
+	var locales := _locales()
+	return locales.get(locale, locales.get(DEFAULT_LOCALE, {}))
 
 
 static func _chrome() -> Dictionary:

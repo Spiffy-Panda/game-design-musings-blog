@@ -112,7 +112,7 @@ morning-queue/
 
 ## Phases
 
-- [ ] **`MQT.1` — Data out of scripts** *(pure GDScript churn; zero behavior change; no .NET yet)*
+- [x] **`MQT.1` — Data out of scripts** *(executed 2026-07-15)* *(pure GDScript churn; zero behavior change; no .NET yet)*
   - 1a. `_LOCALES` → `data/locales/en.json`; `loc.gd` keeps `t/humanize/vocab` + fallback
         logic and gains a ~15-line static loader. "Adding a locale is a data change"
         becomes literally true.
@@ -121,7 +121,7 @@ morning-queue/
         `decoy_scales`; `_quote`'s `0.25` → `references.json` `payout.depth_rate`.
   - Verify: boot self-check still `7 days, 97 visits, 0 problems`; day-1 output
     byte-identical (no RNG-order change); F12 capture spot-check.
-- [ ] **`MQT.2` — Stand up .NET** *(structure only)*
+- [x] **`MQT.2` — Stand up .NET** *(structure only, executed 2026-07-15)*
   - `MorningQueue.sln` + root csproj (`Godot.NET.Sdk/4.6.*`, net8.0, `Compile Remove
     core/**`, `ProjectReference` → Core) + empty `cs/CoreBridge.cs`; `core/` classlib +
     xUnit test project; `.gdignore` inside `core/`; `.gitignore` += `bin/`, `obj/`.

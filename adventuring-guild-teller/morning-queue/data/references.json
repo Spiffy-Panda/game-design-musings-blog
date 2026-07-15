@@ -143,6 +143,7 @@
     "_tab": "Payout Rule — how a dungeon-drop commission is quoted",
     "formula": "total = round(base_bounty * depth_multiplier) + in_season_premium",
     "depth_multiplier": "1 + 0.25 * floor",
+    "depth_rate": 0.25,
     "in_season_premium": 10,
     "note": "Only quotable when the drop is genuine, in season, and a registered party's reach_floor >= the drop's floor."
   },

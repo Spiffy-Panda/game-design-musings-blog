@@ -6,6 +6,32 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT execution begins: G0 kickoff + wave 1 (MQT.1 + MQT.2)
+
+Ran unattended (Panda not present at kickoff) — proceeded on the plan's recommended
+defaults: `MQT.D1` = A′ in-engine C# (mono runtime, Web-embed deferred), `MQT.D2` = (a)
+rebaseline the RNG stream and pin days 1–7 as golden fixtures once the generator ports,
+`MQT.D3` = skip theme datafication. Baseline confirmed clean before touching anything:
+`[gen-selfcheck] 7 days, 97 visits, 0 problems`, tagged `mqt-baseline`.
+
+Wave 1 (WP-A/B/C, disjoint files, ran concurrently):
+- **WP-A** moved `loc.gd`'s `_LOCALES` table to `data/locales/en.json` byte-identically
+  (diff-verified via a new `scrap_scripts/python/13_loc_json_diff.py`); `loc.gd` now
+  lazy-loads it with a humanizer fallback on missing/broken JSON.
+- **WP-B** moved three authored-content constants out of `ShiftGenerator.gd` into the
+  banks (`_WALKIN_PROFESSIONS` → `generation.json` name_pools, the `_decoy_scale` prose
+  table → `generation.json` decoy_scales, the hardcoded `0.25` depth-rate → `references.json`
+  payout.depth_rate) with zero `rng.*` call reordering — verified by the coordinator via
+  `git diff` hunk-by-hunk, not just the subagent's say-so. **Surprise:** the two
+  `_decoy_scale("filing")` call sites never matched a real case in the original table (always
+  fell through to `_` default) — renamed to `"default"`, output unchanged.
+- **WP-C** stood up the .NET skeleton (`MorningQueue.sln`, root csproj, `core/` classlib +
+  xUnit tests, `cs/CoreBridge.cs` stub). The `Godot.NET.Sdk/4.6.*` wildcard doesn't restore
+  without a `global.json`; pinned to the exact installed editor version `4.6.1`.
+
+G1 gate (coordinator-verified, not trusted from transcripts): `dotnet build`/`dotnet test`
+green, boot selfcheck unchanged at `0 problems`, no bin/obj/.godot noise in git status.
+
 ## 2026-07-15 — MQT handoff prompt authored (coordinator + tiered subagent briefs)
 
 `morning-queue/MQT-HANDOFF.md`: an executable operating manual for a **Sonnet 5

@@ -159,7 +159,19 @@
       "Varley", "Winnick", "Bramwell", "Cawley", "Denby", "Elmsworth", "Farrow", "Godwick",
       "Halloway", "Inglebright", "Jarrow", "Kelmscott", "Lattimer", "Mossgrave", "Norbrook", "Oldacre",
       "Prewitt", "Rushton", "Standish", "Wexley"
+    ],
+    "professions": [
+      "Courier", "Porter", "Runner", "Carrier", "Errand-hand", "Drayman"
     ]
+  },
+
+  "decoy_scales": {
+    "_note": "A decoy Scale reading for a non-weighed subject (card / seal / token / logbook / filing). ShiftGenerator._decoy_scale(kind) looks up decoy_scales[kind] {reading, amount, unit}; the in-code match table is a fallback ONLY if the key is absent here.",
+    "rank_card":        { "reading": "A guild card in its case: 2 drams on the pan.", "amount": 2, "unit": "dram" },
+    "transfer_seal":    { "reading": "The transfer card: 3 drams of waxed board.", "amount": 3, "unit": "dram" },
+    "completion_token": { "reading": "The token disc: 4 drams of good brass.", "amount": 4, "unit": "dram" },
+    "logbook":          { "reading": "The logbook: 6 drams of vellum.", "amount": 6, "unit": "dram" },
+    "default":          { "reading": "Nothing on the pan; a petition, not a delivery.", "amount": null, "unit": null }
   },
 
   "season_schedule": {

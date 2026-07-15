@@ -274,10 +274,16 @@ static func _walkin_name(rng: RandomNumberGenerator, ctx: Dictionary) -> String:
 	return "%s %s" % [g, s]
 
 
-const _WALKIN_PROFESSIONS := ["Courier", "Porter", "Runner", "Carrier", "Errand-hand", "Drayman"]
+## Fallback profession list, used only if generation.json's name_pools.professions is absent.
+const _WALKIN_PROFESSIONS_FALLBACK := ["Courier", "Porter", "Runner", "Carrier", "Errand-hand", "Drayman"]
 
-static func _walkin_profession(rng: RandomNumberGenerator) -> String:
-	return _WALKIN_PROFESSIONS[rng.randi_range(0, _WALKIN_PROFESSIONS.size() - 1)]
+static func _walkin_profession(rng: RandomNumberGenerator, ctx: Dictionary) -> String:
+	var pools: Dictionary = ctx["gen"].get("name_pools", {})
+	var professions: Array = pools.get("professions", [])
+	if professions.is_empty():
+		push_warning("[ShiftGenerator] name_pools.professions missing; using in-code fallback")
+		professions = _WALKIN_PROFESSIONS_FALLBACK
+	return str(professions[rng.randi_range(0, professions.size() - 1)])
 
 
 static func _rank_idx(ctx: Dictionary, rank: String) -> int:
@@ -307,7 +313,14 @@ static func _insp(glass_reading: String, glass_rel: bool, scale_reading: String,
 
 
 # A decoy Scale reading for a non-weighed subject (card / seal / token / logbook / filing).
-static func _decoy_scale(kind: String) -> Array:
+# Looks up generation.json's decoy_scales[kind]; the in-code table below is a fallback ONLY
+# if the key is absent (push_warning once per call site).
+static func _decoy_scale(kind: String, ctx: Dictionary) -> Array:
+	var table: Dictionary = ctx["gen"].get("decoy_scales", {})
+	if table.has(kind):
+		var e: Dictionary = table[kind]
+		return [str(e.get("reading", "")), e.get("amount"), e.get("unit")]
+	push_warning("[ShiftGenerator] decoy_scales.%s missing; using in-code fallback" % kind)
 	match kind:
 		"rank_card":        return ["A guild card in its case: 2 drams on the pan.", 2, "dram"]
 		"transfer_seal":    return ["The transfer card: 3 drams of waxed board.", 3, "dram"]
@@ -348,7 +361,7 @@ static func _item_check(is_valid: bool, rng: RandomNumberGenerator, ctx: Diction
 	var unit := str(item_rec.get("unit", "dram"))
 
 	var name := _walkin_name(rng, ctx)
-	var profession := _walkin_profession(rng)
+	var profession := _walkin_profession(rng, ctx)
 	var summary := "A delivery of \"%s\" against the %s." % [Loc.humanize(item), Loc.humanize(order_id)]
 	var asserts := { "item": item, "against": order_id }
 
@@ -504,7 +517,7 @@ static func _rank_gate(is_valid: bool, rng: RandomNumberGenerator, ctx: Dictiona
 		var name := _walkin_name(rng, ctx)
 		var uchecks := [_chk("ledger", "ganton-reeve", ["any card on file"], "the ledger", "no card on file under that name")]
 		var utruth := _reject("unverifiable", "No card, no dues record — word alone is not proof at the desk.")
-		var uscale := _decoy_scale("filing")
+		var uscale := _decoy_scale("default", ctx)
 		var uinsp := _insp("He lays no card down — nothing to examine but his word.", false, uscale[0], uscale[1], uscale[2], false)
 		return _visit(name, "adventure", "Freelancer", "rank_gate",
 			"Claims rank %s for the %s, but presents no card." % [Loc.humanize(claimed_rank), Loc.humanize(gate_id)],
@@ -541,7 +554,7 @@ static func _rank_gate(is_valid: bool, rng: RandomNumberGenerator, ctx: Dictiona
 	var asserts := { "rank": str(adv["rank"]), "posting": gate_id2 }
 	var checks: Array = []
 	var truth: Dictionary
-	var dscale := _decoy_scale("rank_card")
+	var dscale := _decoy_scale("rank_card", ctx)
 
 	if is_valid:
 		checks.append(_chk("adventurer_directory", adv_id, [str(adv["rank"]), "dues current"], "the directory", "match"))
@@ -647,7 +660,7 @@ static func _quest_file(is_valid: bool, rng: RandomNumberGenerator, ctx: Diction
 		asserts["ward_required"] = ward
 	var checks: Array = []
 	var truth: Dictionary
-	var fscale := _decoy_scale("filing")
+	var fscale := _decoy_scale("default", ctx)
 	var glass := "A filing slip, not a specimen — only ink under the lens."
 
 	if is_valid:
@@ -761,7 +774,7 @@ static func _completion_claim(is_valid: bool, rng: RandomNumberGenerator, ctx: D
 		checks.append(_chk("archive", token_id, ["seal genuine"], "the token", "mismatch: seal broken, re-pressed"))
 		truth = _reject("authenticity", "The completion seal is forged — broken and re-pressed. No genuine slip backs it in the archive.")
 
-	var dscale := _decoy_scale("completion_token")
+	var dscale := _decoy_scale("completion_token", ctx)
 	var summary := "Brings a completion token for the %s and asks the bounty be paid out." % Loc.humanize(posting_id)
 	var asserts := { "posting": posting_id, "token": token_id, "claimant": claimant }
 	var insp := _insp(glass, glass_rel, dscale[0], dscale[1], dscale[2], false)
@@ -829,7 +842,7 @@ static func _rank_up(is_valid: bool, rng: RandomNumberGenerator, ctx: Dictionary
 	var glass := "%d slips, %d distinct seals — each grain its own." % [entries, distinct]
 	var glass_rel := false
 	var truth: Dictionary
-	var dscale := _decoy_scale("logbook")
+	var dscale := _decoy_scale("logbook", ctx)
 
 	if is_valid:
 		checks.append(_chk("archive", archive_id, ["%d distinct seals" % distinct, "all his"], "archived slips", "match"))
@@ -924,7 +937,7 @@ static func _roster_change(is_valid: bool, rng: RandomNumberGenerator, ctx: Dict
 	var glass := str(cipher.get("glass", ""))
 	var glass_rel := false
 	var truth: Dictionary
-	var dscale := _decoy_scale("transfer_seal")
+	var dscale := _decoy_scale("transfer_seal", ctx)
 
 	if is_valid:
 		glass_rel = true
@@ -995,7 +1008,7 @@ static func _dungeon_drop(is_valid: bool, rng: RandomNumberGenerator, ctx: Dicti
 
 	var checks: Array = []
 	var truth: Dictionary
-	var fscale := _decoy_scale("filing")
+	var fscale := _decoy_scale("default", ctx)
 	var glass := "A commission slip — the drop itself is still down in the deep."
 	var item := ""
 
@@ -1110,7 +1123,7 @@ static func _fake_drop_item(rng: RandomNumberGenerator, ctx: Dictionary) -> Stri
 static func _quote(refs: Dictionary, base: int, depth: int) -> Dictionary:
 	var payout: Dictionary = refs.get("payout", {})
 	var premium := int(payout.get("in_season_premium", 10))
-	var mult := 1.0 + 0.25 * float(depth)
+	var mult := 1.0 + float(payout.get("depth_rate", 0.25)) * float(depth)
 	var total := int(round(float(base) * mult)) + premium
 	return { "base": base, "depth_multiplier": mult, "in_season_premium": premium, "total": total, "currency": "g" }
 
