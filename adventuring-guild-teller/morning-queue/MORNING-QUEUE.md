@@ -7,14 +7,20 @@ reference booklet, stamps, and a score — the fastest falsifier for the flow cl
 interfaces and who builds what. Not published (the site build copies only top-level
 `*.html`; this whole folder is invisible to Pages — see `../../musing-tech-notes.md`).
 
-- **Engine:** Godot **4.6** (`.mono` install, but this project is **GDScript-only** so the
-  Web-export path stays open — .NET cannot Web-export; GDScript can).
+- **Engine:** Godot **4.6** (`.mono` install). Three tiers now (MQT refactor): **`data/`**
+  authored JSON · **`scripts/`** GDScript (nodes, autoload shells, `Loc`, dev) · **`core/`**
+  pure C# (.NET, zero Godot refs — domain model, validator, derive pass, shift composer).
+  `cs/CoreBridge.cs` is the **only** GDScript↔C# crossing.
 - **Renderer:** `gl_compatibility` (the Web/embed-safe renderer). Chosen so the eventual
   local-site embed (a `<canvas>`/iframe from a Web export) works. **Not** for GitHub Pages
   — Godot 4 Web needs COOP/COEP headers Pages can't set; the embed target is the *local*
   preview only, until that changes.
-- **Run it:** open `project.godot` in Godot 4.6, or `run_project` via the godot MCP. Main
-  scene is `scenes/Main.tscn`.
+- **Run it:** run `dotnet build` first (the editor's Play button builds C# automatically,
+  but launching outside the editor — e.g. `run_project` via the godot MCP — does not), then
+  open `project.godot` in Godot 4.6, or `run_project` via the godot MCP. Main scene is
+  `scenes/Main.tscn`. **Mono build only:** now that C# is in the runtime, the non-mono
+  `Godot_std.exe` can no longer open the project — use the `.mono` build (the godot MCP's
+  default binary).
 - **Status (2026-07-15, rev 3):** all usability fixes applied and verified. **12/12
   DeskFeatureHarness assertions pass.** Full heuristic study (all 12 reference pages) in
   session artifact. All desk-tile Priority 1–4 items resolved: ScrollContainer cap (170px),
@@ -29,8 +35,9 @@ interfaces and who builds what. Not published (the site build copies only top-le
   rescue / standing_order); all 7 previously-untyped apparition/beast postings now carry
   `"type": "bounty"` in `references.json`. **A week of content + a procedural visit
   generator now ship** (`CONTENT-BANKS.md`): broadened banks + townee/adventurer directories
-  + the `dues` axis + `ShiftGenerator.generate_shift(day)` (day 0 = curated, day > 0 =
-  generated; self-check `7 days, 97 visits, 0 problems`). AGT.5 is mechanically settled
+  + the `dues` axis + the C# composer (`core/…/Composer.cs`, reached via
+  `CoreBridge.GenerateShift`; day 0 = curated, day > 0 = generated; self-check
+  `7 days, 96 visits, 0 problems`). AGT.5 is mechanically settled
   (binary). **Rev-3 additions:** (a) curated visitor #17 `nessa-broom` — an amount-fail
   `item_check` (moonwort at 6 drams, over the apothecary's 2–4 dram cap; Glass passes /
   Scale condemns; `failure.axis: amount`); (b) richer Glass readings for three thin
@@ -64,7 +71,7 @@ dues* further down.
 > touching the generator, the banks, or the directory tabs. The "Generator + directories +
 > dues" section below is the built architecture; `CONTENT-BANKS.md` is the design contract.
 
-### `visitors.json` — the queue (16, in `order`)
+### `visitors.json` — the queue (17, in `order`)
 Each visitor:
 
 | field | meaning |
@@ -78,7 +85,7 @@ Each visitor:
 | `checks[]` | the verification steps — each `{ consult, entry, compare, against, result }` resolves against `references.json`. This drives the ReferencePanel *and* is the source of the player-story. |
 | `player_story`, `notes` | prose the design doc quotes; author intent |
 
-The 16 span every `task_type` and eight distinct failure axes. Two intentional half-fails
+The 17 span every `task_type` and eight distinct failure axes. Two intentional half-fails
 (`odile-vantry` = `conditional`, `ivy-threnody` = `hold`) exist to pressure the
 "is the desk strictly binary?" question (`AGT.5`); the `Session.STRICT_BINARY` dial
 collapses them to `reject` for the two-stamp feel.
@@ -120,19 +127,23 @@ unchanged); `day > 0` is composed procedurally from the banks. Design contract:
   `invalid_rate` [+ per-day ramp], `failure_axis_weights`, per-task composition contract,
   walk-in `name_pools`, `season_schedule`).
 
-**The generator — `scripts/gen/ShiftGenerator.gd`** (a `class_name` static utility, called
-`ShiftGenerator.generate_shift(day)`; not an autoload, so no autoload-order coupling with
-`Deck` — but it *is* a new `class_name`, so the global-class cache must be regenerated once
-after adding it, same gotcha as `Loc`). Deterministic: `rng.seed = day`, so a week is 7
-reproducible shifts. It reads the banks off `Deck` and **writes nothing**. Per visit it
-picks a `task_type` (weighted) → an actor (directory draw, sampled without replacement per
-shift, or a `name_pools` walk-in) → valid-vs-invalid (`invalid_rate`) → a failure axis
-(weighted over the axes that task *and the available bank material* admit) → composes
-`claim` / `checks[]` / `truth` / `inspections`, emitting the **exact `visitors.json`
-schema** so the card/panel/verdict/scoreboard consume generated visits unchanged. The
-**Glass reading is derived** per subject kind (`book_item` genuine/confusable/forgery ·
-`transfer_seal` cipher `glass` · `completion_token`/`logbook` seal reading · `rank_card` /
-`filing` decoy); the **Scale amount** is sampled inside / outside the claimed order's limit.
+**The generator — `core/MorningQueue.Core/Composer.cs`** (a pure static C# class, reached
+from GDScript only through `CoreBridge.GenerateShift(day, banksJson, localeJson)`; the old
+`scripts/gen/ShiftGenerator.gd` is deleted). Deterministic via its **own PCG32**
+(`core/…/Rng.cs`, seeded with `day` — not `System.Random`, not Godot's RNG, so weeks are
+stable across .NET versions and platforms), so a week is 7 reproducible shifts. It takes
+the banks **in as JSON** (`DeckLoader.load_day` builds that payload fresh from the live
+`townees`/`adventurers` each call, so the pay-dues floor beat lands on next-day generation)
+and **writes nothing**. Per visit it picks a `task_type` (weighted) → an actor (directory
+draw, sampled without replacement per shift, or a `name_pools` walk-in) → valid-vs-invalid
+(`invalid_rate`) → a failure axis (weighted over the axes that task *and the available bank
+material* admit) → composes `claim` / `checks[]` / `truth` / `inspections`, emitting the
+**exact `visitors.json` schema** so the card/panel/verdict/scoreboard consume generated
+visits unchanged. The **Glass reading is derived** per subject kind (`book_item`
+genuine/confusable/forgery · `transfer_seal` cipher `glass` · `completion_token`/`logbook`
+seal reading · `rank_card` / `filing` decoy); the **Scale amount** is sampled inside /
+outside the claimed order's limit. Days 1–7 are golden-pinned fixtures in `Core.Tests`
+(rebaseline-only via env `MQ_REBASELINE=1`).
 
 **The `dues` axis (+ `amount`).** `dues` and `amount` extend the `truth.failure.axis` enum.
 A townee whose `dues` is `owing` cannot post → `quest_file` and `dungeon_drop` reject on
@@ -147,11 +158,14 @@ directories into `references` under `townee_directory` / `adventurer_directory` 
 `_tab` + id-row tables) so the ReferencePanel renders them as ordinary tabs and
 `consult: "…_directory"` resolves like any table; exposes `Deck.townees` /
 `Deck.adventurers` / `Deck.generation` / `Deck.day`; adds `Deck.load_day(d)` for a later
-shift-select hub. `day == 0` loads `visitors.json`; `day > 0` calls the generator. The
-validator gained light bank checks (dues enums; `owns`/`chapter`/`archive_id` resolution;
-generation knob domains) and holds generated shifts to the **same** inspections +
-required-field contract as the curated one. A debug-only boot self-check
-(`_selfcheck_generated`) generates + validates all 7 days.
+shift-select hub. `day == 0` routes `visitors.json` through `CoreBridge.PrepareShift`
+(validate + derive); `day > 0` makes ONE `CoreBridge.GenerateShift` call. Validation +
+the scale-verdict derive now live in `core/` (`Core.Validator` ports every old
+`_validate_*` check with the same error strings, `Deriver` owns the accept/total limit
+rule) — `DeckLoader.gd`'s old validation bodies are gone; it keeps file-missing/parse
+errors. Generated shifts pass the **same** inspections + required-field contract as the
+curated one. The boot self-check (`_selfcheck_generated`) shrank to a one-line smoke
+check; its substance moved into the `dotnet` tests (golden weeks, validator red/green).
 
 **ReferencePanel.** The two directory tabs render through the existing generic path — **no
 frozen signature changed**; `CONSULT_TO_TAB` gained the two directory keys and `Loc` gained
@@ -168,8 +182,9 @@ interface changed; new strings are `Loc` chrome (`day_label*`, `skip_tutorial`, 
 `week_done`).
 
 **Verified (both days, zero errors).** `--import`, then via the godot MCP: curated day 0
-steps all 16 → 16/16; generated day 1 steps all 14 coherent visits → 14/14; the boot
-self-check reports `7 days, 97 visits, 0 problems`. Ships defaulting to day 0 with
+steps all 17 → 17/17; generated day 1 steps all 16 coherent visits → 16/16; the boot
+self-check reports `7 days, 96 visits, 0 problems` (rebaselined from 97 at MQT.4 — the
+PCG32 stream replaced Godot's RNG; golden-pinned since). Ships defaulting to day 0 with
 `DevHarness.enabled=false`.
 
 ---
@@ -177,6 +192,11 @@ self-check reports `7 days, 97 visits, 0 problems`. Ships defaulting to day 0 wi
 ## Architecture — the frozen interfaces
 
 Two autoloads are the spine; four component scenes hang off them; `Main` is pure plumbing.
+Below the autoloads sits the **`core/` C# tier**, reached only through `cs/CoreBridge.cs`
+(a `[GlobalClass]` `RefCounted`) — `DeckLoader.gd` calls it coarsely: `Validate(banksJson)
+-> string[]` at boot, `PrepareShift(referencesJson, visitorsPayloadJson) -> annotatedJson`
+for day 0, `GenerateShift(day, banksJson, localeJson) -> annotatedJson` for day > 0. JSON
+text crosses in, one marshaled string comes out — never per-frame, never per-visitor.
 **These signatures are FROZEN.** Sub-agents implement *bodies*, never rename signals or
 methods. Each component lives in its own `.tscn` + `.gd` pair so agents never share a file.
 
@@ -187,6 +207,9 @@ Deck (autoload, DeckLoader.gd)      Session (autoload, GameState.gd)
   .load_day(d)  .pay_dues(id)         signals: visitor_changed, verdict_recorded,
   .ok  .load_errors                             shift_complete   ·  const STRICT_BINARY
   signal: loaded(ok)
+     │
+     └─▶ cs/CoreBridge.cs ─▶ core/MorningQueue.Core  (validate · derive · compose; pure C#)
+         Validate · PrepareShift · GenerateShift
 
                     Main.tscn / Main.gd  (integrator — builds layout, wires signals)
    ┌───────────────────────────────┬───────────────────────────────┐
@@ -212,6 +235,32 @@ Component contracts (method calls IN from Main, signals OUT to Main):
 `stamp` ∈ `approve`\|`reject`\|`hold`\|`conditional`. `Main` maps `stamp_chosen` →
 `Session.submit` → `Session.advance`; `Session.visitor_changed` → `clear_tiles` +
 `show_visitor` + `set_progress` + `set_enabled(true)`; `shift_complete` → `show_summary`.
+
+---
+
+## Code map — `core/` (the C# tier)
+
+Deliverable-internal code-doc (per the MQT tier-bookkeeping ruling: this C# has the same
+standing as `build-musing.py`, so it gets a Code map here, **not** a repo-level `CodeDocs/`
+tier — stand that up only if C# ever escapes this folder). `core/MorningQueue.Core/` is a
+plain net8.0 classlib with **zero Godot references**; `core/MorningQueue.Core.Tests/` is its
+xUnit suite (golden weeks + validator red/green + boot round-trip). One line each:
+
+| File | Owns |
+|---|---|
+| `Model.cs` | The typed domain model (Visit / Claim / Truth / Check / Inspections + the five banks) — the POCOs the JSON deserializes into. |
+| `Validator.cs` | The schema sanity pass, ported 1:1 from `DeckLoader.gd`'s old `_validate_*` bodies with the **same error strings**; the ONE home for these checks now. |
+| `Deriver.cs` | The single home for the accept/total limit rule — derives `inspections.scale.verdict` ∈ within/over/under/meets/no_order (the rule `ReferencePanel` + the generator used to each re-implement). |
+| `Humanizer.cs` | Compose-time slug→Title-Case + `data/locales/en.json` overrides (the Core twin of GDScript `Loc.humanize`; the UI display layer stays `Loc`). |
+| `Composer.cs` | The procedural shift composer — the port of the retired 1,151-line `ShiftGenerator.gd`. Pure `Compose(day, banks, humanizer)`. |
+| `Rng.cs` | Self-owned deterministic PCG32 — the composer's only randomness source (not `System.Random`, not Godot's RNG; stable across .NET versions/platforms). |
+| `Json.cs` | Shared System.Text.Json config (snake_case↔PascalCase, tolerant of unknown members / comments / trailing commas) + small parse helpers. |
+| `TolerantIntConverter.cs` | Fixes Godot's lossy JSON integers (`JSON.stringify` float-ifies `4`→`4.0`); registered in `Json.Options`, locked down by `BootRoundTripTests.cs`. |
+| `Shift.cs` | Prepares one loaded shift for the desk: validate every visitor + run the derive pass. The `PrepareShift`/`GenerateShift` workhorse. |
+| `MorningQueueData.cs` | The parsed reference banks — keyed sub-tables filtered of their `"_"`-prefixed metadata rows (`_tab`, `_note`, …), exactly as the GDScript loader did. |
+
+`cs/CoreBridge.cs` (outside `Core`, the one engine-facing C# file) is the `[GlobalClass]`
+`RefCounted` that exposes `Validate` / `PrepareShift` / `GenerateShift` to GDScript.
 
 ---
 
@@ -307,7 +356,14 @@ script — that rule is about ad-hoc interpreter invocations on the CLI, which s
 
 ## Invariants
 
-- GDScript only; `gl_compatibility` renderer; both stay for the Web-embed path.
+- **Runtime mode (MQT.D1 ruling, A′ — in-engine C#):** Web embed is **deferred** until
+  Godot ships .NET Web export; `core/` stays engine-free, so a `dotnet` pre-bake CLI (mode
+  B) could restore a GDScript-only, Web-exportable runtime if the local-site embed becomes
+  pressing first. C#/.NET projects still cannot Web-export in Godot 4.x (4.6 included) as of
+  2026-07-15 — see the sources cited in `plans/PLAN-morning-queue-tiers.md`'s audit section
+  (Godot docs — Exporting for the Web, godot-proposals #13076 / #10310, the forum thread).
+  Cost: no Web export while any C# is in the runtime, and `Godot_std.exe` can't open the
+  project (mono build only). `gl_compatibility` renderer stays (still the embed-safe path).
 - One `.tscn` + one `.gd` per component; `Main` owns composition. Don't cross file lines.
 - The Deck validator must stay green — every `checks[].entry` resolves in `references.json`.
 - `.godot/` and `export/` are gitignored (`.gitignore`); never commit the import cache.
@@ -316,6 +372,10 @@ script — that rule is about ad-hoc interpreter invocations on the CLI, which s
 - **`class_name` gotcha:** globals like `Palette` / `ThemeFactory` / `Loc` live in
   `.godot/global_script_class_cache.cfg`, which only the **editor** regenerates. Running the
   project via the MCP after adding a new `class_name` script fails with `Identifier "X" not
-  declared`. Fix: regenerate the cache once with
+  declared`. (`ShiftGenerator` is **gone** — the composer is C# now, no longer a
+  `class_name`.) **`CoreBridge` is now subject to the same gotcha:** it's a `[GlobalClass]`
+  C# type, so its global-class registration also comes from the editor/importer, not a raw
+  MCP run — regenerate after adding or renaming it, same as the GDScript globals. Fix:
+  regenerate the cache once with
   `godot --headless --path . --import` (or open the editor). The cache is gitignored, so a
   fresh clone needs this too before first run.

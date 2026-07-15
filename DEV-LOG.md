@@ -6,6 +6,42 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT.6: docs synced; the tier refactor is complete
+
+WP-G (Opus) brought `MORNING-QUEUE.md` and `CONTENT-BANKS.md` in line with the shipped
+refactor: the three-tier engine line, the `dotnet build` + mono-only run step, the
+`core/` box and bridge calls in the architecture diagram, the `MQT.D1` invariant rewrite
+(Web embed deferred, citations reused from the plan's audit), the retired-`ShiftGenerator`
+/ new-`CoreBridge` class_name-gotcha update, a new **Code map** section for `core/`
+(one line per file — the deliverable-internal code-doc ruling, no repo-level `CodeDocs/`
+tier stood up), and the 16→17 curated-visitor-count correction throughout. Coordinator
+read the result top-to-bottom against the actual tree (Rule for G5) and found it accurate
+— one cosmetic fix (an unrendered markdown link in the Invariants citation).
+
+**Sync discipline (Rule 3) catch:** WP-G's file ownership didn't include
+`plans/PLAN-adventuring-guild-teller.md` beyond a single tick-line, so it correctly
+flagged rather than fixed two stale lines there (still said "GDScript-only" and quoted
+the pre-rebaseline `97 visits` self-check). Coordinator fixed both directly after
+re-reading the file fresh — a separate, unrelated concurrent workstream
+(`plans/PLAN-village-fishbowl.md`, hard-isolated from `morning-queue/` per its own
+plan) is also actively editing that same file right now; touched only the two
+morning-queue-specific lines, left everything else (including anything mentioning
+"fishbowl"/"VFB") untouched.
+
+**Run summary, all six phases:** `MQT.1` locale + generator content out of scripts,
+`MQT.2` .NET skeleton, `MQT.3` typed model + validator (with a real GDScript↔C# JSON
+transport bug found and fixed via the boot gate, not by `dotnet test` alone — see the
+`MQT.3` entry above; this is the run's main lesson worth remembering), `MQT.4` the
+generator ported to `core/` with a rebaseline (97→96 visits, `MQT.D2a`), `MQT.5` the
+accept/total limit rule single-homed in `Core.Deriver`, `MQT.6` this entry. All three
+kickoff rulings (`MQT.D1`=A′ in-engine C#, `MQT.D2`=(a) rebaseline, `MQT.D3`=skip) held
+through to completion with no need to revisit them. Ran unattended throughout (Panda
+not present); every gate was coordinator-verified via actual `dotnet build/test` runs
+and godot MCP boots, never taken solely from a subagent's self-report — that discipline
+caught the one real regression (`MQT.3`'s JSON float transport bug) that a
+trust-the-transcript pass would have missed. **Never pushed** — this run's commits sit
+on `main` locally, awaiting Panda's review per the handoff.
+
 ## 2026-07-15 — MQT.5: the accept/total limit rule is single-homed
 
 WP-F (Haiku, bounded patch-level spec) deleted `ReferencePanel._standing_order()` and

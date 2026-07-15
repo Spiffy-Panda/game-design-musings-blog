@@ -1,6 +1,6 @@
 # PLAN — morning-queue-tiers (code / script / data split + .NET)
 
-**Status:** proposed 2026-07-15 — awaiting rulings on `MQT.D1`–`MQT.D3` before any phase runs.
+**Status:** COMPLETE 2026-07-15 — rulings `MQT.D1`=A′ (in-engine C#) · `MQT.D2`=(a) rebaseline · `MQT.D3`=skip all adopted; phases `MQT.1`–`MQT.6` all executed. Doc/plan sync done; DEV-LOG entry + implementation commit remain with the coordinator.
 **Folder:** `../adventuring-guild-teller/morning-queue/` (the Godot 4.6 desk-shift prototype).
 **Specs it touches:** `MORNING-QUEUE.md` (architecture + invariants), `CONTENT-BANKS.md` (§4 recipes), this plan, `PLAN-adventuring-guild-teller.md` (parent).
 **Mnemonic:** **MQT** — phases `MQT.1`–`MQT.6`, decisions `MQT.D1`–`MQT.D3`.
@@ -154,7 +154,7 @@ morning-queue/
     (expected: none).
   - Verify: DeskFeatureHarness 12/12; capture diff on `nessa-broom` (amount-fail) and a
     `total`-order visitor.
-- [ ] **`MQT.6` — Doc + plan sync (Rule 3) and final pass**
+- [x] **`MQT.6` — Doc + plan sync (Rule 3) and final pass** *(docs synced 2026-07-15; DEV-LOG entry + commit are the coordinator's)*
   - `MORNING-QUEUE.md`: engine line (drop "GDScript-only", state the three tiers + mono
     requirement + `dotnet build` in the run loop), architecture diagram gains the `core/`
     box, **Invariants rewritten per `MQT.D1`** (with the Web-status citation), and a

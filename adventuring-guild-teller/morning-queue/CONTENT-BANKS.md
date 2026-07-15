@@ -210,8 +210,19 @@ returns a decoy reading. Every visit still carries **both** readings.
 
 ## 4. The visit-generation algorithm
 
-`ShiftGenerator.generate_shift(day)` composes one shift. Determinism: seed a
-`RandomNumberGenerator` with `rng.seed = day`. Same day ⇒ identical shift.
+> **Ported to C# (MQT.4).** The recipes below are now implemented in
+> `core/MorningQueue.Core/Composer.cs` (the pure composer, `Compose(day, banks, humanizer)`),
+> reached from GDScript through `CoreBridge.GenerateShift`; the RNG is `core/…/Rng.cs`
+> (self-owned PCG32) and the derive/limit rule lives in `core/…/Deriver.cs`. The retired
+> `scripts/gen/ShiftGenerator.gd` is deleted. The recipe *design* below is unchanged — only
+> its home moved.
+
+`Composer.Compose(day, …)` composes one shift. Determinism: the composer seeds its own
+PCG32 (`Rng.cs`) with `day`. Same day ⇒ identical shift. **MQT.D2a rebaseline:** porting
+GDScript's `RandomNumberGenerator` to the self-owned PCG32 changed every generated stream
+**once** (the old GDScript week was 97 visits; the new one is 96) — expected and correct,
+not a bug. Days 1–7 have been **golden-pinned** in `Core.Tests` ever since (rebaseline-only
+via env `MQ_REBASELINE=1`), so the streams are frozen from here.
 
 **Top loop:**
 1. `rng.seed = day`. Read banks (references + townees + adventurers + generation).
