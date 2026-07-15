@@ -109,6 +109,11 @@
             #4 doss-yellowknife, #5 ivy-threnody now have tactile detail. Shipped 2026-07-15.
       - [x] an **amount-fail visitor** in the curated shift — `nessa-broom` (order 17,
             moonwort 6 drams vs 2–4 dram cap, `failure.axis: amount`). Shipped 2026-07-15.
+- [ ] **Tier refactor of the prototype (code / script / data + .NET)** — proposed
+      2026-07-15, split out to its own plan: `PLAN-morning-queue-tiers.md` (mnemonic
+      `MQT`). C# `core/` for generator/validator/typed model, GDScript kept to node
+      scripting, content strings into `data/`; open rulings `MQT.D1`–`MQT.D3` (Web
+      invariant, RNG continuity, theme .tres).
 - [ ] Mechanics note: the desk's procedural request/proof generator sketch (AGR.1 is the
       hard problem — reference-library growth without rule soup). **Largely superseded** by the
       shipped `ShiftGenerator` + `CONTENT-BANKS.md`; keep for the design-writeup angle.

@@ -6,6 +6,36 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — MQT handoff prompt authored (coordinator + tiered subagent briefs)
+
+`morning-queue/MQT-HANDOFF.md`: an executable operating manual for a **Sonnet 5
+coordinator** running the MQT plan via subagents. Instruction depth is deliberately
+inverse to model tier — Haiku gets a patch-level spec with placeholders the coordinator
+must freshen (WP-F, the ReferencePanel de-dup), Sonnet gets strict numbered steps with
+stop conditions (WP-A locales, WP-B bank extraction w/ the RNG-stream trap, WP-C dotnet
+scaffolding), Opus gets goals + constraints + latitude (WP-D model/validator/bridge,
+WP-G doc sync), and Fable gets mission + invariants with design authority delegated
+(WP-E, the 1,151-line generator port). Load-bearing calls are pre-settled in the file so
+the coordinator never adjudicates architecture (bridge shape, humanize-at-compose-time
+via a Core Humanizer reading the same locales JSON, derive-pass verdict field). Rulings
+`MQT.D1`–`D3` baked in as the plan's recommended defaults; confirming them with Panda is
+the kickoff gate. Rule 1 is embedded verbatim in the hard-laws block every brief carries.
+
+## 2026-07-15 — Morning Queue: tier-refactor plan authored (PLAN-morning-queue-tiers)
+
+Audit of the prototype against the code/script/data framing: of 4,347 GDScript lines,
+~35% is code or data in a script costume — `ShiftGenerator.gd` (1,151 ln of pure
+deterministic systems code + embedded authored prose), the `_LOCALES` tables inside
+`loc.gd`, ~155 validation lines inside `DeckLoader.gd`, and the `accept`/`total` limit
+rule implemented twice (generator `_limit_result` + `ReferencePanel` ~622–666). .NET is
+absent (the `[dotnet]` stamp in `project.godot` is just the mono editor's fingerprint).
+Verified 2026-07-15 that Godot 4.x **still can't Web-export C#** — so the plan doesn't
+dodge the collision with MORNING-QUEUE.md's "GDScript-only for the Web path" invariant;
+it makes the rewrite an explicit ruling (`MQT.D1`: in-engine C# with a documented
+pre-bake escape hatch, vs baker-only). Also flagged: a C# port changes RNG streams, so
+generated weeks rebaseline unless PCG32 is ported (`MQT.D2`). Plan only — no code
+touched; frozen component contracts stay frozen by design.
+
 ## 2026-07-15 — LoMa vignette page ships; MIDI Drum Coach registered as new musing
 
 **LoMa `vignettes.html`:** "Everyday Records" companion page carries the three
