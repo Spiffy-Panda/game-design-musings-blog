@@ -6,6 +6,24 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-13 — Morning Queue: day advance + skip-tutorial wired into the UI
+
+**Context:** Playtest — no way to reach day 1+. The week-of-shifts data/generator
+(`Deck.load_day`, `ShiftGenerator`) shipped, but nothing in the UI ever called it, so
+the desk dead-ended at the day-0 "SHIFT COMPLETE" ledger. Not a performance issue — the
+control never existed.
+**Options considered:** (A) add day-flow controls to a component scene (VerdictBar /
+Scoreboard); (B) keep it all in `Main.gd` as flow plumbing.
+**Choice:** B. `Main` grows a top-of-booth day strip (day label + Skip-tutorial button,
+shown only on day 0) and a Next-Day button under the ledger that walks day → day+1 up to
+`LAST_DAY = 7`, then locks as "the week is done." `_go_to_day(d)` = `Deck.load_day(d)` +
+`Session.start()`; banks are unchanged across days so only the queue reloads.
+**Why:** day flow is session plumbing, not a component rule — keeps the four frozen
+component interfaces untouched. New strings live in `Loc` chrome; button chrome is a
+brass-outlined `_make_desk_button` matching the parchment theme.
+**Notes:** verified via godot MCP — boots clean, gen-selfcheck `7 days, 97 visits, 0
+problems`. Skip jumps straight to generated day 1; Next-Day caps at the seventh day.
+
 ## Entry template
 
 ```

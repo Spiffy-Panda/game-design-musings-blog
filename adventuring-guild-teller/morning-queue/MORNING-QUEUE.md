@@ -147,6 +147,15 @@ frozen signature changed**; `CONSULT_TO_TAB` gained the two directory keys and `
 `ref_tab.townee_directory` / `ref_tab.adventurer_directory` (+ `failure_axis.dues|amount`,
 `dues_current|owing`). The adventurer directory *is* the expanded rank ledger.
 
+**Day flow in the UI (`Main.gd`).** `Main` surfaces the week the data layer already
+supported: a top-of-booth day strip (day label + a **Skip-tutorial** button shown only on
+day 0) and a **Next-Day** button that appears under the shift ledger and walks `day →
+day+1` up to `LAST_DAY = 7`, then locks as "the week is done." `_go_to_day(d)` reloads via
+`Deck.load_day(d)` and re-opens the desk with `Session.start()` (banks are unchanged across
+days, so only the queue reloads). This is Main-owned plumbing — no frozen component
+interface changed; new strings are `Loc` chrome (`day_label*`, `skip_tutorial`, `next_day`,
+`week_done`).
+
 **Verified (both days, zero errors).** `--import`, then via the godot MCP: curated day 0
 steps all 16 → 16/16; generated day 1 steps all 14 coherent visits → 14/14; the boot
 self-check reports `7 days, 97 visits, 0 problems`. Ships defaulting to day 0 with
