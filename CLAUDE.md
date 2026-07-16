@@ -163,7 +163,7 @@ Applies to **any page**, not just musing-formatted ones.
 - **`MUSING-CONFIG.json`** — registry of musings the site build reads (folder, slug, name, description, hidden).
 - **`musing-tech-notes.md`** — the *how* of musings: build pipeline, Markdown subset, per-folder build contract. Canonical, shared across musings.
 - **`site/SITE.md`** — spec for the published site output (structure, the build step, how a musing becomes a page).
-- **`utils/README.md`** — catalog of durable tooling (the preview server + the site build).
+- **`utils/README.md`** — catalog of durable tooling (the preview server, the site build, and the Godot test-harness MCP server `utils/dotnet/gth-mcp-server/`).
 - **`approaches-app/README.md`** — the React/Tailwind sub-site (MSL approaches hub + mutation pages); the one framework-built part of the site.
 - **`scrap_scripts/README.md`** — scratch-script convention + promotion rule.
 - **`CLAUDE.local.md`** — *(gitignored)* machine paths + identity rules.

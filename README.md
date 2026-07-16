@@ -44,7 +44,7 @@ build in CI). Restart it to rebuild. In Claude Code, the **local-server** launch
 | `MUSING-CONFIG.json` | Registry of musings the build reads (name, description, visibility). |
 | `musing-tech-notes.md` | The *how* of musings — build pipeline, supported Markdown, gotchas. |
 | [`site/`](site/README.md) | The published static site (landing page + rendered musings). **Generated output**; deploys to GitHub Pages. |
-| [`utils/`](utils/README.md) | Durable tooling — the local preview server and the site build. |
+| [`utils/`](utils/README.md) | Durable tooling — the local preview server, the site build, and the Godot test-harness MCP server (`utils/dotnet/gth-mcp-server/`; build: `dotnet build utils/dotnet/gth-mcp-server`). |
 | [`scrap_scripts/`](scrap_scripts/README.md) | Throwaway exploration scripts (mostly gitignored). |
 | [`plans/`](PLAN.md) | Forward-looking plans, indexed by `PLAN.md`. |
 | `PROJECT-PITCH.md` | Why this project exists + decisions table. |

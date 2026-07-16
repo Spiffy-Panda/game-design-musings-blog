@@ -6,7 +6,9 @@ offscreen** queries, and takes **token-frugal captures** (by reference, settle-t
 dedup). Two thin drivers over one pure-GDScript core:
 
 - **Prescripted** — a JSON scenario run headlessly/CI via `--gth-scenario=…` (this file's `_ready` path).
-- **Live (MCP)** — a loopback WebSocket in `bridge.gd` that an external MCP server calls.
+- **Live (MCP)** — a loopback WebSocket in `bridge.gd` that an external MCP server calls. That server is
+  `utils/dotnet/gth-mcp-server/` (.NET 8, dependency-free); build it once with
+  `dotnet build utils/dotnet/gth-mcp-server` and see its `README.md` for registration.
 
 It is **project-agnostic**: nothing here references any specific game. Spec + rationale live in
 `plans/PLAN-godot-test-harness.md` (mnemonic `GTH`) at the repo root.
