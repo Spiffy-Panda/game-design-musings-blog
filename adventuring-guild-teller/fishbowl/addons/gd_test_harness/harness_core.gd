@@ -99,9 +99,13 @@ func click_at(x: float, y: float, opts := {}) -> Dictionary:
 	var normalized: bool = opts.get("normalized", true)
 	var p := _px(x, y, normalized)
 	var report: Variant = _probe.hit_report(p) if opts.get("report_hits", true) else null
+	var watched: int = _probe.begin_trace() if opts.get("trace", false) else 0
 	_injector.click_at(p, _button(opts), int(opts.get("clicks", 1)))
 	await _frames(int(opts.get("post_frames", _cfg.get("post_event_frames", 2))))
-	return {clicked = true, clicked_px = [p.x, p.y], hits = report}
+	var out := {clicked = true, clicked_px = [p.x, p.y], hits = report}
+	if opts.get("trace", false):
+		out["trace"] = _traced(report, watched)
+	return out
 
 func click_element(handle: Dictionary, opts := {}) -> Dictionary:
 	var hits: Array = _probe.resolve(handle)
@@ -123,10 +127,21 @@ func click_element(handle: Dictionary, opts := {}) -> Dictionary:
 	var ap: Array = report.get("anchor_point_px", [0, 0])
 	var p := Vector2(float(ap[0]), float(ap[1]))
 	var hits_report: Dictionary = _probe.hit_report(p)
+	var watched: int = _probe.begin_trace() if opts.get("trace", false) else 0
 	_injector.click_at(p, _button(opts), int(opts.get("clicks", 1)))
 	await _frames(int(opts.get("post_frames", _cfg.get("post_event_frames", 2))))
-	return {clicked = true, target = report.get("text", report.get("path", "")),
+	var out := {clicked = true, target = report.get("text", report.get("path", "")),
 		clicked_px = [p.x, p.y], clickability = report, hits = hits_report}
+	if opts.get("trace", false):
+		out["trace"] = _traced(hits_report, watched)
+	return out
+
+## Close a Mode-B trace and score it against what Mode A predicted (GTH.D3 / GTH.M5).
+func _traced(hits: Variant, watched: int) -> Dictionary:
+	var predicted = hits.get("consumer", null) if typeof(hits) == TYPE_DICTIONARY else null
+	var tr: Dictionary = _probe.trace_report(_probe.end_trace(), predicted)
+	tr["controls_watched"] = watched
+	return tr
 
 func move_to(x: float, y: float, opts := {}) -> Dictionary:
 	var p := _px(x, y, opts.get("normalized", true))

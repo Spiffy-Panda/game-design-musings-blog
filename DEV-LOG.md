@@ -6,6 +6,43 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — GTH.M5: Mode B built — the trace watches everything, so it can disagree with the prediction
+
+Built the Mode-B observed trace (`trace: true` on `click_at`/`click_element`), which `GTH.D3` deferred to
+M5 back on 2026-07-15. That closes the last code item on the harness plan; `GTH.M5`'s only survivor is the
+optional C# scenario facade, recommended closed as YAGNI (below).
+
+**The one design call worth recording: Mode B connects to *every* visible non-IGNORE Control, not to Mode
+A's candidate list.** Connecting to the candidates would be cheaper and is the obvious implementation —
+and it would be worthless. A trace that can only observe what the prediction already predicted cannot
+falsify the prediction, and falsifying it is the entire reason Mode B exists: `GTH.B4` was Mode A naming a
+consumer, with total confidence, that never received the event. Watching only the predicted set would have
+reproduced that bug's blind spot exactly, while *feeling* like verification. So the report carries
+`consumer_observed` **and** `consumer_predicted` **and** `agrees_with_mode_a`, and when they differ it says
+in words to believe the trace.
+
+**What it can't do, stated where users will read it:** Godot emits the `gui_input` signal *before* the
+Control runs its own `_gui_input` (so that a listener can override an event and then accept it). There is
+therefore no per-control "did *you* consume it?" hook — the consumer is inferred from where the chain
+**stops**, and `handled_on_arrival` reports whether the event was already spent by the time it arrived.
+Input consumed outside the GUI dispatch entirely — a raw `_input` handler — is invisible to Mode B. That
+limitation is in the addon README and the plan rather than in a comment nobody reads, because the whole
+point of this run was that a harness must not overstate what it knows.
+
+Verified on two cases: `btn-step` and a roster-Tree location click. Mode B watched **52 controls** and
+**agreed with Mode A both times** — the expected, boring, correct result. Mode A is right nearly always;
+what changed is that its being wrong is now *detectable* rather than silent.
+
+**The C# scenario facade (`GTH.D2`'s "optional thin facade") is deliberately not built**, and flagged for
+a ruling rather than quietly dropped. It has no consumer: the one project using GTH authors scenarios in
+JSON, and that format is shared by both drivers by design (`GTH.R2`). Building an authoring surface for a
+hypothetical C#-first adopter means maintaining API against a guess. Recommend closing as YAGNI; revisit
+if such a project actually shows up.
+
+Incidental proof the new contract check earns its keep: adding `trace` meant declaring it in *two* places
+(the tool schema and `Accepts`). Had I updated only one, `ContractErrors()` would have failed `--selftest`
+on the spot — which is precisely the failure mode that let `region` and `repeat` ship broken.
+
 ## 2026-07-16 — GTH.B1–B6 fixed: minimize really does freeze the framebuffer, and the self-test was testing the wrong layer
 
 All six harness bugs closed and verified — `tests/harness/regression-b1-b6.json` green (32 steps, 0

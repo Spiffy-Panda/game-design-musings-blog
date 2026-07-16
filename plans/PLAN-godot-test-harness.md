@@ -12,8 +12,13 @@ bottom of this file). A fresh clone still needs one `dotnet build utils/dotnet/g
 **All seven gates are ruled:** `GTH.D2` resolved **.NET**; `GTH.D1`/`D3`/`D4`/`D5`/`D7` adopted on the
 recommendation; `GTH.D6` split — the addon lives in the fishbowl (own copy, VFB isolation), the server is
 shared tooling in `../utils/dotnet/` (repo-wide convergence of both stays `GTH.Q4`).
-**Open:** `GTH.M5`'s remainder (Mode-B active trace, the optional C# scenario facade) and the rulings
-`GTH.Q2`/`Q3`/`Q4`. The `GTH.B*` bugs are **all six fixed & verified 2026-07-16**; `GTH.Q1` is answered.
+**Open — and it is all rulings, no code.** The `GTH.B*` bugs are **all six fixed & verified 2026-07-16**;
+`GTH.Q1` is answered by `B4`; the **Mode-B trace is built**, so `GTH.M5`'s only survivor is the optional
+C# scenario facade, **recommended closed as YAGNI** (no consumer exists). That leaves `GTH.Q2` (is 3D
+`intersect_ray` hit-reporting in v1 scope?), `GTH.Q3` (should GTH expose seed-pinning / fixed-timestep
+stepping?), and `GTH.Q4` (do `morning-queue/` and `fishbowl/` retire their bespoke DevHarnesses onto GTH,
+and does that finally justify the shared library their isolation rule has deferred?) — all Panda's calls,
+none of them blocking anything.
 **Home:** a Godot **addon** (`addons/gd_test_harness/`, drop-in, project-agnostic) **+** a per-project
 `harness.config.json` **+** the external **MCP server** (`../utils/dotnet/gth-mcp-server/`, built). Addon
 copy lives in the fishbowl; server in `utils/`.
@@ -233,9 +238,10 @@ approach for `rendered` on Windows.
 - **`GTH.D2` MCP host language.** *Recommend* **.NET / C#** (official MCP C# SDK) to keep the stack
   cohesive with the C# cores and let scenario authors share types. Alt: Node/TypeScript (most mature
   MCP + Playwright-MCP prior art) or Python.
-- **`GTH.D3` Consumption-chain fidelity.** *Recommend* Mode A (predictive) as the always-on default,
-  Mode B (active trace) opt-in and built in a later milestone. Ruling: is best-effort trace in scope
-  for v1, or deferred?
+- **`GTH.D3` Consumption-chain fidelity.** *Recommended* Mode A (predictive) as the always-on default,
+  Mode B (active trace) opt-in and built in a later milestone. **Adopted, and now fully discharged —
+  Mode B was built 2026-07-16** (`trace: true`), which `GTH.B4` made the case for: Mode A can be
+  confidently wrong, and only an observation can catch that.
 - **`GTH.D4` Addressing convention.** *Recommend* adopt `test_id` meta (+ `test:<id>` group) as the
   project-agnostic durable contract, node-path as fallback. Ruling: bless the convention?
 - **`GTH.D5` Image defaults.** *Recommend* reference-by-path, `if_changed=true`, settle-then-shoot,
@@ -253,10 +259,11 @@ approach for `rendered` on Windows.
 `bridge.StepSlot` → clock slot 1), a location click selects a roster row, hit-stacks report the
 consumption chain, clickability/geometry reports resolve, and captures write with sha-dedup + annotate.
 **M5 ◑** — the external MCP server is built, `--selftest`-verified, registered as `gth-fishbowl`, **and the
-MCP-stdio→model leg is now closed**: a model drove it live for ~213 calls on 2026-07-16 (field report
-below). M5's "first real adoption against an AGT prototype" is therefore **done** — that pass *was* it, and
-it found four fish-bowl bugs. **M5's remainder is two build items:** the Mode-B active trace (`GTH.D3`
-deferred it here) and the optional C# scenario facade (`GTH.D2`), plus docs.
+MCP-stdio→model leg is closed**: a model drove it live for ~213 calls on 2026-07-16 (field report below).
+M5's "first real adoption against an AGT prototype" is **done** — that pass *was* it, and it found four
+fish-bowl bugs. The **Mode-B active trace is built and verified** (2026-07-16, §below), and docs are
+synced. **All that is left in M5 is the optional C# scenario facade**, which is recommended closed as
+YAGNI — see the Mode-B section. On that recommendation, **M5 is effectively complete**.
 
 - **`GTH.M0`** Addon skeleton + gated `Bridge` + `harness.config.json` + `session_start/stop` +
   smoke `capture` (reference-return). Both session modes stand up.
@@ -268,8 +275,33 @@ deferred it here) and the optional C# scenario facade (`GTH.D2`), plus docs.
   crop, downscale/format, annotate, session budget, `manifest.jsonl`. → `GTH.R6`.
 - **`GTH.M4`** Prescripted driver: scenario format + `ScenarioRunner` + `run_scenario` + assertions +
   headless CI report. → `GTH.R2` (prescripted half).
-- **`GTH.M5`** Optional Mode-B trace (`GTH.D3`), C# scenario facade (`GTH.D2`), docs, and first real
-  adoption against an AGT prototype (opt-in, isolation rule honored).
+- **`GTH.M5`** ~~Optional Mode-B trace (`GTH.D3`)~~ **✅ built 2026-07-16**, ~~docs~~ ✅, ~~first real
+  adoption against an AGT prototype~~ ✅ (the 2026-07-16 observatory pass was it). **Remaining: the
+  optional C# scenario facade (`GTH.D2`) only** — see the note below.
+
+### Mode B — the observed trace (`GTH.D3`, built 2026-07-16)
+
+`click_at`/`click_element` take **`trace: true`**. It connects to **every** visible non-IGNORE Control's
+`gui_input` — deliberately not just Mode A's candidates, because *a trace that can only see what the
+prediction predicted cannot falsify it*, and falsifying it is the entire point: `GTH.B4` was Mode A
+naming a consumer, with complete confidence, that never received the event. The report carries
+`consumer_observed`, `consumer_predicted`, `agrees_with_mode_a`, and a `disagreement` note telling the
+reader to believe the trace.
+
+**Best-effort, and honest about which part:** Godot emits `gui_input` *before* a Control runs its own
+`_gui_input`, so a per-control "did you consume it?" flag is not available — the consumer is inferred
+from where the chain **stops**, and `handled_on_arrival` reports whether the event was already spent
+when it got there. Input consumed outside the GUI dispatch (a raw `_input` handler) is invisible to it.
+Verified: on `btn-step` and a roster-Tree location click, Mode B watched 52 controls and **agreed with
+Mode A both times** — which is the expected result. Mode A is usually right; the point is that its being
+wrong is now *detectable* instead of silent.
+
+**On the C# scenario facade (`GTH.D2`'s "optional thin facade"):** deliberately **not built**, flagged
+for a ruling rather than silently dropped. It has no consumer — the one project using GTH authors its
+scenarios in JSON, and the format is shared by both drivers by design (`GTH.R2`). Building an authoring
+surface for a user who does not exist adds maintained API surface against a guess, and this repo's
+zero-dependency ethos argues the same way. Recommend closing it as YAGNI; revisit if a C#-first project
+actually adopts the harness.
 
 ## Bugs (`GTH.B*`) — **all six fixed & verified 2026-07-16**
 

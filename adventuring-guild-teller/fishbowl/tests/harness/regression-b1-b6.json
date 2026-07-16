@@ -33,6 +33,11 @@
     { "op": "key", "keys": "F9", "repeat": 2,
       "note": "B3: result.repeat must read 2. F9 toggles the fish-bowl's own DevHarness, so twice = net no-op." },
 
+    { "op": "click", "element": { "test_id": "btn-step" }, "trace": true,
+      "note": "M5 / Mode B: the observed gui_input trace must name who REALLY received the click and score itself against Mode A -- expect agrees_with_mode_a=true on an unambiguous top-level button" },
+    { "op": "click_at", "x": 0.15, "y": 0.5, "trace": true, "report_hits": true,
+      "note": "M5 / Mode B over the roster Tree: prediction vs observation on a location click" },
+
     { "op": "click", "element": { "test_id": "btn-storylets" },
       "note": "B1 second half: the clamped anchor must LAND. The old raw-centre anchor aimed at x=1321 -- outside the window -- and missed while reporting success." },
     { "op": "wait", "settled_ms": 600 },

@@ -2,10 +2,12 @@ extends RefCounted
 ## GTH · SceneProbe — element resolution, the predictive hit-stack, clickability/geometry
 ## reports, and the interactable snapshot. All read-only introspection.
 ##
-## Hit-stack fidelity is Mode A (predictive): it replays Godot's GUI pick order — children
-## before parents, later siblings before earlier (topmost first), IGNORE skipped — and marks
-## the first STOP as the consumer; the PASS controls ahead of it "received before consume".
-## Mode B (active gui_input trace) is future work.
+## Two hit-stack modes. **Mode A (predictive, default)** replays Godot's GUI pick order — children
+## before parents, later siblings before earlier (topmost first), IGNORE skipped — and marks the
+## first STOP as the consumer; the PASS controls ahead of it "received before consume". Cheap,
+## deterministic, headless-safe. **Mode B (`trace: true`)** watches every Control's `gui_input`
+## during a real click and reports who actually received it, then scores that against Mode A's
+## prediction. Use it whenever a click's outcome surprises you: a prediction cannot falsify itself.
 ##
 ## Two rules this file exists to keep, both learned the hard way (see GTH.B1/B4 on the plan):
 ##
@@ -247,6 +249,72 @@ func hit_report(point_px: Vector2) -> Dictionary:
 	out["stack"] = entries
 	out["consumer"] = consumer
 	out["received_before_consume"] = received
+	return out
+
+# --- hit-stack (Mode B: observed trace) ---------------------------------------------------
+# Mode A predicts the chain; Mode B watches it. They are deliberately independent: begin_trace
+# connects to EVERY eligible Control, not merely Mode A's candidates -- a trace that can only
+# see what the prediction already predicted cannot falsify it, and falsifying it is the whole
+# point. GTH.B4 was Mode A naming a consumer, with total confidence, that never got the event.
+
+var _trace_conns := []
+var _trace_log := []
+
+## Connect to every visible, non-IGNORE Control's `gui_input`. Returns the count watched.
+func begin_trace() -> int:
+	end_trace()  # never leave a previous run's connections behind
+	_trace_log.clear()
+	for n in _walk(_root()):
+		if not (n is Control):
+			continue
+		var c := n as Control
+		if not c.is_visible_in_tree() or c.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+			continue
+		var cb := _on_traced.bind(c)
+		c.gui_input.connect(cb)
+		_trace_conns.append([c, cb])
+	return _trace_conns.size()
+
+func _on_traced(event: InputEvent, c: Control) -> void:
+	if not (event is InputEventMouseButton) or not (event as InputEventMouseButton).pressed:
+		return
+	# Godot emits `gui_input` BEFORE running the Control's own `_gui_input`, so this flag says
+	# whether the event had ALREADY been consumed when it arrived here — not whether THIS control
+	# consumed it. Hence the consumer is inferred from where the chain stops (see trace_report).
+	_trace_log.append({
+		path = _path(c), type = c.get_class(),
+		test_id = str(c.get_meta(_meta_key)) if c.has_meta(_meta_key) else null,
+		handled_on_arrival = c.get_viewport().is_input_handled(),
+	})
+
+func end_trace() -> Array:
+	for t in _trace_conns:
+		var c = t[0]
+		if is_instance_valid(c) and c.gui_input.is_connected(t[1]):
+			c.gui_input.disconnect(t[1])
+	_trace_conns.clear()
+	return _trace_log.duplicate()
+
+## Turn an observed run into a report, and compare it against what Mode A predicted.
+func trace_report(observed: Array, predicted_consumer = null) -> Dictionary:
+	var out := {
+		mode = "B — observed gui_input trace",
+		received = observed,
+		note = "best-effort. Godot emits `gui_input` before a Control runs its own `_gui_input`, "
+			+ "so the consumer is inferred from where the chain STOPS, not from a per-control flag. "
+			+ "Anything consuming input outside the GUI dispatch (a raw _input handler) is invisible here.",
+	}
+	var seen = null
+	if not observed.is_empty():
+		seen = observed[observed.size() - 1]["path"]
+	out["consumer_observed"] = seen
+	if predicted_consumer != null or seen != null:
+		out["consumer_predicted"] = predicted_consumer
+		out["agrees_with_mode_a"] = (predicted_consumer == seen)
+		if predicted_consumer != seen:
+			out["disagreement"] = "Mode A predicted %s; the event was actually last seen at %s. " \
+				% [str(predicted_consumer), str(seen)] \
+				+ "Believe the trace — it watched, the prediction guessed."
 	return out
 
 # --- clickability + geometry --------------------------------------------------------------

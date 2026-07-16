@@ -73,8 +73,13 @@ The harness is allowed to be wrong. It is not allowed to be **confidently** wron
 
 ## Known limitations (v0)
 
-- **Hit-stack is predictive (Mode A):** replays Godot's GUI pick order; an active `gui_input` trace
-  (Mode B) is future work. CanvasLayer/z_index handled for the common single-layer case.
+- **Hit-stack is predictive by default (Mode A):** replays Godot's GUI pick order; CanvasLayer/z_index
+  handled for the common single-layer case. Pass **`trace: true`** to `click_at`/`click_element` for
+  **Mode B**, which watches every Control's `gui_input` during the click, reports who *actually*
+  received it, and scores itself against Mode A (`agrees_with_mode_a`, plus a `disagreement` note when
+  they differ — believe the trace). Mode B is best-effort: Godot emits `gui_input` *before* a Control
+  runs its own `_gui_input`, so the consumer is inferred from where the chain stops, and anything
+  consuming input outside the GUI dispatch (a raw `_input` handler) stays invisible to it.
 - **Embedded `Window`s are handled, not skipped** (they were skipped in v0, which made a click over a
   dialog get attributed to whatever sat underneath — a wrong answer rather than a gap). A point over
   one reports `viewport: "embedded_window"` plus that window's own contents; a main-viewport control
