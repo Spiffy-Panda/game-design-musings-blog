@@ -28,10 +28,12 @@ fishbowl/
   core/Fishbowl.Core/      engine-free classlib: Determinism/ Json/ Model/ Data/ Engine/ Text/ Api/
   core/Fishbowl.Cli/       headless runner (--town --seed --days --report --chronicle --soak)
   core/Fishbowl.Core.Tests/  xUnit — 22 tests incl. the Godot-stringify round-trip suite
-  data/                    the authored town (see "Data contract")
+  data/                    THE LIVE TOWN — all features on; postings/sites authored here (see "Data contract")
   addons/gd_test_harness/  GTH test harness — project-agnostic input/inspect/capture addon (own README)
   harness.config.json      GTH config — artifacts dir, capture caps, bridge port
   tests/harness/           GTH prescripted scenarios (smoke.json)
+  tests/towns/golden-town/ THE FROZEN GOLDEN FIXTURE — posting-free; the town every xUnit acceptance
+                           test loads. Do not add features to it (PNO.D2)
   .captures/               capture output (gitignored; F9 DevHarness + GTH's .captures/gth/)
 ```
 
@@ -96,14 +98,33 @@ GDScript (`bridge.SlotTicked.connect(...)`).
 The JSON projections live in the engine-free core (`Api/WorldView.cs`) so they are unit-testable;
 the bridge is a thin marshalling shim.
 
-## Data contract (`data/`, all `"version": 1`, ints tolerant-parsed)
+## Data contract (all `"version": 1`, ints tolerant-parsed)
 
-`simconfig.json` (every knob's default) · `places.json` (6 board cards + residences;
-`board:true/false`, `shut`) · `townees.json` (12 golden cast; `departs_day` schedules an
-adventurer's expedition) · `dayplans.json` (one template per role; `haunt:<id>` tokens, courier
-`roams`) · `traits.json` (`pressure_rate_mods`, `storylet_weight_mods`, `hearsay_carrier`) ·
-`storylets/*.json` (12 rules; `_binding` anchors, `must_fire` override) · `golden/day1.json`
-(the pinned beat types + participants the M3 test reproduces).
+**Two towns, and the split is load-bearing** (`PNO.D2`, ruled 2026-07-16 — see
+`plans/PLAN-fishbowl-postings-outings.md`):
+
+| | `data/` — **the live town** | `tests/towns/golden-town/` — **the frozen fixture** |
+|---|---|---|
+| Who loads it | the observatory (`FishbowlBridge._Ready()` → `res://data`), the CLI (default; `--town` overrides) | every xUnit test, via `TestSupport.LoadGoldenTown()` |
+| Features | **all of them** — postings/sites are authored here | **posting-free, forever** |
+| Why | the board filling and emptying is the readout; it has to be the town you actually run | it pins seed-independence, the 12/6/2 counts, and the golden day's 7 beats |
+
+**Do not add postings, sites, or cast to the fixture.** Its entire value is that it stopped changing.
+A golden master living inside the live data directory tracks the very thing it is meant to pin — which
+is what it did until 2026-07-16, and why this split exists. The fixture is a **full copy** (`TownLoader`
+requires all 5 files; there is no overlay/merge), so it will drift from `data/`. **Drift is the feature.**
+
+Files, both towns: `simconfig.json` (every knob's default) · `places.json` (6 board cards + residences;
+`board:true/false`, `shut`) · `townees.json` (12 golden cast; `departs_day` schedules an adventurer's
+expedition) · `dayplans.json` (one template per role; `haunt:<id>` tokens, courier `roams`) ·
+`traits.json` (`pressure_rate_mods`, `storylet_weight_mods`, `hearsay_carrier`) · `storylets/*.json`
+(12 rules; `_binding` anchors, `must_fire` override). **Fixture only:** `golden/day1.json` (the pinned
+beat types + participants the M3 test reproduces; `TownLoader` treats it as optional, so the live town
+reports `Town.Golden == null` and that is correct).
+
+**`TestSupport.DataDir` deliberately stays on `data/`** — it drives `WriteFloatifiedData`'s recursive
+sweep, so `M0.GodotStringify_RoundTrip_Of_Every_File` covers every newly authored file automatically.
+Anything placed under `data/` joins that suite; that is why the fixture lives under `tests/`.
 
 ## Milestone status (this release)
 

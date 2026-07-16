@@ -9,9 +9,14 @@ namespace Fishbowl.Core.Tests;
 
 internal static class TestSupport
 {
+    /// <summary>The LIVE town (`data/`) — all features on, postings and sites included. Only the
+    /// Godot-stringify round-trip sweeps this, on purpose: it must cover every authored file.</summary>
     public static string DataDir => ProjectPaths.DataDir();
 
-    public static Town LoadGoldenTown() => TownLoader.Load(DataDir);
+    /// <summary>The FROZEN golden fixture — posting-free, and no longer `data/` (PNO.D2, ruled
+    /// 2026-07-16). Every acceptance test loads through here, which is what keeps seed-independence
+    /// and the golden day's 7 beats true while the live town grows features.</summary>
+    public static Town LoadGoldenTown() => TownLoader.Load(ProjectPaths.GoldenTownDir());
 
     public static Town MakeEmptyTown() => new()
     {

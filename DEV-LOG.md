@@ -6,6 +6,75 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — PNO: nine rulings landed, three of the spec's own arguments struck, golden split out of `data/`
+
+Opened the `PNO` build (postings & outings; `plans/PLAN-fishbowl-postings-outings.md`). All nine gates
+ruled. `PNO.D1` + `D3`–`D9` adopted on the recommendation. **`PNO.D2` was ruled *against* the
+recommendation, and the ruling is better than the recommendation** — that is the entry worth reading.
+
+**`PNO.D2` — Panda: *"make golden separate and secondary. Set the town up to have all features
+enabled."*** The spec had recommended keeping the golden town posting-free and exiling postings to a
+fixture. The ruling inverts it: **`data/` is the live all-features town; the golden day moves out to
+`tests/towns/golden-town/`, frozen.** Why the inversion is right, and why the spec missed it: *a golden
+master that lives inside the live data directory is not frozen.* Editing `data/townees.json` silently
+changed what the golden test asserted against — **the fixture tracked the very thing it existed to
+pin.** The recommendation preserved that flaw and then contorted around it ("keep postings out of the
+main town forever"). It also created a problem nobody had noticed: `FishbowlBridge._Ready()` hardcodes
+`res://data` and `Observatory.gd` never calls `LoadTown`, so under the recommendation **the M1 board
+panel would have rendered permanently empty** and needed a town-switcher built to see it. The ruling
+deletes that work.
+
+The restructure was almost free, which is the surprise: `TestSupport.DataDir` had exactly three
+consumers, and `LoadGoldenTown()` fanned out to 18 call sites through **one** of them. So:
+`tests/towns/golden-town/` is today's `data/` copied verbatim; `ProjectPaths.GoldenTownDir()` is new;
+`TestSupport.LoadGoldenTown()` now loads from it — **one line moved all 22 tests onto the fixture, and
+they stayed green with no test edited.** `TestSupport.DataDir` deliberately still points at `data/`
+because it drives `WriteFloatifiedData`'s recursive sweep — which means the Godot-stringify round-trip
+covers every posting file we are about to author, for free. That is why the fixture lives under
+`tests/` and not `data/`: anything under `data/` joins that sweep.
+
+**Three of the spec's own supporting arguments were falsified before a line was written**, by a
+drift-check reader plus an adversarial verifier told to break the five load-bearing claims (21 of 22
+claims confirmed; the architecture holds). All three are struck in place in the spec:
+
+- **"Making `Away` derived keeps `SetAway`, the `away` hash key, and `departs_day` working unchanged"
+  — false on all three counts.** `Away` has **four writers**, not just readers, so it won't compile as
+  a derived property. Worse are the two that *would* compile: `World.cs:172` emits `["away"] = t.Away`,
+  so a derived bool makes **Cooldown and InTown hash identically** — the determinism spine silently
+  stops distinguishing a third of the new state space, and "unchanged" is the failure mode rather than
+  the reassurance. And `Pressures.cs:29` treats `Away` as "freeze drift", which contradicts the spec's
+  own "party co-present at the site". Bonus: `SetAway(id,false)` is **already** a no-op for a
+  `departs_day` townee (it re-runs `Clockwork.ResolveDay` in the same call, which sets the flag back),
+  so there was never any behavior there to preserve.
+- **"A site is a place ⇒ zero engine changes" — false.** The read side is genuinely clean (every lookup
+  is a `TryGetValue`; `Hours`/`Capacity` are never read at runtime at all). But `SchemaValidator` hard-
+  rejects any place token outside `work|home|away|haunt:<id>`, and **`TownGenerator.cs:44` treats any
+  `board:false` place as a home candidate** — an offscreen site would silently become somewhere
+  generated townees *live*. The claim was also never testable: `SetOccupants` is `internal` with no
+  `InternalsVisibleTo`, so "a place no dayplan references, with townees at it" is unreachable.
+- **"`chronicle_since` gives us the retelling for zero summarizer changes" — aimed at the wrong
+  problem.** The predicate is a **global existence check** with no role scoping: any outing beat by
+  anyone satisfies it for everyone. The spec worried the day-window would age out; the real blocker is
+  that it cannot express "retell *this* party's outing" at all.
+
+The rulings all survive their bad arguments — but the arguments had to go, because the next agent
+would have budgeted from them. Load-bearing lesson for the next spec: **claims about existing code
+decay, and the ones a design leans hardest on are the ones most likely to have been read generously.**
+
+Also found and recorded on the parent plan (`PLAN-village-fishbowl.md`), because `VFB.Q1` is being
+tuned with these: **`copresence_bonus` is read by no engine code and has no slider** (the spec's claim
+that it was "bound to an observatory slider" is the one claim of 22 that drifted — there is no dial, so
+nobody was misled by one); **`storylet_rate`'s entire 1.0→3.0 half is a no-op** because `FireGate` gates
+on `rate >= 1.0` while the slider runs 0–3, so `VFB.Q1` cannot be tuned *upward* with that dial; and
+`storylet_cooldown_scale` is the mirror — consumed, but with no slider. None are being fixed inside
+`PNO`: wiring them would change what fires and move `VFB.Q1`'s numbers under Panda mid-measurement.
+
+Day-hash note (Rule: only a human's written-down chip goes stale): the day-1 baseline was
+**`0ccec96222e31dbe`** at `08c9a22`, and it will shift once `phase`/`postings` keys enter
+`World.ToHashNode`. No test pins a day-hash *value* — but three FNV vectors and a canonical-format
+literal *are* pinned in `DeterminismPrimitivesTests`, so the hash **function and format** are not free
+to change even though its **inputs** are.
+
 ## 2026-07-16 — AGT: the fish-bowl pages were shipped unlinked; registration resynced (Rule 3)
 
 Found while opening the `PNO` build, not while looking for it. Commit `97a3710` ("village-fishbowl:

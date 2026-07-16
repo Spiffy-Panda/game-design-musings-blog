@@ -1,0 +1,13 @@
+{ "id": "warden-rounds", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "trait": { "A": "patient" },
+    "cooldown_days": 2 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.restlessness", "delta": -0.04 },
+               { "chronicle": true, "tellability": 0.25, "mark": [] } ],
+  "lines": {
+    "hearsay": "The warden was making the rounds at {place}.",
+    "gossip":  "{A} walked {place} keeping half an eye on {B}'s stall, out of habit.",
+    "report":  "{A} warden-round pass at {place} near {B}, slot {slot}." },
+  "_binding": { "A": "grigg-paulet", "B": "nan-pellow" } }

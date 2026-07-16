@@ -10,6 +10,12 @@ at avg ~4.4 distinct lines/night — a live-knob research question, not a code g
 **Parent musing:** `../adventuring-guild-teller/` (AGT). Proposal pages:
 `fishbowl-studies.html` (machinery studies `FBS.1`–`FBS.6`) and `fishbowl.html`
 (prototype claims `FB.1`–`FB.10`, the hand-cranked observatory mock).
+**Successor plan:** [`PLAN-fishbowl-postings-outings.md`](./PLAN-fishbowl-postings-outings.md) (`PNO`,
+spec'd 2026-07-16, unbuilt) — the **board + outings** this plan deferred to the away-flag knob. It
+resolves the out-of-scope line below, and its `PNO.Q1` bears directly on `VFB.Q1`: outings take bodies
+*out* of town (fewer co-presence beats) and pay it back as a return-day burst, so gossip yield may
+dip before it lifts. **Do not tune `VFB.Q1` against a posting-bearing town without reading `PNO.Q1`
+first.**
 **Appendix:** [`PLAN-village-fishbowl.appendix-MinedUtilityAi.md`](./PLAN-village-fishbowl.appendix-MinedUtilityAi.md)
 (`MUA`) — what the fish-bowl mines from the sibling `../UtilityAi` (Autonome) project
 vs. makes anew: jargon adoptions `MUA.J*`, patterns `MUA.M*`, rejections `MUA.N*`, and
@@ -226,14 +232,36 @@ observatory via synthetic input and captures to `.captures/gth/` — see `PLAN-g
 - **Stats strip:** events/day by type · distinct-vs-repeat ratio · summary starvation
   warning (fires when < 4 candidate lines) — these are the `VFB.Q*` instruments.
 
-## Debug knobs (bind to `simconfig`; all live without restart)
+## Debug knobs (bind to `simconfig`; ~~all live without restart~~ — see the correction)
 
 `seed` (re-seed + regen) · `pressure_rates.*` (0–3×) · `storylet_rate` (0–3×) ·
 `storylet_cooldown_scale` · `copresence_bonus` · `hearsay_required` (bool) ·
 `actionability` (0–1; snaps to the three authored stops) · `summary_lines` (3–7) ·
-`bio_marks_enabled` (the `FB.8` toggle) · `away_flag(id)` (send/return an adventurer —
+`bio_marks_enabled` (the `FB.8` toggle) · `away_flag(id)` (send/~~return~~ an adventurer —
 the expedition system's stand-in) · `inject grievance/shortage` (force-fire helpers) ·
 snapshot save/load.
+
+> **Correction (2026-07-16 — found by the `PNO` drift check, verified against the code).**
+> This list overstates three things, and `VFB.Q1` is being tuned with them:
+>
+> - **`copresence_bonus` is not live — nothing reads it.** Declared (`TownDtos.cs:115`),
+>   settable (`World.cs:126`), projected (`WorldView.cs:171`), authored
+>   (`simconfig.json:8`) — and **consumed by no engine code at all**. It also has **no
+>   slider**: `Observatory.gd:167-176` builds exactly six controls and this is not one.
+> - **`storylet_rate`'s upper half does nothing.** `FireGate` gates on `rate >= 1.0`
+>   (`StoryletEngine.cs:75`) while the slider runs 0.0–3.0 (`Observatory.gd:171`), so
+>   **1.0→3.0 is a no-op** — 2.5 behaves exactly like 1.0. Only 0.0→1.0 thins.
+>   **`VFB.Q1` cannot be tuned upward with this dial.**
+> - **`away_flag`'s return direction has never worked.** `World.SetAway` sets the flag then
+>   calls `Clockwork.ResolveDay` **in the same call**, which re-runs
+>   `if (world.Day > departs_day) t.Away = true` — so `SetAway("brindle-ashe", false)` on any
+>   day ≥ 2 is a no-op. `departs_day` silently outranks the knob. (The one-way trapdoor
+>   `PNO` exists to remove is tighter than either plan recorded.)
+> - **Mirror:** `storylet_cooldown_scale` **is** consumed (`StoryletEngine.cs:68`) but likewise
+>   has **no slider**. One live knob with no dial; one dial-less knob with no life.
+>
+> Neither dead hook is being fixed inside `PNO` — wiring them would change what fires and move
+> `VFB.Q1`'s numbers mid-measurement. They need a ruling of their own.
 
 ## Creation menus (first pass — the creator pillar's v0, `AGT.9`/`AGR.5` scoped)
 
@@ -324,7 +352,8 @@ rumor-retold (Odile, hearsay chain) · market-squabble (Dob↔Nan, low stakes).
 
 ## Out of scope for v0 (say no by list, not by accident)
 
-Desk gameplay · floor verbs · expedition resolution (the away-flag knob is the stand-in)
+Desk gameplay · floor verbs · expedition resolution (the away-flag knob is the stand-in
+— **taken up 2026-07-16 by [`PLAN-fishbowl-postings-outings.md`](./PLAN-fishbowl-postings-outings.md)**)
 · any 2D/3D town view or pathfinding (places are graph nodes; travel is slot arithmetic)
 · dialogue generation · belief distortion (hearsay-lite only) · in-app storylet editor ·
 web export · art beyond placeholder chips.
@@ -335,3 +364,16 @@ Advancing this plan touches: this file (tick milestones) · `PLAN.md` (index lin
 `../adventuring-guild-teller/ADVENTURING-GUILD-TELLER.md` (file map, once `fishbowl/`
 exists) · `../adventuring-guild-teller/fishbowl.html` (fold rulings into `FB.*` claims,
 strike-not-renumber) · `../DEV-LOG.md` before every commit.
+
+> **⚠ OUTSTANDING (raised 2026-07-16, not yet done).** Two items on this footer never landed,
+> found while opening `PNO`:
+>
+> 1. **`fishbowl.html` still reads as awaiting the rulings** — the fold above never happened
+>    (9 mentions of "ruling" survive). `VFB.D1`–`D4` + `FB.8` were adopted 2026-07-15 and the
+>    build shipped the same day. **It is a public surface**, so Rule 6 applies; re-raise before
+>    any push touching it. Not folded into `PNO` — it is a `VFB` chore and Panda's call.
+> 2. **The musing's registration shipped a release late** — `97a3710` added `fishbowl.html` +
+>    `fishbowl-studies.html` but committed no `MUSING-CONFIG.json` links, so both pages deployed
+>    to Pages as orphans. **Fixed 2026-07-16** (`c55dccc`); logged in `../DEV-LOG.md`. The
+>    Rule-2 nav spec had been updated and committed; only the registration tier was missed —
+>    which is why it survived a release. Worth knowing the shape: "half a sync" hides.

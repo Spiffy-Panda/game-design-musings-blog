@@ -1,0 +1,15 @@
+{ "id": "fetch-arranged", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "regard": { "A->B": { "tag": "kin" } },
+    "pressure": { "B.trade": { "below": 0.35 } },
+    "cooldown_days": 2 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": 0.05 },
+               { "pressure": "B.trade", "delta": 0.08 },
+               { "chronicle": true, "tellability": 0.55, "mark": [] } ],
+  "lines": {
+    "hearsay": "Someone at {place} was sorting out a supply run.",
+    "gossip":  "{A} promised {B} she'd fetch what {place} was short on.",
+    "report":  "{A} arranged a fetch-run for {B} at {place}, slot {slot}." },
+  "_binding": { "A": "sela-quick", "B": "petch" } }

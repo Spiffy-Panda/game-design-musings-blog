@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "traits": [
+    { "id": "patient", "pressure_rate_mods": { "restlessness": 0.7 }, "storylet_weight_mods": {} },
+    { "id": "proud", "pressure_rate_mods": { "heart": 0.9 },
+      "storylet_weight_mods": { "social": 1.15 } },
+    { "id": "early-riser", "pressure_rate_mods": {}, "storylet_weight_mods": {} },
+    { "id": "gossip-carrier", "pressure_rate_mods": {},
+      "storylet_weight_mods": { "social": 1.2 }, "hearsay_carrier": true },
+    { "id": "cheerful", "pressure_rate_mods": { "heart": 1.1 }, "storylet_weight_mods": {} },
+    { "id": "curious", "pressure_rate_mods": { "restlessness": 1.1 },
+      "storylet_weight_mods": { "social": 1.1 } },
+    { "id": "gruff", "pressure_rate_mods": { "heart": 0.85 }, "storylet_weight_mods": {} },
+    { "id": "wanderlust", "pressure_rate_mods": { "restlessness": 1.3 }, "storylet_weight_mods": {} },
+    { "id": "stubborn", "pressure_rate_mods": {}, "storylet_weight_mods": { "social": 1.1 } },
+    { "id": "indebted-shame", "pressure_rate_mods": { "heart": 0.8, "purse": 0.9 },
+      "storylet_weight_mods": { "social": 1.25 } },
+    { "id": "frugal", "pressure_rate_mods": { "purse": 1.15 }, "storylet_weight_mods": {} }
+  ]
+}

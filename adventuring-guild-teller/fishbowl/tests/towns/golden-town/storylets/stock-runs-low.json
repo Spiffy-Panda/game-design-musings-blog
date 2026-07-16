@@ -1,0 +1,14 @@
+{ "id": "stock-runs-low", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "pressure": { "A.trade": { "below": 0.35 } },
+    "cooldown_days": 2 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "A.trade", "delta": -0.05 },
+               { "pressure": "A.restlessness", "delta": 0.1 },
+               { "chronicle": true, "tellability": 0.45, "mark": [] } ],
+  "lines": {
+    "hearsay": "{place} looked thinner on the shelves than usual.",
+    "gossip":  "{A} was muttering about the shelves at {place} running bare.",
+    "report":  "{A}'s stock at {place} fell below threshold (trade {A.trade}), slot {slot}." },
+  "_binding": { "A": "petch" } }

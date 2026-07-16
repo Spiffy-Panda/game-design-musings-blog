@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "_comment": "slots are half-hour, 0 = midnight..0:30, 47 = 23:30..24:00. blocks are [start_slot, end_slot) with a place (townee's 'home'/'work'/haunt tokens resolve to that townee's actual assignment) and an activity label for the observatory readout.",
+  "dayplans": {
+    "innkeep-default": {
+      "weekday": [
+        { "start": 12, "end": 44, "place": "work", "activity": "tending the room" },
+        { "start": 44, "end": 48, "place": "home", "activity": "closing up" },
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "herbalist-default": {
+      "weekday": [
+        { "start": 10, "end": 14, "place": "haunt:market-row", "activity": "foraging the row" },
+        { "start": 14, "end": 32, "place": "work", "activity": "minding the shop" },
+        { "start": 32, "end": 44, "place": "home", "activity": "grinding stock" },
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "smith-default": {
+      "weekday": [
+        { "start": 12, "end": 40, "place": "work", "activity": "at the forge" },
+        { "start": 40, "end": 44, "place": "haunt:the-long-table", "activity": "a pint before home" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "apprentice-default": {
+      "weekday": [
+        { "start": 8, "end": 12, "place": "haunt:the-long-table", "activity": "breakfast, restless" },
+        { "start": 12, "end": 38, "place": "work", "activity": "apprenticed at the forge" },
+        { "start": 38, "end": 44, "place": "haunt:guildhall-steps", "activity": "watching the road" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 8, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "adventurer-default": {
+      "weekday": [
+        { "start": 16, "end": 20, "place": "haunt:guildhall-steps", "activity": "loitering by the steps" },
+        { "start": 20, "end": 44, "place": "home", "activity": "at the Long Table" },
+        { "start": 0, "end": 16, "place": "home", "activity": "asleep" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ],
+      "away": [
+        { "start": 0, "end": 48, "place": "away", "activity": "on expedition" }
+      ]
+    },
+    "courier-default": {
+      "weekday": [
+        { "start": 12, "end": 44, "place": "work", "activity": "on her rounds",
+          "roams": ["the-long-table", "petchs-simples", "the-millpond", "market-row"] },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "landlady-default": {
+      "weekday": [
+        { "start": 14, "end": 34, "place": "work", "activity": "collecting rents" },
+        { "start": 34, "end": 40, "place": "haunt:the-long-table", "activity": "an evening out" },
+        { "start": 40, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 14, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "fisher-default": {
+      "weekday": [
+        { "start": 10, "end": 32, "place": "work", "activity": "working the millpond" },
+        { "start": 32, "end": 38, "place": "haunt:market-row", "activity": "selling the catch" },
+        { "start": 38, "end": 44, "place": "haunt:the-long-table", "activity": "a quiet drink" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "miller-default": {
+      "weekday": [
+        { "start": 10, "end": 32, "place": "work", "activity": "at the millstones" },
+        { "start": 32, "end": 36, "place": "haunt:market-row", "activity": "selling flour" },
+        { "start": 36, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "baker-default": {
+      "weekday": [
+        { "start": 6, "end": 14, "place": "home", "activity": "baking before dawn" },
+        { "start": 14, "end": 34, "place": "work", "activity": "selling at the row" },
+        { "start": 34, "end": 38, "place": "haunt:the-long-table", "activity": "supper out" },
+        { "start": 38, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 6, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "warden-default": {
+      "weekday": [
+        { "start": 14, "end": 34, "place": "work", "activity": "keeping the row honest" },
+        { "start": 34, "end": 38, "place": "haunt:the-long-table", "activity": "an ale after shift" },
+        { "start": 38, "end": 48, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 14, "place": "home", "activity": "asleep" }
+      ]
+    }
+  }
+}

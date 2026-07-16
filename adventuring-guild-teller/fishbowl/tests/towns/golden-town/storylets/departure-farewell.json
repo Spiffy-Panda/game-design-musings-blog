@@ -1,0 +1,15 @@
+{ "id": "departure-farewell", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "regard": { "A->B": { "tag": "courting" } },
+    "flag": { "A.departing_today": true },
+    "cooldown_days": 7 },
+  "weight": 1.6, "must_fire": true, "streams": "storylets",
+  "effects": [ { "pressure": "B.heart", "delta": -0.15 },
+               { "regard": "B->A", "delta": 0.05 },
+               { "chronicle": true, "tellability": 0.9, "mark": ["A", "B"] } ],
+  "lines": {
+    "hearsay": "There was a long goodbye at {place} this morning.",
+    "gossip":  "{A} said farewell to {B} at {place} before setting off — {B} watched the road a while after.",
+    "report":  "{A} departed on expedition; farewell exchanged with {B} at {place}, slot {slot}." },
+  "_binding": { "A": "brindle-ashe", "B": "tam-underhill" } }

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "slots_per_day": 48,
+  "seed": 1123,
+  "pressure_rates": { "purse": 1.0, "trade": 1.0, "heart": 1.0, "restlessness": 1.0 },
+  "storylet_rate": 1.0,
+  "storylet_cooldown_scale": 1.0,
+  "copresence_bonus": 1.0,
+  "hearsay_required": true,
+  "actionability": 0.5,
+  "summary_lines": 5,
+  "bio_marks_enabled": true
+}

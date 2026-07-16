@@ -1,0 +1,15 @@
+{ "id": "rent-quarrel", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "regard": { "A->B": { "tag": "debtor", "flip": true } },
+    "pressure": { "B.purse": { "below": 0.3 } },
+    "cooldown_days": 3 },
+  "weight": 1.4, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.15 },
+               { "pressure": "B.heart", "delta": -0.1 },
+               { "chronicle": true, "tellability": 0.8, "mark": ["B"] } ],
+  "lines": {
+    "hearsay": "Someone at {place} was shouting about money owed.",
+    "gossip":  "{A} cornered {B} over the rent at {place} — voices carried.",
+    "report":  "{A} demanded {B}'s arrears ({B} purse low) at {place}, slot {slot}." },
+  "_binding": { "A": "widow-karsk", "B": "fenn-halloway" } }
