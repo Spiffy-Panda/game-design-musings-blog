@@ -42,12 +42,9 @@ func _ready() -> void:
 	_update_day_chrome(false)
 	Session.start()
 
-	# Dev-only: hand the validation harness the same handler a stamp-press fires, so it can
-	# auto-step the shift and screenshot each state. Untick DevHarness.Enabled to play manually.
-	var dev := get_node_or_null("DevHarness")
-	if dev:
-		dev.begin(_on_stamp_chosen)
-
+	# DevHarness (auto-step + viewport capture) was retired 2026-07-16 onto the GTH harness
+	# (GTH.Q4 convergence): `tests/harness/shift-walk.json` now walks the shift by clicking the
+	# real stamp buttons, which exercises one layer more than calling this handler directly did.
 	var desk_dev := get_node_or_null("DeskFeatureHarness")
 	if desk_dev:
 		desk_dev.begin(_on_stamp_chosen)

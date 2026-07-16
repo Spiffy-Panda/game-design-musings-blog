@@ -1,0 +1,80 @@
+{
+  "name": "mq-shift-walk",
+  "note": "Walks the whole curated day-0 shift through the real input pipeline: wait for the stamp to be live, capture the visitor, then a synthetic click on the actual VerdictBar button. This is the GTH port of the retired scripts/dev/DevHarness.gd (GTH.Q4 convergence, 2026-07-16) -- same two jobs (capture each state, exercise the true submit->advance path) -- but it drives the real buttons rather than calling Main._on_stamp_chosen directly, so it exercises one layer more than the harness it replaces.\n\nTwo things here are deliberate. (1) The verdict sequence is HARDCODED, and that is the real gain over DevHarness: DevHarness read each visitor's `truth.binary` at runtime and played it back, so its 17/17 was tautological -- it applied the answer key by construction and could not fail whatever the desk did. These 17 stamps ARE the answer key, written down. If the desk's judging or the curated data drifts, the score stops being 17 / 17 and the expect at the bottom fails. Change the data => update this list, on purpose. (2) Every click is preceded by wait_for {element_clickable}: the VerdictBar disables its stamps between visitors, so they are briefly visible-but-dead. The first run of this scenario had 6 of 17 clicks silently refused for exactly that reason -- which is how GTH.B7/B8 were found.\n\nRun: godot --path . -- --gth-scenario=res://tests/harness/shift-walk.json --gth-exit-after",
+  "steps": [
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" }, "timeout_ms": 8000,
+      "note": "the desk builds its UI in code; do not start until the first stamp is actually live" },
+    { "op": "capture", "label": "01-wren-sixpence", "settle_ms": 500 },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" } },
+    { "op": "capture", "label": "02-hulbr-odd-eye" },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "03-pell-marrow" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "04-doss-yellowknife" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "05-ivy-threnody" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "06-bartholomew-quill" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "07-sister-coll" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "08-ganton-reeve" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "09-odile-vantry" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" } },
+    { "op": "capture", "label": "10-two-rivers" },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "11-marn-culpepper" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" } },
+    { "op": "capture", "label": "12-widow-ashe" },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" } },
+    { "op": "capture", "label": "13-perrick-vane" },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "14-sable-lorn" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-approve" } },
+    { "op": "capture", "label": "15-goodwife-tamsin" },
+    { "op": "click", "element": { "test_id": "stamp-approve" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "16-ostler-bram" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "element_clickable": { "test_id": "stamp-reject" } },
+    { "op": "capture", "label": "17-nessa-broom" },
+    { "op": "click", "element": { "test_id": "stamp-reject" } },
+
+    { "op": "wait", "settled_ms": 800 },
+    { "op": "capture", "label": "99-summary", "settle_ms": 500 },
+    { "op": "read", "element": { "test_id": "summary-score" } },
+    { "op": "expect", "element": { "test_id": "summary-score" }, "text_contains": "17 / 17",
+      "note": "the whole point: a clean run scores 17/17 only if the desk still judges these 17 the way the curated data says it should" }
+  ]
+}

@@ -184,8 +184,10 @@ interface changed; new strings are `Loc` chrome (`day_label*`, `skip_tutorial`, 
 **Verified (both days, zero errors).** `--import`, then via the godot MCP: curated day 0
 steps all 17 → 17/17; generated day 1 steps all 16 coherent visits → 16/16; the boot
 self-check reports `7 days, 96 visits, 0 problems` (rebaselined from 97 at MQT.4 — the
-PCG32 stream replaced Godot's RNG; golden-pinned since). Ships defaulting to day 0 with
-`DevHarness.enabled=false`.
+PCG32 stream replaced Godot's RNG; golden-pinned since). Ships defaulting to day 0. Re-verified
+2026-07-16 after the GTH convergence (`DevHarness` retired): `tests/harness/shift-walk.json` walks
+all 17 curated visitors by synthetic click and scores **17 / 17**; boot self-check unchanged at
+`7 days, 96 visits, 0 problems`; `dotnet test` 57/57.
 
 ---
 
@@ -302,24 +304,44 @@ the English auto-fallback, so a half-filled locale degrades to Title-Case, never
 id. (Godot's native `tr()`+CSV was the alternative; a code-built UI with a dynamic slug
 humanizer is cleaner as one `Loc` module.)
 
-## Dev tooling — DevHarness & viewport captures
+## Dev tooling — the GTH harness (DevHarness retired 2026-07-16)
 
-`scripts/dev/DevHarness.gd` (a Node on `scenes/Main.tscn`) is a **validation aid, not
-shipped logic** — it exists so the desk can be checked without fighting the OS
-screenshotter:
+**`scripts/dev/DevHarness.gd` is gone.** Its two jobs — viewport capture and auto-stepping the
+shift — moved onto the shared **GTH test harness** when Panda ruled `GTH.Q4` *full convergence*
+(`../../plans/PLAN-godot-test-harness.md`). The desk is checked like this now:
 
-- **Capture:** writes a PNG of the whole viewport to `.captures/` (= `<project>/.captures/`,
-  carries its own `.gdignore` so Godot never imports the shots; `.gitignore`d). Press **F12**
-  any time for a manual shot; an auto-run also shoots one frame per visitor
-  (`NN_<id>_<stamp>.png`) plus `99_summary.png`.
-- **Auto-step:** when `Enabled`, it walks the whole shift on a `step_delay` timer, feeding
-  each visitor a stamp by invoking the **same handler a real stamp-press fires**
-  (`Main._on_stamp_chosen`) — so it exercises the true submit→advance path, not a shortcut.
-  Default stamps = each visitor's correct verdict (respecting `STRICT_BINARY`); set the
-  `actions` array to script a specific case.
-- **Toggle auto-run/manual play:** edit `scenes/Main.tscn` on the `DevHarness` node and flip
-  the line `enabled = false` (`false` = manual play + F12 only, `true` = auto-step + capture
-  pass on startup). You can also untick/tick **Enabled** in the Inspector.
+```bash
+# walk the whole curated shift: capture each visitor, click each stamp, assert the score
+"C:/Program Files/godot/godot.exe" --path . -- --gth-scenario=res://tests/harness/shift-walk.json --gth-exit-after
+```
+
+- **The addon** lives at `addons/gd_test_harness/` and is a **generated copy** — the canonical one
+  is `../../utils/godot/gd_test_harness/`. Edit *that*, then run
+  `python utils/python/sync_gth_addon.py` (`--check` exits 1 on drift). Never edit the copy here.
+- **Autoload:** `TestHarness="*res://addons/gd_test_harness/harness_core.gd"` — inert unless
+  activated, so normal play pays nothing.
+- **Live (MCP):** registered in the repo `.mcp.json` as **`gth-morning-queue`** (launch mode, port
+  8788) — `mcp__gth-morning-queue__*` drives the desk from chat. Needs `dotnet build
+  utils/dotnet/gth-mcp-server` once after a clone, then a client restart.
+- **Captures** still land under `.captures/` (`.gdignore`d + `.gitignore`d), now with settle,
+  sha-dedup, and a `manifest.jsonl`.
+- **Handles:** `stamp-approve` / `stamp-reject` (VerdictBar), `summary-score` and `progress`
+  (Scoreboard). All are `test_id` **metadata only** — no behaviour, no signature; the frozen
+  component contracts are untouched.
+
+**One thing genuinely improved in the port, worth knowing.** DevHarness's auto-step read each
+visitor's `truth.binary` at runtime and played it back, so its 17/17 was **tautological** — it
+applied the answer key by construction and could not fail no matter what the desk did.
+`shift-walk.json` hardcodes the 17 verdicts and asserts `17 / 17` at the end, so a drift in the
+desk's judging or the curated data now *fails*. It also clicks the real `VerdictBar` buttons
+instead of calling `Main._on_stamp_chosen` directly, exercising one layer more than the harness it
+replaced. If you change `data/visitors.json`, update that scenario's stamp list deliberately.
+
+**Still here:** `scripts/dev/DeskFeatureHarness.gd` (the 12-assertion desk-tile/Quest-Board check,
+`enabled=false` by default). It is **not** converged onto GTH and that is deliberate — it is a
+white-box feature test that reaches into `Main`'s private members, where GTH is black-box by
+construction. Moving it would be a rewrite of what it asserts, not a port, and it is the tiles' only
+regression cover. Flagged on the GTH plan under `GTH.Q4`.
 
 The `Session` verdict-log entry gained a `name` field (`{id, name, chosen, correct,
 right}`) so the Scoreboard ledger shows the **authored** name ("Wrenna Sixpence"), not the

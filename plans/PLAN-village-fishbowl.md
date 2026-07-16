@@ -26,7 +26,25 @@ non-published subfolder beside `morning-queue/` (the site build copies only top-
 
 ---
 
-## ⚠ Isolation rule (hard, standing)
+## ⚠ Isolation rule — **discharged for the harness, 2026-07-16 (read this first)**
+
+> **The convergence clause below has been ruled on.** Panda ruled `GTH.Q4` **full convergence** on
+> 2026-07-16: the GTH test harness is now shared tooling — canonical at
+> `../utils/godot/gd_test_harness/`, fanned into each Godot project by
+> `../utils/python/sync_gth_addon.py --check` — and `morning-queue/`'s bespoke `DevHarness.gd` has
+> been **retired onto it**. A fish-bowl session may now read and modify `morning-queue/` *for
+> harness convergence*.
+>
+> **The rule was not broken; it was discharged on its own terms.** It names "a capture harness" as
+> an example of duplication written *on purpose*, and says in so many words that "convergence into
+> a shared library is a post-v1 decision for Panda, made once both prototypes have settled shape."
+> Both settled; the decision got made; this is what it looks like when a deliberately-deferred
+> decision comes due rather than rots. The workstream reason has also expired — the MQT refactor
+> this rule was protecting completed 2026-07-15 (`MQT.6`).
+>
+> **What survives:** the *lesson-not-code* clause (still the right instinct), and the rule's value
+> as history — it is why the fish-bowl's early code looks duplicated, which is otherwise a mystery
+> to the next reader. Everything else below is now record, not law.
 
 Fish-bowl sessions **do not read or modify** `adventuring-guild-teller/morning-queue/**`
 or `plans/PLAN-morning-queue-tiers.md`. The Morning Queue is a parallel workstream
@@ -35,6 +53,11 @@ mid-refactor (MQT); the fish-bowl was commissioned explicitly *without* reading 
 - **No shared code in v0.** Even where duplication is obvious (an RNG wrapper, JSON
   helpers, a capture harness), write the fish-bowl's own copy. Convergence into a shared
   library is a post-v1 decision for Panda, made once both prototypes have settled shape.
+  → **Called in for the test harness on 2026-07-16 (`GTH.Q4` = full convergence); still standing
+  for everything else** (the RNG wrapper and JSON helpers stay per-project until someone rules
+  otherwise). The trigger was concrete rather than aesthetic: six harness bugs were fixed in the
+  fish-bowl's private copy on 2026-07-16, and any second copy would have been six bugs stale with
+  nothing to say so. Duplication is cheap right up until the duplicate needs a fix.
 - **No name collisions with its content.** Cast and place names below are checked
   against what the AGT plan records of the desk prototype's directories; keep it that way
   without opening those files.

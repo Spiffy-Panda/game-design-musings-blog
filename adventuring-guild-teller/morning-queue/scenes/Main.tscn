@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://c82xi1cc6sa1f"]
 
 [ext_resource type="Script" uid="uid://dgv7wo2klnl50" path="res://scripts/Main.gd" id="1_main"]
-[ext_resource type="Script" uid="uid://dlda8k5qaf54m" path="res://scripts/dev/DevHarness.gd" id="2_dev"]
 [ext_resource type="Script" uid="uid://bvp4mh8xjq91n" path="res://scripts/dev/DeskFeatureHarness.gd" id="3_desk"]
 
 [node name="Main" type="Control" unique_id=2097918017]
@@ -12,10 +11,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
-
-[node name="DevHarness" type="Node" parent="." unique_id=1522746717]
-script = ExtResource("2_dev")
-enabled = false
 
 [node name="DeskFeatureHarness" type="Node" parent="." unique_id=3048291564]
 script = ExtResource("3_desk")

@@ -29,7 +29,9 @@ fishbowl/
   core/Fishbowl.Cli/       headless runner (--town --seed --days --report --chronicle --soak)
   core/Fishbowl.Core.Tests/  xUnit — 22 tests incl. the Godot-stringify round-trip suite
   data/                    THE LIVE TOWN — all features on; postings/sites authored here (see "Data contract")
-  addons/gd_test_harness/  GTH test harness — project-agnostic input/inspect/capture addon (own README)
+  addons/gd_test_harness/  GTH test harness — a GENERATED COPY. Canonical: ../../utils/godot/
+                           gd_test_harness/ (edit there, then `python utils/python/sync_gth_addon.py`;
+                           `--check` exits 1 on drift). Shared with morning-queue since GTH.Q4.
   harness.config.json      GTH config — artifacts dir, capture caps, bridge port
   tests/harness/           GTH prescripted scenarios (smoke.json, regression-b1-b6.json)
   tests/towns/golden-town/ THE FROZEN GOLDEN FIXTURE — posting-free; the town every xUnit acceptance

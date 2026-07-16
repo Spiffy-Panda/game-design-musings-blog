@@ -66,6 +66,10 @@ func _make_stamp(stamp: String) -> Button:
 
 	var b := Button.new()
 	b.text = Loc.stamp_button(stamp)
+	# GTH: stable handle for the test harness. The button's TEXT is localized and the runtime
+	# node name is auto-generated, so neither survives as a handle — the meta does. Metadata
+	# only: no behaviour, no signature, the frozen contract above is untouched.
+	b.set_meta("test_id", "stamp-" + stamp)
 	b.focus_mode = Control.FOCUS_NONE
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.custom_minimum_size = Vector2(148, 56)

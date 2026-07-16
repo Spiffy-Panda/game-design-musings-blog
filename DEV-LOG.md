@@ -6,6 +6,68 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — GTH.Q4 ruled full convergence — and the second consumer found two bugs within the hour
+
+Panda ruled the last four open GTH questions. `GTH.Q2` (3D hit-reporting) and `GTH.M5`'s optional C#
+scenario facade are **closed as YAGNI** — neither has a consumer, and both would be maintained API
+built against a guess. `GTH.Q3` is **closed: the harness stays input / inspect / capture** — seed-pinning
+is inherently project-specific while GTH's whole claim is project-agnosticism, and it is moot anyway
+(the fish-bowl's seed is already drivable through its own `seed-spin` / `btn-reseed` handles; the
+harness drives the app, it does not reach inside it). **`GTH.Q4` ruled full convergence**, and that one
+was work.
+
+**The headline, and the reason to record this at all: the ruling paid for itself within the hour.**
+`morning-queue`'s very first GTH run walked the curated 17-visitor shift, reported **zero failures**,
+and **6 of its 17 clicks had never happened.** Two bugs, both live since release, neither ever tripped
+by the fish-bowl: `GTH.B7` — `click_element` returned a refusal as `{clicked: false, note: …}`, a
+**`note`**, a key no driver checks, so the ScenarioRunner walked straight past it and the scenario went
+green having clicked nothing (`wait_for`'s timeout had the identical shape: `{timed_out: true}`, no
+`error`). `GTH.B8` — `wait_for` could wait for *visible* but not *clickable*, and the desk disables its
+stamp buttons between visitors, so they are visible-but-dead for a beat and the wait sailed through into
+the refusal. **What found them was not a better test; it was a differently-shaped app.** The observatory
+never disables a button, so one consumer could not have found this in another year. That is the argument
+for convergence, and it arrived unprompted an hour after the ruling.
+
+`B7` is the *third* instance of one disease (after `B2`/`B3`), so the lesson is now written on the plan
+in its general form: **a harness must not have a way to fail quietly**, and the reliable smell is *a
+result key invented for a sad path that no caller reads* — `note`, `timed_out`, a dropped argument. All
+of them fixed the same way: return `error`, which every driver already treats as failure.
+
+**Why "shared" had to mean canonical-plus-sync rather than one directory.** Godot resolves addons under
+`res://`, so two projects physically cannot share a folder. Symlinks would do it and need Developer Mode
+on Windows and do not survive a clean clone. So: canonical at `utils/godot/gd_test_harness/` (beside the
+MCP server that was already shared), fanned into each project by `utils/python/sync_gth_addon.py`, whose
+**`--check` exits 1 on drift** — that check *is* the ruling's substance. The trigger was never
+aesthetic: six bugs got fixed in one copy that morning, and a second copy would have been six bugs stale
+with nothing anywhere to say so.
+
+**The isolation rule was discharged, not broken** — and it discharged *on its own terms*, which is worth
+noticing. It named "a capture harness" as duplication written on purpose, and made convergence "a
+post-v1 decision for Panda, made once both prototypes have settled shape." They settled; the decision
+came due. Its other reason had also quietly expired: the MQT refactor it was protecting finished on
+2026-07-15. Kept in full on the VFB plan as history, because it explains why the fish-bowl's early code
+looks duplicated — otherwise a mystery to the next reader. Still standing for everything else (RNG
+wrapper, JSON helpers): duplication is cheap right up until the duplicate needs a fix.
+
+**The port improved on what it replaced, which was not the plan.** `DevHarness.gd`'s auto-step read each
+visitor's `truth.binary` at runtime and played it back — so its **17/17 was tautological**: it applied
+the answer key by construction and could not fail whatever the desk did. `shift-walk.json` hardcodes the
+17 verdicts and asserts `17 / 17`, so judging drift now *fails*; and it clicks the real `VerdictBar`
+buttons rather than calling `Main._on_stamp_chosen`, exercising one layer more than the harness it
+replaced. Cost: change `visitors.json` and you must update that list on purpose. That is the trade a
+real fixture makes.
+
+**Not converged, deliberately:** `DeskFeatureHarness.gd` stays. It is a *feature test* (12 desk-tile
+assertions), not harness plumbing, and it is **white-box** — it reaches into `Main`'s private members by
+its own admission, where GTH is black-box by construction. Moving it is a rewrite of what it asserts,
+not a port, and it is the tiles' only regression cover. Flagged on the plan rather than swept in.
+
+Verified end to end: `mq-shift-walk` green (55 steps, 17/17 clicks landed, score `17 / 17`),
+`fb-regression-b1-b6` green (34), `fb-smoke` green (14), drift check clean on both projects, morning
+queue's boot self-check unchanged at `7 days, 96 visits, 0 problems`, `dotnet test` 57/57. Touching the
+two frozen components (`VerdictBar`, `Scoreboard`) was `set_meta("test_id", …)` only — metadata, no
+behaviour, no signature, per the `Observatory.gd` precedent.
+
 ## 2026-07-16 — GTH.M5: Mode B built — the trace watches everything, so it can disagree with the prediction
 
 Built the Mode-B observed trace (`trace: true` on `click_at`/`click_element`), which `GTH.D3` deferred to

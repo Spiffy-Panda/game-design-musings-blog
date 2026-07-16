@@ -12,16 +12,25 @@ bottom of this file). A fresh clone still needs one `dotnet build utils/dotnet/g
 **All seven gates are ruled:** `GTH.D2` resolved **.NET**; `GTH.D1`/`D3`/`D4`/`D5`/`D7` adopted on the
 recommendation; `GTH.D6` split — the addon lives in the fishbowl (own copy, VFB isolation), the server is
 shared tooling in `../utils/dotnet/` (repo-wide convergence of both stays `GTH.Q4`).
-**Open — and it is all rulings, no code.** The `GTH.B*` bugs are **all six fixed & verified 2026-07-16**;
-`GTH.Q1` is answered by `B4`; the **Mode-B trace is built**, so `GTH.M5`'s only survivor is the optional
-C# scenario facade, **recommended closed as YAGNI** (no consumer exists). That leaves `GTH.Q2` (is 3D
-`intersect_ray` hit-reporting in v1 scope?), `GTH.Q3` (should GTH expose seed-pinning / fixed-timestep
-stepping?), and `GTH.Q4` (do `morning-queue/` and `fishbowl/` retire their bespoke DevHarnesses onto GTH,
-and does that finally justify the shared library their isolation rule has deferred?) — all Panda's calls,
-none of them blocking anything.
-**Home:** a Godot **addon** (`addons/gd_test_harness/`, drop-in, project-agnostic) **+** a per-project
-`harness.config.json` **+** the external **MCP server** (`../utils/dotnet/gth-mcp-server/`, built). Addon
-copy lives in the fishbowl; server in `utils/`.
+**Open: nothing.** All rulings are in as of 2026-07-16. The `GTH.B*` bugs are **all eight fixed &
+verified**; `GTH.Q1` is answered by `B4`; the **Mode-B trace is built** (`GTH.D3` discharged); `GTH.Q4`
+is ruled **full convergence** and executed — canonical addon in `../utils/godot/`, a drift check, and
+`morning-queue/`'s `DevHarness.gd` retired onto GTH. **`GTH.Q2` (3D `intersect_ray`) and `GTH.M5`'s
+optional C# scenario facade are closed as YAGNI** — no consumer exists for either, and building
+maintained API surface against a guess is how you get a second thing to keep in sync. **`GTH.Q3` is
+closed: GTH stays input / inspect / capture** — seed-pinning is inherently project-specific and the
+`test_id` convention already reaches whatever a project chooses to expose (the fish-bowl's seed is
+drivable today through its own `seed-spin` / `btn-reseed` handles, with no GTH API at all).
+The remaining backlog is one flagged item that is *not* GTH's: `morning-queue/`'s white-box
+`DeskFeatureHarness.gd` (see `GTH.Q4`).
+**Home (settled by `GTH.Q4`, 2026-07-16 — full convergence):** the addon's **canonical copy** is
+`../utils/godot/gd_test_harness/` (shared tooling, beside the MCP server); every Godot project gets a
+**generated copy** at its own `addons/gd_test_harness/`, fanned out by
+`../utils/python/sync_gth_addon.py` (`--check` exits 1 on drift). Godot resolves addons under `res://`
+and cannot share a directory across projects; symlinks need Developer Mode on Windows and don't survive
+a clean clone — so one canonical copy plus a sync step is the least-bad arrangement. Plus a per-project
+`harness.config.json` and the external **MCP server** (`../utils/dotnet/gth-mcp-server/`). **Adopted by
+both prototypes:** `fishbowl/` and `morning-queue/` (whose bespoke `DevHarness.gd` is retired onto it).
 **First use case (done):** built into the fishbowl prototype at
 `../adventuring-guild-teller/fishbowl/addons/gd_test_harness/` — **additive** to its F9 DevHarness (not a
 replacement; convergence is `GTH.Q4`) and inert unless activated. Nav: `../adventuring-guild-teller/fishbowl/FISHBOWL.md`.
@@ -249,6 +258,11 @@ approach for `rendered` on Windows.
 - **`GTH.D6` Home + Rule-2 tier.** In-repo `utils/godot-test-harness/` **or** its own repo (it's meant
   to serve *other* projects too, which argues standalone). Either way, building it stands up the
   code-doc tier. Ruling: where, and stand up `CODE-DESIGN.md` now or at first commit?
+  **Resolved in two steps.** 2026-07-15: split — addon in the fishbowl (own copy, VFB isolation),
+  server in `../utils/dotnet/`. **2026-07-16, superseded by the `GTH.Q4` ruling:** the addon's
+  canonical copy moved to `../utils/godot/gd_test_harness/`, so *both halves* are now shared tooling
+  and the per-project copies are generated. The code-doc tier stayed as the addon's + server's own
+  `README.md`s (no repo-level `CodeDocs/`), which the two-README arrangement has borne out.
 - **`GTH.D7` Session-mode split.** Ratify `headless`(no pixels) / `rendered`(offscreen window) per
   the constraint above.
 
@@ -303,14 +317,16 @@ surface for a user who does not exist adds maintained API surface against a gues
 zero-dependency ethos argues the same way. Recommend closing it as YAGNI; revisit if a C#-first project
 actually adopts the harness.
 
-## Bugs (`GTH.B*`) — **all six fixed & verified 2026-07-16**
+## Bugs (`GTH.B*`) — **all eight fixed & verified 2026-07-16**
 
 `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the bottom of this file);
-`GTH.B5`–`B6` are Panda's, added 2026-07-16. All six are now closed, covered by
-`../adventuring-guild-teller/fishbowl/tests/harness/regression-b1-b6.json` (**green: 32 steps, 0
-failures**) and by an extended `--selftest`. The analysis is kept in full rather than deleted — it is why
-the fixes are shaped the way they are, and `B5`/`B6` are the standing reason two guards exist that a
-future reader would otherwise be tempted to remove.
+`GTH.B5`–`B6` are Panda's, added 2026-07-16; `GTH.B7`–`B8` were found within the hour by the `Q4`
+convergence, the moment a *second* project used the harness. All eight are closed, covered by
+`../adventuring-guild-teller/fishbowl/tests/harness/regression-b1-b6.json` (**green: 34 steps**),
+`../adventuring-guild-teller/morning-queue/tests/harness/shift-walk.json` (**green: 55 steps**), and an
+extended `--selftest`. The analysis is kept in full rather than deleted — it is why the fixes are shaped
+the way they are, and `B5`/`B6` are the standing reason two guards exist that a future reader would
+otherwise be tempted to delete as superstition.
 
 **The through-line, and the reason these were fixed as a set rather than as four patches:** every one of
 `B1`–`B4` fails toward *false reassurance* — a false `clickable: true`, a dropped argument reported as
@@ -411,19 +427,60 @@ not theorised (below).
   refusing rather than shooting when it is off; `allow_minimized` shoots anyway and carries a loud
   warning that `changed` cannot be trusted.
 
+### `GTH.B7` / `GTH.B8` — found by the second consumer, within an hour of there being one
+
+Both **✅ fixed 2026-07-16**, and they are the argument for the `GTH.Q4` ruling in miniature. The
+morning-queue's very first GTH run walked the curated 17-visitor shift and reported **zero failures**
+while **6 of its 17 clicks never happened**. A single consumer had not tripped either bug in a whole
+release; a second consumer found both on its first attempt, because it was a *different shape* of app —
+a desk that disables its stamp buttons between visitors, which the fish-bowl's observatory never does.
+
+- **`GTH.B7` — a refused click, and a `wait_for` timeout, were reported as passes.** `click_element`
+  returned `{clicked: false, note: "refused — not clickable"}` — a **`note`**, a key no driver checks —
+  so the ScenarioRunner walked straight past it and the scenario went green having clicked nothing.
+  `wait_for` had the identical shape: `{visible: false, timed_out: true}`, no `error` key, silently
+  fine. **Fixed:** both now return `error`, which every driver already treats as failure. Third
+  instance of this exact disease after `B2`/`B3` — the lesson is not "declare your arguments", it is
+  **a harness must not have a way to fail quietly**, and the reliable smell is a result key invented
+  for a sad path that no caller reads.
+- **`GTH.B8` — `wait_for` could not wait for *clickable*, only *visible*.** For a UI that disables
+  controls while it is busy, "visible" is not "ready": the button is visible-but-dead for a beat and
+  the wait sails through into a refused click. **Fixed:** `wait_for {element_clickable}` waits on the
+  same predicate `click_element` enforces — wait for the thing you are about to do, not a proxy for it.
+
 ## Open questions (`GTH.Q*`)
 
 - **`GTH.Q1`** ~~Multi-viewport / multi-window games: does v1 target only the root viewport + declared
   `SubViewport`s, or auto-discover every viewport?~~ **Answered by `GTH.B4`** — the question stopped being
   academic the moment it arrived as a bug. v1 covers the root viewport + embedded `Window`s (which is what
   a popup dialog is, and what the mis-attribution was about); arbitrary viewport auto-discovery stays out.
-- **`GTH.Q2`** 3D pickable objects — is `intersect_ray` hit-reporting in scope for v1, or 2D/Control-only
-  first? (AGT prototypes are 2D; the harness claims general reuse.)
-- **`GTH.Q3`** Determinism hooks — should GTH also expose seed-pinning / fixed-timestep stepping (many
-  .NET/GD projects, incl. the fishbowl, run a seeded core), or stay strictly input+capture?
-- **`GTH.Q4`** Convergence: once GTH exists, do `morning-queue/` and `fishbowl/` retire their bespoke
+- **`GTH.Q2`** ~~3D pickable objects — is `intersect_ray` hit-reporting in scope for v1?~~ **CLOSED
+  2026-07-16 as YAGNI.** Both prototypes are 2D, so it would be maintained API surface built against a
+  guess about a project that does not exist — and the guess would be load-bearing (a 3D pick has to
+  answer camera, layer mask, and ray length questions that only a real consumer can settle). Revisit
+  when a 3D project actually adopts the harness; the general-reuse claim is about the *addon* being
+  project-agnostic, not about shipping every surface a hypothetical project might want.
+- **`GTH.Q3`** ~~Determinism hooks — should GTH expose seed-pinning / fixed-timestep stepping?~~
+  **CLOSED 2026-07-16: no. GTH stays input / inspect / capture.** Seed-pinning is inherently
+  project-specific and GTH's whole claim is project-agnosticism, so a generic seed API would either be
+  a lowest-common-denominator guess or a per-project shim wearing a generic name. It is also
+  unnecessary: the `test_id` convention already reaches whatever a project exposes — the fish-bowl's
+  seed is drivable *today* via its own `seed-spin` and `btn-reseed` handles, with no GTH API involved.
+  The harness drives the app; it does not reach inside it.
+- **`GTH.Q4`** ~~Convergence: once GTH exists, do `morning-queue/` and `fishbowl/` retire their bespoke
   DevHarnesses onto it — and does that finally justify the shared library their isolation rule has so
-  far deferred? (Post-v1, Panda's call.)
+  far deferred?~~ **RULED 2026-07-16: full convergence — yes to both.** Canonical addon in
+  `../utils/godot/`, `sync_gth_addon.py --check` against drift, `morning-queue/`'s `DevHarness.gd`
+  retired onto GTH, both projects registered in `.mcp.json`. The VFB isolation rule is **discharged on
+  its own terms** rather than broken — it named "a capture harness" as deliberate duplication and made
+  convergence "a post-v1 decision for Panda, made once both prototypes have settled shape". They had.
+  **The ruling paid for itself within the hour:** the second consumer found `GTH.B7`/`B8` on its first
+  run — bugs a single consumer had not tripped in a whole release.
+  **Not converged:** `morning-queue/`'s `DeskFeatureHarness.gd` stays. It is a *feature test* (12
+  assertions about desk tiles), not harness plumbing, and it is **white-box** — it reaches into
+  `Main`'s private members (`_ref`, `_card`) by its own admission. GTH is black-box by construction, so
+  moving it is not a port but a rewrite of what the assertions check, and it is currently the desk
+  tiles' only regression cover. Separate job, flagged not swept.
 
 ## Field report — first real use in anger (2026-07-16)
 

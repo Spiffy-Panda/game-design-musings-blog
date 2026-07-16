@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 Deck="*res://scripts/autoload/DeckLoader.gd"
 Session="*res://scripts/autoload/GameState.gd"
+TestHarness="*res://addons/gd_test_harness/harness_core.gd"
 
 [display]
 

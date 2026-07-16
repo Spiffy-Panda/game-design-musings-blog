@@ -93,6 +93,7 @@ func _build_progress() -> VBoxContainer:
 	box.add_theme_constant_override("separation", 8)
 
 	_line = _mk_label("—", 15, Palette.INK)
+	_line.set_meta("test_id", "progress")  # GTH: "Visitor N / M · correct: K"
 	box.add_child(_line)
 
 	_pips = _PipStrip.new()
@@ -109,6 +110,7 @@ func _build_summary() -> VBoxContainer:
 	box.add_child(kicker)
 
 	_summary_headline = _mk_label("", 30, Palette.INK)
+	_summary_headline.set_meta("test_id", "summary-score")  # GTH: the "N / N" the shift is graded on
 	box.add_child(_summary_headline)
 
 	_summary_sub = _mk_label("", 12, Palette.INK3)
