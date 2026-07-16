@@ -6,6 +6,36 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — AGT: the fish-bowl pages were shipped unlinked; registration resynced (Rule 3)
+
+Found while opening the `PNO` build, not while looking for it. Commit `97a3710` ("village-fishbowl:
+first release") **added `fishbowl.html` + `fishbowl-studies.html` but committed no registration for
+them.** At `HEAD` before this entry, `MUSING-CONFIG.json` contained zero mentions of "fishbowl", and
+`utils/python/build_site.py` renders each landing-card's sublinks from exactly that `links` array —
+so both pages deployed to Pages as **orphans, reachable only by direct URL**. Nobody would have found
+them from the site.
+
+What made it non-obvious: the fix was *already written* and sitting uncommitted in the working tree
+(`MUSING-CONFIG.json`, `adventuring-guild-teller/index.html`, `README.md`,
+`plans/PLAN-adventuring-guild-teller.md`) — four dirty files, untouched since 2026-07-15. The VFB
+session updated the Rule-2 nav spec (`ADVENTURING-GUILD-TELLER.md:45` has the `fishbowl/` file-map row,
+build status and all) and committed *that*, but its registration tier never made it into the commit.
+So the desync reads as "half a sync" rather than "no sync", which is exactly why it survived a release.
+
+**The trap, for whoever hits this pattern next: those staged edits were stale, and committing them
+verbatim would have published a falsehood.** They were authored *before* the build and said the
+fish-bowl "waits on the `VFB.D` rulings" — but those rulings were adopted and the prototype shipped the
+same day, in the very commit that orphaned the pages. Corrected the tense in place (three lines:
+`index.html`'s card + foot, `README.md`'s table row + plan list) rather than rewriting the pages: they
+*are* still the proposal (`FB.1`–`FB.10` remain open for correction), so only "waits on" was false.
+Left `MUSING-CONFIG.json`'s description alone — it describes the published *pages*, and the pages are
+still the proposal.
+
+Deliberately **not** done here: the VFB plan's sync footer also asks that `fishbowl.html` fold the
+adopted rulings into its `FB.*` claims (strike-not-renumber). That fold never happened — the page still
+reads as awaiting rulings in 9 places. It is a public surface and a `VFB` chore, not a `PNO` one; flagged
+for Panda rather than swept into this build. Re-raise it before any push that touches `fishbowl.html`.
+
 ## 2026-07-15 — GTH: reusable test-harness addon built into the fishbowl (in-engine core + prescripted runner)
 
 Implemented the `godot-test-harness` (spec: `plans/PLAN-godot-test-harness.md`, mnemonic `GTH`) as a

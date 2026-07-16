@@ -95,10 +95,12 @@
       "folder": "adventuring-guild-teller",
       "slug": "adventuring-guild-teller",
       "name": "Adventuring Guild Teller",
-      "description": "You are the desk the whole town crosses: stamp quest paperwork into a flow state by day, route quests and matchmake parties after hours, and author the very characters whose exploits reach you as morning gossip. Papers, Please hands, Stardew heart, Tomodachi Life soul — at pitch stage, read back in twelve claims: nine settled by correction round 1, three open.",
+      "description": "You are the desk the whole town crosses: stamp quest paperwork into a flow state by day, route quests and matchmake parties after hours, and author the very characters whose exploits reach you as morning gossip. Papers, Please hands, Stardew heart, Tomodachi Life soul — at pitch stage, read back in twelve claims: nine settled by correction round 1, three open. The townee fish-bowl now has its machinery studied and picked, and an observatory prototype proposed in ten more claims.",
       "links": [
         { "label": "The Pitch", "href": "pitch.html" },
-        { "label": "Desk Research", "href": "research.html" }
+        { "label": "Desk Research", "href": "research.html" },
+        { "label": "Fish-Bowl Studies", "href": "fishbowl-studies.html" },
+        { "label": "The Fish-Bowl", "href": "fishbowl.html" }
       ],
       "emblem": "emblem.svg",
       "theme": {

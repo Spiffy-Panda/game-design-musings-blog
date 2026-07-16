@@ -79,7 +79,8 @@
 - [ ] **Correction round 2** — settle the three open claims: AGT.1 (formal authority
       beyond the counter?), AGT.5 (desk stays dilemma-free — the spine), AGT.7 (what's
       in the "other management" bucket). Fold in place as above.
-- [x] **The Morning Queue** — playable Godot 4.6 (GDScript-only) desk-shift prototype at
+- [x] **The Morning Queue** — playable Godot 4.6 (`.mono`; three tiers post-MQT: `data/`
+      JSON · `scripts/` GDScript · `core/` C#) desk-shift prototype at
       `../adventuring-guild-teller/morning-queue/`. Specs: `MORNING-QUEUE.md` (architecture),
       `INSPECTION-TOOLS.md` (examine/weigh + binary desk), `CONTENT-BANKS.md` (week-of-content
       + generator). Built across 2026-07-12/13 via sub-agent workflows, each phase
@@ -97,8 +98,9 @@
       - **Week of content + procedural generator** — banks (`references.json` broadened to 24
         items/20 postings/6 ciphers/10 drops; new `townees.json` + `adventurers.json`
         directories; `generation.json`), the **dues** mechanic (owing townees can't post),
-        and `scripts/gen/ShiftGenerator.gd` (`generate_shift(day)`, seeded → 7 reproducible
-        days; day 0 = curated tutorial). Self-check: `7 days, 97 visits, 0 problems`.
+        and the shift generator (seeded → 7 reproducible days; day 0 = curated tutorial;
+        ported to `core/MorningQueue.Core/Composer.cs` at MQT.4, GDScript original
+        retired). Self-check: `7 days, 96 visits, 0 problems` (rebaselined at MQT.4).
 - [ ] **Next on the prototype** (only-in-chat backlog, recorded here):
       - [x] a **shift-select / day-advance hub** so the week actually plays as a week
             (Next-Day button, already shipped in Main.gd day-flow).
@@ -109,18 +111,30 @@
             #4 doss-yellowknife, #5 ivy-threnody now have tactile detail. Shipped 2026-07-15.
       - [x] an **amount-fail visitor** in the curated shift — `nessa-broom` (order 17,
             moonwort 6 drams vs 2–4 dram cap, `failure.axis: amount`). Shipped 2026-07-15.
-- [ ] **Tier refactor of the prototype (code / script / data + .NET)** — proposed
+- [x] **Tier refactor of the prototype (code / script / data + .NET)** — proposed
       2026-07-15, split out to its own plan: `PLAN-morning-queue-tiers.md` (mnemonic
       `MQT`). C# `core/` for generator/validator/typed model, GDScript kept to node
-      scripting, content strings into `data/`; open rulings `MQT.D1`–`MQT.D3` (Web
-      invariant, RNG continuity, theme .tres).
+      scripting, content strings into `data/`; rulings `MQT.D1`–`MQT.D3` adopted
+      (A′ in-engine C# · rebaseline · skip theme), phases `MQT.1`–`MQT.6` all executed
+      2026-07-15.
+- [ ] **The village fish-bowl (pillar III's sim + creation menus)** — proposed
+      2026-07-15, split out to its own plan: `PLAN-village-fishbowl.md` (mnemonic
+      `VFB`), hard-isolated from `morning-queue/`. Shipped to the musing same day:
+      `fishbowl-studies.html` (six machinery studies `FBS.1`–`FBS.6` + matrix → the
+      CPS composite: clockwork + pressures + storylets) and `fishbowl.html` (prototype
+      proposal read back for correction, claims `FB.1`–`FB.10`, with a hand-cranked
+      observatory mock). Godot 4.6 .NET prototype build gated on `VFB.D1`–`VFB.D4`
+      + `FB.8` ratification.
 - [ ] Mechanics note: the desk's procedural request/proof generator sketch (AGR.1 is the
       hard problem — reference-library growth without rule soup). **Largely superseded** by the
       shipped `ShiftGenerator` + `CONTENT-BANKS.md`; keep for the design-writeup angle.
 - [ ] Floor-economy sketch: costs for favoritism (AGR.4) + refusal-reason surfacing
       (AGR.2).
-- [ ] Roster sketch: creator scope (paperdoll + statlet + quotable prose, AGR.5) and the
-      summary generator's "quotable, barely actionable" dial (AGR.3).
+- [x] Roster sketch: creator scope (paperdoll + statlet + quotable prose, AGR.5) and the
+      summary generator's "quotable, barely actionable" dial (AGR.3). **Superseded by
+      `PLAN-village-fishbowl.md`** — the creator scope is the VFB creation menus' first
+      pass, and the dial is now a live debug knob the observatory exists to tune
+      (`VFB.Q5`).
 
 ## Open questions (round 2)
 
@@ -135,4 +149,6 @@
 - New, from the round-1 rulings: how does a *player-authored* character's bio interact
   with the creator's authored backstory — does the sim append to it (scars, gear lost,
   grudges), Wildermyth-style? (feeds the Roster sketch; no handle yet — becomes AGT.13
-  if it graduates to a claim)
+  if it graduates to a claim) **`FB.8` on `fishbowl.html` now proposes exactly this**
+  (authored prose stays verbatim; the sim appends dated one-liners below it, behind a
+  toggle) — ratify or strike there, then graduate to AGT.13 on the pitch.

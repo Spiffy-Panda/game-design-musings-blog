@@ -17,7 +17,10 @@ file with light + dark themes; no server, no build step.
 | The hub | `index.html` | The seat in one breath + the page cards. |
 | The pitch | `pitch.html` | The concept **read back for correction**: the day loop, three pillars with governing rules, the Separation Principle, and twelve tagged claims `AGT.1`–`AGT.12` with "correct me" lines. |
 | Desk research | `research.html` | Precedents by pillar with take/skip verdicts, the guild-receptionist trope, the warm-bureaucracy positioning gap, and risk register `AGR.1`–`AGR.6`. |
-| candidate | — | "The Morning Queue" — a playable paper-prototype of one desk shift; waits on claim corrections. |
+| Fish-bowl studies | `fishbowl-studies.html` | Six town-sim machineries surveyed at surface level (`FBS.1`–`FBS.6`), a scored matrix, and the CPS composite pick (clockwork + pressures + storylets). |
+| The fish-bowl | `fishbowl.html` | Pillar III **proposed as a prototype**: claims `FB.1`–`FB.10`, a hand-cranked observatory mock (scrub a canned day, because-lists, the actionability dial), creation-menu wireframes, and the rulings the build then adopted. |
+| built, repo-side | — | The fish-bowl **prototype itself** — a Godot 4.6 .NET observatory in `fishbowl/` (first release 2026-07-15). Not a web page; see `fishbowl/FISHBOWL.md`. |
+| built, repo-side | — | "The Morning Queue" — the desk-shift candidate, now a playable Godot prototype in `morning-queue/` (not a web page; publishing waits on the web-export question). |
 
 ## The state of play
 
@@ -36,7 +39,12 @@ playable shift come after the read survives.
 - **Published, so Rule 6/7 apply.** Precedent entries are short, transformative design
   commentary (titles, years, mechanics lessons — no assets, no verbatim third-party
   prose beyond named titles).
-- **Mnemonics (Rule 8):** `AGT` (pitch claims) and `AGR` (research risks), declared
-  canonically in `ADVENTURING-GUILD-TELLER.md`.
-- **Plan:** `../plans/PLAN-adventuring-guild-teller.md` (next: fold in corrections, then
-  the Morning Queue prototype).
+- **Mnemonics (Rule 8):** `AGT` (pitch claims), `AGR` (research risks), `FBS` (fish-bowl
+  studies), `FB` (fish-bowl proposal claims), declared canonically in
+  `ADVENTURING-GUILD-TELLER.md`.
+- **Plans:** `../plans/PLAN-adventuring-guild-teller.md` (the musing),
+  `../plans/PLAN-morning-queue-tiers.md` (the desk prototype's tier refactor), and
+  `../plans/PLAN-village-fishbowl.md` (the fish-bowl prototype — `VFB.D` rulings adopted,
+  first release built; hard-isolated from `morning-queue/`), and
+  `../plans/PLAN-fishbowl-postings-outings.md` (`PNO` — the board + outings the first
+  pass deferred).
