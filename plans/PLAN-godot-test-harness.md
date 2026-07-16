@@ -1,15 +1,18 @@
 # PLAN — godot-test-harness (a reusable input / inspect / capture MCP for .NET + GDScript Godot projects)
 
-**Mnemonic:** `GTH` (gates `GTH.D*`, milestones `GTH.M*`, requirements `GTH.R*`, open questions `GTH.Q*`).
-**Status:** **built & verified 2026-07-15** — the in-engine core in the fishbowl (`GTH.M0`–`M4`) **and** the
-external MCP server (`../utils/dotnet/gth-mcp-server/`, .NET 8, dependency-free), whose **live round-trip is
-proven** (`--selftest`: WebSocket connect → snapshot → a `click_element` advances the sim to slot 1 →
-capture) and **registered project-scoped in the repo `.mcp.json` as `gth-fishbowl`** (Rule-7-clean —
-relative paths + a self-defaulted Godot exe, no machine path committed). Remaining: `dotnet build` the
-server once (`bin/` is gitignored) + restart + approve to close the MCP-stdio→model leg.
-`GTH.D2` resolved **.NET**; `GTH.D1`/`D3`/`D4`/`D5`/`D7` adopted on the recommendation; `GTH.D6` split —
-the addon lives in the fishbowl (own copy, VFB isolation), the server is shared tooling in `../utils/dotnet/`
-(repo-wide convergence of both stays `GTH.Q4`).
+**Mnemonic:** `GTH` (gates `GTH.D*`, milestones `GTH.M*`, requirements `GTH.R*`, open questions `GTH.Q*`,
+bugs/backlog `GTH.B*`).
+**Status:** **built, registered, and in use.** The in-engine core in the fishbowl (`GTH.M0`–`M4`) and the
+external MCP server (`../utils/dotnet/gth-mcp-server/`, .NET 8, dependency-free) are both done. **The
+MCP-stdio→model leg is closed** — the server is built, registered project-scoped in the repo `.mcp.json` as
+`gth-fishbowl` (Rule-7-clean: relative paths + a self-defaulted Godot exe, no machine path committed), and
+was **driven live by a model for ~213 tool calls over 9 relaunches on 2026-07-16** (the field report at the
+bottom of this file). A fresh clone still needs one `dotnet build utils/dotnet/gth-mcp-server` because
+`bin/` is gitignored — that is a clone step, not an open task.
+**All seven gates are ruled:** `GTH.D2` resolved **.NET**; `GTH.D1`/`D3`/`D4`/`D5`/`D7` adopted on the
+recommendation; `GTH.D6` split — the addon lives in the fishbowl (own copy, VFB isolation), the server is
+shared tooling in `../utils/dotnet/` (repo-wide convergence of both stays `GTH.Q4`).
+**Open:** the `GTH.B*` backlog below (six items) and the `GTH.M5` remainder (Mode-B trace, C# facade).
 **Home:** a Godot **addon** (`addons/gd_test_harness/`, drop-in, project-agnostic) **+** a per-project
 `harness.config.json` **+** the external **MCP server** (`../utils/dotnet/gth-mcp-server/`, built). Addon
 copy lives in the fishbowl; server in `utils/`.
@@ -235,16 +238,15 @@ approach for `rendered` on Windows.
 
 ## Milestones
 
-**Status (2026-07-15, in the fishbowl):** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ — the prescripted
+**Status (2026-07-16, in the fishbowl):** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ — the prescripted
 `smoke.json` runs green: a synthetic `btn-step` click advances the sim (click → `Button.pressed` →
 `bridge.StepSlot` → clock slot 1), a location click selects a roster row, hit-stacks report the
 consumption chain, clickability/geometry reports resolve, and captures write with sha-dedup + annotate.
-**M5 ◑** — external MCP server built (.NET, `../utils/dotnet/gth-mcp-server/`) and its **live round-trip
-verified** (`--selftest`: WS connect → snapshot → `click_element` advances the sim → capture, game
-launched/stopped by the server), and **registered project-scoped in the repo `.mcp.json` as `gth-fishbowl`**
-(Rule-7-clean: relative `args`/`GTH_PROJECT` + a self-defaulted `GTH_GODOT_EXE`, so no home-dir path is
-committed). Remaining: `dotnet build` the server once (`bin/` is gitignored) then restart + approve to close
-the MCP-stdio→model leg (can't be self-verified mid-session). Mode-B active trace stays future work.
+**M5 ◑** — the external MCP server is built, `--selftest`-verified, registered as `gth-fishbowl`, **and the
+MCP-stdio→model leg is now closed**: a model drove it live for ~213 calls on 2026-07-16 (field report
+below). M5's "first real adoption against an AGT prototype" is therefore **done** — that pass *was* it, and
+it found four fish-bowl bugs. **M5's remainder is two build items:** the Mode-B active trace (`GTH.D3`
+deferred it here) and the optional C# scenario facade (`GTH.D2`), plus docs.
 
 - **`GTH.M0`** Addon skeleton + gated `Bridge` + `harness.config.json` + `session_start/stop` +
   smoke `capture` (reference-return). Both session modes stand up.
@@ -259,10 +261,69 @@ the MCP-stdio→model leg (can't be self-verified mid-session). Mode-B active tr
 - **`GTH.M5`** Optional Mode-B trace (`GTH.D3`), C# scenario facade (`GTH.D2`), docs, and first real
   adoption against an AGT prototype (opt-in, isolation rule honored).
 
+## Outstanding work (`GTH.B*`)
+
+The live backlog. `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the
+bottom of this file); `GTH.B5`–`B6` are Panda's, added 2026-07-16.
+
+**The through-line, and the reason to fix these as a set rather than as four patches:** every one of
+`B1`–`B4` fails toward *false reassurance* — a false `clickable: true`, a dropped argument reported as
+success, a confidently wrong consumer. This repo has already ruled on that failure direction once: the
+sha-vs-phash call (DEV-LOG 2026-07-15) held that **for a test harness a false "unchanged" is the dangerous
+direction**, and demoted the perceptual hash to advisory for exactly this reason. `B1`–`B4` are that same
+ruling arriving in the other three modules. The harness is allowed to be wrong; it is not allowed to be
+*confidently* wrong.
+
+- **`GTH.B1` — `query_element` reports a false `clickable` / `on_screen`.** `scene_probe.gd`'s `_onscreen`
+  is `Rect2(Vector2.ZERO, _vsize()).intersects(grect)` — *any* overlap counts, so a button spanning
+  x=1276–1366 in a 1280 viewport is "on screen" on the strength of 4px. There is a second half the field
+  report missed: the anchor (`grect.position + grect.size * anchor`, centre by default) is **unclamped**, so
+  the hit-stack gets tested at x=1321 — outside the window, yet still inside the button's rect, so it
+  reaches the control, finds no occluder, and returns `is_top_hit: true`. That is why the harness said
+  "clickable" about a coordinate where clicking demonstrably did nothing. Three-part fix: `on_screen` means
+  *fully* on screen; add `visible_fraction` + `clipped` so a partly-visible control tells the truth instead
+  of rounding to a boolean; clamp the anchor into the visible intersection so `click_element` lands on a
+  pixel that is actually reachable. This **amends the `GTH.R5` predicate** — `clickable` decouples from
+  `on_screen`, because a 4px sliver genuinely *is* clickable and the report's job is to stop implying it is
+  fully reachable. Also reconcile `snapshot()`, which computes `clickable` with a *different, weaker*
+  formula that omits `is_top_hit`: two callers get two answers today.
+- **`GTH.B2` — `capture` with `region` throws.** `Trying to assign value of type 'String' to a variable of
+  type 'Array'` at `capturer.gd:39`. Region capture is unusable via MCP; full-frame is fine.
+- **`GTH.B3` — `press_key` silently drops `repeat`.** `repeat: 6` presses once and reports success.
+- **Root cause of `B2` + `B3`, found while triaging and *not* in the field report: the MCP tool schemas are
+  incomplete, and the server drops unrecognised arguments in silence.** `McpServer.cs`'s `Tools` table
+  declares no `region` or `annotate` on `capture` and no `repeat` on `press_key`; `Pick()` then filters
+  arguments against a hardcoded allowlist and **discards anything not on it, without a word**. So `repeat`
+  was never implemented at *any* layer — schema, picker, core, or injector — and a caller passing it gets a
+  success result for work never done. `region` survives `Pick`, but undeclared it arrives shaped however
+  the caller guessed. The fix is systemic rather than two patches: complete the schemas, implement `repeat`
+  end-to-end, accept a tolerant `region`, and **make an unrecognised argument say so** instead of vanishing.
+  `--selftest` passed neither argument, which is precisely why both shipped.
+- **`GTH.B4` — the predictive hit-stack mis-attributes clicks over embedded `Window`s.** `scene_probe.gd`
+  `continue`s past any `Window` child, so a click over a popup dialog is attributed to whatever
+  main-viewport control sits underneath — it named a `CheckBox` as the consumer of a dialog-close click that
+  control provably never received. The addon README documents embedded Windows as *excluded*, which
+  undersells it: the failure is not a hole in the report, it is a wrong answer stated plainly. **Settles
+  `GTH.Q1` for v1** — root viewport + embedded `Window`s, no arbitrary viewport auto-discovery.
+- **`GTH.B5` — lock window resize/maximize while the harness is active.** *(Panda, 2026-07-16.)* Every GTH
+  coordinate is normalized against `get_visible_rect().size`, and every geometry report is a snapshot of one
+  layout at one size — so a mid-session resize silently invalidates cached rects, normalized coordinates,
+  and any `rect_px` the caller is still holding. Lock resize + maximize on activation, restore on stop, and
+  if the size changes anyway, **say so in the report** rather than quietly answering from the new size.
+- **`GTH.B6` — does minimize-to-taskbar break the harness? Detect and compensate if so.** *(Panda,
+  2026-07-16.)* Suspected to be `GTH.D7`'s constraint arriving at *runtime*: D7 established that a renderer
+  with no framebuffer cannot produce pixels, and a minimized window on Windows may stop presenting — in
+  which case `get_texture().get_image()` returns a stale or blank frame. That is the dangerous direction
+  again: a stale frame is byte-identical to its predecessor, so `if_changed` dedup would answer
+  **`changed: false`** — the harness reporting "nothing happened" when the truth is "I cannot see."
+  Investigate first, then detect (`DisplayServer.window_get_mode()`) and compensate.
+
 ## Open questions (`GTH.Q*`)
 
-- **`GTH.Q1`** Multi-viewport / multi-window games: does v1 target only the root viewport + declared
-  `SubViewport`s, or auto-discover every viewport? (Affects `snapshot` scope.)
+- **`GTH.Q1`** ~~Multi-viewport / multi-window games: does v1 target only the root viewport + declared
+  `SubViewport`s, or auto-discover every viewport?~~ **Answered by `GTH.B4`** — the question stopped being
+  academic the moment it arrived as a bug. v1 covers the root viewport + embedded `Window`s (which is what
+  a popup dialog is, and what the mis-attribution was about); arbitrary viewport auto-discovery stays out.
 - **`GTH.Q2`** 3D pickable objects — is `intersect_ray` hit-reporting in scope for v1, or 2D/Control-only
   first? (AGT prototypes are 2D; the harness claims general reuse.)
 - **`GTH.Q3`** Determinism hooks — should GTH also expose seed-pinning / fixed-timestep stepping (many
@@ -280,7 +341,10 @@ including a shipped feature that had never worked.** Launch mode, boot, `session
 `snapshot`, `click_element`, `click_at`, `read_element`, `wait_for`, and sha-dedup `capture` all
 behaved. That is the headline: it did its job.
 
-**Four defects in GTH itself**, worth fixing before the next build leans on it:
+**Four defects in GTH itself**, worth fixing before the next build leans on it — now tracked as
+**`GTH.B1`–`B4`** in *Outstanding work* above, where triage added two things this report did not have:
+`B2` and `B3` turned out to share one root cause (the server silently drops undeclared arguments), and
+`B1` has a second half (the unclamped anchor) that this report missed.
 
 - **`capture` with `region` is broken.** Throws `Trying to assign value of type 'String' to a variable
   of type 'Array'` at `capturer.gd:39` — **the .NET MCP server marshals the region array across the

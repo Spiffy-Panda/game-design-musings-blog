@@ -6,6 +6,49 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — GTH: the backlog gets handles; two of the four bugs share a root cause; the plan was lying about itself
+
+Panda added two harness items and asked for the backlog to be made real before it gets worked. Three things
+came out of writing it down that were not visible from the field report alone.
+
+**The plan's status line was stale, and stale in the direction that invents work.** It said the remaining
+task was to `dotnet build` the server, restart, and approve, "to close the MCP-stdio→model leg" — a line
+written on 2026-07-15 by a session that (correctly) could not self-verify that leg mid-flight. **That leg
+closed the next morning**: the server is registered as `gth-fishbowl`, and the 213-call observatory pass in
+the entry below *is* a model driving it end-to-end. The proof of closure was sitting in the DEV-LOG one
+entry above the claim it falsified. The `dotnet build` step is real but it is a **clone** step (`bin/` is
+gitignored), not an open task. `GTH.M5`'s "first real adoption against an AGT prototype" is likewise done —
+that pass was it. M5's actual remainder is two build items: the Mode-B trace and the C# facade.
+
+**`GTH.B2` and `GTH.B3` are one bug, not two.** The field report filed "`capture` region throws a String/Array
+mismatch" and "`press_key` ignores `repeat`" as unrelated defects. They aren't. `McpServer.cs`'s tool-schema
+table **declares neither argument** — no `region`/`annotate` on `capture`, no `repeat` on `press_key` — and
+`Pick()` filters incoming arguments against a hardcoded allowlist, **discarding anything not on it without a
+word**. So `repeat` was never implemented at any layer: not the schema, not the picker, not `harness_core`,
+not the injector. The model that "used" it invented a plausible argument, and the server returned success for
+work it never did. `region` survives `Pick` but, undeclared, arrives shaped however the caller guessed —
+hence a String where GDScript wanted an Array. **The real defect is that an unrecognised argument vanishes
+silently**, which makes the fix systemic rather than two patches. Worth noting *why* neither was caught:
+`--selftest` passes neither argument. The self-test only ever walked the happy path it was written from.
+
+**`GTH.B1` has a second half the field report missed.** It correctly caught that `_onscreen` uses
+`Rect2.intersects` — any overlap counts, so 4px of a button in a 1280 viewport reads as "on screen". But the
+anchor point is *also* unclamped: `click_element` aims at the rect's centre, x=1321, which is outside the
+window yet still inside the button's rect — so the hit-stack reaches the control, finds no occluder, and
+certifies `is_top_hit: true`. Both halves have to go, and the fix **amends `GTH.R5`'s stated predicate**:
+`clickable` decouples from `on_screen`, because a 4px sliver genuinely *is* clickable. The harness's job is
+not to call it unreachable; it is to stop implying it is fully reachable, and to aim somewhere real.
+
+The four bugs now have Rule-8 handles (`GTH.B1`–`B4`) alongside Panda's two new ones: **`GTH.B5`** locks
+window resize/maximize while the harness is active (every GTH coordinate is normalized against
+`get_visible_rect().size`, so a mid-session resize silently invalidates every cached rect the caller holds),
+and **`GTH.B6`** asks whether minimize-to-taskbar breaks it. B6 is likely `GTH.D7`'s constraint arriving at
+runtime — a minimized window may stop presenting, and a stale frame is byte-identical to its predecessor, so
+`if_changed` would report **`changed: false`**: the harness answering "nothing happened" when it means "I
+cannot see." That is the same false-reassurance direction as the other four, which is the through-line now
+recorded on the plan. `GTH.Q1` (multi-viewport scope) is **answered by `B4`** — it stopped being an open
+question the moment it showed up as a wrong answer about a dialog.
+
 ## 2026-07-16 — GTH pass over the observatory: the town generator has never worked, and a green test hid it
 
 Drove the shipped fish-bowl end-to-end through the GTH MCP for the first time since release (~213 tool
