@@ -1,5 +1,10 @@
-; Fishbowl Observatory — Godot 4.6 (mono). See FISHBOWL.md.
-; Engine configuration file. Regenerated/edited by the Godot editor on open.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -13,15 +18,16 @@ config/icon="res://icon.svg"
 [autoload]
 
 FishbowlBridge="*res://cs/FishbowlBridge.cs"
-
-[dotnet]
-
-project/assembly_name="Fishbowl"
+TestHarness="*res://addons/gd_test_harness/harness_core.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=800
+
+[dotnet]
+
+project/assembly_name="Fishbowl"
 
 [rendering]
 

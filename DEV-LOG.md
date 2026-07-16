@@ -6,6 +6,58 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — GTH: reusable test-harness addon built into the fishbowl (in-engine core + prescripted runner)
+
+Implemented the `godot-test-harness` (spec: `plans/PLAN-godot-test-harness.md`, mnemonic `GTH`) as a
+drop-in addon in `adventuring-guild-teller/fishbowl/addons/gd_test_harness/` — the fishbowl's **own copy**,
+per the VFB isolation rule (no shared library yet; convergence with the F9 DevHarness stays a post-v1 call,
+`GTH.Q4`). It is **additive** (F9 untouched) and **inert** unless activated, so golden-day determinism is
+unaffected. Verified end-to-end by a rendered prescripted run (`tests/harness/smoke.json`): a synthetic
+click on `btn-step` advanced the observatory clock to slot 1 (input → `Button.pressed` → `bridge.StepSlot`
+→ refresh), a location click at (0.15,0.5) selected the roster's Sela Quick, and three captures
+(baseline / after-step / annotated) landed in `.captures/gth/` with a `manifest.jsonl`.
+
+Decisions the next person would not guess:
+
+- **The two-process split is unavoidable and became the architecture.** Injection / introspection /
+  capture must run *inside* Godot, so the "MCP" is an external server over a loopback WebSocket to an
+  in-engine Bridge autoload. The four GDScript modules (InputInjector / SceneProbe / Capturer / Bridge)
+  are the product; the prescripted ScenarioRunner and the live Bridge are thin drivers over **one** command
+  API (`GTH.R2`). Pure GDScript keeps it `.NET/GD`-agnostic — a C# node and a GD node are both just `Node`.
+- **`changed` is sha256, not a perceptual hash.** An 8×8 average-hash washed out a real one-line clock
+  change (hamming 1 ≤ threshold) so the first cut *falsely deduped* it. For a **test** harness a false
+  "unchanged" is the dangerous direction — so exact-frame sha256 is authoritative and phash is advisory;
+  visual-similarity dedup is opt-in (`similar_ok`). sha proved stable frame-to-frame under gl_compatibility
+  for a static scene (the repeat capture deduped at distance 0), so exact dedup is reliable here.
+- **Pixels need a rendered window** (`GTH.D7` confirmed): `--headless` uses a dummy renderer with no
+  framebuffer, so capture is blank there. The harness runs the observatory windowed for captures (the F9
+  DevHarness already did) and reserves headless for input/introspection/assertions.
+- **`test_id` meta is the durable handle** (`GTH.D4`): the observatory builds its UI in code, so runtime
+  node names are auto-generated (`@Button@10`) and fragile. Tagged the readouts/buttons with `test_id`
+  meta (`clock`, `roster`, `btn-step`, …); text resolution also works (buttons carry `.text`), but ids
+  survive relayout. This is the one deliberate touch to `Observatory.gd` (metadata only, no behaviour).
+- **Two GDScript gotchas cost a couple of iterations:** methods on an untyped injected `var`
+  (`_probe`/`_capturer`) return Variant, so `:=` can't infer — those locals need explicit types; and a
+  capturer helper named `_set` silently overrode `Object._set` (signature-mismatch parse error) → renamed
+  `_plot`. The headless `--import` pass is the fast way to surface both before spawning a window.
+
+Live MCP path is now **built and verified** (`GTH.D2` → **.NET**): the external server
+`utils/dotnet/gth-mcp-server/` (dependency-free .NET 8, MCP stdio ⇄ loopback WebSocket) round-trips
+end-to-end — `--selftest` launches the game with `--gth-serve`, connects, and a `click_element` **over the
+wire** advances the observatory clock to slot 1, then captures. The one leg left is MCP-stdio→model:
+register the server in the Claude config + restart (can't be self-verified mid-session). The server is
+shared tooling in `utils/dotnet/` (row in `utils/README.md`); the addon stays the fishbowl's own copy.
+The server is dependency-free on purpose — a hand-rolled JSON-RPC/stdio loop over `System.Text.Json` +
+`System.Net.WebSockets`, matching the repo's zero-NuGet ethos and sidestepping a fresh package restore.
+
+Registered project-scoped in the repo `.mcp.json` as `gth-fishbowl` — kept **Rule-7-clean** by making the
+server self-sufficient: `GTH_PROJECT` is committed **relative** (`Path.GetFullPath` resolves it against the
+CWD, which is the repo root for a project-scoped server) and `GTH_GODOT_EXE` defaults to
+`%ProgramFiles%\godot\godot.exe`, so no home-dir/dead-name path lands in the committed config. Verified the
+committed shape end-to-end (`--selftest` with the relative project path + defaulted exe → green). `bin/` is
+gitignored, so a fresh clone needs one `dotnet build utils/dotnet/gth-mcp-server` before the server starts;
+Claude Code prompts to approve the new project MCP server on restart (the security gate stays with the user).
+
 ## 2026-07-15 — VFB: first release of the fish-bowl prototype built (M0–M3 done, M4 in place)
 
 Built the village fish-bowl's first release end-to-end: an engine-free `Fishbowl.Core` (C#/.NET 8)

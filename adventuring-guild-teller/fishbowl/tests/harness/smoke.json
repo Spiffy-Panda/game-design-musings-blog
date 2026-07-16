@@ -1,0 +1,20 @@
+{
+  "name": "gth-smoke",
+  "note": "Exercises R1-R6 in one rendered run: snapshot, clickability query, element+location clicks with hit/consumption reports, key injection into the project's own F9 handler, and token-frugal capture (settle, change-detect dedup, annotate). Fishbowl-owned fixture; the addon stays project-agnostic.",
+  "steps": [
+    { "op": "snapshot" },
+    { "op": "query",   "element": { "test_id": "btn-step" } },
+    { "op": "read",    "element": { "test_id": "clock" } },
+    { "op": "capture", "label": "baseline", "settle_ms": 500 },
+    { "op": "click",   "element": { "test_id": "btn-step" } },
+    { "op": "read",    "element": { "test_id": "clock" } },
+    { "op": "click_at", "x": 0.15, "y": 0.5, "report_hits": true },
+    { "op": "read",    "element": { "test_id": "clock" } },
+    { "op": "capture", "label": "after-step", "if_changed": true, "settle_ms": 350 },
+    { "op": "capture", "label": "after-step", "if_changed": true, "settle_ms": 150 },
+    { "op": "key",     "keys": "F9" },
+    { "op": "query",   "element": { "text": "Run to Dawn" } },
+    { "op": "capture", "label": "annotated", "annotate": { "point": [640, 400], "rect": [8, 8, 380, 40] } },
+    { "op": "expect",  "element": { "test_id": "btn-step" }, "clickable": true }
+  ]
+}

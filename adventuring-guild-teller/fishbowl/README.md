@@ -43,6 +43,9 @@ report, turn *storylet_rate* down to thin the chronicle, and so on. **F9** saves
 - `scripts/`, `scenes/` — the observatory UI (node scripting only; no sim logic).
 - `data/` — the authored town: townees, places, day-plans, traits, storylets, and the golden-day
   fixture the tests reproduce.
+- `addons/gd_test_harness/` — a drop-in **test harness** (synthetic input + scene inspection +
+  token-frugal capture); inert unless activated. See its `README.md`; spec in the repo-root
+  `plans/PLAN-godot-test-harness.md`.
 
 For the full contract — the frozen bridge surface, the determinism rules, the data shapes, and
 milestone status — see [`FISHBOWL.md`](./FISHBOWL.md). For *why* it's built this way, see the

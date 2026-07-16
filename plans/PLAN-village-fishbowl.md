@@ -205,7 +205,10 @@ Signals: `slot_ticked(day, slot)`, `event_logged(event_json)`,
 **Engine notes:** validate via the in-engine viewport-capture harness pattern (readable
 `.captures/` folder, editor-toggleable, ships disabled) — never the OS screenshotter;
 `class_name` registration needs a headless `--import` pass after fresh checkout; drive
-runs via the godot MCP where available.
+runs via the godot MCP where available. **(2026-07-15)** the reusable **GTH test harness** was added as a
+drop-in addon (`fishbowl/addons/gd_test_harness/`, additive to F9, inert unless activated) that drives the
+observatory via synthetic input and captures to `.captures/gth/` — see `PLAN-godot-test-harness.md` +
+`fishbowl/FISHBOWL.md`.
 
 ## The observatory (readouts — the only "gameplay" in v0)
 

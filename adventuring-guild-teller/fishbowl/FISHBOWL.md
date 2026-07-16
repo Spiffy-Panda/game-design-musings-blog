@@ -17,7 +17,7 @@ data. Data readouts + debug knobs only; no desk, no floor (per `PLAN-village-fis
 fishbowl/
   FISHBOWL.md            this file — the LLM entry point
   README.md              human code-doc
-  project.godot          Godot 4.6 mono; autoload FishbowlBridge; gl_compatibility; main = Observatory.tscn
+  project.godot          Godot 4.6 mono; autoloads FishbowlBridge + TestHarness (GTH, inert); gl_compatibility; main = Observatory.tscn
   Fishbowl.sln           game project + the three core projects
   Fishbowl.csproj        the Godot game (references core/Fishbowl.Core); only cs/ is engine-facing
   icon.svg
@@ -29,7 +29,10 @@ fishbowl/
   core/Fishbowl.Cli/       headless runner (--town --seed --days --report --chronicle --soak)
   core/Fishbowl.Core.Tests/  xUnit — 22 tests incl. the Godot-stringify round-trip suite
   data/                    the authored town (see "Data contract")
-  .captures/               capture-harness output (gitignored; F9 in the observatory)
+  addons/gd_test_harness/  GTH test harness — project-agnostic input/inspect/capture addon (own README)
+  harness.config.json      GTH config — artifacts dir, capture caps, bridge port
+  tests/harness/           GTH prescripted scenarios (smoke.json)
+  .captures/               capture output (gitignored; F9 DevHarness + GTH's .captures/gth/)
 ```
 
 **Entry-point chain:** this file → `core/` (the sim) and `scripts/` (the view) → `data/`.
@@ -132,6 +135,29 @@ dotnet build Fishbowl.csproj
 "C:/Program Files/godot/godot.exe" --headless --path . --import
 # then run via the godot MCP (run_project / get_debug_output / stop_project); F9 → .captures/
 ```
+
+## Test harness (GTH — `addons/gd_test_harness/`)
+
+A drop-in, **project-agnostic** input / inspect / capture harness (spec: root
+`plans/PLAN-godot-test-harness.md`, mnemonic `GTH`). It is **additive** to the F9 DevHarness (which
+stays) and **inert** unless activated — normal play and golden-day determinism are untouched. Two thin
+drivers over one GDScript core (InputInjector / SceneProbe / Capturer / Bridge):
+
+- **Prescripted** (CI-friendly): set `GTH_SCENARIO=res://tests/harness/smoke.json` + `GTH_EXIT_AFTER=1`,
+  run the observatory windowed → drives clicks/keys through the real input pipeline, writes captures to
+  `.captures/gth/` + a `manifest.jsonl`, prints a JSON result. Bundled `smoke.json` gate-checks the whole
+  surface (snapshot, clickability, element + location clicks with consumption reports, key injection,
+  settle / sha-dedup / annotate capture). Verified 2026-07-15 — a synthetic `btn-step` click advances the
+  clock to slot 1; a location click selects a roster row.
+- **Live (MCP)**: `--gth-serve` opens a loopback WebSocket for the external MCP server at
+  `utils/dotnet/gth-mcp-server/` (.NET 8, live-verified 2026-07-15), **registered project-scoped in the repo
+  `.mcp.json` as `gth-fishbowl`** (launch mode). After a fresh clone: `dotnet build
+  utils/dotnet/gth-mcp-server`, restart the client, approve the server — then drive the observatory from chat.
+
+Stable handles: the observatory tags its readouts/buttons with `test_id` meta (`clock`, `roster`,
+`btn-step`, …) because the UI is code-built (auto-generated node names are fragile). See the addon's
+`README.md` for the command API and activation precedence. **Captures need a rendered window** — pixels
+are blank under `--headless` (`GTH.D7`).
 
 ## Rulings adopted (parent-plan "The asks")
 

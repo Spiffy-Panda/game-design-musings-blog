@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- GTH MCP server — the LIVE driver Claude connects to. Bridges MCP (stdio, to the model)
+       ⇄ the in-Godot GTH Bridge (loopback WebSocket). Dependency-free: framework
+       System.Net.WebSockets + System.Text.Json only (repo zero-dependency ethos). -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>gth-mcp-server</AssemblyName>
+    <RootNamespace>GthMcp</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

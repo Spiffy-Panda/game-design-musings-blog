@@ -13,3 +13,6 @@ obj/
 # Local runner output
 out.json
 report.json
+
+# GTH test-harness local activation toggle (never committed; see addons/gd_test_harness/README.md)
+harness.local.json

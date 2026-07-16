@@ -71,8 +71,11 @@ func _build_top_bar() -> Control:
 	panel.add_child(bar)
 
 	clock_label = _mk_label("", 18)
+	clock_label.set_meta("test_id", "clock")
 	hash_label = _mk_label("", 13)
+	hash_label.set_meta("test_id", "hash")
 	seed_label = _mk_label("", 13)
+	seed_label.set_meta("test_id", "seed")
 	bar.add_child(clock_label)
 	bar.add_child(_sep())
 	bar.add_child(hash_label)
@@ -80,23 +83,24 @@ func _build_top_bar() -> Control:
 	bar.add_child(seed_label)
 	bar.add_child(_sep())
 
-	bar.add_child(_btn("Step", _on_step))
-	bar.add_child(_btn("Run to Dawn", _on_dawn))
-	bar.add_child(_btn("Run 3 Days", func(): _run_days(3)))
+	bar.add_child(_btn("Step", _on_step, "btn-step"))
+	bar.add_child(_btn("Run to Dawn", _on_dawn, "btn-dawn"))
+	bar.add_child(_btn("Run 3 Days", func(): _run_days(3), "btn-run3"))
 
 	bar.add_child(_sep())
 	seed_spin = SpinBox.new()
 	seed_spin.min_value = 0
 	seed_spin.max_value = 999999
 	seed_spin.value = 1123
+	seed_spin.set_meta("test_id", "seed-spin")
 	bar.add_child(seed_spin)
-	bar.add_child(_btn("Reseed", _on_reseed))
+	bar.add_child(_btn("Reseed", _on_reseed, "btn-reseed"))
 
 	bar.add_child(_sep())
-	bar.add_child(_btn("Generate…", _open_generator))
-	bar.add_child(_btn("New Townee…", _open_townee_creator))
-	bar.add_child(_btn("New Place…", _open_place_creator))
-	bar.add_child(_btn("Storylets…", _open_storylets))
+	bar.add_child(_btn("Generate…", _open_generator, "btn-generate"))
+	bar.add_child(_btn("New Townee…", _open_townee_creator, "btn-townee"))
+	bar.add_child(_btn("New Place…", _open_place_creator, "btn-place"))
+	bar.add_child(_btn("Storylets…", _open_storylets, "btn-storylets"))
 	return panel
 
 func _col(_title: String, ratio: float, builder: Callable) -> Control:
@@ -109,6 +113,7 @@ func _col(_title: String, ratio: float, builder: Callable) -> Control:
 func _build_roster(v: VBoxContainer) -> void:
 	v.add_child(_header("Roster"))
 	roster_tree = Tree.new()
+	roster_tree.set_meta("test_id", "roster")
 	roster_tree.columns = 5
 	roster_tree.hide_root = true
 	roster_tree.column_titles_visible = true
@@ -133,6 +138,7 @@ func _build_center(v: VBoxContainer) -> void:
 
 	v.add_child(_header("Chronicle — expand for the because-list"))
 	chronicle_tree = Tree.new()
+	chronicle_tree.set_meta("test_id", "chronicle")
 	chronicle_tree.hide_root = true
 	chronicle_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(chronicle_tree)
@@ -140,11 +146,14 @@ func _build_center(v: VBoxContainer) -> void:
 func _build_right(v: VBoxContainer) -> void:
 	v.add_child(_header("Dawn summary"))
 	register_label = _mk_label("", 12)
+	register_label.set_meta("test_id", "register")
 	v.add_child(register_label)
 	summary_box = VBoxContainer.new()
+	summary_box.set_meta("test_id", "summary")
 	v.add_child(summary_box)
 	v.add_child(_build_knobs())
 	stats_label = _mk_label("", 12)
+	stats_label.set_meta("test_id", "stats")
 	v.add_child(stats_label)
 
 	v.add_child(_header("Inspector"))
@@ -419,10 +428,12 @@ func _sep() -> Control:
 	var s := VSeparator.new()
 	return s
 
-func _btn(text: String, cb: Callable) -> Button:
+func _btn(text: String, cb: Callable, tid := "") -> Button:
 	var b := Button.new()
 	b.text = text
 	b.pressed.connect(cb)
+	if tid != "":
+		b.set_meta("test_id", tid)  # GTH: stable handle for the test harness
 	return b
 
 func _slider(knob: String, lo: float, hi: float, step: float, val: float, cb: Callable) -> Control:
