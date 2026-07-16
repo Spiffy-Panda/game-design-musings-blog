@@ -317,7 +317,7 @@ surface for a user who does not exist adds maintained API surface against a gues
 zero-dependency ethos argues the same way. Recommend closing it as YAGNI; revisit if a C#-first project
 actually adopts the harness.
 
-## Bugs (`GTH.B*`) — **eight fixed & verified 2026-07-16; `B9` open**
+## Bugs (`GTH.B*`) — **eight fixed & verified 2026-07-16; `B9`–`B12` open**
 
 `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the bottom of this file);
 `GTH.B5`–`B6` are Panda's, added 2026-07-16; `GTH.B7`–`B8` were found within the hour by the `Q4`
@@ -487,6 +487,47 @@ re-learned one module at a time, by whoever is unlucky enough to be the first to
 
 **Not yet reproduced independently** — recorded from the pass's report plus the cited line. Triage
 before fixing; do not trust this entry's lead over a fresh read of the code.
+
+### `GTH.B10`–`B12` — the capture pipeline can quietly hand you a corrupt corpus ⬜ **open**
+
+Found 2026-07-16 by the `vfb-usability` capture sweep — the first consumer to build a **large corpus
+for someone else to read** (35 shots, analysed by agents who never saw the live app). That use shape
+is what exposed these: a single interactive capture tolerates all three; a corpus does not.
+
+- **`GTH.B10` — `max_dim` silently downscales, and silently invalidates every rect.** The default
+  `max_dim: 1280` (`harness.config.json`) is *narrower than the app's own 1290px viewport*, so frames
+  came back 1280×803 — resampled, and no longer 1:1 with the `query_element` rects an analyst reads
+  them against. No warning. The sweep caught it and forced `max_dim: 1290`; an agent that didn't think
+  to check would have published pixel measurements off by a silent 0.8% scale factor. **A capture that
+  is not 1:1 with the coordinate space of the measurements must say so.**
+- **`GTH.B11` — dedup compares against the global last capture, ignoring the label.** With
+  `if_changed: true`, two states that happen to look identical write **no file at all** — so a corpus
+  develops holes exactly where a *deliberate* A/B comparison was intended (e.g. knob MIN vs MAX, which
+  is precisely the comparison `VFB.Q1` needs). The sweep forced `if_changed: false` throughout. This is
+  `GTH.B6`'s false-"unchanged" a second time, now as an *absence of evidence* rather than stale
+  evidence — and note it is worst exactly when the finding is "these two states are identical," which
+  is a real result the harness silently declines to record.
+- **`GTH.B12` — `session_id` is unreachable without editing tracked config.** Read only from
+  `harness.config.json` (`capturer.gd:24`); no env var, no cmdline flag, and `harness.local.json`
+  carries only `{enable, serve, port, scenario, exit_after}`. A read-only consumer therefore **cannot
+  choose where its captures land** — the sweep's brief required a distinct session and the harness made
+  it impossible without violating its own change-nothing constraint. Captures landed in `smoke/` and had
+  to be moved out afterward, which also appended 35 foreign records to `smoke/manifest.jsonl`. Add it to
+  `harness.local.json` + an env override.
+
+**The count is now the finding.** `B2`, `B3`, `B7`, `B9`, `B10`, `B11`, `B12` are seven instances of one
+disease — *fail toward false reassurance* — and `B10`/`B11`/`B12` were all found **in a single session,
+by one consumer, on a day that already had `B9`**. The plan has now written "a harness must not have a
+way to fail quietly" three times while the harness kept finding new ways. That is no longer a bug list;
+it is evidence that the property is not being **enforced**, only re-asserted. `GTH.B9`'s three candidate
+structural answers (schema audit / no-op detection / MCP-surface self-test) should be read as covering
+these too, and the `B10`/`B11` pair adds a fourth: **any silent normalisation of a capture — rescale,
+dedup-skip — must be reported in the result, because the consumer is measuring against it.**
+
+**Pattern worth keeping:** every one of these was invisible until a consumer arrived with a *new shape*
+of need — `B7`/`B8` needed a second app, `B9` needed MCP instead of a file, `B10`–`B12` needed a corpus
+built for a third party. **The harness's bugs live wherever a consumer has not yet been**, which means
+the backlog is a map of un-exercised surface, not a list of mistakes.
 
 ## Open questions (`GTH.Q*`)
 

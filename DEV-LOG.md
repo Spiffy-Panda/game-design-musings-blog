@@ -73,6 +73,22 @@ re-learned one module at a time by whoever is first to call something. Worth not
 `B9` was invisible until a consumer used MCP instead of a scenario file, exactly as `B7`/`B8` were
 invisible until a second app shape existed. **The harness's bugs live wherever a consumer has not been.**
 
+**Amended later the same day: `GTH.B10`–`B12`.** The usability capture sweep — the first consumer to
+build a *corpus for someone else to read* rather than take one interactive shot — found three more of
+the same disease within a single session. `max_dim`'s default (1280) is **narrower than the app's own
+1290px viewport**, so it silently downscaled every frame to 1280×803 and silently invalidated the 1:1
+correspondence between the pixels and the `query_element` rects the analysts measure against. Dedup
+compares against the *global last* capture regardless of label, so a deliberate A/B — knob MIN vs MAX,
+exactly the comparison `VFB.Q1` needs — writes **no file** when the two states match, turning a real
+result ("these are identical") into missing evidence. And `session_id` is unreachable except by editing
+tracked config, so a read-only consumer cannot choose where its captures land. The sweep caught all
+three and worked around them; an agent that hadn't thought to check would have published measurements
+off by a silent scale factor. **That makes seven instances of fail-toward-false-reassurance across
+`B2`/`B3`/`B7`/`B9`–`B12`, and the honest reading is that writing the lesson down three times has not
+enforced it.** The plan now argues the fix has to be structural. Recorded during the usability run
+rather than fixed, to keep that run's diff about usability — but they are the tool this project uses to
+tell whether anything works, and a corpus-corrupting harness undermines every study built on it.
+
 ---
 
 ## 2026-07-16 — GTH.Q4 ruled full convergence — and the second consumer found two bugs within the hour
