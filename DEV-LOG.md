@@ -6,6 +6,64 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — the emoji roster, reverted on purpose: three variants built, measured, and two thrown away
+
+Panda's opening request was explicit: roster shows given name + surname initial, and **"use emoji for the
+other columns"** — all four. The view pass reverted three of them to words. That reversal was contested
+rather than accepted, three variants were built and **measured at 1290×810**, and the words won. This
+entry exists so nobody re-opens it from first principles, and so the *reasoning that was wrong* doesn't
+get inherited along with the conclusion that was right.
+
+**The view pass's stated argument was wrong.** It claimed the glyph vocabulary was ill-defined because
+the same glyph meant different things per column — `🍺` innkeep/inn, `🔨` smith/workshop, `🧭`
+away-place/away-mode — therefore a legend needs one table *per column*, three tables for four columns.
+Set math over the real tables says otherwise: only **two** are genuine clashes (`🍺`, `🔨`), and **both
+are Role↔Place**. `🧭` and `🏠` are **synonyms** — same glyph, same meaning in both columns, so a single
+legend row *"🧭 away"* is true everywhere it appears. The `🧭` evidence was never evidence, and the
+per-column-legend argument doesn't survive contact with the tables.
+
+**The coordinator's counter-argument was also wrong**, and more interestingly so. Observing that *every*
+collision involves `Place` (there's a fourth the view pass missed — `🏠` is Place:home **and** Doing:home),
+it follows that converting `Place` alone dissolves all of them, which would un-block Role/Doing/Top as
+glyphs under one vocabulary and honour the original brief. The logic is sound. **The measurement kills
+it:**
+
+| variant | rail | legend | symbols | reading pane | place board |
+|---|---|---|---|---|---|
+| **words** (shipped) | 488 | **16px**, 1 line | 5 | 496 | fits, ~80px spare |
+| middle (Doing+Top glyphs) | 452 | 34px | 9 | 532 | fits |
+| all-glyphs (the brief) | 403 | **109px** | 20 | 581 | **scrolls, clipped** |
+
+The glyph variant **saves 85px of the rail's width and spends 93px of the same rail's height.** That is
+not a trade between regions — the legend's height comes out of the **place board**, which had ~80px of
+slack, so it grows a scrollbar. **A published PNG has no hover and no scroll**, which is the same defect
+as the tooltip mitigation, wearing a different hat.
+
+**And the decisive argument is that the account is already full.** The reading pane that was clipped at
+326px and cutting the deliverable mid-word is *complete* at 496px. Compressing the roster to buy pane
+width is **spending on a settled debt** — the glyphs' 85px buys 581px of pane where 496 already fits
+every line. There is nothing to win.
+
+**Also true, and it undercuts even the column we kept:** `Doing` earns its keep on volatility, and the
+state we'd publish has none. At dawn it is 11×`😴` + 1×`🧭`; even at 08:00 it is 83% `💼`. The one glyph
+column that survived is near-degenerate in the dawn frame — worth knowing before that frame goes in a
+musing. Not changed, because at mid-day it does show the town's rhythm, which is the whole point of a
+column you scan.
+
+**What actually justifies words, then** — since neither original argument does: `Place` is the one column
+whose glyph is **lossy in kind**, not merely ambiguous. The place *name* is the information; no icon
+distinguishes "the Bray House" from "Karsk's Rents" from "the Long Table", and `Place` was keyed on
+`place_kind` while its tooltip showed `place_name`, so it rendered the inn's `🍺` for people asleep in
+their own beds. `Role` and `Top drive` are small closed sets where a glyph loses nothing — they revert to
+words purely because **the pixels they'd save have no buyer.** If the reading pane were ever starved again,
+`Top drive` is the cheapest 36px on screen and this decision should be reopened. That is the condition to
+watch for; it is not true today.
+
+Left on `words`. The variant round's entire diff is **comment-only** (42+/16−) — the code was already
+right; only the reasoning in it was wrong, and now the file explains which argument actually load-bears.
+
+---
+
 ## 2026-07-16 — the view pass: two fixed rails and a derived pane; and the metric everyone measured was the wrong one
 
 The observatory's layout is rebuilt: **two fixed rails** (roster + place board left; knobs + inspector

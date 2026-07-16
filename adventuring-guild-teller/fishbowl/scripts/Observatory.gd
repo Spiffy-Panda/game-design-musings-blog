@@ -25,24 +25,48 @@ var _mono_font: SystemFont
 const DRIVES := ["purse", "trade", "heart", "restlessness"]
 
 # --- roster encoding -------------------------------------------------------------------------
-# ONE column is glyphs. That is a deliberate retreat from four, and the reason is not taste.
+# ONE column is glyphs. That is a deliberate retreat from four. This block previously justified the
+# retreat with a collision argument that a later A/B re-measured and found HALF WRONG; the outcome
+# survived, the reasoning did not, so the reasoning is replaced rather than quietly kept.
 #
-# The old encoding ran Role / Place / Doing / Top through four separate glyph tables, and those
-# tables SHARED SYMBOLS: 🍺 was both ROLE_GLYPH["innkeep"] and PLACE_GLYPH["inn"], so the innkeep's
-# row read `🍺 | 🍺`; 🔨 was both "smith" and "workshop"; 🧭 was both the away-place and the away-mode.
-# A legend maps symbol → meaning. That encoding had no such map — the meaning depended on which
-# column you were in — so a legend for it would have had to be one legend PER COLUMN, i.e. three
-# more tables on screen to explain the four already there. The legend was not expensive; it was
-# ill-defined. Removing the collisions is what makes a legend possible at all.
+# WHAT THE COLLISION ARGUMENT ACTUALLY SAYS (pairwise set math over the four glyph tables as they
+# stand at 0198a1d — parsed straight out of git, because a hand transcription is what got it wrong):
 #
-# And the density the glyphs bought was never needed: the roster is ~46% empty vertically in every
-# state (there are always 12 townees) and was over-allocated ~130px horizontally. It traded
-# legibility for space it already had. Words fit. The tooltips stay, but they are no longer the
-# mitigation — a published screenshot has no hover, so nothing may depend on one.
+#   * CLASHES — same glyph, DIFFERENT meaning — number exactly TWO: 🍺 innkeep/inn and 🔨
+#     smith/workshop. Both are Role-vs-PLACE. These are real ambiguity; no legend can fix them.
+#   * SYNONYMS — same glyph, SAME meaning — are 🧭 away/away and 🏠 home/home (the latter was
+#     missed entirely). These are NOT ambiguity. One legend row "🧭 away" is true in both columns.
+#
+# So 🧭 was never evidence of anything, and Role/Doing/Top are PAIRWISE DISJOINT: every collision,
+# clash and synonym alike, involves Place. Dropping Place ALONE leaves a well-defined vocabulary.
+# "The vocabulary is ill-defined" is therefore an argument for words in `Place`, and it does not
+# reach the other three columns. Place earns words on its own merits anyway: it was keyed off
+# `place_kind` while its tooltip showed `place_name` (the inn's 🍺 rendered for people asleep in
+# their own beds — wrong in a way that read as right), and no glyph tells "the Bray House" from
+# "Karsk's Rents". The place NAME is the information.
+#
+# WHAT ACTUALLY DECIDES THE OTHER THREE is not ambiguity but the LEGEND BILL, measured at 1290x810:
+#
+#   variant                     rail   legend   symbols   reading pane   place board
+#   Doing only (this one)        488     16px      5           496        fits, ~80px spare
+#   + Top drive as glyph         452     34px      9           532        fits
+#   + Role as glyph too          403    109px     20           581        SCROLLS, clipped
+#
+# The all-glyph variant saves 85px of rail WIDTH and spends 93px of the same rail's HEIGHT on the
+# legend. That is not a trade between regions; the height comes out of the place board, which had
+# only ~80px of slack and overflows into a scrollbar. A published PNG has no hover AND no scroll.
+#
+# And the account the compression would pay into is already full: the pane that was clipped
+# mid-word at 326px is complete at 496. Buying pane width by making the roster a lookup table is
+# spending on a debt that is settled. `Top drive` is the clearest case — the cell already carries
+# the number, so the glyph replaces only the word that says what the number MEANS, buying 36px the
+# pane does not need. `Role` is worse: 11 symbols, 3 legend lines, and static per townee — the most
+# expensive vocabulary on screen bought for the one column that never changes.
 #
 # What survives as glyphs is `Doing`, and only `Doing`: 5 values, changing every slot, genuinely
-# scanned as a column ("who is awake yet?"). One glyph column means one vocabulary, which means the
-# five-symbol legend under the roster is well-defined and fits on two lines.
+# scanned as a column ("who is awake yet?"), and its symbols (😴 💼) are close to self-evident. Its
+# legend is ONE line. That is the whole test a glyph column has to pass — not "is it unambiguous?"
+# but "does its legend cost less than the words it deletes?" Doing passes. Nothing else does.
 
 # Closed vocabularies — these are the valid values, and the creation dialogs offer exactly these
 # (a free-text `role` typo used to mint a townee that no table could render). Keeping them as the
@@ -449,8 +473,10 @@ func _refresh_roster() -> void:
 		it.set_text(3, MODE_GLYPH_ASLEEP if t.asleep else MODE_GLYPH.get(t.mode, GLYPH_UNKNOWN))
 		it.set_tooltip_text(3, t.activity)
 
-		# Top drive — the cell ALREADY carried text ("0.50"), so the glyph saved ~30px and cost the
-		# whole meaning of the number beside it. The worst trade in the table.
+		# Top drive — the cell ALREADY carries text ("0.50"), so the glyph replaces only the word that
+		# says what the number MEANS. Priced in the A/B: 36px of column (118 → 82, floored by its own
+		# "Top drive" title, not by the glyph), against a 4-symbol legend row and a decode on every
+		# cell. The worst trade in the table — it is the one column where the word is load-bearing.
 		it.set_text(4, "%s %.2f" % [t.top_drive, t.top_value])
 		it.set_tooltip_text(4, "%s %.2f" % [t.top_drive, t.top_value])
 
