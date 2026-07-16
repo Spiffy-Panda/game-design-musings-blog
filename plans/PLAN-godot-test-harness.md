@@ -317,11 +317,13 @@ surface for a user who does not exist adds maintained API surface against a gues
 zero-dependency ethos argues the same way. Recommend closing it as YAGNI; revisit if a C#-first project
 actually adopts the harness.
 
-## Bugs (`GTH.B*`) — **all eight fixed & verified 2026-07-16**
+## Bugs (`GTH.B*`) — **eight fixed & verified 2026-07-16; `B9` open**
 
 `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the bottom of this file);
 `GTH.B5`–`B6` are Panda's, added 2026-07-16; `GTH.B7`–`B8` were found within the hour by the `Q4`
-convergence, the moment a *second* project used the harness. All eight are closed, covered by
+convergence, the moment a *second* project used the harness. `GTH.B9` was found 2026-07-16 by the
+fish-bowl roster-usability pass — the first consumer to reach for `run_scenario` **over MCP**. The first
+eight are closed, covered by
 `../adventuring-guild-teller/fishbowl/tests/harness/regression-b1-b6.json` (**green: 34 steps**),
 `../adventuring-guild-teller/morning-queue/tests/harness/shift-walk.json` (**green: 55 steps**), and an
 extended `--selftest`. The analysis is kept in full rather than deleted — it is why the fixes are shaped
@@ -447,6 +449,44 @@ a desk that disables its stamp buttons between visitors, which the fish-bowl's o
   controls while it is busy, "visible" is not "ready": the button is visible-but-dead for a beat and
   the wait sails through into a refused click. **Fixed:** `wait_for {element_clickable}` waits on the
   same predicate `click_element` enforces — wait for the thing you are about to do, not a proxy for it.
+
+### `GTH.B9` — `run_scenario` over MCP is a silent no-op ⬜ **open**
+
+Found 2026-07-16 by the fish-bowl roster-usability pass, which reached for `run_scenario` through the
+**MCP** surface — the first consumer ever to do so. It returns `{}` and **executes nothing**. Both
+`[...]` and `{"steps": [...]}` were tried. The *file-based* runner accepts identical step shapes and
+runs them fine, so the break is the MCP→bridge path, not the ScenarioRunner.
+
+**Lead (untriaged):** `utils/dotnet/gth-mcp-server/McpServer.cs:105` declares the parameter as
+`{"scenario": {}}` — an **untyped, empty property schema**. A client with nothing to validate against
+may reasonably drop the argument or stringify it, and the bridge then receives no steps and dutifully
+does nothing. Verify before fixing: the fault could equally be on the bridge side failing to parse a
+stringified payload. Whichever it is, **the tool is declared and unusable**, which is the thing that
+matters.
+
+**This is the fourth instance of the disease `B2`/`B3`/`B7` are already about**, and it is worth
+saying plainly because the count is now hard to dismiss as coincidence. `B2` was an undeclared
+argument that threw; `B3` was a declared argument silently dropped; `B7` was a sad path reported
+through a key no caller reads; `B9` is a declared *tool* that accepts a call, returns success-shaped
+emptiness, and does nothing. Every one fails toward false reassurance, which is the direction this
+plan has now ruled against three separate times (`B1`–`B4`'s through-line above; the sha-vs-phash
+call in DEV-LOG 2026-07-15). The `B7` entry drew the lesson as *"a harness must not have a way to
+fail quietly."* `B9` says the lesson has not yet been **enforced structurally** — it keeps being
+re-learned one module at a time, by whoever is unlucky enough to be the first to call something.
+
+**Therefore the fix is not just this bug.** Candidate structural answers, for a Panda ruling:
+1. **Schema audit** — every MCP tool parameter gets a real typed schema; an untyped `{}` becomes a
+   build-time failure rather than a runtime shrug. This kills the `B2`/`B3`/`B9` shape at the source.
+2. **No-op detection** — a driver command that matches zero steps / zero elements / zero work returns
+   `error`, never `{}`. An empty result is a *claim* and must be earned.
+3. **Self-test coverage of the MCP surface specifically.** `--selftest` exercises the bridge; the MCP
+   path in front of it is what keeps breaking, and it is the path every agent actually uses. Note the
+   pattern: `B9` was invisible until a consumer used MCP rather than a scenario file, exactly as
+   `B7`/`B8` were invisible until a second app shape existed. **The harness's bugs live wherever a
+   consumer has not yet been.**
+
+**Not yet reproduced independently** — recorded from the pass's report plus the cited line. Triage
+before fixing; do not trust this entry's lead over a fresh read of the code.
 
 ## Open questions (`GTH.Q*`)
 

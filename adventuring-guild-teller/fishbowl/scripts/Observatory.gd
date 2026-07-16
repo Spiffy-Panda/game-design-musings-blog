@@ -21,6 +21,56 @@ var stats_label: Label
 
 const DRIVES := ["purse", "trade", "heart", "restlessness"]
 
+# --- roster glyphs ---------------------------------------------------------------------------
+# Presentation only. Every table keys off a *stable* field on the roster projection — the role id,
+# the place KIND, the clockwork MODE — never the authored display prose, which is free text that
+# gets re-authored per day-plan. Unknown keys fall through to a neutral glyph rather than an empty
+# cell, because the generator and the "New Townee…"/"New Place…" dialogs can both mint values that
+# were never in data/.
+#
+# Every one of these columns is emoji-only, which is illegible to anyone who does not know the key.
+# The mitigation is that _refresh_roster puts the ORIGINAL WORD in each cell's tooltip — the tooltip
+# is the old column, one hover away. Nothing the table used to say has been destroyed.
+
+const ROLE_GLYPH := {
+	"innkeep": "🍺", "herbalist": "🌿", "smith": "🔨", "apprentice": "🎓",
+	"adventurer": "⚔️", "courier": "📨", "landlady": "🔑", "fisher": "🎣",
+	"miller": "🌾", "baker": "🍞", "market warden": "🛡️",
+}
+
+# Place kind → glyph. "away" is deliberately NOT a place kind: it is absence, not a building, and it
+# gets its own glyph so an out-of-town adventurer never reads as "somewhere in the village".
+const PLACE_GLYPH := {
+	"inn": "🍺", "shop": "🏪", "workshop": "🔨", "market": "🛒",
+	"work": "🌊", "landmark": "🏛️", "home": "🏠",
+}
+const PLACE_GLYPH_AWAY := "🧭"
+
+# Clockwork mode → glyph, with asleep winning over the mode (a sleeping townee's mode is still
+# "home", and "asleep" is the more useful thing to know at a glance).
+#
+# haunt is 💬 ("off duty, out among people") and deliberately NOT 🍻, for two reasons found in the
+# slot-40 capture: 🍻 sat directly beside the inn's 🍺 in the Place column and the two amber mugs
+# were near-indistinguishable at 20px — different facts that looked alike, which is worse than
+# redundancy. And a haunt is not always the pub: Tam haunts the Guildhall Steps "watching the road",
+# where 🍻 was not merely vague but wrong.
+const MODE_GLYPH := {
+	"work": "💼", "home": "🏠", "haunt": "💬", "away": "🧭",
+}
+const MODE_GLYPH_ASLEEP := "😴"
+
+const DRIVE_GLYPH := {
+	"purse": "💰", "trade": "🤝", "heart": "❤️", "restlessness": "🌀",
+}
+
+const GLYPH_UNKNOWN := "❔"
+
+# Honorific-led names are the one case where the given-name+initial rule destroys the only
+# distinguishing token: "Widow Karsk" → "Widow K." identifies *less* than the full name does,
+# because "Widow" is a shared class and "Karsk" is the actual handle. Keep those whole.
+const NAME_HONORIFICS := ["widow", "widower", "old", "young", "goodwife", "goodman",
+	"father", "mother", "sister", "brother", "captain", "sergeant"]
+
 func _ready() -> void:
 	bridge = get_node("/root/FishbowlBridge")
 	# C# [Signal] delegates keep their PascalCase names in GDScript (unlike built-in signals).
@@ -117,11 +167,28 @@ func _build_roster(v: VBoxContainer) -> void:
 	roster_tree.columns = 5
 	roster_tree.hide_root = true
 	roster_tree.column_titles_visible = true
+	# Titles stay WORDS even though every cell under them is a glyph. The header is the only legend
+	# on screen: if it went emoji too there would be no anchor anywhere for a reader who doesn't know
+	# the key, and it costs nothing to keep — it renders once, not once per row, so it buys no density.
 	roster_tree.set_column_title(0, "Name")
 	roster_tree.set_column_title(1, "Role")
-	roster_tree.set_column_title(2, "Place now")
+	# "Place now" → "Place": a Tree column can never be narrower than its own title, so the longest
+	# title was taxing the narrowest column and starving Name. "now" was redundant anyway — the whole
+	# table is a now-readout, and the clock sits directly above it.
+	roster_tree.set_column_title(2, "Place")
 	roster_tree.set_column_title(3, "Doing")
 	roster_tree.set_column_title(4, "Top")
+	# Four of the five columns are now a single glyph (or a glyph + a short number), so hand the
+	# reclaimed width back to Name — the only column left carrying variable-length text. Ratios only
+	# split the *leftover* after minimums, so Top also gets an explicit floor: it must always fit
+	# "💰 0.60", and a clipped readout value would be worse than a clipped name.
+	roster_tree.set_column_expand_ratio(0, 8)
+	roster_tree.set_column_expand_ratio(1, 1)
+	roster_tree.set_column_expand_ratio(2, 1)
+	roster_tree.set_column_expand_ratio(3, 1)
+	roster_tree.set_column_expand_ratio(4, 2)
+	roster_tree.set_column_custom_minimum_width(0, 110)
+	roster_tree.set_column_custom_minimum_width(4, 74)
 	roster_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	roster_tree.item_selected.connect(_on_roster_selected)
 	v.add_child(roster_tree)
@@ -198,12 +265,46 @@ func _refresh_roster() -> void:
 	var data = _j(bridge.GetRoster())
 	for t in data.townees:
 		var it := roster_tree.create_item(root)
-		it.set_text(0, t.name)
-		it.set_text(1, t.role)
-		it.set_text(2, "away" if t.away else t.place_name)
-		it.set_text(3, t.activity)
-		it.set_text(4, "%s %.2f" % [t.top_drive, t.top_value])
+
+		# Name — given name + surname initial; tooltip restores the full name.
+		it.set_text(0, _short_name(t.name))
+		it.set_tooltip_text(0, t.name)
+
+		# Role — tooltip carries the role word verbatim.
+		it.set_text(1, ROLE_GLYPH.get(t.role, GLYPH_UNKNOWN))
+		it.set_tooltip_text(1, t.role)
+
+		# Place now — keyed off the place kind, not the id, so a generated or hand-made place still
+		# maps. `away` keeps the projection's own semantics (it is the field the old code read).
+		if t.away:
+			it.set_text(2, PLACE_GLYPH_AWAY)
+			it.set_tooltip_text(2, "away")
+		else:
+			it.set_text(2, PLACE_GLYPH.get(t.place_kind, GLYPH_UNKNOWN))
+			it.set_tooltip_text(2, t.place_name)
+
+		# Doing — keyed off the clockwork mode, but the tooltip carries the authored activity prose
+		# ("tending the room"), which is richer than the mode word it was keyed from.
+		it.set_text(3, MODE_GLYPH_ASLEEP if t.asleep else MODE_GLYPH.get(t.mode, GLYPH_UNKNOWN))
+		it.set_tooltip_text(3, t.activity)
+
+		# Top — a readout, so the number stays; only the drive name becomes a glyph.
+		it.set_text(4, "%s %.2f" % [DRIVE_GLYPH.get(t.top_drive, GLYPH_UNKNOWN), t.top_value])
+		it.set_tooltip_text(4, "%s %.2f" % [t.top_drive, t.top_value])
+
 		it.set_metadata(0, t.id)
+
+## "Odile Vance" → "Odile V."  ·  "Petch" → "Petch" (mononym — no stray period)
+## "Widow Karsk" → "Widow Karsk" (honorific + name; see NAME_HONORIFICS)
+func _short_name(full: String) -> String:
+	var parts := full.strip_edges().split(" ", false)
+	if parts.size() == 0:
+		return full
+	if parts.size() == 1:
+		return parts[0]
+	if parts.size() == 2 and NAME_HONORIFICS.has(parts[0].to_lower()):
+		return "%s %s" % [parts[0], parts[1]]
+	return "%s %s." % [parts[0], parts[parts.size() - 1].substr(0, 1).to_upper()]
 
 func _refresh_places() -> void:
 	for c in places_box.get_children():
@@ -249,7 +350,14 @@ func _refresh_summary() -> void:
 	var s = _j(bridge.GetSummary(view_day))
 	register_label.text = "Day %d · register: %s" % [view_day, s.register]
 	for line in s.lines:
-		summary_box.add_child(_mk_label("• " + line.text, 12))
+		# Without autowrap a Label's minimum width is its whole single-line text, so one long
+		# summary line (~670px) became the Read column's minimum and the body HBox's stretch
+		# ratios could only divide what was left — starving the roster to ~250px and pushing its
+		# Top column out of view. The inspector's bio label two functions down already does this;
+		# the summary was just missed. Not part of the roster work — see the report.
+		var lbl := _mk_label("• " + line.text, 12)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		summary_box.add_child(lbl)
 
 func _refresh_stats() -> void:
 	var s = _j(bridge.GetStats(view_day))

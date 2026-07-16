@@ -32,12 +32,20 @@ public static class WorldView
         {
             string place = w.PlaceOf(t, slot);
             var (drive, val) = TopPressure(t);
+            bool known = w.Town.PlaceById.TryGetValue(place, out var p);
             arr.Add(new JsonObject
             {
                 ["id"] = t.Id, ["name"] = t.Name, ["role"] = t.Role, ["away"] = t.Away,
                 ["place"] = place,
-                ["place_name"] = w.Town.PlaceById.TryGetValue(place, out var p) ? p.Name : place,
+                ["place_name"] = known ? p!.Name : place,
+                // place_kind / mode / asleep are additive readout-only fields: they give the view a
+                // *stable, closed* key to map a row onto (place kind, clockwork mode) instead of the
+                // authored display prose, which is free text and changes whenever a day-plan is
+                // re-authored. Nothing here feeds ToHashNode — the day-hash is untouched.
+                ["place_kind"] = known ? p!.Kind : "",
                 ["activity"] = t.Activity.Length > slot ? t.Activity[slot] : "",
+                ["mode"] = t.Mode.Length > slot ? t.Mode[slot] : "",
+                ["asleep"] = t.Asleep.Length > slot && t.Asleep[slot],
                 ["top_drive"] = drive, ["top_value"] = Math.Round(val, 3),
             });
         }

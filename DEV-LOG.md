@@ -6,6 +6,75 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — the roster speaks emoji, and Godot's own docs say that shouldn't work
+
+The fish-bowl roster now reads `Odile V. · 🍺 · 🍺 · 💼 · 💰 0.62` instead of five columns of words.
+The name rule is given-name + surname initial; the other four columns are glyphs. This is the first
+step of a usability pass, not the end of one.
+
+**The thing that will surprise the next person: emoji render in full colour, for free, and the
+documentation says they shouldn't.** Godot 4.6's own `gui_using_fonts` page states plainly that
+COLR/CPAL emoji fonts are **not supported** — and Segoe UI Emoji, which Windows system-fallback
+resolves to, *is* COLR/CPAL. By the docs this should have produced monochrome outlines or tofu. It
+produced colour, including VS16 sequences (`⚔️ ❤️ 🛡️`) that had every opportunity to degrade to text
+presentation and didn't. Verified in pixels via GTH captures (`.captures/gth/smoke/002-slot20-roster.png`),
+then re-verified by grepping the roster path for `set_icon` / `ImageTexture` / `load_svg` / `FontFile`
+and finding **none** — these are plain strings through `set_text`, rendered by the stock font stack.
+No bundled asset, no theme change, no fallback configuration.
+
+**We did not chase the reconciliation, and the next person shouldn't either without cause.** The
+standing hypothesis — *unverified, do not cite as fact* — is that the docs are imprecise about COLRv0
+vs COLRv1: FreeType has rendered COLRv0's layered-solid-colour glyphs through a long-standing layer
+API, while COLRv1's gradient machinery is a newer, separate path. "COLR/CPAL unsupported" is plausibly
+an over-broad claim about v1. Nobody read Godot's source to confirm it. The pixels were decisive and
+the decision didn't depend on the mechanism.
+
+**The real risk is platform, not format, and it is unmitigated.** This works because *Windows* ships
+an emoji font the fallback can find. A Linux checkout with no emoji font gets tofu, and **nothing in
+the repo would catch it** — no test asserts a glyph rendered, and `read_element` returning `"🍺"` only
+proves the string was set. If cross-platform glyph fidelity is ever wanted, the researched answer is
+Twemoji's **SVG** source rasterized at runtime via `Image.load_svg_from_string` (~86 µs per 32px icon,
+thread-safe, ships in export templates — the "SVG is editor-only" claim is stale). Twemoji *as a font*
+is a dead end: `mozilla/twemoji-colr` is COLR/CPAL by construction. Parked, not adopted.
+
+**Why three fields were added to `Api/WorldView.cs` when this is meant to be presentation-only.**
+Keying glyphs off `activity` was the obvious zero-core-change route and it is a trap: `activity` is
+**authored prose** (~35 free-text strings like "a pint before home"), so work/haunt/home are not
+recoverable from it, and the mapping would break the first time a day-plan was re-authored. Clockwork
+already computes `mode` and `asleep` as closed enums and was discarding them at the projection
+boundary; `place_kind` likewise. Exposing them is additive, touches no hash input (`ComputeDayHash`
+never reaches `WorldView`), and keeps the *rule* in the core where it belongs while the *glyph* stays
+in GDScript. `dotnet test` 22/22.
+
+**Two judgment calls worth knowing about.** `Widow Karsk` keeps her full name: the mechanical rule
+yields "Widow K.", which identifies *less* than the full name, because "Widow" is a shared class and
+"Karsk" is the actual handle — abbreviating the only distinguishing token defeats the column. And
+haunt is `💬`, not `🍻`, for a reason only pixels could have found: `🍻` sat beside the inn's `🍺` in
+the adjacent column and the two amber mugs were indistinguishable at 20px — different facts that
+looked alike, which is worse than redundancy. It was also simply wrong for Tam, who haunts the
+Guildhall Steps.
+
+**Column titles stayed words on purpose.** Every emoji column's tooltip carries the original word, so
+nothing the table used to say was destroyed — but a tooltip is only discoverable if you know to hover.
+The header row is the only always-visible legend, and emoji titles would leave a cold reader with no
+anchor anywhere on screen. It renders once, not once per row, so it buys no density either.
+
+**Swept up en route:** the Dawn Summary labels had no `autowrap_mode`, so after day 1 each demanded its
+full ~670px single-line width as the Read column's minimum, starving the roster and pushing `Top`
+**out of the viewport entirely**. Pre-existing, unrelated to emoji, and invisible until a day had run —
+which is why the first capture looked clean. Fixed here because "does the layout survive?" cannot be
+answered honestly in a window a different bug has already broken.
+
+**Also recorded: `GTH.B9`** — `run_scenario` over MCP returns `{}` and executes nothing, while the
+file-based runner accepts identical steps and works. Open, not yet independently reproduced. It is the
+**fourth** instance of the `B2`/`B3`/`B7` disease, and the plan now argues the fix has to be structural
+rather than a fourth patch: the lesson *"a harness must not have a way to fail quietly"* keeps being
+re-learned one module at a time by whoever is first to call something. Worth noting the pattern —
+`B9` was invisible until a consumer used MCP instead of a scenario file, exactly as `B7`/`B8` were
+invisible until a second app shape existed. **The harness's bugs live wherever a consumer has not been.**
+
+---
+
 ## 2026-07-16 — GTH.Q4 ruled full convergence — and the second consumer found two bugs within the hour
 
 Panda ruled the last four open GTH questions. `GTH.Q2` (3D hit-reporting) and `GTH.M5`'s optional C#
