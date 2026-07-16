@@ -36,7 +36,9 @@ fishbowl/
 ```
 
 **Entry-point chain:** this file → `core/` (the sim) and `scripts/` (the view) → `data/`.
-The core is where the logic and determinism live; GDScript is presentation only.
+The core is where the logic and determinism live; GDScript is presentation only. To **drive or verify the
+running observatory**, use the GTH harness (§ *Test harness* below) — a `tests/harness/` scenario or the
+`mcp__gth-fishbowl__*` tools — rather than rolling a new one or clicking by hand.
 
 ---
 
@@ -134,6 +136,11 @@ dotnet build Fishbowl.csproj
 # Godot (class_name registration needs the import pass on a fresh checkout)
 "C:/Program Files/godot/godot.exe" --headless --path . --import
 # then run via the godot MCP (run_project / get_debug_output / stop_project); F9 → .captures/
+
+# verify the UI end-to-end with the GTH harness (synthetic input + capture) — see "Test harness" below.
+# prescripted (rendered window; --headless has no framebuffer to capture):
+"C:/Program Files/godot/godot.exe" --path . -- --gth-scenario=res://tests/harness/smoke.json --gth-exit-after
+# or live from chat: the mcp__gth-fishbowl__* tools (session_start · snapshot · click_element · capture)
 ```
 
 ## Test harness (GTH — `addons/gd_test_harness/`)
@@ -153,11 +160,23 @@ drivers over one GDScript core (InputInjector / SceneProbe / Capturer / Bridge):
   `utils/dotnet/gth-mcp-server/` (.NET 8, live-verified 2026-07-15), **registered project-scoped in the repo
   `.mcp.json` as `gth-fishbowl`** (launch mode). After a fresh clone: `dotnet build
   utils/dotnet/gth-mcp-server`, restart the client, approve the server — then drive the observatory from chat.
+  Tools appear as **`mcp__gth-fishbowl__*`**: `session_start` · `snapshot` · `query_element` · `read_element` ·
+  `hit_test` · `click_at` · `click_element` · `press_key` · `capture` · `wait_for` · `run_scenario`. Launch
+  mode starts (and stops) the observatory for you — no separate `run_project` needed.
 
-Stable handles: the observatory tags its readouts/buttons with `test_id` meta (`clock`, `roster`,
-`btn-step`, …) because the UI is code-built (auto-generated node names are fragile). See the addon's
-`README.md` for the command API and activation precedence. **Captures need a rendered window** — pixels
-are blank under `--headless` (`GTH.D7`).
+**Stable handles** — the observatory tags every readout / button / knob with `test_id` meta, because the UI
+is code-built and auto-generated node names (`@HSlider@68`) shift on relayout. Resolve by these, not paths:
+
+| Group | `test_id`s |
+|---|---|
+| Readouts | `clock` · `hash` · `seed` · `register` · `stats` · `summary` |
+| Tables | `roster` · `chronicle` |
+| Buttons | `btn-step` · `btn-dawn` · `btn-run3` · `btn-reseed` · `btn-generate` · `btn-townee` · `btn-place` · `btn-storylets` · `seed-spin` |
+| Knobs | `knob-actionability` · `knob-storylet_rate` · `knob-pressure_rates.trade` · `knob-summary_lines` · `knob-hearsay_required` · `knob-bio_marks_enabled` |
+
+The **knobs are the `VFB.Q1` tuning surface** (drive them, don't change code) — `drag` a slider by handle, or
+`click_element` a checkbox. See the addon's `README.md` for the full command API and activation precedence.
+**Captures need a rendered window** — pixels are blank under `--headless` (`GTH.D7`).
 
 ## Rulings adopted (parent-plan "The asks")
 

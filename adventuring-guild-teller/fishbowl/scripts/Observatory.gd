@@ -442,6 +442,7 @@ func _slider(knob: String, lo: float, hi: float, step: float, val: float, cb: Ca
 	lbl.custom_minimum_size = Vector2(160, 0)
 	row.add_child(lbl)
 	var sl := HSlider.new()
+	sl.set_meta("test_id", "knob-" + knob)  # GTH: the VFB.Q1 tuning surface needs a stable handle
 	sl.min_value = lo
 	sl.max_value = hi
 	sl.step = step
@@ -455,6 +456,7 @@ func _slider(knob: String, lo: float, hi: float, step: float, val: float, cb: Ca
 
 func _check(knob: String, on: bool, cb: Callable) -> Control:
 	var c := CheckBox.new()
+	c.set_meta("test_id", "knob-" + knob)  # GTH: stable handle (see _slider)
 	c.text = knob
 	c.button_pressed = on
 	c.toggled.connect(cb)
