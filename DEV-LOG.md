@@ -49,7 +49,18 @@ GTH's own four defects (region-capture marshalling, `press_key` dropping `repeat
 clamping to the viewport, hit-stack mis-attribution over embedded Windows) are recorded in
 `plans/PLAN-godot-test-harness.md`. The `query_element` one matters most: it reported
 `on_screen: true` for a control at x=1276 in a 1280 viewport. For a *test* harness a false "reachable"
-is the same failure direction as the false "unchanged" that the sha-vs-phash decision already rejected.
+is the same failure direction as the false "unchanged" that the sha-vs-phash decision already rejected —
+**one day earlier, in a different module of the same addon** (Capturer vs SceneProbe). The lesson was
+written down and did not transfer, because nothing carried it into the prompt that needed it. Worth
+remembering the next time a rule feels too obvious to restate: Rule 1 is passed verbatim into every
+sub-agent prompt for exactly this reason, and this is what it looks like when a lesson *isn't*.
+
+Spun the story of this pass out into **`AGENT-FEED.md`** (new, root, flavor tier — pointer added to
+`CLAUDE.md`'s where-to-look): a social-feed-format retelling of the agent that was accused of being
+stuck while it was busy auditing its own tools. The format is a joke; the facts are load-bearing and
+every citation resolves. It exists because "how agentic development gets odd" is worth examples, and
+this pass produced a good one: a sub-agent that debugged the harness *through* the harness, via a 4px
+sliver of a button the harness had told it was fully clickable.
 
 ## 2026-07-16 — PNO: nine rulings landed, three of the spec's own arguments struck, golden split out of `data/`
 

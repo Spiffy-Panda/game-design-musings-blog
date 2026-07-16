@@ -160,6 +160,10 @@ Applies to **any page**, not just musing-formatted ones.
 - **`PLAN.md`** — index of active/completed plans (`plans/PLAN-<slug>.md`).
 - **`PROJECT-PITCH.md`** — why this project exists + decisions table.
 - **`DEV-LOG.md`** — append-only decision log (newest on top).
+- **`AGENT-FEED.md`** — flavor, not a tier: the moments agentic development got odd enough to retell,
+  written as a social feed. **The format is a joke; the facts are not** — every number real, every
+  citation resolving, every quote verbatim. Append when something genuinely strange happens (an agent
+  auditing its own tools, a green test hiding a dead feature); don't manufacture material for it.
 - **`MUSING-CONFIG.json`** — registry of musings the site build reads (folder, slug, name, description, hidden).
 - **`musing-tech-notes.md`** — the *how* of musings: build pipeline, Markdown subset, per-folder build contract. Canonical, shared across musings.
 - **`site/SITE.md`** — spec for the published site output (structure, the build step, how a musing becomes a page).
