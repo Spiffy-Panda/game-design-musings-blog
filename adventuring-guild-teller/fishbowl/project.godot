@@ -1,0 +1,29 @@
+; Fishbowl Observatory — Godot 4.6 (mono). See FISHBOWL.md.
+; Engine configuration file. Regenerated/edited by the Godot editor on open.
+
+config_version=5
+
+[application]
+
+config/name="Fishbowl Observatory"
+run/main_scene="res://scenes/Observatory.tscn"
+config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+FishbowlBridge="*res://cs/FishbowlBridge.cs"
+
+[dotnet]
+
+project/assembly_name="Fishbowl"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=800
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

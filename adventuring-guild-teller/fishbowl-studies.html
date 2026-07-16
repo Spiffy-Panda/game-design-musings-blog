@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventuring Guild Teller — fish-bowl studies: six machineries for a town that gossips</title>
+<style>
+  :root{
+    --ground:#f1ecdc; --surface:#f9f6ec; --line:#dcd2b6; --line2:#c3b795;
+    --ink:#2a2419; --ink2:#57503f; --ink3:#7a6f58;
+    --green:#2f6b4f; --red:#9c3122; --brass:#8a6d1f;
+    --green-wash:rgba(47,107,79,.07); --red-wash:rgba(156,49,34,.06); --brass-wash:rgba(138,109,31,.08);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101310; --surface:#171b17; --line:#2b2f27; --line2:#434a3e;
+      --ink:#e5e1d3; --ink2:#b5af9e; --ink3:#8f8a78;
+      --green:#6fc59c; --red:#ff937e; --brass:#d5b45f;
+      --green-wash:rgba(111,197,156,.06); --red-wash:rgba(255,147,126,.05); --brass-wash:rgba(213,180,95,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; background:var(--ground); color:var(--ink); font:16.5px/1.66 var(--serif);
+       background-image:radial-gradient(46% 40% at 90% 2%, var(--brass-wash), transparent 70%),
+                        radial-gradient(50% 44% at 4% 100%, var(--green-wash), transparent 70%)}
+  .wrap{max-width:880px; margin-inline:auto; padding:clamp(38px,7vh,80px) clamp(20px,5vw,48px) 72px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 12px}
+  h1{font:640 clamp(28px,5vw,42px)/1.1 var(--serif); letter-spacing:-.01em; margin:0 0 12px}
+  .sub{font-size:17.5px; color:var(--ink2); max-width:66ch; margin:0 0 8px}
+  h2{font:640 22px/1.3 var(--serif); margin:46px 0 4px; padding-top:14px; border-top:3px double var(--line2)}
+  .h2sub{font:500 12px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 16px}
+  p{max-width:70ch; margin:0 0 14px; color:var(--ink2)}
+  strong{color:var(--ink)}
+  code{font:13.5px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+  a{color:var(--green); text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+
+  /* study cards (the research page's .game pattern, verdicts widened to adopt/mine/decline) */
+  .study{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 18px 12px; margin:0 0 12px}
+  .study .hd{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:0 0 5px}
+  .study .id{font:600 11.5px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+             border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .study h3{font:650 17.5px/1.3 var(--serif); margin:0}
+  .study .meta{font:500 12px/1.4 var(--mono); color:var(--ink3); white-space:normal}
+  .study p{margin:0 0 8px; font-size:14.5px; line-height:1.6}
+  .study .verdict{margin:0; border-top:1px dashed var(--line); padding-top:8px; font-size:14px; line-height:1.65}
+  .verdict b{font:700 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; margin-right:.35em}
+  .verdict b.adopt{color:var(--green)} .verdict b.mine{color:var(--brass)} .verdict b.decline{color:var(--red)}
+
+  .lessons{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--green);
+           border-radius:4px; padding:14px 20px 6px; margin:16px 0 6px}
+  .lessons .lt{font:700 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--green); display:block; margin:2px 0 10px}
+  .lessons ul{margin:0 0 10px; padding-left:18px}
+  .lessons li{font-size:14.5px; line-height:1.6; color:var(--ink2); margin-bottom:7px}
+
+  /* the matrix — value is carried by glyph SHAPE (● ◐ ○); color only reinforces */
+  .mx-wrap{overflow-x:auto; margin:14px 0 6px; border:1px solid var(--line); border-radius:4px; background:var(--surface)}
+  table.mx{border-collapse:collapse; width:100%; min-width:640px; font:14px/1.4 var(--sans)}
+  .mx th, .mx td{padding:9px 10px; border-bottom:1px solid var(--line); text-align:center}
+  .mx thead th{font:600 10.5px/1.35 var(--sans); letter-spacing:.09em; text-transform:uppercase;
+               color:var(--ink3); border-bottom:2px solid var(--line2); vertical-align:bottom}
+  .mx td.rowhd, .mx th.rowhd{text-align:left; font:600 13.5px/1.35 var(--serif); color:var(--ink); white-space:nowrap}
+  .mx td.rowhd .id{font:600 10.5px/1 var(--mono); color:var(--ink3); margin-right:.5em}
+  .mx tbody tr:last-child td{border-bottom:0}
+  .mx tr.pick td{background:var(--green-wash); border-top:2px solid var(--green)}
+  .mx .g{font-size:15px; line-height:1}
+  .mx .s{color:var(--green)} .mx .p{color:var(--brass)} .mx .w{color:var(--red)}
+  .mx-legend{font:500 12.5px/1.6 var(--sans); color:var(--ink3); margin:8px 0 14px}
+  .mx-legend .g{font-size:14px}
+
+  /* the layer diagram */
+  .fig{margin:18px 0 8px; text-align:center}
+  .fig svg{width:100%; max-width:600px; height:auto}
+  .figcap{font:500 12.5px/1.6 var(--sans); color:var(--ink3); max-width:60ch; margin:6px auto 0; text-align:center}
+
+  .foot{margin-top:48px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.9 var(--sans); color:var(--ink3); max-width:76ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--green); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Adventuring Guild Teller</a></li>
+        <li><span aria-current="page">Fish-Bowl Studies</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow">Design studies · pillar III, the machinery</p>
+    <h1>How should the fish-bowl think?</h1>
+    <p class="sub"><a href="pitch.html">The pitch</a> fixed what the bowl must <em>produce</em>;
+    the <a href="research.html">desk research</a> fixed the <em>register</em> it must speak in.
+    Neither picked the machinery. This page surveys six ways games have simulated a town —
+    at surface level, on purpose — scores them against the bowl's actual job, and composites
+    a pick. The pick is then specced as a playable prototype in
+    <a href="fishbowl.html">the fish-bowl proposal</a>.</p>
+
+    <h2>The job description</h2>
+    <p class="h2sub">criteria first, taken from the settled claims — the machinery serves these</p>
+    <p>The bowl is the <strong>substrate</strong> the desk and floor act on (<code>AGT.2</code>).
+    It is read, not watched: the player meets it as a dawn summary in the gossip register
+    (<code>AGT.10</code>), while expeditions and lives run async underneath the daily loop
+    (<code>AGT.3</code>). So the question is never "does the town behave believably at
+    60&nbsp;fps" — it is "does the town <em>generate tellable material</em>, and can a reader
+    always find out why." Six criteria, each traceable to a settled claim or risk:</p>
+    <div class="lessons">
+      <span class="lt">What the machinery is scored on</span>
+      <ul>
+        <li><strong>Gossip yield</strong> — distinct, tellable events per night at village
+        scale; the summary must never starve or repeat itself into wallpaper
+        (<code>AGT.10</code>, <code>AGR.3</code>).</li>
+        <li><strong>Explainability</strong> — every event traceable to citable causes.
+        Majesty's curdle is the standing warning: autonomy delights until nobody can say
+        <em>why</em> (<code>AGR.2</code>).</li>
+        <li><strong>Authorability</strong> — a player-authored townee (paperdoll + statlet +
+        prose, never a scripter) must slot into the machine whole (<code>AGT.9</code>,
+        <code>AGR.5</code>) — and directed feelings must be first-class, because acceptance
+        is two affinity scores (<code>AGT.8</code>).</li>
+        <li><strong>Dawn-cadence fit</strong> — the machinery must tolerate being read once
+        a day. Systems built to be watched live waste their best material offscreen
+        (<code>AGT.3</code>, <code>AGT.11</code>).</li>
+        <li><strong>Build weight</strong> — implementation <em>and tuning</em> cost in a
+        Godot&nbsp;/&nbsp;C# prototype. Scored as lightness: ● means cheap.</li>
+        <li><strong>Determinism</strong> — same seed, same week. Not a claim; a research
+        requirement — the prototype exists to answer questions, and unrepeatable runs
+        answer nothing.</li>
+      </ul>
+    </div>
+
+    <h2>Six machineries</h2>
+    <p class="h2sub">surveyed at surface level — each ends in adopt / mine / decline</p>
+
+    <div class="study" id="fbs-1">
+      <div class="hd"><span class="id">FBS.1</span><h3>Clockwork timetables</h3></div>
+      <p class="meta">Stardew Valley (town half) · The Legend of Zelda: Majora's Mask · Animal Crossing</p>
+      <p>Every resident owns an authored timetable — place by hour, weekday and festival
+      variants, a few exception rules (rain, holidays). The town is a train station: the
+      7:10 always arrives, and the player learns the board. Stardew's social half runs on
+      exactly this legibility (the research page already took it); Majora's Mask is the form
+      at its most polished — a 72-hour town you can set a watch by.</p>
+      <p>And that is the whole trick: clockwork <em>presents</em> lives, it does not generate
+      events. Nothing responds to anything; a pure timetable bowl starves the summary by
+      construction. Majora's is gorgeous because every minute was authored — which is
+      precisely the budget a procedural town doesn't have.</p>
+      <p class="verdict"><b class="adopt">Adopt — as Layer 1.</b> The stage, the schedule,
+      the co-presence: who is where, together, when. Cheap, deterministic, findable
+      (<code>AGR.2</code> loves it), and the substrate every other candidate turns out to
+      need. Never the drama.</p>
+    </div>
+
+    <div class="study" id="fbs-2">
+      <div class="hd"><span class="id">FBS.2</span><h3>Needs &amp; utility agents</h3></div>
+      <p class="meta">The Sims lineage (Maxis, 2000 →) — decaying meters, smart objects that advertise</p>
+      <p>Agents carry decaying need meters; the world advertises satisfactions (the smart-object
+      trick — the fridge broadcasts what it cures); each tick, the agent takes the
+      highest-scoring bid. The result is the famous fishbowl feel: lives that visibly drive
+      themselves, and <em>wants</em> the rest of the game can service — the research page
+      already earmarked wants as hooks the desk can route.</p>
+      <p>Two problems for this bowl. Behavior isn't story: a utility town converges on
+      eat-work-sleep loops that are true but untellable. And the arbitration is soup —
+      "why did she skip lunch?" has a fourteen-term answer, which is exactly the opacity
+      <code>AGR.2</code> forbids. The Sims also earns its keep by being <em>watched live</em>;
+      a bowl read at dawn throws that away.</p>
+      <p class="verdict"><b class="mine">Mine — for the meters.</b> Keep slow-moving drives
+      as <em>pressure</em> that arms events (Layer 2 fuel); drop per-tick action arbitration
+      entirely. The meters stay; the soup goes.</p>
+    </div>
+
+    <div class="study" id="fbs-3">
+      <div class="hd"><span class="id">FBS.3</span><h3>Goal planners</h3></div>
+      <p class="meta">GOAP after F.E.A.R. (Monolith, 2005) · Oblivion's Radiant AI as the cautionary tale</p>
+      <p>Agents hold goals; a planner chains world-model actions to reach them. Jeff Orkin's
+      F.E.A.R. write-up made the pattern famous, and it genuinely produces novel chains —
+      the machine improvises. The Elder Scrolls IV shipped the town-scale version as Radiant
+      AI, and the lore around its pre-release demos (townsfolk creatively wrecking quest
+      state until the leash went back on) is half legend — but the tuning tax the legend
+      names is real.</p>
+      <p>For this bowl it's the wrong expense: plans are opaque artifacts (explaining one
+      means dumping a search trace), authoring the action/world model dwarfs authoring
+      timetables, and nobody here even <em>watches</em> the town move — the prototype is
+      readouts, not pathing. Improvisation is the one thing we can't explain at dawn.</p>
+      <p class="verdict"><b class="decline">Decline.</b> Every point it scores is a point
+      somewhere this design doesn't keep score.</p>
+    </div>
+
+    <div class="study" id="fbs-4">
+      <div class="hd"><span class="id">FBS.4</span><h3>Social practices &amp; storylets</h3></div>
+      <p class="meta">Prom Week / Comme il Faut (UCSC EIS, 2012) · Versu (Evans &amp; Short, 2013) · King of Dragon Pass · the Fallen London lineage</p>
+      <p>Social state (directed feelings, statuses, shared history) plus a library of
+      authored moves and scenes, each with preconditions and effects; whatever is eligible
+      fires, weighted. Prom Week's social physics and Versu's practices are the
+      deep dialect; storylets — King of Dragon Pass's scenes, Fallen London's deck — are the
+      tractable one. Both aim drama exactly where the state is interesting.</p>
+      <p>Two properties make it the spine candidate. <strong>Explainability comes free:</strong>
+      a fired event can print its own preconditions — the because-list <code>AGR.2</code>
+      demands is just the rule's left-hand side. And <strong>directed dyads are native:</strong>
+      <code>AGT.8</code>'s two-score acceptance (teller-trust × target-liking) drops into the
+      state model without adaptation. The cost is honest: the library <em>is</em> the
+      content, someone must keep writing it, and alone it's a deck with no table — it needs
+      a substrate generating co-presence and pressure to check preconditions against.</p>
+      <p class="verdict"><b class="adopt">Adopt — as Layer 3.</b> The event grammar:
+      JSON-authored rules over the clockwork's co-presence and the meters' pressure,
+      emitting chronicle entries that carry their own causes.</p>
+    </div>
+
+    <div class="study" id="fbs-5">
+      <div class="hd"><span class="id">FBS.5</span><h3>Colony work &amp; economy</h3></div>
+      <p class="meta">RimWorld (Ludeon, 2018) · Dwarf Fortress (Bay 12, 2006 →)</p>
+      <p>Needs plus job assignment plus real resource flows; stories emerge when the flows
+      fail. RimWorld is the research page's anecdote-engine benchmark for a reason — but
+      look at what its anecdotes are made of: harvests, sieges, and hauling disasters.
+      Colony-survival stories, generated at colony stakes.</p>
+      <p>A village of twelve isn't a production chain, and the desk's town doesn't need one:
+      "Petch's shelves ran bare" is one scalar going low, not a commodity graph. Economy
+      simulation is a correctness tarpit (every flow is a new way to be wrong), and its
+      drama arrives at scales the bowl will never run.</p>
+      <p class="verdict"><b class="decline">Decline the ledger</b> — and keep the moral:
+      livelihood gives days texture and failures stakes. It survives as two Layer-2 drives
+      (<code>purse</code>, <code>trade</code>), not as flows.</p>
+    </div>
+
+    <div class="study" id="fbs-6">
+      <div class="hd"><span class="id">FBS.6</span><h3>Knowledge &amp; rumor propagation</h3></div>
+      <p class="meta">Talk of the Town / Bad News (Ryan et al., UCSC) · Shadows of Doubt (ColePowered, 2023) · Crusader Kings III</p>
+      <p>Agents hold <em>beliefs about facts</em> — who knows what, learned from whom,
+      possibly wrong — and information travels through co-presence, decaying and mutating
+      as it goes. Talk of the Town simulated more than a century of a small town's hearsay
+      to power the live performance piece Bad News; Shadows of Doubt runs a whole
+      information economy; Crusader Kings trades secrets as currency.</p>
+      <p>For a game whose pillar rule is <em>"the summary is gossip, not telemetry,"</em>
+      this is the only candidate that makes the rule literal: the dawn report becomes what
+      the town <em>heard</em>, not what the engine logged. The full-fat version is a
+      research project (Talk of the Town is famously deeper than it is playable) — but one
+      hop of it is nearly free once clockwork co-presence exists: an event reaches the
+      summary only if someone was there to carry it.</p>
+      <p class="verdict"><b class="mine">Mine — the thin slice.</b> A heard-it-from layer
+      (witness → carrier → summary) riding the co-presence graph. Belief distortion,
+      misremembering, and long-term memory stay declined until the bowl earns them.</p>
+    </div>
+
+    <h2>The matrix</h2>
+    <p class="h2sub">surface-level scores, argued in the entries above — not measurements</p>
+    <p class="mx-legend">Reading: <span class="g s">●</span> serves the bowl well ·
+    <span class="g p">◐</span> partial / with caveats · <span class="g w">○</span> poorly.
+    <em>Build weight is scored as lightness</em> (● = cheap to build and tune). Value is
+    carried by the glyph shape; color only reinforces it.</p>
+    <div class="mx-wrap">
+      <table class="mx">
+        <thead>
+          <tr>
+            <th class="rowhd">Machinery</th>
+            <th>Gossip<br>yield</th>
+            <th>Explain-<br>ability</th>
+            <th>Author-<br>ability</th>
+            <th>Dawn-<br>cadence fit</th>
+            <th>Build<br>weight</th>
+            <th>Deter-<br>minism</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.1</span>Clockwork timetables</td>
+            <td><span class="g w" title="Gossip yield: poor — generates no events" aria-label="poor">○</span></td>
+            <td><span class="g s" title="Explainability: strong" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Authorability: strong — templates" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Dawn-cadence fit: strong" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Build weight: light" aria-label="light">●</span></td>
+            <td><span class="g s" title="Determinism: strong" aria-label="strong">●</span></td>
+          </tr>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.2</span>Needs &amp; utility</td>
+            <td><span class="g p" title="Gossip yield: behavior, not stories" aria-label="partial">◐</span></td>
+            <td><span class="g w" title="Explainability: poor — arbitration soup" aria-label="poor">○</span></td>
+            <td><span class="g p" title="Authorability: tuning-heavy" aria-label="partial">◐</span></td>
+            <td><span class="g p" title="Dawn-cadence fit: built to be watched live" aria-label="partial">◐</span></td>
+            <td><span class="g p" title="Build weight: moderate" aria-label="moderate">◐</span></td>
+            <td><span class="g s" title="Determinism: fine when seeded" aria-label="strong">●</span></td>
+          </tr>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.3</span>Goal planners (GOAP)</td>
+            <td><span class="g p" title="Gossip yield: novel but unaimed" aria-label="partial">◐</span></td>
+            <td><span class="g w" title="Explainability: poor — plans are search traces" aria-label="poor">○</span></td>
+            <td><span class="g w" title="Authorability: action/world model authoring is heavy" aria-label="poor">○</span></td>
+            <td><span class="g w" title="Dawn-cadence fit: built for realtime AI" aria-label="poor">○</span></td>
+            <td><span class="g w" title="Build weight: heavy, tuning tax" aria-label="heavy">○</span></td>
+            <td><span class="g p" title="Determinism: planner tie-breaks need care" aria-label="partial">◐</span></td>
+          </tr>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.4</span>Social practices &amp; storylets</td>
+            <td><span class="g s" title="Gossip yield: drama on demand" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Explainability: preconditions are the because-list" aria-label="strong">●</span></td>
+            <td><span class="g p" title="Authorability: content treadmill" aria-label="partial">◐</span></td>
+            <td><span class="g s" title="Dawn-cadence fit: fires whenever checked" aria-label="strong">●</span></td>
+            <td><span class="g p" title="Build weight: moderate" aria-label="moderate">◐</span></td>
+            <td><span class="g s" title="Determinism: strong" aria-label="strong">●</span></td>
+          </tr>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.5</span>Colony work &amp; economy</td>
+            <td><span class="g p" title="Gossip yield: colony-scale stories, wrong stakes" aria-label="partial">◐</span></td>
+            <td><span class="g p" title="Explainability: flow failures traceable but diffuse" aria-label="partial">◐</span></td>
+            <td><span class="g p" title="Authorability: jobs are authorable, flows are not" aria-label="partial">◐</span></td>
+            <td><span class="g p" title="Dawn-cadence fit: workable" aria-label="partial">◐</span></td>
+            <td><span class="g w" title="Build weight: economy correctness tarpit" aria-label="heavy">○</span></td>
+            <td><span class="g s" title="Determinism: strong" aria-label="strong">●</span></td>
+          </tr>
+          <tr>
+            <td class="rowhd"><span class="id">FBS.6</span>Knowledge &amp; rumor</td>
+            <td><span class="g s" title="Gossip yield: gossip, literally" aria-label="strong">●</span></td>
+            <td><span class="g p" title="Explainability: belief chains get deep" aria-label="partial">◐</span></td>
+            <td><span class="g s" title="Authorability: rides existing events" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Dawn-cadence fit: made for morning reports" aria-label="strong">●</span></td>
+            <td><span class="g w" title="Build weight: full-fat is a research project (thin slice: moderate)" aria-label="heavy">○</span></td>
+            <td><span class="g s" title="Determinism: strong" aria-label="strong">●</span></td>
+          </tr>
+          <tr class="pick">
+            <td class="rowhd"><span class="id">pick</span>CPS composite (below)</td>
+            <td><span class="g s" title="Gossip yield: strong" aria-label="strong">●</span></td>
+            <td><span class="g s" title="Explainability: strong" aria-label="strong">●</span></td>
+            <td><span class="g p" title="Authorability: storylet treadmill stays the honest risk" aria-label="partial">◐</span></td>
+            <td><span class="g s" title="Dawn-cadence fit: strong" aria-label="strong">●</span></td>
+            <td><span class="g p" title="Build weight: moderate" aria-label="moderate">◐</span></td>
+            <td><span class="g s" title="Determinism: strong" aria-label="strong">●</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>No single machinery clears the bar — the two adopts fail in opposite directions
+    (clockwork can't generate, storylets can't stand alone), which is the tell that the
+    answer is a composition, not a winner.</p>
+
+    <h2>The composite — a clockwork town, under pressure, that files events</h2>
+    <p class="h2sub">CPS: clockwork · pressures · storylets, plus a summarizer wearing the gossip register</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 600 366" role="img" aria-label="CPS architecture: clockwork feeds co-presence, pressures feed fuel, storylets write chronicle entries; the summarizer reads the chronicle through the hearsay filter and actionability dial into the dawn summary and bio marks.">
+        <defs>
+          <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="var(--ink3, #7a6f58)"/>
+          </marker>
+        </defs>
+        <!-- layer boxes -->
+        <g stroke-width="1.5" fill="var(--surface, #f9f6ec)">
+          <rect x="18" y="14" width="270" height="64" rx="4" stroke="var(--green, #2f6b4f)"/>
+          <rect x="18" y="112" width="270" height="64" rx="4" stroke="var(--brass, #8a6d1f)"/>
+          <rect x="18" y="210" width="270" height="64" rx="4" stroke="var(--red, #9c3122)"/>
+          <rect x="330" y="112" width="252" height="64" rx="4" stroke="var(--line2, #c3b795)"/>
+          <rect x="330" y="240" width="252" height="106" rx="4" stroke="var(--ink3, #7a6f58)" stroke-dasharray="5 4"/>
+        </g>
+        <!-- layer labels -->
+        <g fill="var(--ink, #2a2419)" text-anchor="start">
+          <text x="34" y="40" style="font:600 15px 'Avenir Next','Segoe UI',sans-serif">L1 · Clockwork</text>
+          <text x="34" y="60" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">day-plans → who is where, together</text>
+          <text x="34" y="138" style="font:600 15px 'Avenir Next','Segoe UI',sans-serif">L2 · Pressures</text>
+          <text x="34" y="158" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">purse · trade · heart · restlessness · regard</text>
+          <text x="34" y="236" style="font:600 15px 'Avenir Next','Segoe UI',sans-serif">L3 · Storylets</text>
+          <text x="34" y="256" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">predicates fire → state changes + entries</text>
+          <text x="346" y="138" style="font:600 15px 'Avenir Next','Segoe UI',sans-serif">The Chronicle</text>
+          <text x="346" y="158" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">every entry carries its because-list</text>
+          <text x="346" y="266" style="font:600 15px 'Avenir Next','Segoe UI',sans-serif">The Summarizer</text>
+          <text x="346" y="286" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">hearsay filter → tellability pick</text>
+          <text x="346" y="304" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">actionability dial → dawn summary</text>
+          <text x="346" y="322" style="font:12.5px Georgia,serif" fill="var(--ink2, #57503f)">marked events → bio one-liners</text>
+        </g>
+        <!-- flows -->
+        <g stroke="var(--ink3, #7a6f58)" stroke-width="1.5" fill="none" marker-end="url(#arr)">
+          <path d="M153 78 V108"/>
+          <path d="M153 176 V206"/>
+          <path d="M288 242 C 320 242, 320 176, 330 160"/>
+          <path d="M456 176 V236"/>
+          <path d="M288 46 C 330 46, 400 60, 430 108"/>
+        </g>
+        <g fill="var(--ink3, #7a6f58)" text-anchor="start">
+          <text x="160" y="98" style="font:11px 'Avenir Next','Segoe UI',sans-serif">context</text>
+          <text x="160" y="196" style="font:11px 'Avenir Next','Segoe UI',sans-serif">fuel</text>
+          <text x="300" y="212" style="font:11px 'Avenir Next','Segoe UI',sans-serif">entries</text>
+          <text x="464" y="210" style="font:11px 'Avenir Next','Segoe UI',sans-serif">at dawn</text>
+          <text x="382" y="84" style="font:11px 'Avenir Next','Segoe UI',sans-serif">co-presence (witnesses)</text>
+        </g>
+      </svg>
+      <p class="figcap">The engine writes a log; the town tells a story; the player reads
+      the town. Effects also flow back up — storylet aftermath moves pressures and regard.</p>
+    </div>
+
+    <p><strong>Layer 1 — Clockwork</strong> (<code>FBS.1</code>): authored day-plans resolve
+    into a slot-by-slot itinerary. Its one output is the co-presence timeline — the stage.</p>
+    <p><strong>Layer 2 — Pressures</strong> (<code>FBS.2</code> distilled, <code>FBS.5</code>'s
+    moral): four slow drives per townee plus directed regard per dyad, drifting by
+    data-driven rules. Pressures never pick actions; they arm the layer above.</p>
+    <p><strong>Layer 3 — Storylets</strong> (<code>FBS.4</code>): JSON-authored rules whose
+    predicates read co-presence, pressures, regard, and calendar. Firing mutates state and
+    files a chronicle entry that records the predicate snapshot that let it fire.</p>
+    <p><strong>The Summarizer</strong> (register per the research page; selection thinned
+    from <code>FBS.6</code>): at dawn, pick 5±2 entries by tellability, but only events a
+    gossip-carrier witnessed or later heard about — the summary quotes the town's telephone
+    game, not the engine log. Each line renders through the actionability dial
+    (<code>AGR.3</code>, now a knob instead of a guess), and marked events append dated
+    one-liners to bios (the Wildermyth move, proposed as <code>FB.8</code>).</p>
+    <p><strong>Why this order and not another:</strong> storylets without clockwork have no
+    stage to check predicates against; pressures without storylets are meters nobody
+    narrates; clockwork alone starves the summary. Each layer is exactly the part of its
+    donor machinery that survived the criteria — and what got declined pays rent too: no
+    planner means every event can explain itself; no ledger means tuning six dials instead
+    of sixty.</p>
+
+    <h2>Where this goes</h2>
+    <p>The composite is specced as a playable <strong>observatory</strong> — the town in a
+    jar with dials, no desk, no floor — in <a href="fishbowl.html">the fish-bowl
+    proposal</a>: ten claims (<code>FB.1</code>–<code>FB.10</code>) read back for
+    correction, a hand-cranked mock of the readouts, and the build's decision gates
+    (<code>VFB.D1</code>–<code>VFB.D4</code>). The LLM-facing build contract lives
+    repo-side at <code>plans/PLAN-village-fishbowl.md</code>.</p>
+
+    <p class="foot">Handles <code>FBS.1</code>–<code>FBS.6</code> are stable and append-only —
+    cite them from other pages and chats. Companion to <a href="pitch.html">the pitch</a>,
+    the <a href="research.html">desk research</a>, and <a href="fishbowl.html">the fish-bowl
+    proposal</a>; hub <a href="index.html">here</a>. This is an architecture survey at
+    deliberate surface level, from genre knowledge — titles, studios, and years named in
+    place; flag anything that reads off and it gets re-checked.</p>
+  </div>
+</body>
+</html>

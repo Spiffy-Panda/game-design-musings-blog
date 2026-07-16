@@ -6,6 +6,116 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-15 — VFB: first release of the fish-bowl prototype built (M0–M3 done, M4 in place)
+
+Built the village fish-bowl's first release end-to-end: an engine-free `Fishbowl.Core` (C#/.NET 8)
++ CLI + xUnit under a Godot 4.6 mono observatory, JSON data — at `adventuring-guild-teller/fishbowl/`.
+Adopted every recommended ruling because the staged `data/` already committed to them (`VFB.D1`
+48×30-min slots, `VFB.D2` engine-free core, `VFB.D3` JSON-only storylets, `VFB.D4` 12/6/2, `FB.8`
+bio-marks on/toggleable). 22 xUnit tests green; the **golden day reproduces its 7 scripted beats**;
+day-hash sequence identical across two runs and between CLI and editor; the observatory boots with
+zero engine errors (screenshot in `.captures/`, proof captured via the in-engine F9 harness).
+
+Decisions the next person would not guess from the code:
+
+- **Storylets are `_binding`-anchored.** The golden cast's tags over-match (both the Karsk↔Fenn rent
+  pair and the Marrow↔Corvo axe-debt pair carry `debtor`; both `rumor-retold` carriers are
+  gossip-carriers). Free predicate-search binding fired the wrong pair and consumed the per-storylet
+  cooldown, breaking the golden day. So a storylet with an authored `_binding` is anchored to that
+  cast (still gated by every predicate each slot); only unbound storylets search. This keeps the
+  golden day exact **and** leaves emergence open for future rules. It is the answer to `MUA.Q4`-ish
+  over-matching, and it means v0 storylets read as authored beats, not fully emergent ones.
+- **Awake gate.** Non-`must_fire` storylets don't fire on a sleeping participant — otherwise the rent
+  quarrel fired at slot 0 (both asleep at midnight). This moved it to the evening at the Long Table,
+  which reads far better; the departure-farewell is `must_fire` and exempt (the adventurer is leaving,
+  not sleeping). Golden beats still all fire, just at waking slots.
+- **`departs_day` on the townee.** Brindle's mid-day departure needed a trigger; added an optional
+  scheduled-departure field (sets `departing_today` that day, `Away` after). The away-flag knob is the
+  live override. This is data added to `townees.json` for the fixture.
+- **Regard drifts only through storylet effects in v0** (deliberate, `MUA.Q3`) — passive regard decay
+  would wash out the authored debtor/courting tensions the golden day depends on.
+- **Canonical day-hash quantizes floats to 6 decimals**, integral numbers emit as ints (so Godot's
+  `4.0` hashes identically to `4`). That resolves `MUA.Q5`. Needed a tolerant **`long`** converter too
+  (the seed is a long) — the round-trip suite caught it, exactly its job.
+- **Live knobs live on `World.Config`** (a mutable copy of the loaded record), not `Town.Config`, so
+  `SetKnob` takes effect without a restart and snapshots carry knob state.
+
+`VFB.Q1` finding (not a blocker — it is the research question): the 3-seed × 7-day soak sustains
+**avg ~4.4 distinct tellable lines/night**, with 3/21 nights dipping below 4. Twelve added storylets
+(10 total) + the awake gate lifted it from ~3.7; pushing to zero-starvation is a live-knob tuning
+exercise for Panda, which is what the observatory is for. Bank is 12 rules (M3 wanted ≥10).
+
+## 2026-07-15 — VFB: data files staged ahead of the `VFB.D*` rulings
+
+Out of build order on purpose (tokens low, plan is fresh): produced the golden-day
+`data/` set in `adventuring-guild-teller/fishbowl/data/` — `places.json`, `townees.json`
+(all 12 golden-day cast), `dayplans.json` (one template per role), `traits.json`,
+`simconfig.json`, six `storylets/*.json` covering the plan's scripted beats (rent-quarrel,
+stock-runs-low, fetch-arranged, departure-farewell, debt-nagged, rumor-retold,
+market-squabble), and `golden/day1.json` pinning expected beat types/participants for the
+`VFB.M3` acceptance check. No engine/code yet — the Godot skeleton, bridge, and core
+classlib are still gated on `VFB.D1`–`VFB.D4` and `FB.8`. Places split `board:true/false`
+(the six place-board cards vs. private homes) since the plan's home example
+(`karsk-rents`) isn't one of the six cards — worth folding into `PLAN-village-fishbowl.md`
+if the ruling confirms this split. Storylet bank is only the golden-day 6; `VFB.M3` wants
+≥10, so more rules are still needed before that milestone.
+
+## 2026-07-15 — VFB/MUA: UtilityAi (Autonome) mined — jargon in, RNG out
+
+Panda pointed the fish-bowl at the sibling `../UtilityAi` repo (a finished-enough
+utility-AI city sim, C#/.NET 8 core + Godot 4.6 mono front-end) with the brief "mine vs.
+make anew; the minimum is jargon." Four read-only subagents swept docs, simulator core,
+Godot side, and tooling; findings landed in
+`plans/PLAN-village-fishbowl.appendix-MinedUtilityAi.md` (`MUA`, referenced from the VFB
+plan header). Three things would surprise the next person: (1) Autonome is a
+*near-sibling* of the planned fish-bowl — its engine-free Core/Data/Cli split
+empirically de-risks `VFB.D2`; (2) its determinism is an illusion — every
+"Deterministic\*" path hashes through .NET `HashCode.Combine`, which is seeded
+per-process, and its three xUnit projects contain zero tests, so nothing ever caught it
+— the strongest possible argument for VFB's golden-fixtures-first order; (3) its Godot
+side is all C#, no GDScript, so the fish-bowl's JSON-across-the-boundary bridge gets no
+precedent from it. Verdict shape: adopt the vocabulary (Property/ResponseCurve/Modifier/
+Relationship map ~1:1 onto L2/L3), re-implement the patterns (curve presets,
+softmax-top-K with must-fire override, decision records carrying candidate ranks +
+property snapshots, the analysis/report layer), rebuild bridge + RNG + tests from
+scratch. Seven open questions (`MUA.Q*`) queued to feed the `VFB.D*` rulings.
+
+## 2026-07-15 — VFB: the village fish-bowl specced — studies → composite → observatory proposal
+
+Panda commissioned AGT's pillar III as a prototype spec (Godot .NET + GDScript + JSON;
+town sim + creation menus; readouts and debug knobs only, no desk/floor) — explicitly
+**without reading `morning-queue/`**, which this session honored and then promoted into a
+standing isolation rule at the top of `plans/PLAN-village-fishbowl.md`: no reads, no
+shared code in v0, duplication on purpose, convergence being a post-v1 ruling. Rationale:
+MQT is mid-refactor in a parallel session (its edits landed *around* this session's in
+shared files while working — the isolation rule is already earning rent).
+
+Approached research-style per the brief: six machinery studies at deliberate surface
+level (`FBS.1`–`FBS.6` on the new `fishbowl-studies.html`) rather than one deep dive.
+The scoring criteria were **derived from the settled claims first** (gossip yield,
+explainability, authorability, dawn-cadence fit, weight, determinism) so the matrix
+argues from the design contract, not taste. Outcome: no single machinery survives — the
+two adopts fail in opposite directions (clockwork generates nothing; storylets can't
+stand alone) — which made the pick a **composite, CPS**: clockwork day-plans for
+co-presence, Sims-style meters demoted to slow *pressures* (fuel, never arbitration),
+JSON storylets whose fired predicates *are* the because-list (AGR.2's citable causes for
+free), and a hearsay-lite summarizer so dawn quotes the town's telephone game instead of
+the engine log. GOAP and ledger economies declined with reasons on the record.
+
+Two moves worth remembering: (1) the proposal page's hand-cranked mock (`fishbowl.html`)
+is not an illustration — its canned cast and day are **the golden fixture** `VFB.M3` is
+accepted against, so the mock is a spec with a scrubber on it. (2) The bridge carries the
+tolerant-int lesson from this morning's MQT entry as a *lesson import, not code import* —
+core parses float-shaped ints from day one and tests replay the Godot stringify
+round-trip. Also amended the musing's "no JS" invariant deliberately (nav spec updated):
+`fishbowl.html` introduces inline dependency-free JS per the `midi-drum` precedent —
+self-containment was the real invariant, not scriptlessness. Dataviz discipline: the
+musing accents fail the categorical-palette validator in both themes, so nothing on the
+new pages separates series by hue alone — matrix cells encode by glyph shape, chips carry
+text, sparklines are single-hue labeled tiles. Build gated on `VFB.D1`–`D4` + `FB.8`
+(the bio-marks claim, which graduates the plan's open Wildermyth question toward
+`AGT.13` if ratified).
+
 ## 2026-07-15 — MQT.6: docs synced; the tier refactor is complete
 
 WP-G (Opus) brought `MORNING-QUEUE.md` and `CONTENT-BANKS.md` in line with the shipped

@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventuring Guild Teller — the fish-bowl: an observatory prototype, read back for correction</title>
+<style>
+  :root{
+    --ground:#f1ecdc; --surface:#f9f6ec; --line:#dcd2b6; --line2:#c3b795;
+    --ink:#2a2419; --ink2:#57503f; --ink3:#7a6f58;
+    --green:#2f6b4f; --red:#9c3122; --brass:#8a6d1f;
+    --green-wash:rgba(47,107,79,.07); --red-wash:rgba(156,49,34,.06); --brass-wash:rgba(138,109,31,.08);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101310; --surface:#171b17; --line:#2b2f27; --line2:#434a3e;
+      --ink:#e5e1d3; --ink2:#b5af9e; --ink3:#8f8a78;
+      --green:#6fc59c; --red:#ff937e; --brass:#d5b45f;
+      --green-wash:rgba(111,197,156,.06); --red-wash:rgba(255,147,126,.05); --brass-wash:rgba(213,180,95,.06);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:17px/1.68 var(--serif);
+    background-image:
+      radial-gradient(46% 40% at 90% 2%, var(--brass-wash), transparent 70%),
+      radial-gradient(50% 44% at 4% 100%, var(--green-wash), transparent 70%);
+  }
+  .wrap{max-width:920px; margin-inline:auto; padding:clamp(40px,8vh,92px) clamp(20px,5vw,48px) 76px}
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:640 clamp(34px,6vw,54px)/1.05 var(--serif); letter-spacing:-.015em; margin:0 0 16px}
+  .sub{font-size:clamp(16.5px,2.2vw,19px); color:var(--ink2); max-width:62ch; margin:0 0 18px}
+  h2{font:640 24px/1.3 var(--serif); margin:52px 0 6px; padding-top:14px; border-top:3px double var(--line2)}
+  .h2sub{font:500 12px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 16px}
+  p{max-width:70ch}
+  .prose p, .lede{margin:0 0 15px; color:var(--ink2)}
+  strong{color:var(--ink)}
+  code{font:14px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+  a{color:var(--green); text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+
+  /* hero + proposed-stamp */
+  .hero{position:relative; padding-right:180px}
+  .stamp{
+    position:absolute; top:8px; right:0; transform:rotate(6deg);
+    border:2px solid var(--green); outline:1.5px solid var(--green); outline-offset:3px;
+    border-radius:4px; padding:9px 13px 8px; color:var(--green); opacity:.9;
+    font:700 10.5px/1.55 var(--sans); letter-spacing:.16em; text-transform:uppercase; text-align:center;
+  }
+  .stamp .big{font-size:14px; letter-spacing:.24em; display:block}
+  @media (max-width:740px){
+    .hero{padding-right:0}
+    .stamp{position:static; display:inline-block; margin:2px 0 18px; transform:rotate(3deg)}
+  }
+  .triad{font:600 12.5px/1.6 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+         color:var(--ink3); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+         padding:9px 2px; margin:0 0 6px; max-width:640px}
+  .triad b{color:var(--ink2); font-weight:650}
+  .triad .dot{color:var(--line2); padding:0 .45em}
+
+  /* the v0 strip (the pitch's day-strip pattern) */
+  .day{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0 8px; padding:0; list-style:none}
+  .day li{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:13px 14px 12px}
+  .day li:nth-child(1){border-top:3px solid var(--green)}
+  .day li:nth-child(2){border-top:3px solid var(--brass)}
+  .day li:nth-child(3){border-top:3px solid var(--line2)}
+  .day li:nth-child(4){border-top:3px solid var(--red)}
+  .day .no{font:600 10px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .day h3{font:650 16.5px/1.3 var(--serif); margin:7px 0 5px}
+  .day p{margin:0; font-size:13.5px; line-height:1.55; color:var(--ink2)}
+  .daynote{font-size:13.5px; color:var(--ink3); font-style:italic; margin:8px 0 0}
+  @media (max-width:740px){ .day{grid-template-columns:1fr 1fr} }
+  @media (max-width:460px){ .day{grid-template-columns:1fr} }
+
+  /* claims ledger (pitch pattern) */
+  .legend{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:12px 0 16px;
+          font:500 12.5px/1.5 var(--sans); color:var(--ink3)}
+  .tag{display:inline-block; font:700 10px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+       border-radius:3px; padding:4px 7px 3px; border:1px solid}
+  .tag.given{color:var(--green); border-color:var(--green); background:var(--green-wash)}
+  .tag.read{color:var(--brass); border-color:var(--brass); background:var(--brass-wash)}
+  .tag.gap{color:var(--red); border-color:var(--red); background:var(--red-wash)}
+  .claims{list-style:none; margin:0; padding:0; display:grid; gap:12px}
+  .claims li{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:15px 19px 13px}
+  .claims .hd{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:6px}
+  .claims .id{font:600 12px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+              border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .claims .ttl{font:650 17px/1.35 var(--serif)}
+  .claims p{margin:0 0 8px; font-size:15px; line-height:1.62; color:var(--ink2)}
+  .claims .cm{margin:0; font-size:13.5px; font-style:italic; color:var(--ink3);
+              border-top:1px dashed var(--line); padding-top:8px}
+  .claims .cm::before{content:"Correct me — "; font-style:normal; font:700 10.5px/1 var(--sans);
+                      letter-spacing:.14em; text-transform:uppercase; color:var(--red)}
+
+  /* lessons box (research pattern) */
+  .lessons{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--green);
+           border-radius:4px; padding:14px 20px 6px; margin:16px 0 6px}
+  .lessons .lt{font:700 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--green); display:block; margin:2px 0 10px}
+  .lessons ul{margin:0 0 10px; padding-left:18px}
+  .lessons li{font-size:14.5px; line-height:1.6; color:var(--ink2); margin-bottom:7px}
+
+  /* ————— the observatory mock ————— */
+  .ob{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:14px; margin:16px 0 8px}
+  .ob-banner{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin:0 0 12px;
+             border:1.5px dashed var(--brass); border-radius:4px; padding:8px 12px; background:var(--brass-wash)}
+  .ob-banner b{font:700 10.5px/1.4 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--brass); white-space:nowrap}
+  .ob-banner span{font:500 12.5px/1.5 var(--sans); color:var(--ink2)}
+  .ob-top{display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 10px; margin-bottom:12px;
+          background:var(--ground); border:1px solid var(--line); border-radius:4px}
+  .ob-clock{font:650 18px/1 var(--mono); color:var(--ink); min-width:118px}
+  .ob-clock small{font:600 10px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); display:block; margin-bottom:4px}
+  .ob-top input[type=range]{flex:1; min-width:140px; accent-color:var(--green)}
+  .ob-btn{font:600 12px/1 var(--sans); letter-spacing:.06em; color:var(--green); background:var(--surface);
+          border:1px solid var(--line2); border-radius:3px; padding:8px 11px; cursor:pointer}
+  .ob-btn:hover{border-color:var(--green)}
+  .ob-btn:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .ob-hash{font:500 11px/1.3 var(--mono); color:var(--ink3); margin-left:auto; text-align:right}
+  .ob-cols{display:grid; grid-template-columns:250px 1fr; gap:12px}
+  @media (max-width:820px){ .ob-cols{grid-template-columns:1fr} }
+  .ob-panel{background:var(--ground); border:1px solid var(--line); border-radius:4px; padding:10px 12px; margin-bottom:12px}
+  .ob-panel:last-child{margin-bottom:0}
+  .ob-panel > .pt{font:700 10.5px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); display:block; margin:2px 0 9px}
+  /* roster */
+  .ob-roster{list-style:none; margin:0; padding:0; display:grid; gap:4px}
+  .ob-roster button{display:block; width:100%; text-align:left; font:inherit; color:inherit; background:transparent;
+                    border:1px solid transparent; border-radius:3px; padding:5px 7px; cursor:pointer}
+  .ob-roster button:hover{background:var(--surface); border-color:var(--line)}
+  .ob-roster button:focus-visible{outline:2px solid var(--green); outline-offset:1px}
+  .ob-roster .sel{background:var(--surface); border-color:var(--line2)}
+  .ob-roster .nm{font:650 13.5px/1.3 var(--serif); color:var(--ink); display:flex; gap:6px; align-items:baseline}
+  .ob-roster .nm .role{font:500 10.5px/1 var(--mono); color:var(--ink3); font-weight:400}
+  .ob-roster .at{font:500 11.5px/1.4 var(--sans); color:var(--ink2)}
+  .ob-roster .away .at{color:var(--brass); font-style:italic}
+  /* inspector */
+  .insp .nm{font:650 17px/1.3 var(--serif); margin:0 0 2px}
+  .insp .role{font:500 11.5px/1.4 var(--mono); color:var(--ink3); margin:0 0 8px}
+  .insp .bio{font:14px/1.6 var(--serif); font-style:italic; color:var(--ink2); border-left:3px solid var(--line2);
+             padding:2px 0 2px 10px; margin:0 0 10px}
+  .insp .marks{margin:0 0 10px; padding:0; list-style:none}
+  .insp .marks li{font:12.5px/1.55 var(--serif); color:var(--ink2); padding:3px 0 3px 10px; border-left:3px solid var(--brass)}
+  .insp .marks li::before{content:"mark · "; font:700 9.5px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--brass)}
+  .insp .none{font:12.5px/1.5 var(--sans); color:var(--ink3); font-style:italic}
+  .sparks{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:0 0 10px}
+  .spark{background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:6px 8px 4px}
+  .spark .sl{display:flex; justify-content:space-between; align-items:baseline;
+             font:600 10px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--ink3)}
+  .spark .sl b{font:600 11px/1 var(--mono); color:var(--ink)}
+  .spark svg{width:100%; height:34px; display:block}
+  .spark polyline{fill:none; stroke:var(--green); stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+  .spark line{stroke:var(--line); stroke-width:1}
+  .reg{margin:0; padding:0; list-style:none; font:12.5px/1.6 var(--sans); color:var(--ink2)}
+  .reg li{display:flex; gap:7px; align-items:baseline; padding:2px 0}
+  .reg .sc{font:600 11.5px/1 var(--mono); border-radius:3px; padding:3px 5px; border:1px solid var(--line2)}
+  .reg .sc.pos{color:var(--green)} .reg .sc.neg{color:var(--red)}
+  .reg .tg{font:500 10.5px/1.3 var(--mono); color:var(--ink3)}
+  /* place board */
+  .board{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:8px}
+  .plc{background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:7px 9px; min-height:64px}
+  .plc .pn{font:650 12.5px/1.3 var(--serif); color:var(--ink); display:flex; justify-content:space-between; gap:4px}
+  .plc .pn .ct{font:600 10.5px/1.3 var(--mono); color:var(--ink3); font-weight:400}
+  .plc .chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px}
+  .chip{font:600 10px/1 var(--sans); letter-spacing:.04em; color:var(--ink2); background:var(--ground);
+        border:1px solid var(--line2); border-radius:999px; padding:4px 7px}
+  /* chronicle */
+  .chron{margin:0; padding:0; list-style:none; display:grid; gap:6px}
+  .chron details{background:var(--surface); border:1px solid var(--line); border-radius:3px}
+  .chron summary{display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; cursor:pointer;
+                 padding:7px 10px; font:500 13px/1.45 var(--sans); color:var(--ink2)}
+  .chron summary:focus-visible{outline:2px solid var(--green); outline-offset:1px}
+  .chron .no{font:600 10.5px/1 var(--mono); color:var(--ink3)}
+  .chron .kind{font:700 9.5px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase;
+               border:1px solid; border-radius:3px; padding:3px 5px}
+  .chron .kind.social{color:var(--green); border-color:var(--green); background:var(--green-wash)}
+  .chron .kind.trade{color:var(--brass); border-color:var(--brass); background:var(--brass-wash)}
+  .chron .kind.strife{color:var(--red); border-color:var(--red); background:var(--red-wash)}
+  .chron .gist{color:var(--ink)}
+  .chron .bd{border-top:1px dashed var(--line); padding:8px 12px 10px; font:13px/1.6 var(--sans); color:var(--ink2)}
+  .chron .bd .bt{font:700 9.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); display:block; margin:6px 0 4px}
+  .chron .bd ul{margin:0; padding-left:16px}
+  .chron .bd li{margin-bottom:3px}
+  .chron .lines{margin:4px 0 0; padding:0; list-style:none}
+  .chron .lines li{padding:3px 6px; border-radius:3px; margin-bottom:2px}
+  .chron .lines li b{font:700 9.5px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); margin-right:.5em}
+  .chron .lines li.on{background:var(--green-wash); outline:1px solid var(--line2)}
+  .chron .tellv{font:500 10.5px/1 var(--mono); color:var(--ink3); margin-left:auto}
+  /* summary */
+  .dial{display:flex; gap:0; border:1px solid var(--line2); border-radius:4px; overflow:hidden; width:max-content}
+  .dial label{font:600 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--ink3);
+              padding:8px 12px; cursor:pointer; border-right:1px solid var(--line2); background:var(--surface)}
+  .dial label:last-child{border-right:0}
+  .dial input{position:absolute; opacity:0; pointer-events:none}
+  .dial input:checked + span{color:var(--green)}
+  .dial label:has(input:checked){background:var(--green-wash); color:var(--green)}
+  .dial label:focus-within{outline:2px solid var(--green); outline-offset:-2px}
+  .summ{margin:10px 0 0; padding:0; list-style:none; display:grid; gap:8px}
+  .summ li{font:15px/1.6 var(--serif); color:var(--ink); background:var(--surface);
+           border:1px solid var(--line); border-left:3px solid var(--green); border-radius:3px; padding:9px 12px}
+  .summ .via{display:block; font:500 11px/1.5 var(--sans); color:var(--ink3); margin-top:3px}
+  .summ .via a{color:var(--ink3)}
+  .summ-wait{font:14px/1.6 var(--sans); color:var(--ink3); font-style:italic; margin:8px 0 0}
+  /* knobs */
+  .knobs{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px 14px; font:12px/1.5 var(--sans); color:var(--ink2)}
+  .knob{display:flex; flex-direction:column; gap:3px; padding:6px 8px; background:var(--surface); border:1px solid var(--line); border-radius:3px}
+  .knob .kl{display:flex; justify-content:space-between; gap:6px; font:600 10.5px/1.3 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--ink3)}
+  .knob input[type=range]{accent-color:var(--brass); width:100%}
+  .knob input[type=checkbox]{accent-color:var(--green)}
+  .knob .off{font:500 10px/1.3 var(--mono); color:var(--ink3)}
+  .knob.live{border-color:var(--line2)}
+  .knob.live .kl{color:var(--green)}
+
+  /* creation-menu wireframes */
+  .menus{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:740px){ .menus{grid-template-columns:1fr} }
+  .menu{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 16px 12px}
+  .menu h3{font:650 16px/1.3 var(--serif); margin:0 0 3px}
+  .menu .mnote{font:500 11.5px/1.5 var(--mono); color:var(--brass); margin:0 0 10px}
+  .menu fieldset{border:0; margin:0; padding:0; display:grid; gap:7px}
+  .menu label{font:600 10.5px/1.3 var(--sans); letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); display:grid; gap:3px}
+  .menu input, .menu select, .menu textarea{font:13px/1.4 var(--serif); color:var(--ink2); background:var(--ground);
+        border:1px solid var(--line); border-radius:3px; padding:6px 8px; width:100%}
+  .menu textarea{resize:none}
+  .menu .row{display:grid; grid-template-columns:1fr 1fr; gap:7px}
+  .menu p{margin:10px 0 0; font-size:13px; line-height:1.55; color:var(--ink2)}
+
+  /* asks */
+  .asks{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:11px}
+  .asks li{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--brass);
+           border-radius:4px; padding:13px 17px 12px}
+  .asks .hd{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:4px}
+  .asks .id{font:600 11.5px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+            border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .asks .ttl{font:650 16px/1.35 var(--serif)}
+  .asks p{margin:0; font-size:14.5px; color:var(--ink2)}
+  .asks .rec{color:var(--green); font-weight:600}
+
+  .foot{margin-top:52px; border-top:1px solid var(--line); padding-top:16px;
+        font:13px/1.8 var(--sans); color:var(--ink3); max-width:76ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--green); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><a href="index.html">Adventuring Guild Teller</a></li>
+        <li><span aria-current="page">The Fish-Bowl</span></li>
+      </ol>
+    </nav>
+
+    <header class="hero">
+      <div class="stamp" aria-hidden="true"><span class="big">Built</span>fishbowl wing<br>no. VFB-01</div>
+      <p class="eyebrow">A prototype proposal · pillar III · read back for correction</p>
+      <h1>The Fish-Bowl</h1>
+      <p class="sub">Build the town first — alone, in a jar, with dials. A Godot&nbsp;.NET
+      prototype of pillar III's townee sim: no desk, no floor, no dungeon. The only play is
+      watching the readouts, turning the knobs, and authoring the people.</p>
+      <p class="triad"><b>Clockwork</b> stage<span class="dot">·</span><b>Pressure</b> fuel<span class="dot">·</span><b>Storylet</b> drama</p>
+    </header>
+
+    <div class="prose">
+      <p>Your brief for this slice: spec the village fish-bowl as a playable prototype —
+      Godot with .NET code, GDScript, and JSON data; town-life simulation plus the creation
+      menus' first pass; <em>no guild-floor gameplay</em>, just data readouts and debug
+      knobs; and treat it like research. The machinery was chosen by survey — six
+      approaches, scored, composited — on <a href="fishbowl-studies.html">the studies
+      page</a> (<code>FBS.1</code>–<code>FBS.6</code>). This page is the proposal itself,
+      in the house manner: ten claims to correct by handle, a hand-cranked mock of the
+      observatory, and the rulings the build waits on. The LLM-facing build contract lives
+      repo-side at <code>plans/PLAN-village-fishbowl.md</code>.</p>
+
+      <p class="daynote" style="border-left:3px solid #5fb3d4;padding-left:.8em">
+      <b>Update — built 2026&#8209;07&#8209;15.</b> The first release now lives in the repo at
+      <code>adventuring-guild-teller/fishbowl/</code>: an engine-free C#/.NET core + headless CLI +
+      xUnit suite under a Godot&nbsp;4.6 observatory. Every ruling in “The asks” was adopted on its
+      recommendation; milestones <b>M0–M3 are gate-checked and M4 is in place</b> — 22 tests green,
+      the golden day reproduces its seven beats, and the observatory boots clean. The one open item
+      is <code>VFB.Q1</code> gossip-yield tuning (the soak sits near four distinct lines a night),
+      which the live knobs exist to explore. The claims and asks below are kept as the record.</p>
+
+      <h2>What v0 is</h2>
+      <p class="lede">Four things, and pointedly nothing else:</p>
+      <ol class="day">
+        <li><span class="no">I · the jar</span>
+          <h3>A seeded town</h3>
+          <p>12 townees, 6 places, 2 of them adventurers. Clockwork days, pressure meters,
+          storylet events — the CPS machinery.</p></li>
+        <li><span class="no">II · the readouts</span>
+          <h3>An observatory</h3>
+          <p>Roster, inspector, place board, chronicle with because-lists, and the dawn
+          summary. Watching <em>is</em> the game.</p></li>
+        <li><span class="no">III · the knobs</span>
+          <h3>Debug dials</h3>
+          <p>Pressure rates, storylet rates, the actionability dial, an away-flag for
+          adventurers, seed and snapshots.</p></li>
+        <li><span class="no">IV · the menus</span>
+          <h3>Creation, first pass</h3>
+          <p>Townee creator, place creator, town generator, storylet browser — the creator
+          pillar's v0.</p></li>
+      </ol>
+      <p class="daynote">The desk stays shut and the floor stays empty on purpose — the bowl
+      is the substrate (AGT.2), so it gets built and trusted first.</p>
+
+      <h2>My read, in ten claims</h2>
+      <p class="lede">Same protocol as <a href="pitch.html">the pitch</a>, tags re-glossed
+      for a proposal: <span class="tag given">given</span> follows from the brief or a
+      settled ruling, <span class="tag read">read</span> is a design choice I'm making
+      (argued in the studies), <span class="tag gap">gap</span> needs a fresh ruling from
+      you. Handles are stable and append-only — correct by number.</p>
+
+      <ol class="claims">
+        <li id="fb-1">
+          <div class="hd"><span class="id">FB.1</span><span class="tag given">given</span><span class="ttl">The bowl builds first, and alone.</span></div>
+          <p>v0 contains no desk hooks and no floor verbs. The prototype's product is
+          <em>trust in the substrate</em>: proof the town generates tellable, explainable
+          material before any gameplay leans on it. Play = watch, poke, author.</p>
+          <p class="cm">if the first playable slice should smuggle in any desk or floor
+          surface after all.</p>
+        </li>
+        <li id="fb-2">
+          <div class="hd"><span class="id">FB.2</span><span class="tag read">read</span><span class="ttl">The machinery is the CPS composite.</span></div>
+          <p>Clockwork day-plans for the stage (<code>FBS.1</code>), slow pressures and
+          directed regard for fuel (<code>FBS.2</code>/<code>FBS.5</code> distilled),
+          JSON-authored storylets for the drama (<code>FBS.4</code>), a hearsay-lite filter
+          on the summarizer (<code>FBS.6</code> thinned). Planners and ledger economies
+          declined, with reasons on the record.</p>
+          <p class="cm">if a different machinery — or a different composite — should carry
+          the bowl.</p>
+        </li>
+        <li id="fb-3">
+          <div class="hd"><span class="id">FB.3</span><span class="tag read">read</span><span class="ttl">Slot-granular inside, day-granular outside.</span></div>
+          <p>A day is 48 half-hour slots; storylets check once per slot after movement. The
+          <em>player-facing</em> product stays the dawn summary (AGT.3's async cadence);
+          the observatory's scrub-and-play controls are debug affordances of the prototype,
+          never a promise that the shipped game shows a live town.</p>
+          <p class="cm">by ruling <code>VFB.D1</code> — half-hour slots vs finer vs
+          continuous minutes.</p>
+        </li>
+        <li id="fb-4">
+          <div class="hd"><span class="id">FB.4</span><span class="tag given">given</span><span class="ttl">Directed regard, from day one.</span></div>
+          <p>Every dyad stores a directed score plus tags (<code>creditor</code>,
+          <code>smitten</code>, <code>stall-rival</code>…), and each townee carries a
+          reserved regard-toward-the-teller — so the floor's two-score acceptance
+          (AGT.8) drops in later without a data migration. Every storylet files the
+          predicate snapshot that let it fire: causes stay citable by construction
+          (AGR.2).</p>
+          <p class="cm">if regard should stay symmetric until the floor actually exists.</p>
+        </li>
+        <li id="fb-5">
+          <div class="hd"><span class="id">FB.5</span><span class="tag given">given</span><span class="ttl">Nothing in the jar dies.</span></div>
+          <p>No death (AGT.12) and no expedition resolution in v0 — the dungeon isn't
+          built, so an adventurer's absence is a debug <em>away-flag</em> that still
+          ripples the town (farewells, moping apprentices, empty corner seats). The flag is
+          the expedition system's stand-in, not its design.</p>
+          <p class="cm">if the stand-in undersells expedition ripples you want simulated
+          now (returns queueing at the desk, gear left behind).</p>
+        </li>
+        <li id="fb-6">
+          <div class="hd"><span class="id">FB.6</span><span class="tag given">given</span><span class="ttl">Summaries are gossip; bios are the answer key.</span></div>
+          <p>Dawn shows 5±2 lines picked by tellability, only from events the town's
+          telephone game actually carried (a witness, then a carrier). Every line cites its
+          chronicle entry; every stat lives on the townee's sheet in the inspector
+          (AGT.10). The summary is the town talking — the log stays backstage.</p>
+          <p class="cm">if dawn should ever surface numbers directly.</p>
+        </li>
+        <li id="fb-7">
+          <div class="hd"><span class="id">FB.7</span><span class="tag read">read</span><span class="ttl">The actionability dial is a knob, not a guess.</span></div>
+          <p>Three authored stops — <em>hearsay · gossip · report</em> — render the same
+          chronicle entry at three levels of usefulness. AGR.3 asked where the line sits;
+          the observatory exists partly to let you turn the dial and <em>feel</em> the
+          answer (<code>VFB.Q5</code>).</p>
+          <p class="cm">if the three stops mislabel the range you want explored.</p>
+        </li>
+        <li id="fb-8">
+          <div class="hd"><span class="id">FB.8</span><span class="tag gap">gap</span><span class="ttl">Bios accrete marks.</span></div>
+          <p>Authored prose stays verbatim; the sim appends dated one-liners beneath it —
+          <em>"Shouted at over arrears at his own gate; slept badly, day 1."</em> — the
+          Wildermyth move the research page endorsed, and the AGT plan's open question
+          about player-authored backstories, graduated into a mechanic. Ships behind a
+          toggle either way.</p>
+          <p class="cm">ratify or strike — this is the <code>AGT.13</code> candidate; your
+          ruling here settles it on the pitch too.</p>
+        </li>
+        <li id="fb-9">
+          <div class="hd"><span class="id">FB.9</span><span class="tag read">read</span><span class="ttl">The creation menus are the creator pillar's v0.</span></div>
+          <p>Four menus: townee creator (identity, statlets, traits, day-plan, home/work,
+          authored bio, starting regard), place creator, seeded town generator, and a
+          read-only storylet browser with force-fire. Scope holds the AGR.5 line —
+          paperdoll, statlet, quotable prose, never a scripter — and customization stays
+          optional beyond anything required (AGT.9). Creations write JSON to the user
+          folder; promoting one into tracked data is a deliberate manual step.</p>
+          <p class="cm">if the first pass should include in-app storylet authoring
+          (<code>VFB.D3</code>).</p>
+        </li>
+        <li id="fb-10">
+          <div class="hd"><span class="id">FB.10</span><span class="tag read">read</span><span class="ttl">An engine-free C# core under a GDScript face.</span></div>
+          <p><code>Fishbowl.Core</code> (pure .NET: model, tick engine, JSON, summarizer)
+          with xUnit tests and a headless CLI for week-long soak runs; one C# bridge
+          autoload as the only engine-touching code; GDScript panels for every readout and
+          menu; all content in JSON. Deterministic by construction — named RNG streams and
+          a visible day-hash. And the bridge tolerates float-shaped ints from day one: this
+          repo already paid for the lesson that GDScript's JSON round-trip re-emits
+          <code>4</code> as <code>4.0</code>, and that tests must replay the engine's own
+          serialization path.</p>
+          <p class="cm">by ruling <code>VFB.D2</code> if you'd rather keep all C#
+          in-engine.</p>
+        </li>
+      </ol>
+
+      <h2>One day in the jar — hand-cranked</h2>
+      <p class="lede">This is the observatory as v0 would show it, running a <strong>canned,
+      hand-simulated day</strong>: the golden cast from the build contract, twelve chronicle
+      entries, five dawn lines. Scrub the clock, click a townee, open an entry's
+      because-list, turn the dial at dawn.</p>
+    </div>
+
+    <div class="ob" id="ob">
+      <div class="ob-banner"><b>Canned data</b><span>A hand-simulated day — not the engine.
+      The build must reproduce these beats from these townees: this exact cast and day are
+      the golden fixture the M3 milestone is accepted against.</span></div>
+
+      <div class="ob-top">
+        <div class="ob-clock"><small>Day 1</small><span id="ob-time">12:00</span></div>
+        <input type="range" id="ob-slot" min="0" max="47" step="1" value="24" aria-label="Time of day, in half-hour slots">
+        <button class="ob-btn" id="ob-play" type="button">▸ Play</button>
+        <button class="ob-btn" id="ob-dawn" type="button">To dawn ⇥</button>
+        <div class="ob-hash">day hash<br><span id="ob-hash">c9d2·41aa·golden</span></div>
+      </div>
+
+      <div class="ob-cols">
+        <div>
+          <div class="ob-panel">
+            <span class="pt">Roster — 12 townees</span>
+            <ul class="ob-roster" id="ob-roster"></ul>
+          </div>
+        </div>
+        <div>
+          <div class="ob-panel insp" id="ob-insp">
+            <span class="pt">Inspector</span>
+            <div id="ob-insp-body"></div>
+          </div>
+          <div class="ob-panel">
+            <span class="pt">Place board — co-presence</span>
+            <div class="board" id="ob-board"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ob-panel" style="margin-top:12px">
+        <span class="pt">Chronicle — <span id="ob-evct">0</span> entries so far · each carries its because-list</span>
+        <ol class="chron" id="ob-chron"></ol>
+      </div>
+
+      <div class="ob-panel">
+        <span class="pt">Dawn summary — the actionability dial (FB.7)</span>
+        <div class="dial" role="radiogroup" aria-label="Actionability dial">
+          <label><input type="radio" name="dial" value="h"><span>Hearsay</span></label>
+          <label><input type="radio" name="dial" value="g" checked><span>Gossip</span></label>
+          <label><input type="radio" name="dial" value="r"><span>Report</span></label>
+        </div>
+        <div id="ob-summ"></div>
+      </div>
+
+      <div class="ob-panel">
+        <span class="pt">Debug knobs — two live in this mock, the rest live in the build</span>
+        <div class="knobs">
+          <div class="knob live"><span class="kl">actionability<span>dial ↑</span></span><span class="off">the three stops above</span></div>
+          <div class="knob live"><span class="kl">bio_marks_enabled<span><input type="checkbox" id="ob-marks" checked aria-label="Toggle bio marks"></span></span><span class="off">the FB.8 toggle — watch the inspector</span></div>
+          <div class="knob"><span class="kl">pressure_rates.purse<span>1.0×</span></span><input type="range" min="0" max="3" step="0.1" value="1" disabled></div>
+          <div class="knob"><span class="kl">pressure_rates.heart<span>1.0×</span></span><input type="range" min="0" max="3" step="0.1" value="1" disabled></div>
+          <div class="knob"><span class="kl">storylet_rate<span>1.0×</span></span><input type="range" min="0" max="3" step="0.1" value="1" disabled></div>
+          <div class="knob"><span class="kl">copresence_bonus<span>1.0×</span></span><input type="range" min="0" max="3" step="0.1" value="1" disabled></div>
+          <div class="knob"><span class="kl">hearsay_required<span>on</span></span><span class="off">summary only carries witnessed events</span></div>
+          <div class="knob"><span class="kl">away_flag(brindle)<span>auto @14:00</span></span><span class="off">the expedition stand-in (FB.5)</span></div>
+          <div class="knob"><span class="kl">seed<span>1123</span></span><span class="off">re-seed regenerates the town</span></div>
+          <div class="knob"><span class="kl">snapshot<span>save / load</span></span><span class="off">scrub-back = restore dawn + re-sim</span></div>
+        </div>
+      </div>
+      <noscript><p style="font:14px/1.6 var(--sans); color:var(--ink3); margin:10px 0 0">
+        This mock is a hand-cranked bit of inline JavaScript; with scripts off you're seeing
+        its empty frame. Everything it demonstrates is described in the claims above and
+        specced in <code>plans/PLAN-village-fishbowl.md</code>.</p></noscript>
+    </div>
+
+    <div class="prose">
+      <div class="lessons">
+        <span class="lt">What the observatory must prove (the research questions)</span>
+        <ul>
+          <li><strong>VFB.Q1 · yield</strong> — ≥ 4 distinct tellable events per night at 12
+          townees, a week straight, without repeating itself into wallpaper.</li>
+          <li><strong>VFB.Q2 · explainability</strong> — any dawn line traced to its causes
+          in two clicks: line → chronicle entry → because-list.</li>
+          <li><strong>VFB.Q3 · authoring cost</strong> — a new townee in under three
+          minutes by menu; a new storylet in under fifteen by JSON.</li>
+          <li><strong>VFB.Q4 · determinism</strong> — same seed, same week, same hashes —
+          editor and headless alike.</li>
+          <li><strong>VFB.Q5 · the dial</strong> — the three stops read differently enough
+          to pick a shipping default by feel (AGR.3, finally measured).</li>
+        </ul>
+      </div>
+
+      <h2>The creation menus — first pass</h2>
+      <p class="lede">Wireframes of the four menus (the forms below are sketches, not live).
+      Everything writes ordinary JSON; nothing scripts behavior — the AGR.5 line holds.</p>
+      <div class="menus">
+        <div class="menu">
+          <h3>Townee creator</h3>
+          <p class="mnote">writes a townees.json entry → user://town/</p>
+          <fieldset disabled aria-label="Townee creator wireframe (not interactive)">
+            <div class="row">
+              <label>Name<input value="Merit Swann"></label>
+              <label>Role<select><option>chandler</option></select></label>
+            </div>
+            <div class="row">
+              <label>Home<select><option>Karsk's Rents</option></select></label>
+              <label>Work<select><option>Market Row</option></select></label>
+            </div>
+            <label>Traits (≤ 3)<input value="frugal · early-riser · grudge-keeper"></label>
+            <label>Day-plan<select><option>stallholder-default + the Long Table, evenings</option></select></label>
+            <label>Statlets — starting pressures<input value="purse .4 · trade .5 · heart .45 · restlessness .3"></label>
+            <label>Bio — prose the summary may quote<textarea rows="2">Sells candles and holds grudges; both burn slow.</textarea></label>
+            <label>Starting regard<input value="→ Widow Karsk −0.10 (tenant)"></label>
+          </fieldset>
+          <p>Statlets, traits, a paperdoll slot, and prose — the whole authoring surface
+          (AGT.9, AGR.5). The sim does the rest.</p>
+        </div>
+        <div class="menu">
+          <h3>Place creator</h3>
+          <p class="mnote">writes a places.json entry → user://town/</p>
+          <fieldset disabled aria-label="Place creator wireframe (not interactive)">
+            <div class="row">
+              <label>Name<input value="The Tallow House"></label>
+              <label>Kind<select><option>shop</option></select></label>
+            </div>
+            <div class="row">
+              <label>Hours<input value="07:00 – 18:00"></label>
+              <label>Capacity<input value="6"></label>
+            </div>
+          </fieldset>
+          <p>Places are graph nodes with hours — no geometry, no pathfinding. Travel is
+          slot arithmetic.</p>
+        </div>
+        <div class="menu">
+          <h3>Town generator</h3>
+          <p class="mnote">seeded; guarantees the invariants</p>
+          <fieldset disabled aria-label="Town generator wireframe (not interactive)">
+            <div class="row">
+              <label>Seed<input value="1123"></label>
+              <label>Townees<input value="12"></label>
+            </div>
+            <label>Role mix<input type="range" value="50"></label>
+            <label>Relationship density<input type="range" value="40"></label>
+          </fieldset>
+          <p>Everyone gets a home, a work, and at least one feeling; the town always has a
+          gossip-carrier. Generate, watch a week, keep or re-roll.</p>
+        </div>
+        <div class="menu">
+          <h3>Storylet browser</h3>
+          <p class="mnote">read-only + force-fire · authoring stays JSON (VFB.D3)</p>
+          <fieldset disabled aria-label="Storylet browser wireframe (not interactive)">
+            <label>Loaded rules<select multiple size="4"><option>rent-demanded · social · cooldown 3d</option><option>rent-quarrel · strife · escalation</option><option>stock-runs-low · trade</option><option>departure-farewell · social</option></select></label>
+            <div class="row"><label>Bind A<select><option>Widow Karsk</option></select></label><label>Bind B<select><option>Fenn Halloway</option></select></label></div>
+            <label>​<input type="button" value="Force-fire (debug)"></label>
+          </fieldset>
+          <p>Force-firing is how you interrogate a rule without waiting for the town to
+          arrange it naturally.</p>
+        </div>
+      </div>
+
+      <h2>The build, in brief</h2>
+      <p class="lede">Full contract — schemas, bridge surface, milestone gates — in
+      <code>plans/PLAN-village-fishbowl.md</code>. The shape:</p>
+      <ul class="day" style="grid-template-columns:repeat(2,1fr)">
+        <li><span class="no">code</span><h3>Fishbowl.Core (C#)</h3>
+          <p>Engine-free: model, tick engine, storylets, summarizer, JSON, named RNG
+          streams, day-hash. xUnit suite + a headless CLI that soaks 3 seeds × 7 days and
+          reports yield stats.</p></li>
+        <li><span class="no">script</span><h3>GDScript face</h3>
+          <p>One C# bridge autoload (JSON across the boundary, float-shaped ints
+          tolerated); every panel and menu is a GDScript node script. No sim logic outside
+          the core.</p></li>
+        <li><span class="no">data</span><h3>JSON content</h3>
+          <p>townees · places · dayplans · traits · storylets · simconfig — plus the
+          golden-day fixture. Creations land in user:// and promote by hand.</p></li>
+        <li><span class="no">gates</span><h3>Milestones M0–M4</h3>
+          <p>Scaffold → clockwork → pressures → storylets + summary (accepted against the
+          canned day above) → creation menus + soak instruments. Each gate checked
+          in-engine via the capture harness, never by tests alone.</p></li>
+      </ul>
+
+      <h2>The asks</h2>
+      <p class="lede">Rulings the build waits on — reply by handle, same as ever:</p>
+      <ol class="asks">
+        <li id="vfb-d1">
+          <div class="hd"><span class="id">VFB.D1</span><span class="ttl">Tick shape.</span></div>
+          <p>48 half-hour slots <span class="rec">(recommended)</span> vs 96 quarter-hours
+          vs continuous minutes. Sets schedule grain, scrub cost, and how day-plans feel to
+          author.</p>
+        </li>
+        <li id="vfb-d2">
+          <div class="hd"><span class="id">VFB.D2</span><span class="ttl">Core split.</span></div>
+          <p>Engine-free <code>Fishbowl.Core</code> + CLI + xUnit <span class="rec">(recommended
+          — honest tests and week-long soaks without opening the editor)</span> vs all C#
+          in-engine.</p>
+        </li>
+        <li id="vfb-d3">
+          <div class="hd"><span class="id">VFB.D3</span><span class="ttl">Storylet authoring surface.</span></div>
+          <p>JSON files only in v0 <span class="rec">(recommended — AGR.5 discipline)</span>
+          vs a minimal in-app editor.</p>
+        </li>
+        <li id="vfb-d4">
+          <div class="hd"><span class="id">VFB.D4</span><span class="ttl">v0 town size.</span></div>
+          <p>12 townees / 6 places / 2 adventurers <span class="rec">(recommended — readouts
+          stay readable, tuning stays tractable)</span> vs 24+.</p>
+        </li>
+        <li>
+          <div class="hd"><span class="id">FB.8</span><span class="ttl">Ratify the bio marks.</span></div>
+          <p>The gap claim above — sim-appended one-liners under authored prose. A yes
+          graduates it to <code>AGT.13</code> on the pitch; a no leaves bios static and the
+          toggle shipped off.</p>
+        </li>
+      </ol>
+
+      <h2>What happens with corrections</h2>
+      <p>Reply by handle ("FB.3 is wrong — minutes, not slots"). Corrections fold into this
+      page the pitch's way: edited in place, superseded text struck, new claims appended as
+      <code>FB.11+</code>. Rulings on <code>VFB.D1</code>–<code>D4</code> land in the plan
+      and unlock <code>VFB.M0</code>. The studies (<code>FBS.*</code>) stay append-only.</p>
+    </div>
+
+    <p class="foot">Handles <code>FB.1</code>–<code>FB.10</code> are stable and append-only;
+    the machinery survey is <a href="fishbowl-studies.html">the studies page</a>
+    (<code>FBS.1</code>–<code>FBS.6</code>); the pillar rules live on
+    <a href="pitch.html">the pitch</a> and the register on the
+    <a href="research.html">desk research</a>; hub <a href="index.html">here</a>. The
+    observatory above runs canned, hand-simulated data — the real engine's first job is to
+    make it honest (<code>VFB.M3</code>).</p>
+  </div>
+
+<script>
+'use strict';
+(function(){
+  // ————— canned data: the golden day (hand-simulated; mirrors plans/PLAN-village-fishbowl.md) —————
+  var SLOTS = 48, DAWN = 47;
+  var PLACES = [
+    {id:'inn',    name:'the Long Table',        kind:'inn'},
+    {id:'shop',   name:"Petch's Simples",       kind:'shop'},
+    {id:'smithy', name:'Bray & Daughter',       kind:'smithy'},
+    {id:'market', name:'Market Row',            kind:'market'},
+    {id:'pond',   name:'the Millpond',          kind:'commons'},
+    {id:'steps',  name:'Guildhall Steps',       kind:'commons'},
+    {id:'home',   name:'At home',               kind:'home'},
+    {id:'away',   name:'Away',                  kind:'away'}
+  ];
+  function seg(){ return Array.prototype.slice.call(arguments); }
+  var TOWNEES = [
+    {id:'odile',  name:'Odile Vance',   role:'innkeep · carrier', teller:0.55,
+     bio:'Keeps the Long Table and everyone’s confidences, in that order. Nothing crosses the taproom she doesn’t hear twice.',
+     itin:[seg(0,'home','asleep'), seg(10,'inn','opening the taproom'), seg(46,'home','lamps out')],
+     kf:{purse:[[0,.5],[47,.52]], trade:[[0,.6],[38,.7],[47,.68]], heart:[[0,.6],[33,.65],[47,.66]], restlessness:[[0,.25],[47,.25]]}},
+    {id:'petch',  name:'Petch',         role:'herbalist', teller:0.6,
+     bio:'Has sold simples since before the guild had steps. Terse until you’re sick; then suddenly kind.',
+     itin:[seg(0,'home','asleep'), seg(13,'shop','sorting simples'), seg(38,'home','supper alone')],
+     kf:{purse:[[0,.45],[47,.43]], trade:[[0,.28],[13,.26],[16,.33],[40,.55],[47,.55]], heart:[[0,.45],[16,.5],[47,.5]], restlessness:[[0,.25],[47,.28]]}},
+    {id:'marrow', name:'Marrow Bray',   role:'smith', teller:0.5,
+     bio:'The “daughter” of Bray & Daughter, and the better smith. Counts favors like coin and coin like sins.',
+     itin:[seg(0,'home','asleep'), seg(12,'smithy','at the forge'), seg(26,'market','buying bar-stock'), seg(28,'smithy','at the forge'), seg(38,'inn','a pint, grudgingly'), seg(42,'home','asleep')],
+     kf:{purse:[[0,.5],[47,.5]], trade:[[0,.7],[47,.72]], heart:[[0,.42],[38,.5],[47,.52]], restlessness:[[0,.3],[47,.3]]}},
+    {id:'tam',    name:'Tam Underhill', role:'apprentice', teller:0.45,
+     bio:'Apprentice at the forge, sixteen, all elbows. Writes letters he never sends.',
+     itin:[seg(0,'home','asleep'), seg(12,'smithy','bellows work'), seg(27,'steps','seeing Brindle off'), seg(29,'smithy','back to work, badly'), seg(38,'home','not writing a letter')],
+     kf:{purse:[[0,.3],[47,.3]], trade:[[0,.5],[29,.42],[47,.45]], heart:[[0,.62],[27,.62],[29,.38],[38,.4],[47,.42]], restlessness:[[0,.4],[27,.55],[47,.5]]}},
+    {id:'brindle',name:'Brindle Ashe',  role:'adventurer · bronze', teller:0.65,
+     bio:'Bronze-rank, cheerful, forever between kit and calamity. The town’s favorite bad idea.',
+     itin:[seg(0,'home','asleep'), seg(14,'market','kit and rations'), seg(20,'steps','papers & waiting'), seg(28,'away','on the north road (away-flag)')],
+     kf:{purse:[[0,.35],[14,.28],[47,.28]], trade:[[0,.5],[47,.5]], heart:[[0,.55],[27,.6],[47,.6]], restlessness:[[0,.7],[20,.75],[28,.4],[47,.4]]}},
+    {id:'corvo',  name:'Corvo Lunt',    role:'adventurer · iron', teller:0.4,
+     bio:'Iron-rank and semi-retired, mostly into the Long Table’s corner seat. Owes the smith for a re-hafted axe and everyone knows it.',
+     itin:[seg(0,'home','asleep'), seg(16,'pond','idling with intent'), seg(22,'smithy','about the axe'), seg(36,'inn','holding court'), seg(46,'home','asleep')],
+     kf:{purse:[[0,.15],[47,.15]], trade:[[0,.3],[47,.3]], heart:[[0,.55],[23,.48],[38,.6],[47,.6]], restlessness:[[0,.6],[47,.55]]}},
+    {id:'sela',   name:'Sela Quick',    role:'courier · carrier', teller:0.5,
+     bio:'Courier. If it fits the satchel it travels; that includes news.',
+     itin:[seg(0,'home','asleep'), seg(11,'market','morning pickups'), seg(16,'shop','a pickup for Petch'), seg(20,'pond','delivery round'), seg(26,'market','the midday bag'), seg(33,'inn','last letters'), seg(40,'shop','satchel drop'), seg(42,'inn','a late cup'), seg(46,'home','asleep')],
+     kf:{purse:[[0,.4],[47,.42]], trade:[[0,.55],[47,.58]], heart:[[0,.5],[47,.52]], restlessness:[[0,.5],[47,.48]]}},
+    {id:'karsk',  name:'Widow Karsk',   role:'landlady', teller:0.35,
+     bio:'Owns the Rents and the patience of a ledger. Twice widowed, thrice careful.',
+     itin:[seg(0,'home','asleep'), seg(15,'market','rent-day rounds'), seg(18,'pond','finding Fenn'), seg(22,'home','over the ledgers'), seg(35,'home','waiting at the gate')],
+     kf:{purse:[[0,.55],[36,.58],[47,.58]], trade:[[0,.5],[47,.5]], heart:[[0,.35],[36,.3],[47,.3]], restlessness:[[0,.3],[47,.3]]}},
+    {id:'fenn',   name:'Fenn Halloway', role:'fisher', teller:0.45,
+     bio:'Fishes the millpond his father fished. Proud in the way that costs money.',
+     itin:[seg(0,'home','asleep'), seg(10,'pond','casting lines'), seg(24,'market','selling the catch'), seg(30,'pond','mending nets'), seg(35,'home','cornered at the gate'), seg(40,'inn','a quiet corner'), seg(46,'home','sleeping badly')],
+     kf:{purse:[[0,.24],[18,.22],[26,.3],[36,.18],[47,.18]], trade:[[0,.5],[24,.6],[47,.55]], heart:[[0,.5],[18,.42],[36,.22],[41,.3],[47,.28]], restlessness:[[0,.3],[47,.35]]}},
+    {id:'dob',    name:'Dob Millet',    role:'miller', teller:0.4,
+     bio:'Mills and mutters. Convinced the baker undercuts him out of spite.',
+     itin:[seg(0,'home','asleep'), seg(12,'market','the flour stall'), seg(40,'home','asleep')],
+     kf:{purse:[[0,.45],[47,.45]], trade:[[0,.5],[21,.46],[47,.48]], heart:[[0,.4],[21,.36],[47,.38]], restlessness:[[0,.3],[47,.3]]}},
+    {id:'nan',    name:'Nan Pellow',    role:'baker', teller:0.4,
+     bio:'Bakes before the birds are up. Convinced the miller pads his sacks.',
+     itin:[seg(0,'home','asleep'), seg(8,'market','ovens & the stall'), seg(36,'home','asleep by dark')],
+     kf:{purse:[[0,.42],[47,.44]], trade:[[0,.55],[47,.55]], heart:[[0,.45],[21,.4],[47,.42]], restlessness:[[0,.25],[47,.25]]}},
+    {id:'grigg',  name:'Grigg Paulet',  role:'market warden', teller:0.5,
+     bio:'Market warden; keys, rounds, and a whistle he’s never blown.',
+     itin:[seg(0,'home','asleep'), seg(11,'market','opening the row'), seg(18,'pond','on his rounds'), seg(22,'market','the afternoon watch'), seg(40,'inn','off the clock'), seg(45,'home','asleep')],
+     kf:{purse:[[0,.4],[47,.4]], trade:[[0,.5],[47,.5]], heart:[[0,.5],[47,.5]], restlessness:[[0,.35],[47,.33]]}}
+  ];
+  var REGARD = [
+    ['karsk','fenn',-0.35,'creditor'], ['fenn','karsk',-0.15,'debtor'],
+    ['tam','brindle',0.70,'smitten'],  ['brindle','tam',0.25,'fond'],
+    ['marrow','corvo',-0.15,'creditor'],['corvo','marrow',0.30,'debtor · drinking-friend'],
+    ['marrow','tam',0.50,'master'],    ['tam','marrow',0.45,'prentice'],
+    ['odile','sela',0.40,'trades news'],['sela','odile',0.45,'trades news'],
+    ['petch','sela',0.35,'reliable'],  ['nan','dob',-0.20,'stall-rival'],
+    ['dob','nan',-0.10,'stall-rival'], ['odile','corvo',0.30,'best customer']
+  ];
+  var EVENTS = [
+    {n:1, slot:13, type:'stock-runs-low', kind:'trade', who:['petch'], place:'shop', tell:0.55,
+     because:['Petch.trade fell to 0.26 overnight (below 0.30)','the Simples opened (slot 13)','cooldown clear (4 days)'],
+     heard:'told to Sela at the pickup (08:00)',
+     lines:{h:'They say the herb shop’s shelves are thinner than they should be.',
+            g:'Petch is out of half the usual simples — and too proud to post a request for more.',
+            r:'stock-runs-low: Petch.trade 0.26 < 0.30 at shop opening, slot 13.'}},
+    {n:2, slot:16, type:'fetch-arranged', kind:'trade', who:['petch','sela'], place:'shop', tell:0.5,
+     because:['co-present at Petch’s Simples (slot 16)','Petch.trade 0.26 (below 0.30)','Sela’s role is courier'],
+     heard:'Sela is a carrier — it travels with her',
+     lines:{h:'Somebody’s satchel is doing somebody a favor.',
+            g:'Sela’s taken a quiet commission from Petch — dried feverbalm from the next town over, no fuss.',
+            r:'fetch-arranged: courier bound to trade-shortage holder; fulfil window slots 16–44.'}},
+    {n:3, slot:18, type:'rent-demanded', kind:'strife', who:['karsk','fenn'], place:'pond', tell:0.65,
+     because:['Karsk’s regard for Fenn carries the creditor tag','Fenn.purse 0.22 (below 0.30)','co-present at the Millpond (slot 18)','rent-day on the calendar'],
+     heard:'Grigg was on his rounds and saw the whole thing',
+     lines:{h:'There were words by the millpond this morning, over money.',
+            g:'Widow Karsk walked the whole way to the pond to remind Fenn what day it is. He kept casting.',
+            r:'rent-demanded: creditor(Karsk→Fenn) ∧ Fenn.purse 0.22 ∧ co-present(pond,18). Regard Karsk→Fenn −0.05.'}},
+    {n:4, slot:21, type:'market-squabble', kind:'social', who:['dob','nan'], place:'market', tell:0.45,
+     because:['stall-rival tags run both ways','stalls adjacent (co-present, slots 12–36)','both trade pressures mid and sliding'],
+     heard:'half of Market Row heard it',
+     lines:{h:'The flour stall and the bread stall are at it again.',
+            g:'Dob swears Nan’s loaves are priced out of spite; Nan suggests he weigh his own sacks first.',
+            r:'market-squabble: rival(Dob↔Nan) ∧ co-present(market,21). Regard −0.03 each way.'}},
+    {n:5, slot:23, type:'debt-nagged', kind:'strife', who:['marrow','corvo'], place:'smithy', tell:0.6,
+     because:['Corvo’s regard row carries debtor (the re-hafted axe)','Corvo came to the forge himself (co-present, slot 22)','Marrow.trade high — busy and impatient'],
+     heard:'Tam was on the bellows the whole time',
+     lines:{h:'The smith’s hammer was louder than usual around midday.',
+            g:'Corvo dropped by the forge to charm Marrow about the axe money. Marrow was not charmed.',
+            r:'debt-nagged: debtor(Corvo→Marrow) ∧ co-present(smithy,23). Corvo marked; regard Marrow→Corvo −0.05.'},
+     marks:[['corvo','Nagged over the axe debt; laughed it off, day 1.']]},
+    {n:6, slot:27, type:'departure-farewell', kind:'social', who:['brindle','tam'], place:'steps', tell:0.85,
+     because:['Brindle’s away-flag flips at slot 28 (expedition stand-in)','Tam’s regard for Brindle is 0.70, tagged smitten','co-present on the Guildhall Steps (slot 27)'],
+     heard:'in full view of the Steps — the town’s stage',
+     lines:{h:'A party took the north road after midday. Someone watched them all the way out of sight.',
+            g:'Brindle’s party left from the Steps at half past one. Tam carried the kit down and said it was nothing.',
+            r:'departure-farewell: away-flag(brindle)@28 ∧ regard(Tam→Brindle 0.70, smitten) ∧ co-present(steps,27). Tam.heart 0.62→0.38.'},
+     marks:[['tam','Watched Brindle’s party take the north road; said it was nothing, day 1.'],
+            ['brindle','Left for the delve with a borrowed whetstone — Tam’s, day 1.']]},
+    {n:7, slot:29, type:'mooning-observed', kind:'social', who:['tam','marrow'], place:'smithy', tell:0.5,
+     because:['Tam.heart fell 0.62→0.38 at the farewell','back at the bellows within the hour','Marrow co-present (and not blind)'],
+     heard:'Marrow grumbled about it at the Long Table that evening',
+     lines:{h:'The bellows-boy’s mind was somewhere north of his work today.',
+            g:'Tam pumped the bellows like a boy underwater all afternoon. Marrow says the north road can have him.',
+            r:'mooning-observed: heart-drop(Tam, 0.24 in 1 slot) ∧ co-present(smithy,29). Tam.trade −0.08.'}},
+    {n:8, slot:33, type:'rumor-retold', kind:'social', who:['odile','sela'], place:'inn', tell:0.4,
+     because:['Sela reached the Long Table with the day’s news (slot 33)','Odile is a gossip-carrier','the farewell is still fresh (same day)'],
+     heard:'it happened over the taproom counter',
+     lines:{h:'The taproom had a story with its lunch.',
+            g:'Sela traded the farewell story to Odile for a heel of bread. It grew a little in the telling.',
+            r:'rumor-retold: carrier(Sela)→carrier(Odile), source event №6, fidelity 0.9.'}},
+    {n:9, slot:36, type:'rent-quarrel', kind:'strife', who:['karsk','fenn'], place:'home', tell:0.9,
+     because:['rent-demanded already fired today (escalation armed)','Fenn.purse 0.18 after a thin market','Karsk waiting at the gate (co-present, home row, slot 35)'],
+     heard:'Sela lodges at the Rents — heard it through the wall',
+     lines:{h:'Someone at the Rents went to bed angry, and it wasn’t quiet getting there.',
+            g:'Karsk was waiting at Fenn’s own gate with the ledger open. The whole row heard what the pond didn’t.',
+            r:'rent-quarrel: escalation(rent-demanded) ∧ Fenn.purse 0.18 ∧ co-present(rents-gate,36). Regard both ways −0.15; Fenn.heart −0.20; both marked.'},
+     marks:[['fenn','Shouted at over arrears at his own gate; slept badly, day 1.'],
+            ['karsk','Demanded the arrears twice in one day; got promises, day 1.']]},
+    {n:10, slot:38, type:'evening-company', kind:'social', who:['marrow','corvo'], place:'inn', tell:0.5,
+     because:['debt-nagged fired earlier today (reconciliation armed)','co-present at the Long Table (slot 38)','Corvo’s regard for Marrow is 0.30 — drinking-friend outranks debtor by night'],
+     heard:'the corner seat is a public stage',
+     lines:{h:'Old quarrels drink together anyway, at the right hour.',
+            g:'By the second pint Marrow and Corvo had the axe down to a joke — the debt survived the laughing, though.',
+            r:'evening-company: post-conflict(debt-nagged) ∧ co-present(inn,38). Regard both ways +0.05; debt unchanged.'}},
+    {n:11, slot:40, type:'fetch-fulfilled', kind:'trade', who:['sela','petch'], place:'shop', tell:0.45,
+     because:['fetch-arranged pending since slot 16','Sela’s satchel drop (slot 40)'],
+     heard:'carrier-borne by definition',
+     lines:{h:'The herb shop smelled right again by evening.',
+            g:'Sela’s satchel came back heavier than it left — Petch’s shelves are quietly whole again.',
+            r:'fetch-fulfilled: closes №2. Petch.trade 0.33→0.55.'}},
+    {n:12, slot:42, type:'hearth-gossip', kind:'social', who:['odile','sela'], place:'inn', tell:0.5,
+     because:['Sela reached the Long Table again (slot 42)','the quarrel is the day’s juiciest unheard entry (tellability 0.90)','Odile is a gossip-carrier'],
+     heard:'the taproom, at the hour it fills',
+     lines:{h:'By last lamps, everyone knew someone who’d heard the shouting.',
+            g:'The Rents story made the taproom before the fire burned low — Odile has it word-for-word, minus a few and plus a few.',
+            r:'hearth-gossip: carrier(Sela)→carrier(Odile), source event №9, fidelity 0.85.'}}
+  ];
+  // dawn summary = hearsay-eligible entries, top 5 by tellability (all EVENTS here are eligible by authorship)
+  var SUMMARY_NS = [9, 6, 3, 5, 1];
+
+  // ————— tiny engine over the canned data —————
+  function fmtTime(s){ var h=Math.floor(s/2); return (h<10?'0':'')+h+':'+(s%2?'30':'00'); }
+  function segAt(t, slot){
+    var cur=t.itin[0];
+    for(var i=0;i<t.itin.length;i++){ if(t.itin[i][0]<=slot) cur=t.itin[i]; }
+    return cur;
+  }
+  function lerpKF(kf, slot){
+    if(slot<=kf[0][0]) return kf[0][1];
+    for(var i=1;i<kf.length;i++){
+      if(slot<=kf[i][0]){
+        var a=kf[i-1], b=kf[i];
+        return a[1]+(b[1]-a[1])*((slot-a[0])/(b[0]-a[0]));
+      }
+    }
+    return kf[kf.length-1][1];
+  }
+  function placeName(id){ for(var i=0;i<PLACES.length;i++) if(PLACES[i].id===id) return PLACES[i].name; return id; }
+  function townee(id){ for(var i=0;i<TOWNEES.length;i++) if(TOWNEES[i].id===id) return TOWNEES[i]; return null; }
+  function initials(t){ return t.name.split(' ').map(function(w){return w[0];}).join(''); }
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  var state = { slot:24, sel:'fenn', dial:'g', marks:true, timer:null };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var rosterEl=$('ob-roster'), boardEl=$('ob-board'), chronEl=$('ob-chron'),
+      summEl=$('ob-summ'), inspEl=$('ob-insp-body'), timeEl=$('ob-time'),
+      slotEl=$('ob-slot'), evctEl=$('ob-evct');
+
+  function renderRoster(){
+    var html='';
+    for(var i=0;i<TOWNEES.length;i++){
+      var t=TOWNEES[i], sg=segAt(t,state.slot), away=(sg[1]==='away');
+      html+='<li class="'+(away?'away':'')+'"><button type="button" data-id="'+t.id+'" class="'+(t.id===state.sel?'sel':'')+'">'
+          +'<span class="nm">'+esc(t.name)+' <span class="role">'+esc(t.role)+'</span></span>'
+          +'<span class="at">'+esc(placeName(sg[1]))+' — '+esc(sg[2])+'</span>'
+          +'</button></li>';
+    }
+    rosterEl.innerHTML=html;
+  }
+  function renderBoard(){
+    var html='';
+    for(var p=0;p<PLACES.length;p++){
+      var pl=PLACES[p], chips='', ct=0;
+      for(var i=0;i<TOWNEES.length;i++){
+        var t=TOWNEES[i], sg=segAt(t,state.slot);
+        if(sg[1]===pl.id){ ct++; chips+='<span class="chip" title="'+esc(t.name)+' — '+esc(sg[2])+'">'+esc(initials(t))+'</span>'; }
+      }
+      html+='<div class="plc"><div class="pn">'+esc(pl.name)+'<span class="ct">'+ct+'</span></div><div class="chips">'+(chips||'<span class="chip" style="opacity:.4">—</span>')+'</div></div>';
+    }
+    boardEl.innerHTML=html;
+  }
+  function sparkSVG(kf, slot){
+    var pts='';
+    for(var s=0;s<=slot;s++){
+      var x=(s/(SLOTS-1))*138+1, y=31-lerpKF(kf,s)*26;
+      pts+=x.toFixed(1)+','+y.toFixed(1)+' ';
+    }
+    return '<svg viewBox="0 0 140 34" aria-hidden="true"><line x1="1" y1="31" x2="139" y2="31"/><polyline points="'+pts+'"/></svg>';
+  }
+  function renderInspector(){
+    var t=townee(state.sel), sg=segAt(t,state.slot), html='';
+    html+='<p class="nm">'+esc(t.name)+'</p><p class="role">'+esc(t.role)
+        +' · now: '+esc(placeName(sg[1]))+' — '+esc(sg[2])
+        +' · regard→teller '+t.teller.toFixed(2)+' (reserved for the floor)</p>';
+    html+='<p class="bio">'+esc(t.bio)+'</p>';
+    var marks=[];
+    if(state.marks){
+      for(var e=0;e<EVENTS.length;e++){
+        var ev=EVENTS[e];
+        if(ev.slot<=state.slot && ev.marks){
+          for(var m=0;m<ev.marks.length;m++) if(ev.marks[m][0]===t.id) marks.push(ev.marks[m][1]);
+        }
+      }
+    }
+    if(state.marks){
+      html += marks.length
+        ? '<ul class="marks">'+marks.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul>'
+        : '<p class="none">No marks yet today — the bio stays as authored (FB.8).</p>';
+    } else {
+      html += '<p class="none">bio_marks_enabled is off — authored prose only.</p>';
+    }
+    html+='<div class="sparks">';
+    var drives=['purse','trade','heart','restlessness'];
+    for(var d=0;d<drives.length;d++){
+      var v=lerpKF(t.kf[drives[d]],state.slot);
+      html+='<div class="spark"><span class="sl">'+drives[d]+'<b>'+v.toFixed(2)+'</b></span>'+sparkSVG(t.kf[drives[d]],state.slot)+'</div>';
+    }
+    html+='</div>';
+    var feels='', felt='';
+    for(var r=0;r<REGARD.length;r++){
+      var row=REGARD[r], sc=row[2],
+          chip='<span class="sc '+(sc>=0?'pos':'neg')+'">'+(sc>=0?'+':'')+sc.toFixed(2)+'</span>',
+          tg='<span class="tg">'+esc(row[3])+'</span>';
+      if(row[0]===t.id) feels+='<li>'+chip+'<span>→ '+esc(townee(row[1]).name)+'</span>'+tg+'</li>';
+      if(row[1]===t.id) felt +='<li>'+chip+'<span>← '+esc(townee(row[0]).name)+'</span>'+tg+'</li>';
+    }
+    html+='<ul class="reg">'+(feels||'<li class="none">feels nothing on record</li>')+(felt?'<li style="height:4px"></li>'+felt:'')+'</ul>';
+    inspEl.innerHTML=html;
+  }
+  function renderChronicle(){
+    var html='', ct=0;
+    for(var e=0;e<EVENTS.length;e++){
+      var ev=EVENTS[e];
+      if(ev.slot>state.slot) continue;
+      ct++;
+      var names=ev.who.map(function(id){return townee(id).name.split(' ')[0];}).join(' · ');
+      html+='<li><details id="ev-'+ev.n+'"><summary>'
+          +'<span class="no">№'+ev.n+' · '+fmtTime(ev.slot)+'</span>'
+          +'<span class="kind '+ev.kind+'">'+ev.kind+'</span>'
+          +'<span class="gist">'+esc(ev.type)+' — '+esc(names)+' @ '+esc(placeName(ev.place))+'</span>'
+          +'<span class="tellv">tell '+ev.tell.toFixed(2)+'</span></summary>'
+          +'<div class="bd"><span class="bt">Because (the predicate snapshot)</span><ul>'
+          +ev.because.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')
+          +'</ul><span class="bt">Lines (dial variants)</span><ul class="lines">'
+          +'<li class="'+(state.dial==='h'?'on':'')+'"><b>hearsay</b>'+esc(ev.lines.h)+'</li>'
+          +'<li class="'+(state.dial==='g'?'on':'')+'"><b>gossip</b>'+esc(ev.lines.g)+'</li>'
+          +'<li class="'+(state.dial==='r'?'on':'')+'"><b>report</b>'+esc(ev.lines.r)+'</li>'
+          +'</ul><span class="bt">Heard</span><ul><li>'+esc(ev.heard)+'</li></ul></div></details></li>';
+    }
+    chronEl.innerHTML=html || '<li style="font:13px var(--sans); color:var(--ink3); font-style:italic; list-style:none">The town is asleep. Scrub forward.</li>';
+    evctEl.textContent=ct;
+  }
+  function renderSummary(){
+    if(state.slot<DAWN){
+      summEl.innerHTML='<p class="summ-wait">The day is still running — the town writes its summary overnight. Scrub to day’s end ('
+        +fmtTime(DAWN)+') or press “To dawn”.</p>';
+      return;
+    }
+    var html='<ol class="summ">';
+    for(var i=0;i<SUMMARY_NS.length;i++){
+      var ev=null;
+      for(var e=0;e<EVENTS.length;e++) if(EVENTS[e].n===SUMMARY_NS[i]) ev=EVENTS[e];
+      html+='<li>'+esc(ev.lines[state.dial])
+          +'<span class="via">heard: '+esc(ev.heard)+' · <a href="#ev-'+ev.n+'" data-ev="'+ev.n+'">chronicle №'+ev.n+'</a></span></li>';
+    }
+    html+='</ol>';
+    summEl.innerHTML=html;
+  }
+  function render(){
+    timeEl.textContent=fmtTime(state.slot);
+    slotEl.value=state.slot;
+    renderRoster(); renderBoard(); renderInspector(); renderChronicle(); renderSummary();
+  }
+
+  slotEl.addEventListener('input', function(){ state.slot=+this.value; render(); });
+  rosterEl.addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    state.sel=b.getAttribute('data-id'); render();
+  });
+  summEl.addEventListener('click', function(e){
+    var a=e.target.closest('a[data-ev]'); if(!a) return;
+    var d=$('ev-'+a.getAttribute('data-ev')); if(d) d.open=true;
+  });
+  $('ob-dawn').addEventListener('click', function(){ stopPlay(); state.slot=DAWN; render(); });
+  $('ob-marks').addEventListener('change', function(){ state.marks=this.checked; renderInspector(); });
+  var dials=document.querySelectorAll('input[name=dial]');
+  for(var i=0;i<dials.length;i++) dials[i].addEventListener('change', function(){
+    state.dial=this.value; renderChronicle(); renderSummary();
+  });
+  var playBtn=$('ob-play');
+  function stopPlay(){ if(state.timer){ clearInterval(state.timer); state.timer=null; playBtn.textContent='▸ Play'; } }
+  playBtn.addEventListener('click', function(){
+    if(state.timer){ stopPlay(); return; }
+    playBtn.textContent='⏸ Pause';
+    state.timer=setInterval(function(){
+      if(state.slot>=DAWN){ stopPlay(); return; }
+      state.slot++; render();
+    }, 550);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

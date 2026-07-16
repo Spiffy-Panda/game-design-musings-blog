@@ -1,0 +1,12 @@
+<Project>
+  <!-- Shared settings for the three engine-free core projects (Core, Cli, Tests).
+       Scoped to core/ so it never touches the Godot game csproj (Godot.NET.Sdk sets its own). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

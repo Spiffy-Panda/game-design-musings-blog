@@ -1,0 +1,15 @@
+# Godot 4 editor + import cache
+.godot/
+*.import
+export_presets.cfg
+
+# .NET build output
+bin/
+obj/
+
+# Capture harness output (ships disabled; see FISHBOWL.md)
+.captures/
+
+# Local runner output
+out.json
+report.json

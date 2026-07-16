@@ -1,0 +1,20 @@
+<Project Sdk="Godot.NET.Sdk/4.6.1">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Fishbowl</RootNamespace>
+    <!-- Only the bridge (cs/) is engine-facing; the sim lives in the referenced core classlib.
+         Godot.NET.Sdk globs the whole project dir, so exclude the core sources it would double-compile. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);core/**;.captures/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="core/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="core/Fishbowl.Core/Fishbowl.Core.csproj" />
+  </ItemGroup>
+</Project>

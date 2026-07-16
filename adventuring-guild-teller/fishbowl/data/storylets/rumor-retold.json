@@ -1,0 +1,13 @@
+{ "id": "rumor-retold", "kind": "hearsay-chain",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "trait": { "A": "gossip-carrier" },
+    "chronicle_since": { "days": 1, "kind": "social" },
+    "cooldown_days": 1 },
+  "weight": 0.9, "streams": "storylets",
+  "effects": [ { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "The tale from {place} was already making a second lap.",
+    "gossip":  "{A} retold {B} what happened yesterday, with a little more color at {place}.",
+    "report":  "{A} relayed yesterday's chronicle event to {B} at {place}, slot {slot}." },
+  "_binding": { "A": "odile-vance", "B": "sela-quick" } }

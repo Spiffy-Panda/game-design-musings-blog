@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "_comment": "pinned per VFB.M3 acceptance: day 1 must produce these beat TYPES and PARTICIPANTS (not exact text). Seed/config come from ../simconfig.json unmodified.",
+  "seed": 1123,
+  "day": 1,
+  "expected_beats": [
+    { "storylet": "rent-quarrel", "participants": ["widow-karsk", "fenn-halloway"] },
+    { "storylet": "stock-runs-low", "participants": ["petch"] },
+    { "storylet": "fetch-arranged", "participants": ["sela-quick", "petch"] },
+    { "storylet": "departure-farewell", "participants": ["brindle-ashe", "tam-underhill"] },
+    { "storylet": "debt-nagged", "participants": ["marrow-bray", "corvo-lunt"] },
+    { "storylet": "rumor-retold", "participants": ["odile-vance", "sela-quick"] },
+    { "storylet": "market-squabble", "participants": ["dob-millet", "nan-pellow"] }
+  ]
+}

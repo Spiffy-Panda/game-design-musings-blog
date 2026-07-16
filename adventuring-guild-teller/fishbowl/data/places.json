@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "_comment": "board:true = one of the six place-board cards (VFB observatory spec). board:false = residential/private, tracked for co-presence but not cardified.",
+  "places": [
+    { "id": "the-long-table", "name": "the Long Table", "kind": "inn",
+      "hours": { "open": 8, "close": 46 }, "capacity": 20, "board": true },
+    { "id": "petchs-simples", "name": "Petch's Simples", "kind": "shop",
+      "hours": { "open": 14, "close": 36 }, "capacity": 6, "board": true },
+    { "id": "bray-and-daughter", "name": "Bray & Daughter, Farriers", "kind": "workshop",
+      "hours": { "open": 12, "close": 40 }, "capacity": 8, "board": true },
+    { "id": "market-row", "name": "Market Row", "kind": "market",
+      "hours": { "open": 14, "close": 34 }, "capacity": 24, "board": true },
+    { "id": "the-millpond", "name": "the Millpond", "kind": "work",
+      "hours": { "open": 10, "close": 32 }, "capacity": 10, "board": true },
+    { "id": "guildhall-steps", "name": "Guildhall Steps", "kind": "landmark",
+      "hours": { "open": 0, "close": 48 }, "capacity": 12, "shut": true, "board": true },
+
+    { "id": "karsk-rents", "name": "Karsk's Rents", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 6, "board": false },
+    { "id": "petchs-cottage", "name": "Petch's Cottage", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 2, "board": false },
+    { "id": "brays-house", "name": "the Bray House", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 3, "board": false },
+    { "id": "millers-house", "name": "the Millet House", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 2, "board": false },
+    { "id": "bakers-house", "name": "the Pellow House", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 2, "board": false },
+    { "id": "wardens-house", "name": "the Paulet House", "kind": "home",
+      "hours": { "open": 0, "close": 48 }, "capacity": 2, "board": false }
+  ]
+}

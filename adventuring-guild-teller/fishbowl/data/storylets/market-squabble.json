@@ -1,0 +1,14 @@
+{ "id": "market-squabble", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "regard": { "A->B": { "tag": "rival" } },
+    "cooldown_days": 2 },
+  "weight": 0.7, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.03 },
+               { "regard": "B->A", "delta": -0.03 },
+               { "chronicle": true, "tellability": 0.3, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was some bickering over sacks near {place}.",
+    "gossip":  "{A} and {B} traded jabs about their scales again at {place}. Low stakes, high volume.",
+    "report":  "{A}/{B} rivalry friction logged at {place}, slot {slot}." },
+  "_binding": { "A": "dob-millet", "B": "nan-pellow" } }

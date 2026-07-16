@@ -1,0 +1,13 @@
+{ "id": "evening-pint", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "cooldown_days": 2 },
+  "weight": 0.6, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.04 },
+               { "pressure": "B.heart", "delta": 0.04 },
+               { "chronicle": true, "tellability": 0.3, "mark": [] } ],
+  "lines": {
+    "hearsay": "The lamps at {place} burned late and friendly.",
+    "gossip":  "{A} and {B} shared a pint at {place} and put the day to rest.",
+    "report":  "{A}/{B} social wind-down at {place}, slot {slot}." },
+  "_binding": { "A": "odile-vance", "B": "marrow-bray" } }

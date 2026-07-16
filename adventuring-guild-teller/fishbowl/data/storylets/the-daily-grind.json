@@ -1,0 +1,14 @@
+{ "id": "the-daily-grind", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "trait": { "A": "gruff" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.trade", "delta": 0.04 },
+               { "pressure": "A.restlessness", "delta": -0.03 },
+               { "chronicle": true, "tellability": 0.25, "mark": [] } ],
+  "lines": {
+    "hearsay": "The stones at {place} turned all day, steady as ever.",
+    "gossip":  "{A} kept {place} grinding without a word of complaint, for once.",
+    "report":  "{A} routine work beat at {place}, slot {slot}." },
+  "_binding": { "A": "dob-millet" } }
