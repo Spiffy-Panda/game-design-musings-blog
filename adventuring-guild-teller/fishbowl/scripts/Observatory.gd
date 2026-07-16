@@ -52,12 +52,21 @@ const DRIVES := ["purse", "trade", "heart", "restlessness"]
 #   + Top drive as glyph         452     34px      9           532        fits
 #   + Role as glyph too          403    109px     20           581        SCROLLS, clipped
 #
+# The three rows are left AS MEASURED, under the column widths that were live at the time, because
+# they are one experiment and re-costing a single row would make the comparison meaningless. The
+# chosen variant has since moved: `Role` was widened 95 -> 110 for padding it never had, so this
+# app now runs a 503 rail and a 481 pane. That is +15/-15 applied to row 1 only, it does not touch
+# the legend bill any row is being judged on, and the verdict is unchanged.
+#
 # The all-glyph variant saves 85px of rail WIDTH and spends 93px of the same rail's HEIGHT on the
 # legend. That is not a trade between regions; the height comes out of the place board, which had
 # only ~80px of slack and overflows into a scrollbar. A published PNG has no hover AND no scroll.
 #
 # And the account the compression would pay into is already full: the pane that was clipped
-# mid-word at 326px is complete at 496. Buying pane width by making the roster a lookup table is
+# mid-word at 326px is complete at 481 (re-verified at that width, not assumed — every summary
+# line still wraps whole, `summary` reports visible_fraction 1.0 / clipped:[] at two day-hashes,
+# and autowrap spends a narrower pane on HEIGHT, which this pane has). Buying pane width by
+# making the roster a lookup table is
 # spending on a debt that is settled. `Top drive` is the clearest case — the cell already carries
 # the number, so the glyph replaces only the word that says what the number MEANS, buying 36px the
 # pane does not need. `Role` is worse: 11 symbols, 3 legend lines, and static per townee — the most
@@ -170,12 +179,16 @@ func _build_ui() -> void:
 	#   can be drawn from is the reading pane.
 	#
 	# Paid, deliberately. A wider summary next to a roster nobody can read fails the same publication
-	# test as a narrow one — and the summary still goes 326 (clipped mid-word) → ~500 (complete).
+	# test as a narrow one — and the summary still goes 326 (clipped mid-word) → 481 (complete).
 	# The right rail funds part of it: the knobs and inspector demand ~270, not the 320 they held.
 	#
 	# The reading pane is what remains, and that is the entire point: it is the only region whose
 	# width is a RESULT rather than a decision.
-	body.add_child(_rail(488, func(v): _build_left(v)))
+	# 503, not 488: +15px bought the Role column the right-hand padding every other column already
+	# had (see `_build_roster`). It is spent from here because this is the only place it CAN be
+	# spent from — the rail is the sum of its columns' minimums, so a column minimum that grows and
+	# a rail that doesn't just re-starves the same table from the inside.
+	body.add_child(_rail(503, func(v): _build_left(v)))
 	body.add_child(_fluid(func(v): _build_center(v)))
 	body.add_child(_rail(290, func(v): _build_right(v)))
 
@@ -301,8 +314,15 @@ func _build_roster(v: VBoxContainer) -> void:
 	roster_tree.set_column_expand_ratio(2, 1)
 	roster_tree.set_column_expand_ratio(3, 0)
 	roster_tree.set_column_expand_ratio(4, 0)
+	# Role is 110, not the 95 the measurement above implies, and the extra 15 is padding rather
+	# than fit: at 95 the column was 5px of left pad + 88px of "market warden" + 3px of right pad,
+	# so the widest role ENDED 3px from the column edge and sat 6px from "the Paulet House" beside
+	# it — two different facts reading as one phrase. 110 puts its right pad at 17px, matching what
+	# `Top drive` (17) and `Place` (13) already had by luck of their content. The 15px comes out of
+	# the rail below, and therefore out of the reading pane; that is the trade, made once, on the
+	# grounds that a published screenshot has no tooltip to disambiguate what the spacing merged.
 	roster_tree.set_column_custom_minimum_width(0, 92)
-	roster_tree.set_column_custom_minimum_width(1, 95)
+	roster_tree.set_column_custom_minimum_width(1, 110)
 	roster_tree.set_column_custom_minimum_width(2, 115)
 	roster_tree.set_column_custom_minimum_width(3, 60)
 	roster_tree.set_column_custom_minimum_width(4, 118)

@@ -198,7 +198,26 @@ drivers over one GDScript core (InputInjector / SceneProbe / Capturer / Bridge):
   utils/dotnet/gth-mcp-server`, restart the client, approve the server — then drive the observatory from chat.
   Tools appear as **`mcp__gth-fishbowl__*`**: `session_start` · `snapshot` · `query_element` · `read_element` ·
   `hit_test` · `click_at` · `click_element` · `press_key` · `capture` · `wait_for` · `window_state` ·
-  `run_scenario`. Launch mode starts (and stops) the observatory for you — no separate `run_project` needed.
+  `run_scenario` ⚠️. Launch mode starts (and stops) the observatory for you — no separate `run_project` needed.
+
+**⚠️ Open harness bugs — read this before you plan a session (`GTH.B9`–`B12`, all open as of 2026-07-16;
+check the plan before working around them, they may be fixed by the time you read this):**
+
+- **`run_scenario` over MCP is a silent no-op.** It returns `{}` and executes nothing. The **file-based**
+  runner accepts identical steps and works — use `--gth-scenario=res://...`, or drive step-by-step with the
+  individual tools. Four separate agents burned time on this in one day before it was written down here.
+- **Before building a capture corpus, override two config defaults.** `max_dim` defaults to **1280**, which
+  is *narrower than this app's real 1290px viewport*, so frames silently downscale to 1280×803 and stop
+  being 1:1 with the rects you measure them against (`GTH.B10`). And `if_changed: true` dedups against the
+  **global last** capture regardless of label, so a deliberate A/B whose two arms look identical writes
+  **no file at all** (`GTH.B11`) — confirmed live, on exactly such an A/B. Set `max_dim: 1290`,
+  `if_changed: false`.
+- **`session_id` can't be set without editing tracked config** (`GTH.B12`), so a read-only consumer cannot
+  choose where its captures land.
+
+**The real viewport is 1290×810**, though `project.godot` declares 1280×800. Trust `query_element` rects,
+not the config. And **the window is resize-locked while the harness is active** (`GTH.B5`), so 1290×810 is
+the only size you can honestly test — do not claim responsive behaviour you cannot observe.
 
 **Two things to know before you read a harness result** (both fixed 2026-07-16, both were live through the
 first release — see `GTH.B1`–`B6`):

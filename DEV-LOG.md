@@ -6,6 +6,53 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — two cosmetic fixes, priced in pixels; and the convergence commit left its own sync check failing
+
+The closing round of the fish-bowl usability run: no new ground, two flagged cosmetics taken, everything
+verified. Both fixes are here because **the screenshots get published**, which is the only reason either
+was worth the pixels.
+
+**The Role column's padding was 3px, and the premise for fixing it was half wrong.** Measured off a real
+capture rather than argued: at a 95px minimum, `Role` held 5px of left pad + 88px of "market warden" + 3px
+of right pad, leaving the widest role 6px from "the Paulet House" beside it — two facts reading as one
+phrase. 110px puts the right pad at 17, matching `Top drive`'s 17 and `Place`'s 13; the rail goes 488 → 503
+and the reading pane 496 → 481. **The 481 pane was re-verified, not assumed** (`summary` visible_fraction
+1.0 / clipped:[] at two day-hashes, every line still wrapping whole) — and the thing to know is that
+narrowing an autowrap pane spends width on *height*, not on clipping, so "does it still fit" is a question
+about vertical slack, which this pane has.
+
+**But the brief's premise — "Role has ~5px where every other column has ~20" — did not survive the
+measurement.** `Name` has **2px**: "Widow Karsk" ends 2px from the column edge and 6px from "landlady",
+the identical collision, equally visible in the same shot. It is **left alone deliberately** (the round was
+scoped to converge, not to open a front), and it costs another ~15px of pane to fix. Whoever takes it should
+know the honest total is ~30px, not ~15.
+
+**The sparkline midline was a real defect, and "one-character" undersold it.** 0.12 alpha rendered
+RGB(55,62,71) on the box's RGB(28,35,46) — **1.46:1**, where WCAG asks 3:1 of a graphical object you need in
+order to read the content. Two earlier passes called it invisible and both were right. It went to **0.35 →
+3.17:1** (predicted, then measured at exactly 3.17), which is two characters, not one; the number that
+clears the bar mattered more than the shorthand. The line was always correctly *centred* — the only thing
+wrong with it was that nobody could see it.
+
+**Rule 3 audit, and a real desync that is NOT mine.** `FISHBOWL.md` audits clean on every claim checked:
+30 tests, the Summarizer's dawn-seal + derive-on-read split, the knob rendering/simulation grouping, all
+23 `test_id`s, and the `on_screen`-vs-`clickable` example's retirement (`btn-storylets` holds x=1134,
+visible_fraction 1.0, at both day-hashes). **But `utils/python/sync_gth_addon.py --check` exits 1**, and
+has since `0ecbf68` — the GTH.Q4 *convergence* commit. That commit added the "⚠ This directory is the
+CANONICAL copy. Edit it here." banner to `utils/godot/gd_test_harness/README.md` and never re-ran the sync,
+so both projects' copies still carry the pre-convergence text. Only README.md differs; every other addon
+file is in sync. **The trap:** `sync_one` is a verbatim `copytree`, so running the sync now would plant
+"this directory is the CANONICAL copy — edit it here" into both `addons/gd_test_harness/README.md`, where
+it is false and actively instructs the next agent to commit exactly the drift GTH.Q4 exists to prevent.
+The fix is a canonical-only exclusion or a README transform, not a re-sync. Flagged, not touched — the
+addon was out of scope this round.
+
+**Also flagged, not fixed:** `FISHBOWL.md` lists `run_scenario` among the live MCP tools with no caveat
+while `GTH.B9` (silent no-op) is open, and mentions `B1`–`B6` but never `B9`–`B12` — so the file's own
+"things to know before you read a harness result" block stops exactly where the still-open bugs start.
+
+---
+
 ## 2026-07-16 — the emoji roster, reverted on purpose: three variants built, measured, and two thrown away
 
 Panda's opening request was explicit: roster shows given name + surname initial, and **"use emoji for the

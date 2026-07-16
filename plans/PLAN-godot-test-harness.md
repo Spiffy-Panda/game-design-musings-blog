@@ -317,7 +317,7 @@ surface for a user who does not exist adds maintained API surface against a gues
 zero-dependency ethos argues the same way. Recommend closing it as YAGNI; revisit if a C#-first project
 actually adopts the harness.
 
-## Bugs (`GTH.B*`) — **eight fixed & verified 2026-07-16; `B9`–`B12` open**
+## Bugs (`GTH.B*`) — **eight fixed & verified 2026-07-16; `B9`–`B13` open**
 
 `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the bottom of this file);
 `GTH.B5`–`B6` are Panda's, added 2026-07-16; `GTH.B7`–`B8` were found within the hour by the `Q4`
@@ -528,6 +528,29 @@ dedup-skip — must be reported in the result, because the consumer is measuring
 of need — `B7`/`B8` needed a second app, `B9` needed MCP instead of a file, `B10`–`B12` needed a corpus
 built for a third party. **The harness's bugs live wherever a consumer has not yet been**, which means
 the backlog is a map of un-exercised surface, not a list of mistakes.
+
+### `GTH.B13` — `sync_gth_addon.py --check` has been red since the commit that created it, and re-syncing makes it worse ⬜ **open**
+
+Found 2026-07-16 by the usability run's closing audit. **`python utils/python/sync_gth_addon.py --check`
+exits 1, and has since `0ecbf68` — the `GTH.Q4` *convergence* commit itself.** That commit added the
+"⚠ This directory is the CANONICAL copy" banner to the canonical `README.md` and never re-ran the sync,
+so the canonical and generated copies have differed from the moment convergence landed. Only `README.md`
+differs; the addon code is in sync.
+
+**Do not "just re-sync it" — that is the trap, and it is a good one.** `sync_one` is a verbatim
+`copytree`, so syncing would copy the banner *"this directory is the CANONICAL copy — edit it here"* into
+**both projects' `addons/gd_test_harness/`** — i.e. it would plant, inside each generated copy, an
+instruction telling the next agent to edit the generated copy. That is precisely the drift `GTH.Q4` ruled
+against, installed by the tool built to prevent it, in language that reads as authoritative. The fix is an
+**exclusion or a transform** (skip `README.md`, or rewrite the banner on copy to say "GENERATED — edit the
+canonical copy at `utils/godot/`"), not a re-sync.
+
+**Why this matters beyond the one file:** `--check` is the drift alarm, and it has been red since birth.
+An alarm that has never been green is indistinguishable from an alarm that is broken, and the next agent
+to run it will either ignore it or "fix" it the wrong way. It is the same failure direction as
+`B2`/`B3`/`B7`/`B9`–`B12` (**eight** instances now) wearing yet another hat: **the tool reports a true
+thing in a way that makes the wrong action look correct.** Not fixed here — the usability run kept its
+diff about usability — but it is the cheapest of the open set and it guards the convergence ruling.
 
 ## Open questions (`GTH.Q*`)
 
