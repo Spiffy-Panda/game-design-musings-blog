@@ -15,17 +15,78 @@ public sealed class SummaryLine
 }
 
 /// <summary>
-/// The Summarizer (research-page register + FBS.6 selection lens, thinned): at dawn, picks
-/// 5±2 chronicle entries by tellability, filtered through a hearsay-lite layer — an event
-/// reaches the summary only if a gossip-carrier witnessed it or later shared a room with a
-/// witness. It quotes the town's telephone game, not the engine log. Each line renders
-/// through the actionability dial.
+/// The Summarizer (research-page register + FBS.6 selection lens, thinned): picks 5±2 chronicle
+/// entries by tellability, filtered through a hearsay-lite layer — an event reaches the summary
+/// only if a gossip-carrier witnessed it or later shared a room with a witness. It quotes the
+/// town's telephone game, not the engine log. Each line renders through the actionability dial.
+///
+/// <para><b>The dawn/read split — the shape that makes the rendering knobs live.</b> Of the phases
+/// below exactly one depends on the day's occupancy, and occupancy is a <i>current-day-only</i>
+/// array (<see cref="World.OccupantsAt"/>, rebuilt by <c>Clockwork.ResolveDay</c> on every day
+/// advance). That one phase stays at dawn; the rest derive on read:</para>
+/// <list type="bullet">
+///   <item><b>Gate</b> — <see cref="SealDay"/>, hearsay-lite. Needs the day's occupancy ⇒ <b>dawn
+///   only</b>. It is deliberately <i>unconditional</i>: the flag is frozen whatever
+///   <c>hearsay_required</c> currently says, so switching that knob on later still finds a truthful
+///   gate to filter against.</item>
+///   <item><b>Filter</b> (<c>hearsay_required</c>) · <b>Order</b> (<see cref="Score"/> — tellability
+///   plus a carrier bump; reads no knob and no mutable state) · <b>Take</b> (<c>summary_lines</c>) ·
+///   <b>Pick</b> (<c>actionability</c>) — all pure over the frozen gate ⇒ <b>live on read</b>.</item>
+/// </list>
+/// <para>Because the ordering is knob-independent and total, re-rendering a day at the knobs dawn
+/// held is byte-identical to what dawn produced — same frozen input, same pure operations. The
+/// three rendering knobs therefore re-present the current day without re-simulating it, which is
+/// the whole point of a tuning instrument: one variable moves, not two.</para>
+/// <para><b>Determinism.</b> The day-hash is sealed in <c>Simulation.FinalizeDay</c> <i>before</i>
+/// any of this runs, and <see cref="World.ToHashNode"/> contains no summary, no config and no
+/// register — so nothing here can reach the determinism spine. The one mutation on the path
+/// (<see cref="ChronicleEntry.CarriedByGossip"/>) is hash-invisible: the chronicle digest emits
+/// only slot/id/who.</para>
+/// <para><b>There is no stored summary, on purpose.</b> The gate lives on the chronicle entry, which
+/// <c>Snapshot</c> already persists, so a summary survives a save/load round-trip for free — where
+/// a cached one silently did not, behind a green hash-only test.</para>
 /// </summary>
 public static class Summarizer
 {
-    public static List<SummaryLine> Summarize(World world, int day)
+    /// <summary>
+    /// <b>DAWN.</b> Freeze hearsay-lite onto the day's chronicle entries, while that day's occupancy
+    /// is still the loaded one. This is the only occupancy-dependent phase, and the reason the rest
+    /// can be derived on read: a past day must never be re-gated against today's co-presence.
+    /// </summary>
+    public static void SealDay(World world, int day)
     {
-        var candidates = Candidates(world, day);
+        var carriers = world.Townees
+            .Where(t => t.Traits.Any(tr => world.Town.TraitById.TryGetValue(tr, out var td) && td.HearsayCarrier))
+            .Select(t => t.Id).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var e in world.Chronicle.Where(e => e.Day == day))
+            e.CarriedByGossip = IsCarried(world, e, carriers);
+    }
+
+    /// <summary>
+    /// <b>READ — filter.</b> Summary-eligible entries for the day: hearsay-lite applied over the gate
+    /// frozen at dawn. Also the pool instrument — a caller can count it.
+    /// <para>The in-progress day has not been sealed yet, and its occupancy <i>is</i> the loaded one
+    /// (the clockwork resolves a whole day up front), so gate it live — that keeps the mid-day stats
+    /// strip reading true. Any earlier day reads its own frozen flag and never touches occupancy,
+    /// which is what stops a read from quietly rewriting the historical record.</para>
+    /// </summary>
+    public static List<ChronicleEntry> Candidates(World world, int day)
+    {
+        if (day >= world.Day) SealDay(world, day);
+
+        var todays = world.Chronicle.Where(e => e.Day == day).ToList();
+        return world.Config.HearsayRequired
+            ? todays.Where(e => e.CarriedByGossip).ToList()
+            : todays;
+    }
+
+    /// <summary>
+    /// <b>READ — deliver.</b> Order → take → pick over already-filtered candidates: the lines the town
+    /// actually tells tonight. Pure, and every knob it reads is a rendering knob.
+    /// </summary>
+    public static List<SummaryLine> Deliver(World world, IEnumerable<ChronicleEntry> candidates)
+    {
         double dial = world.Config.Actionability;
         int want = world.Config.SummaryLines;
 
@@ -43,21 +104,8 @@ public static class Summarizer
             .ToList();
     }
 
-    /// <summary>Summary-eligible entries for the day (hearsay-lite applied). Also the
-    /// instrument for the starvation warning — a caller can check the count.</summary>
-    public static List<ChronicleEntry> Candidates(World world, int day)
-    {
-        var carriers = world.Townees
-            .Where(t => t.Traits.Any(tr => world.Town.TraitById.TryGetValue(tr, out var td) && td.HearsayCarrier))
-            .Select(t => t.Id).ToHashSet(StringComparer.Ordinal);
-
-        var todays = world.Chronicle.Where(e => e.Day == day).ToList();
-        foreach (var e in todays) e.CarriedByGossip = IsCarried(world, e, carriers);
-
-        return world.Config.HearsayRequired
-            ? todays.Where(e => e.CarriedByGossip).ToList()
-            : todays;
-    }
+    /// <summary><b>READ.</b> The day's delivered summary: filter → order → take → pick.</summary>
+    public static List<SummaryLine> Render(World world, int day) => Deliver(world, Candidates(world, day));
 
     private static double Score(World world, ChronicleEntry e)
     {

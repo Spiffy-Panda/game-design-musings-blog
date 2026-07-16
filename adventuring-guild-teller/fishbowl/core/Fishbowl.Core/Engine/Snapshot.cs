@@ -75,6 +75,10 @@ public static class Snapshot
         PlaceId = e.PlaceId, PlaceName = e.PlaceName, Participants = new List<string>(e.Participants),
         Tellability = e.Tellability, Hearsay = e.Hearsay, Gossip = e.Gossip, Report = e.Report,
         Because = e.Because.Select(b => new BecauseFact(b.Label, b.Value)).ToList(),
+        // The frozen hearsay-lite gate. Load-bearing since the summary became derived: it is the
+        // only occupancy-dependent input to a re-render, and occupancy itself is never snapshotted
+        // (it is rebuilt for the CURRENT day on load), so a past day's summary is reconstructible
+        // only because this flag rides along with the entry.
         CarriedByGossip = e.CarriedByGossip,
     };
 

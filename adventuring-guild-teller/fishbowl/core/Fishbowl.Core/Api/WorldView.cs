@@ -134,16 +134,21 @@ public static class WorldView
         return S(new JsonObject { ["day"] = day, ["events"] = arr });
     }
 
+    /// <summary>
+    /// The day's summary. <b>One time base:</b> `lines`, `dial` and `register` are all computed from
+    /// the config as it is right now, so the label and the text below it can never disagree about
+    /// which register is being shown. (They could, and did: `lines` came from a dawn-baked cache
+    /// while `register` was derived live, so the strip announced "report" over gossip prose.)
+    /// </summary>
     public static string SummaryJson(World w, int day)
     {
         var arr = new JsonArray();
-        if (w.Summaries.TryGetValue(day, out var lines))
-            foreach (var l in lines)
-                arr.Add(new JsonObject
-                {
-                    ["text"] = l.Text, ["storylet"] = l.StoryletId, ["slot"] = l.Slot,
-                    ["place_name"] = l.PlaceName, ["tellability"] = Math.Round(l.Tellability, 3),
-                });
+        foreach (var l in Summarizer.Render(w, day))
+            arr.Add(new JsonObject
+            {
+                ["text"] = l.Text, ["storylet"] = l.StoryletId, ["slot"] = l.Slot,
+                ["place_name"] = l.PlaceName, ["tellability"] = Math.Round(l.Tellability, 3),
+            });
         return S(new JsonObject
         {
             ["day"] = day, ["dial"] = w.Config.Actionability,
@@ -152,18 +157,40 @@ public static class WorldView
         });
     }
 
+    /// <summary>
+    /// The stats strip — the on-screen `VFB.Q1` instrument.
+    /// <para><b>`tellable` is the `VFB.Q1` number</b> and is defined to match the CLI soak's metric
+    /// exactly (<c>Fishbowl.Cli/Program.cs</c>: distinct rendered text among the <i>delivered</i>
+    /// lines), so the screen and the soak cannot report different answers to the same question.
+    /// The strip used to show the distinct <i>candidate</i> StoryletIds instead — a pre-truncation
+    /// pool bounded by the 12-rule bank rather than by `summary_lines`, so it read 12 on a night
+    /// that told at most 5 lines, and no rendering knob could move it.</para>
+    /// <para><b>`pool` keeps the old quantity</b>, honestly named, because the two numbers separate
+    /// the two starvations and they need opposite knobs: a small pool is a <i>generation</i> problem
+    /// (raise `storylet_rate`, loosen `hearsay_required`); a healthy pool with small `tellable` is a
+    /// <i>truncation</i> problem (raise `summary_lines`).</para>
+    /// </summary>
     public static string StatsJson(World w, int day)
     {
         var events = w.Chronicle.Where(e => e.Day == day).ToList();
         var byType = new JsonObject();
         foreach (var g in events.GroupBy(e => e.StoryletId).OrderBy(g => g.Key, StringComparer.Ordinal))
             byType[g.Key] = g.Count();
+
         var candidates = Summarizer.Candidates(w, day);
-        int distinct = candidates.Select(e => e.StoryletId).Distinct().Count();
+        int pool = candidates.Select(e => e.StoryletId).Distinct().Count();
+        int tellable = Summarizer.Deliver(w, candidates).Select(l => l.Text).Distinct().Count();
+
+        // An unstarted day is not a starved day. DayHashes is the exact "this day finalized"
+        // witness (Simulation.FinalizeDay writes it), so a day-0 boot and every mid-day refresh
+        // stop claiming starvation just because the chronicle has not been written yet.
+        bool finalized = w.DayHashes.ContainsKey(day);
+
         return S(new JsonObject
         {
-            ["day"] = day, ["events"] = events.Count, ["distinct_candidates"] = distinct,
-            ["by_type"] = byType, ["starvation"] = distinct < 4,
+            ["day"] = day, ["events"] = events.Count,
+            ["tellable"] = tellable, ["pool"] = pool,
+            ["by_type"] = byType, ["starvation"] = finalized && tellable < 4,
         });
     }
 

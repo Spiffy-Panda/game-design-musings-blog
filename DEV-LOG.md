@@ -6,6 +6,86 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — the knobs were never live, the strip showed the wrong number, and the determinism test could not detect a determinism break
+
+A usability study of the observatory went looking for layout problems and found that **the instrument
+does not work as an instrument.** Three findings, in ascending order of how much they should worry us.
+
+**1. The knobs — documented as "the `VFB.Q1` tuning surface" — did nothing.** The day's summary was
+computed once at dawn and cached (`World.Summaries[day]`), so dragging `actionability` from min to max
+produced a byte-identical summary. The view was innocent: `_knob()` correctly called `SetKnob` then
+`_refresh_summary()`, and the refresh dutifully re-read a baked artifact. **This was a storage gap, not
+a refresh gap** — a distinction that decides where the fix lives, and the first sweep got it wrong.
+Worse, `SummaryJson` mixed two time bases in one object: `lines` came from the cache while
+`dial`/`register` were computed live from `Config`. So the label read `register: report` over gossip
+prose — **the instrument lied about its own state.**
+
+**Fixed by splitting the Summarizer along the axis that actually exists.** Dawn keeps only
+`SealDay` — writing `CarriedByGossip` onto the day's entries — because gossip-carriage is the one
+phase that depends on *that day's* occupancy and cannot be reconstructed later. Everything downstream
+(filter → order → take → pick) derives on read. The `Summaries` cache is **removed, not patched**: the
+storage gap is gone rather than invalidated. `SealDay` is deliberately unconditional (it ignores
+`hearsay_required`) so that turning the knob on later still finds a truthful gate rather than a gate
+that was never recorded.
+
+The knob classification is load-bearing and should survive any future refactor: **rendering** knobs
+(`actionability`, `summary_lines`, `hearsay_required`) choose how to present an already-simulated day
+and are now live; **simulation** knobs (`pressure_rates.*`, `storylet_rate`, `bio_marks_enabled`)
+change what happens and cannot retroactively apply without a re-run. **`bio_marks_enabled` is a trap** —
+it sits beside `hearsay_required` looking like a twin display toggle but writes hashed `Marks` at fire
+time, so live-rendering it would break determinism. Two controls that look identical while differing on
+whether they may legally be live is a UI defect as much as a code one; the knob list now carries two
+headers saying which is which.
+
+**2. The stats strip displayed the wrong quantity for the question the project exists to answer.**
+`VFB.Q1` asks whether the sim sustains ~4–5 *distinct tellable lines per night*. The soak CLI counts
+distinct **delivered text** (bounded by `summary_lines` ≤ 7). The on-screen strip counted distinct
+**candidate StoryletIds** (bounded by the 12-rule bank) — a *pre-truncation pool*, which cannot respond
+to `summary_lines` at all. At golden day 1 the strip read **12** where the true value was **5**. It now
+reads `events 12 · tellable 5 / pool 12`, and the CLI independently reports `summary=5`. **The screen
+and the soak instrument now agree, which they never did.** Keeping `pool` beside `tellable` turned out
+to be the useful part: dropping `summary_lines` 5→3 live gives `tellable 3 / pool 12`, which reads at a
+glance as *truncation problem, not generation problem* — the actual `VFB.Q1` diagnostic.
+
+**3. The thing that should worry us: the determinism acceptance test could not fail.**
+`..._Identical_Hash_Sequence` compared run A to run B **within one build**. It proved self-consistency,
+never stability. When the implementer deliberately perturbed `ToHashNode` to check their own new test,
+**the pre-existing test stayed green while the hash moved.** FISHBOWL.md cites that test as the
+determinism acceptance for a contract it calls non-negotiable. It would have passed through any change
+that broke the hash, including this one. There is now a real pin —
+`Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned` asserting the literals
+`b8d15299d8817639, e3478bc4ff7d4848, 02bc86b987c547c3`, **captured from the pre-change build** so the
+pin descends from the old behaviour rather than blessing the new.
+
+**This is the second green-test-over-a-dead-feature found today** (the first: `Snapshot` never persisted
+summaries, invisible because the M2 test only checked hashes — now free, since `CarriedByGossip` was
+already being persisted and a derived summary round-trips automatically). Two in one day, in a suite
+that was 22-for-22 green, is a pattern about *what our tests assert* rather than two coincidences.
+
+**Determinism was proven, not argued.** The claim that the split is safe rests on the hash being sealed
+at `Simulation.cs:48` *before* the summary is built at `:52`, with no summary in `ToHashNode` — verified
+against source first. Then empirically: CLI baselines captured **before any edit** and diffed after —
+golden town 12 days identical, live town 7 days identical, soak across 3 seeds × 7 days identical
+(`avg 4.43`, `3/21` below four, matching the figures FISHBOWL.md already quotes). The CLI prints every
+summary line as well as the hashes, so that diff covers more than the contract requires. Every new test
+was then mutation-checked — each fix reverted in turn, confirming exactly the intended test went red.
+
+**A correction worth recording, because the study overstated it.** `Candidates` gating past days against
+the *current* day's occupancy was reported as "a live bug today." It is **latent**: on the shipped
+fixture it has no observable effect, because both gossip-carriers have day-invariant itineraries and
+`Clockwork` only honours an away-block for `adventurer-default`. Re-gating day 1 against day-3 occupancy
+with both adventurers away flipped **nothing**. It took a synthetic fixture (carrier trait on an
+adventurer) to make it bite — and then it's dramatic, pool 9 → 1. So: a genuine correctness bug that
+goes live the moment occupancy varies (generated towns, more away-plans), and the reason derive-on-read
+is safe at all — but not something that was corrupting output today. Fixed anyway.
+
+Tests 22 → 30. Left for Panda: `copresence_bonus` is settable, projected, and **read by no engine
+system** (reported, not deleted — deleting a knob is a design call), and `SetAway` silently no-ops on
+non-adventurers (`Clockwork.cs:37`) — it sets the flag and the roster says "away" while the townee stays
+in occupancy generating co-presence, which is the same lie-to-the-operator shape as the register bug.
+
+---
+
 ## 2026-07-16 — the roster speaks emoji, and Godot's own docs say that shouldn't work
 
 The fish-bowl roster now reads `Odile V. · 🍺 · 🍺 · 💼 · 💰 0.62` instead of five columns of words.

@@ -34,6 +34,25 @@ public class M1_ClockworkDeterminismTests
     }
 
     [Fact]
+    public void Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned()
+    {
+        // THE ABSOLUTE PIN behind FISHBOWL.md's "12x3-day deterministic hash sequence".
+        //
+        // The test above only proves run A == run B within a single build, so a change that moved
+        // every hash *consistently* sails through it green — self-consistency is not stability, and
+        // the determinism contract claims stability. These literals were captured from the frozen
+        // golden fixture and are the value the contract refers to; the golden town cannot drift
+        // (PNO.D2), so nothing but a real change to what enters the hash can move them.
+        //
+        // If you are here because this test went red: that is the test working. Do not re-baseline
+        // it to make it green. Either the change was not supposed to touch the hash — fix the change
+        // — or it was, and that needs a ruling in DEV-LOG.md before these strings move.
+        Assert.Equal(
+            new[] { "b8d15299d8817639", "e3478bc4ff7d4848", "02bc86b987c547c3" },
+            RunHashes(3));
+    }
+
+    [Fact]
     public void At_Default_Config_Hash_Is_Seed_Independent()
     {
         // No RNG is consumed at storylet_rate 1.0, so the run is deterministic regardless of

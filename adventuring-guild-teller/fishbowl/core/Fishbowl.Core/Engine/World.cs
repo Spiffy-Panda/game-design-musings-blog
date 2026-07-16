@@ -32,7 +32,13 @@ public sealed class World
 
     public List<ChronicleEntry> Chronicle { get; } = new();
     public Dictionary<int, string> DayHashes { get; } = new();
-    public Dictionary<int, List<SummaryLine>> Summaries { get; } = new();
+
+    // No Summaries cache: a day's summary is DERIVED from the chronicle + the frozen hearsay gate
+    // + the rendering knobs, on every read (Summarizer.Render). Storing it was the one readout in
+    // the whole projection served from a baked artifact, and it cost us three things: the rendering
+    // knobs could not move a finished day, `register` and `lines` in one payload answered to
+    // different moments, and Snapshot dropped the summary entirely because there was a cache to
+    // drop. Deriving is the pattern every other readout already follows.
 
     /// <summary>Every posting filed this run, in filing order — which is deterministic (townees
     /// resolve in stable id order, slots in order), so this list never needs re-sorting to be

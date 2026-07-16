@@ -96,7 +96,7 @@ static void WriteReport(Simulation sim, string path, int days)
                 ["participants"] = new JsonArray(e.Participants.Select(p => (JsonNode)p!).ToArray()),
             });
         var summary = new JsonArray();
-        foreach (var l in sim.World.Summaries[day]) summary.Add(l.Text);
+        foreach (var l in Summarizer.Render(sim.World, day)) summary.Add(l.Text);
         daysNode.Add(new JsonObject { ["day"] = day, ["hash"] = hash, ["events"] = events, ["summary"] = summary });
     }
     var root = new JsonObject { ["seed"] = sim.World.Seed, ["days"] = days, ["report"] = daysNode };

@@ -234,11 +234,21 @@ func _build_right(v: VBoxContainer) -> void:
 func _build_knobs() -> Control:
 	var box := VBoxContainer.new()
 	box.add_child(_header("Debug knobs"))
+	# Two kinds of knob, two semantics, and the split is the whole point: a RENDERING knob
+	# re-presents an already-simulated day, so it applies to what you are looking at right now.
+	# A SIMULATION knob changes what happens, so it cannot apply retroactively without re-running
+	# the day — which would move the day-hash. Grouped because "actionability responds instantly
+	# while storylet_rate does nothing until dawn" is more confusing than uniform deadness unless
+	# the UI says which is which.
+	box.add_child(_header("Rendering — applies now"))
 	box.add_child(_slider("actionability", 0.0, 1.0, 0.01, 0.5, func(x): _knob("actionability", x)))
-	box.add_child(_slider("storylet_rate", 0.0, 3.0, 0.05, 1.0, func(x): _knob("storylet_rate", x)))
-	box.add_child(_slider("pressure_rates.trade", 0.0, 3.0, 0.05, 1.0, func(x): _knob("pressure_rates.trade", x)))
 	box.add_child(_slider("summary_lines", 3, 7, 1, 5, func(x): _knob("summary_lines", x)))
 	box.add_child(_check("hearsay_required", true, func(on): _knob("hearsay_required", 1.0 if on else 0.0)))
+	box.add_child(_header("Simulation — applies next dawn"))
+	box.add_child(_slider("storylet_rate", 0.0, 3.0, 0.05, 1.0, func(x): _knob("storylet_rate", x)))
+	box.add_child(_slider("pressure_rates.trade", 0.0, 3.0, 0.05, 1.0, func(x): _knob("pressure_rates.trade", x)))
+	# Not a display toggle, despite reading like one next to hearsay_required: this writes hashed
+	# bio Marks at storylet-fire time, so it affects the day-hash and must stay next-dawn.
 	box.add_child(_check("bio_marks_enabled", true, func(on): _knob("bio_marks_enabled", 1.0 if on else 0.0)))
 	return box
 
@@ -362,7 +372,7 @@ func _refresh_summary() -> void:
 func _refresh_stats() -> void:
 	var s = _j(bridge.GetStats(view_day))
 	var warn := "  ⚠ starvation" if s.starvation else ""
-	stats_label.text = "events %d · distinct types %d%s" % [s.events, s.distinct_candidates, warn]
+	stats_label.text = "events %d · tellable %d / pool %d%s" % [s.events, s.tellable, s.pool, warn]
 
 func _refresh_inspector() -> void:
 	for c in inspector_box.get_children():
