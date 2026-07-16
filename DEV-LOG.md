@@ -43,15 +43,29 @@ metric that actually moved: every `clipped:[right]` on the deliverable is now `c
 because "reduce dead space" is the obvious brief for a next pass, and it is the wrong brief — a future
 agent optimising that number would re-truncate the summary to win it.
 
-**`regression-b1-b6.json` was pinning the bug it existed to catch.** It hard-asserted
-`expect btn-storylets on_screen: false` and ran green for a whole release. The assertion that should
-have caught the clipping was *encoding* it as intended behaviour, and FISHBOWL.md's `on_screen`-vs-
-`clickable` "worked example" was built on the same defect. Both corrected; the scenario is re-fixtured
-onto the invariant (green, 34 steps). **A real coverage gap is left open rather than papered over:**
-`GTH.B1`'s `on_screen:false` / clamped-anchor path now has no fixture, because restoring one would mean
-reintroducing the defect. It belongs in the addon's own test scene, not in a consumer's regression suite —
-which is the general lesson: *a project's UI bug is a bad fixture for a harness invariant, because
-fixing the project deletes the fixture.*
+**`regression-b1-b6.json` rented the bug — it did not defend it, and the distinction is worth getting
+right.** It hard-asserted `expect btn-storylets on_screen: false` and ran green for a whole release,
+which reads at a glance like a test encoding a defect as intended behaviour. **It isn't, and the file
+says so at the top:** *"It leans on a genuine fish-bowl layout bug as its fixture, which is the cheapest
+honest one available."* The assertion was never hunting the layout bug — it was proving **`GTH.B1`'s**
+fix, that `on_screen` finally means *fully* on screen (*"4px of overlap is NOT on_screen. This assertion
+used to be impossible to write."*). The layout bug was simply the nearest real geometry that produced a
+4px sliver. Deliberate, documented, correct. *(Recorded because the first draft of this entry got it
+wrong and called it a test defending a defect — the diff looks damning and the file exonerates it.)*
+
+**The real lesson is the coupling, not the intent:** fixing the layout deleted the fixture and turned the
+suite red for the best possible reason. Re-fixtured onto the invariant (green, 34 steps), and FISHBOWL.md's
+`on_screen`-vs-`clickable` "worked example" — built on the same defect — corrected. **A real coverage gap
+is left open rather than papered over:** `GTH.B1`'s `on_screen:false` / clamped-anchor path now has no
+fixture, because restoring one would mean reintroducing the defect. It belongs in the addon's own test
+scene, not in a consumer's regression suite — which is the general rule: *a project's bug is a bad fixture
+for a harness invariant, because fixing the project deletes the fixture.*
+
+**A smaller thing worth knowing:** three documents describe that same button's geometry and give three
+different numbers — 4px of a 90px button in the scenario's note, `visible_fraction: 0.133` in FISHBOWL.md,
+`0.100` when actually measured by the sweep. Nobody was wrong when they wrote it; the geometry moved and
+the prose didn't. Measurements pasted into prose go stale silently, which is an argument for asserting
+them in a scenario where they'd go red.
 
 **The legend question resolved by dissolving it.** A legend was **ill-defined, not expensive**: `🍺` meant
 innkeep *and* inn (the innkeep's row read `🍺|🍺`), `🔨` meant smith *and* workshop, `🧭` meant away-place
