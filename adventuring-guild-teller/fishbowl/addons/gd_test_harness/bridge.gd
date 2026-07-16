@@ -62,6 +62,7 @@ func _dispatch(method: String, p: Dictionary) -> Variant:
 		"drag": return await _core.drag(p.get("from", [0, 0]), p.get("to", [0, 0]), p)
 		"capture": return await _core.capture(p)
 		"wait_for": return await _core.wait_for(p)
+		"window_state": return await _core.window_state(p)
 		"run_scenario": return await _core.run_scenario(p.get("scenario", []))
 	return {error = "unknown method '%s'" % method}
 

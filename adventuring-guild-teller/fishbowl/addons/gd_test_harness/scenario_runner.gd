@@ -5,7 +5,7 @@ extends RefCounted
 ## submits via `run_scenario`, so prescripted and live share one format.
 ##
 ## Step ops: snapshot · query · hit_test · click · click_at · key · action · read · capture
-##           · wait · expect
+##           · wait · window · expect
 ## Every step takes an optional {element:{...handle}} and passes itself through as opts.
 
 var _core: Node
@@ -21,6 +21,15 @@ func run(spec: Variant) -> Dictionary:
 		var st: Dictionary = steps[i]
 		var op := str(st.get("op", ""))
 		var r: Variant = await _run_step(op, st)
+		# `expect_error` asserts that bad input is REJECTED. Without it a negative test — the
+		# only honest way to cover an error path — fails the very scenario it is proving right,
+		# so the error paths just go untested. That is how GTH.B2 shipped: --selftest never
+		# passed a `region` at all, good or bad.
+		if bool(st.get("expect_error", false)):
+			if typeof(r) == TYPE_DICTIONARY and r.has("error"):
+				r = {ok = true, rejected_as_expected = r["error"]}
+			else:
+				r = {__fail = "expected this to be rejected, but it succeeded: %s" % _brief(r)}
 		var entry := {step = i, op = op, label = st.get("label", st.get("element", null))}
 		if typeof(r) == TYPE_DICTIONARY and r.has("__fail"):
 			failures.append({step = i, op = op, why = r["__fail"]})
@@ -45,6 +54,7 @@ func _run_step(op: String, st: Dictionary) -> Variant:
 		"action": return await _core.send_action(str(st.get("action", "")), st)
 		"capture": return await _core.capture(st)
 		"wait": return await _core.wait_for(st)
+		"window": return await _core.window_state(st)
 		"expect": return _expect(st)
 	return {error = "unknown op '%s'" % op}
 
@@ -58,6 +68,12 @@ func _expect(st: Dictionary) -> Dictionary:
 			fails.append("visible=%s (wanted %s)" % [q.get("factors", {}).get("visible", false), st["visible"]])
 		if st.has("clickable") and q.get("clickable", false) != st["clickable"]:
 			fails.append("clickable=%s (wanted %s)" % [q.get("clickable", false), st["clickable"]])
+		# on_screen is STRICT (fully inside the viewport) — assertable precisely because a
+		# partly-clipped control no longer rounds itself up to true (GTH.B1).
+		if st.has("on_screen") and q.get("on_screen", false) != st["on_screen"]:
+			fails.append("on_screen=%s (wanted %s; visible_fraction=%s, clipped=%s)"
+				% [q.get("on_screen", false), st["on_screen"],
+					q.get("visible_fraction", "?"), str(q.get("clipped", []))])
 		if st.has("text_contains") and not (str(st["text_contains"]) in str(q.get("text", ""))):
 			fails.append("text '%s' lacks '%s'" % [q.get("text", ""), st["text_contains"]])
 	if fails.is_empty():

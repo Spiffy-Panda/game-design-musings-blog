@@ -1,0 +1,66 @@
+{
+  "name": "gth-regression-b1-b6",
+  "note": "Regression cover for the GTH.B1-B6 fixes, driven against the observatory's real geometry (1280x800). It leans on a genuine fish-bowl layout bug as its fixture, which is the cheapest honest one available: once a day has run, the `hash` readout widens from a dash to 16 hex digits and shoves `btn-storylets` from x=1173 to x=1276 -- 4px of a 90px button inside a 1280 viewport. That control is the exact case B1 used to certify as on_screen:true + clickable:true, and its AcceptDialog is a real embedded Window for B4. Fishbowl-owned fixture; the addon stays project-agnostic.",
+  "steps": [
+    { "op": "window",
+      "note": "B5: expect resize_locked=true, mode=windowed, size 1280x800, no window_warning" },
+
+    { "op": "expect", "element": { "test_id": "btn-storylets" }, "on_screen": true, "clickable": true,
+      "note": "B1 baseline: before a day runs, the button is wholly inside the viewport" },
+
+    { "op": "click", "element": { "test_id": "btn-dawn" } },
+    { "op": "wait", "settled_ms": 800 },
+    { "op": "read", "element": { "test_id": "hash" },
+      "note": "the hash is now 16 hex digits -- the ~103px widening that shoves the button out" },
+
+    { "op": "query", "element": { "test_id": "btn-storylets" },
+      "note": "B1: expect on_screen=false, visible_fraction~0.04, clipped=[right], anchor_clamped=true" },
+    { "op": "expect", "element": { "test_id": "btn-storylets" }, "on_screen": false,
+      "note": "B1: 4px of overlap is NOT on_screen. This assertion used to be impossible to write." },
+    { "op": "expect", "element": { "test_id": "btn-storylets" }, "clickable": true,
+      "note": "B1: ...but it IS still clickable, because 4px of it genuinely is reachable. The pair is the fix." },
+
+    { "op": "capture", "label": "b2-region-array", "region": [0, 0, 400, 120], "if_changed": false,
+      "note": "B2: the declared shape" },
+    { "op": "capture", "label": "b2-region-json-string", "region": "[0,0,400,120]", "if_changed": false,
+      "note": "B2: the shape that used to throw a GDScript type error from four frames down" },
+    { "op": "capture", "label": "b2-region-csv-string", "region": "0,0,400,120", "if_changed": false },
+    { "op": "capture", "label": "b2-region-garbage", "region": "not-a-rect", "if_changed": false, "expect_error": true,
+      "note": "B2: must come back a NAMED error, not a crash" },
+    { "op": "capture", "label": "b2-region-offframe", "region": [5000, 5000, 10, 10], "if_changed": false, "expect_error": true,
+      "note": "B2: outside the frame -- named error, not a zero-size get_region crash" },
+
+    { "op": "key", "keys": "F9", "repeat": 2,
+      "note": "B3: result.repeat must read 2. F9 toggles the fish-bowl's own DevHarness, so twice = net no-op." },
+
+    { "op": "click", "element": { "test_id": "btn-storylets" },
+      "note": "B1 second half: the clamped anchor must LAND. The old raw-centre anchor aimed at x=1321 -- outside the window -- and missed while reporting success." },
+    { "op": "wait", "settled_ms": 600 },
+    { "op": "hit_test", "x": 0.5, "y": 0.5,
+      "note": "B4: this point is over the storylets AcceptDialog. Expect viewport=embedded_window + the window's own contents -- NOT a main-viewport control that cannot receive the click." },
+    { "op": "snapshot",
+      "note": "B4: the dialog's controls should carry in_embedded_window" },
+    { "op": "capture", "label": "b4-dialog-open", "if_changed": false },
+    { "op": "key", "keys": "ESCAPE" },
+    { "op": "wait", "settled_ms": 400 },
+
+    { "op": "capture", "label": "b6-pre", "if_changed": false,
+      "note": "B6 EXPERIMENT begins -- establish a known frame" },
+    { "op": "window", "minimize": true },
+    { "op": "click", "element": { "test_id": "btn-step" }, "force": true },
+    { "op": "read", "element": { "test_id": "clock" },
+      "note": "B6: the clock advanced, so the frame SHOULD differ from b6-pre. Input is app-level and unaffected by minimize." },
+    { "op": "capture", "label": "b6-while-minimized", "allow_minimized": true, "if_changed": false, "settle_ms": 200,
+      "note": "B6 ANSWERED, 2026-07-16: this sha comes back byte-identical to b6-pre even though the clock above advanced a slot -- the framebuffer freezes while minimized while the sim keeps running. With the default if_changed:true it would have deduped to `changed: false`, i.e. the harness reporting 'nothing happened' about a clock that had moved. That is why the guard below exists. Left in as the standing proof; flip allow_minimized off and the guard takes over." },
+    { "op": "window", "restore": true },
+    { "op": "wait", "settled_ms": 400 },
+    { "op": "capture", "label": "b6-after-restore", "if_changed": false,
+      "note": "B6: the true current frame, for comparison against b6-while-minimized" },
+
+    { "op": "window", "minimize": true },
+    { "op": "capture", "label": "b6-guarded", "if_changed": false,
+      "note": "B6: the guard must restore the window and set window_was_minimized -- never hand back a frame it cannot vouch for" },
+    { "op": "window",
+      "note": "B5/B6 close-out: mode should be back to windowed, resize still locked, size unchanged" }
+  ]
+}

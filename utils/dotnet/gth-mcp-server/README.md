@@ -55,13 +55,31 @@ To drive a *different* project (the harness is generic), copy the entry and chan
 ## Tools (each maps to one Bridge command)
 
 `session_start` · `session_stop` · `snapshot` · `query_element` · `read_element` · `hit_test` ·
-`click_at` · `click_element` · `press_key` · `send_action` · `capture` · `wait_for` · `run_scenario`.
+`click_at` · `click_element` · `press_key` · `send_action` · `capture` · `wait_for` · `window_state` ·
+`run_scenario`.
 
 Captures come back as **file paths + metadata** (not inline bytes) — read the path only when you need
 pixels. Element handles resolve by `{test_id}` / `{text}` / `{path}` / `{contains}` / `{group}`.
 
+## The argument contract (why `Tools` and `Accepts` sit next to each other)
+
+`GTH.B2`/`B3` were one bug wearing two hats: `capture`'s `region` and `press_key`'s `repeat` were
+**never declared in the tool schemas**, and `Pick()` filtered every argument against a hardcoded
+allowlist and **dropped the rest without a word**. So `repeat` was never implemented at any layer and
+still returned success, and `region` — undeclared — arrived shaped however the caller had guessed.
+Three rules came out of it, and they are load-bearing:
+
+1. **The schema is the contract.** Anything a tool honours is declared; anything declared is honoured.
+2. **`ContractErrors()` proves 1 at startup** and fails `--selftest` — the schemas and the `Accepts`
+   table are two statements of one contract, and drift between them is silent by nature.
+3. **An unrecognised argument comes back named** (`gth_warning` on the result), never swallowed.
+
+`--selftest` routes its calls through `McpServer.Map()` for the same reason. The old one spoke to the
+bridge *directly*, so the mapping layer where both bugs lived was untested by construction — it would
+have gone green while a real MCP call was still being mangled one layer above it.
+
 ## Files
 
-`Program.cs` (entry + UTF-8 stdio + `--selftest`) · `McpServer.cs` (JSON-RPC loop, tool registry,
-dispatch) · `BridgeClient.cs` (WebSocket client) · `GodotLauncher.cs` (launch/attach) · `Config.cs`
-(env) · `SelfTest.cs` (live round-trip check).
+`Program.cs` (entry + UTF-8 stdio + `--selftest`) · `McpServer.cs` (JSON-RPC loop, tool registry +
+argument contract, dispatch) · `BridgeClient.cs` (WebSocket client) · `GodotLauncher.cs`
+(launch/attach) · `Config.cs` (env) · `SelfTest.cs` (contract check + live round-trip).

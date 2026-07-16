@@ -50,17 +50,43 @@ Or a gitignored `res://harness.local.json`: `{ "scenario": "res://tests/harness/
 
 `snapshot(filter)` · `query_element(handle)` · `read_element(handle)` · `hit_test(x,y,normalized)` ·
 `click_at(x,y,opts)` · `click_element(handle,opts)` · `move_to` · `drag` · `press_key(keys,opts)` ·
-`send_action(action,opts)` · `capture(opts)` · `wait_for(opts)` · `run_scenario(spec)`.
+`send_action(action,opts)` · `capture(opts)` · `wait_for(opts)` · `window_state(opts)` ·
+`run_scenario(spec)`.
 
 **Element handle** (resolution order, ambiguity returns candidates, never guesses):
 `{test_id}` (durable — `node.set_meta("test_id", …)` or a `test:<id>` group) · `{path}` · `{group}` ·
 `{text}` (exact) · `{contains}` (substring). Coordinates are normalized `0..1` unless `normalized:false`.
 
+## What the geometry words mean
+
+The harness is allowed to be wrong. It is not allowed to be **confidently** wrong — a false
+"reachable" is the same failure direction as a false "unchanged", and both have bitten this addon
+(see `GTH.B1`–`B6` on the plan). So the vocabulary is deliberately narrow:
+
+| Field | Means |
+|-------|-------|
+| `on_screen` | **Fully** inside the viewport. 4px of a 90px button showing is `false`, not `true`. |
+| `visible_fraction` / `clipped` | How much is really visible, and which edges cut it. Present whenever `< 1.0`. |
+| `clickable` | A click aimed at this **would land on it**. Decoupled from `on_screen` on purpose: a 4px sliver is genuinely clickable. |
+| `anchor_point_px` / `anchor_clamped` | Where a click will actually go — the anchor clamped into the on-screen part. `click_element` uses this, so a clipped control gets clicked where it is reachable. |
+| `blocked_by_window` | An embedded `Window` covers this control's anchor; the click cannot reach it. |
+
 ## Known limitations (v0)
 
 - **Hit-stack is predictive (Mode A):** replays Godot's GUI pick order; an active `gui_input` trace
   (Mode B) is future work. CanvasLayer/z_index handled for the common single-layer case.
-- **Single main viewport:** embedded `Window`s (popup dialogs) are their own viewports and are excluded
-  from the hit-stack — flagged in every report.
+- **Embedded `Window`s are handled, not skipped** (they were skipped in v0, which made a click over a
+  dialog get attributed to whatever sat underneath — a wrong answer rather than a gap). A point over
+  one reports `viewport: "embedded_window"` plus that window's own contents; a main-viewport control
+  under one reports `blocked_by_window`. **Not** covered: arbitrary `SubViewport` auto-discovery.
 - **Pixels need a rendered session:** `--headless` uses a dummy renderer with no framebuffer; capture
   returns an error there. Run a real (optionally offscreen) window for captures.
+- **The window is locked while the harness is active** (`lock_window`, default on): resize and
+  maximize are disabled, because every coordinate here is normalized against the viewport size and a
+  resize would silently invalidate every rect already handed out. If it changes anyway, reports carry
+  a `window_warning`.
+- **A minimized window is restored before a capture** (`restore_on_minimize`, default on). This is not
+  a nicety: minimized, the framebuffer freezes while the game keeps running, so `get_image()` returns
+  a *stale* frame — byte-identical to the previous one, which `if_changed` would then dedup to
+  `changed: false`. Measured, not assumed: see `tests/harness/regression-b1-b6.json`. Pass
+  `allow_minimized` to shoot anyway and the result carries a loud warning.

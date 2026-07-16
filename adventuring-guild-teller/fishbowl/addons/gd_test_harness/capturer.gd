@@ -34,10 +34,18 @@ func capture(opts := {}) -> Dictionary:
 	if img == null:
 		return {error = "no framebuffer (headless/dummy renderer cannot capture pixels — use a rendered session)"}
 
-	# region / element crop (rect in px: [x,y,w,h])
+	# region crop (rect in px: [x,y,w,h])
 	if opts.has("region"):
-		var r: Array = opts["region"]
-		img = img.get_region(Rect2i(int(r[0]), int(r[1]), int(r[2]), int(r[3])))
+		var r := _nums(opts["region"], 4)
+		if r.is_empty():
+			return {error = "region must be 4 numbers [x,y,w,h] (got %s: %s)"
+				% [type_string(typeof(opts["region"])), str(opts["region"])]}
+		var clamped := Rect2i(int(r[0]), int(r[1]), int(r[2]), int(r[3])) \
+			.intersection(Rect2i(0, 0, img.get_width(), img.get_height()))
+		if clamped.size.x <= 0 or clamped.size.y <= 0:
+			return {error = "region %s lies outside the %dx%d frame"
+				% [str(r), img.get_width(), img.get_height()]}
+		img = img.get_region(clamped)
 
 	var sha := _sha256(img)
 	var phash := _phash(img)
@@ -66,7 +74,10 @@ func capture(opts := {}) -> Dictionary:
 
 	# annotate: point [x,y] and/or rect [x,y,w,h] in (possibly downscaled) px
 	if opts.has("annotate"):
-		_annotate(img, opts["annotate"])
+		var ann := _as_dict(opts["annotate"])
+		var aerr := _annotate(img, ann)
+		if aerr != "":
+			return {error = aerr}
 
 	var fmt := str(opts.get("format", _cfg.get("format", "png")))
 	DirAccess.make_dir_recursive_absolute(_dir_abs.path_join(_session))
@@ -94,6 +105,51 @@ func capture(opts := {}) -> Dictionary:
 	if _images_written > budget:
 		rec["budget_warning"] = "session image budget (%d) exceeded" % budget
 	return rec
+
+# --- tolerant arg parsing (GTH.B2) --------------------------------------------------------
+# `region` used to be `var r: Array = opts["region"]`, which threw
+#   Trying to assign value of type 'String' to a variable of type 'Array'
+# from four frames down whenever a caller sent anything else. The real cause was upstream —
+# the MCP tool schema never declared `region` or `annotate`, so a caller had nothing to shape
+# them against and guessed (that is fixed in McpServer.cs). These stay anyway, because the
+# lesson generalises: a test harness should meet a caller halfway on a coordinate list, and
+# when it genuinely can't, name what it got. An engine type error is not a bug report.
+
+## Coerce `v` to exactly `n` floats. Accepts [1,2], ["1","2"], "[1,2]", "1,2". [] = no.
+func _nums(v: Variant, n: int) -> Array:
+	var raw: Variant = v
+	if typeof(raw) == TYPE_STRING:
+		var s := str(raw).strip_edges()
+		var parsed: Variant = JSON.parse_string(s)
+		raw = parsed if typeof(parsed) == TYPE_ARRAY else Array(s.split(","))
+	if typeof(raw) != TYPE_ARRAY:
+		return []
+	var a := Array(raw)
+	if a.size() != n:
+		return []
+	var out := []
+	for e in a:
+		match typeof(e):
+			TYPE_INT, TYPE_FLOAT:
+				out.append(float(e))
+			TYPE_STRING:
+				var t := str(e).strip_edges()
+				if not t.is_valid_float():
+					return []
+				out.append(t.to_float())
+			_:
+				return []
+	return out
+
+## Accept a Dictionary or a JSON object string (same undeclared-schema exposure as `region`).
+func _as_dict(v: Variant) -> Dictionary:
+	if typeof(v) == TYPE_DICTIONARY:
+		return v
+	if typeof(v) == TYPE_STRING:
+		var parsed: Variant = JSON.parse_string(str(v))
+		if typeof(parsed) == TYPE_DICTIONARY:
+			return parsed
+	return {}
 
 # --- settle -------------------------------------------------------------------------------
 
@@ -177,14 +233,19 @@ func _sha256(img: Image) -> String:
 
 # --- annotate -----------------------------------------------------------------------------
 
-func _annotate(img: Image, a: Dictionary) -> void:
+func _annotate(img: Image, a: Dictionary) -> String:
 	var col := Color(1, 0.25, 0.15)
 	if a.has("point"):
-		var p: Array = a["point"]
+		var p := _nums(a["point"], 2)
+		if p.is_empty():
+			return "annotate.point must be 2 numbers [x,y] (got: %s)" % str(a["point"])
 		_cross(img, Vector2i(int(p[0]), int(p[1])), col, 9)
 	if a.has("rect"):
-		var r: Array = a["rect"]
+		var r := _nums(a["rect"], 4)
+		if r.is_empty():
+			return "annotate.rect must be 4 numbers [x,y,w,h] (got: %s)" % str(a["rect"])
 		_rect_outline(img, Rect2i(int(r[0]), int(r[1]), int(r[2]), int(r[3])), col)
+	return ""
 
 func _cross(img: Image, c: Vector2i, col: Color, r: int) -> void:
 	for d in range(-r, r + 1):

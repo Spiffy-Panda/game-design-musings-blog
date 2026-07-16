@@ -23,6 +23,9 @@ var _probe
 var _capturer
 var _bridge
 var _active := false
+var _win_locked := false
+var _win_prev_resize_disabled := false
+var _size_at_start := Vector2i.ZERO
 
 func _ready() -> void:
 	var act := _activation()
@@ -35,6 +38,7 @@ func _ready() -> void:
 	_injector = _InputInjector.new()
 	_probe = _SceneProbe.new(self, str(_cfg.get("test_id_meta", "test_id")))
 	_capturer = _Capturer.new(self, _cfg)
+	_lock_window()
 	print("[GTH] harness active (serve=%s scenario=%s)" % [act.get("serve", false), act.get("scenario", "")])
 
 	if act.get("serve", false):
@@ -59,7 +63,11 @@ func _ready() -> void:
 # ============================================================================================
 
 func snapshot(filter := {}) -> Dictionary:
-	return _probe.snapshot(filter)
+	var s: Dictionary = _probe.snapshot(filter)
+	var drift := _size_drift()
+	if not drift.is_empty():
+		s["window_warning"] = drift
+	return s
 
 func query_element(handle: Dictionary) -> Dictionary:
 	var hits: Array = _probe.resolve(handle)
@@ -102,14 +110,18 @@ func click_element(handle: Dictionary, opts := {}) -> Dictionary:
 	if hits.size() > 1 and not opts.has("index"):
 		return {clicked = false, error = "ambiguous (%d matches)" % hits.size(), candidates = _paths(hits)}
 	var node = hits[int(opts.get("index", 0))]
-	var report: Dictionary = _probe.clickability(node)
+	var a: Array = opts.get("anchor", [0.5, 0.5])
+	var report: Dictionary = _probe.clickability(node, Vector2(float(a[0]), float(a[1])))
 	if not report.get("clickable", false) and not opts.get("force", false):
 		report["clicked"] = false
 		report["note"] = "refused — not clickable (pass force=true to click anyway)"
 		return report
-	var grect: Array = report.get("rect_px", [0, 0, 0, 0])
-	var anchor: Array = opts.get("anchor", [0.5, 0.5])
-	var p := Vector2(grect[0] + grect[2] * float(anchor[0]), grect[1] + grect[3] * float(anchor[1]))
+	# Aim where the probe says a click would ACTUALLY land: `anchor_point_px` is already
+	# clamped into the on-screen part of the rect. Re-deriving the raw centre from rect_px
+	# here (what this line used to do) is the half of GTH.B1 that made the click miss — the
+	# report lied AND the click obediently flew out of the window after it.
+	var ap: Array = report.get("anchor_point_px", [0, 0])
+	var p := Vector2(float(ap[0]), float(ap[1]))
 	var hits_report: Dictionary = _probe.hit_report(p)
 	_injector.click_at(p, _button(opts), int(opts.get("clicks", 1)))
 	await _frames(int(opts.get("post_frames", _cfg.get("post_event_frames", 2))))
@@ -130,14 +142,23 @@ func drag(from: Array, to: Array, opts := {}) -> Dictionary:
 	await _frames(int(opts.get("post_frames", 2)))
 	return {dragged = [[a.x, a.y], [b.x, b.y]]}
 
+## GTH.B3 — `repeat` presses the key N times. It used to be accepted-and-ignored at every
+## layer (the MCP schema never declared it, Pick() dropped it, and neither this method nor the
+## injector had ever heard of it), so `repeat: 6` pressed once and returned success. The
+## returned `repeat` is the count actually injected: the caller should never have to take our
+## word for it.
 func press_key(keys: String, opts := {}) -> Dictionary:
 	var m := _keymap(keys)
 	if m.is_empty():
 		return {error = "unknown key '%s'" % keys}
-	_injector.press_key(m["keycode"], m["unicode"],
-		opts.get("shift", false), opts.get("ctrl", false), opts.get("alt", false), opts.get("meta", false))
+	var n: int = maxi(1, int(opts.get("repeat", 1)))
+	for i in n:
+		_injector.press_key(m["keycode"], m["unicode"],
+			opts.get("shift", false), opts.get("ctrl", false), opts.get("alt", false), opts.get("meta", false))
+		if i < n - 1:  # let each press land as its own event, not 6 coalesced into one frame
+			await _frames(int(opts.get("repeat_frames", 1)))
 	await _frames(int(opts.get("post_frames", _cfg.get("post_event_frames", 2))))
-	return {key = keys}
+	return {key = keys, repeat = n}
 
 func send_action(action: String, opts := {}) -> Dictionary:
 	if opts.has("pressed"):
@@ -149,7 +170,37 @@ func send_action(action: String, opts := {}) -> Dictionary:
 	return {action = action}
 
 func capture(opts := {}) -> Dictionary:
-	return await _capturer.capture(opts)
+	var w: Dictionary = await _ensure_presentable(opts)
+	if w.has("error"):
+		return w
+	var r: Dictionary = await _capturer.capture(opts)
+	if w.has("was_minimized"):
+		r["window_was_minimized"] = true
+		r["note"] = "window was minimized and restored before this capture; " + str(r.get("note", ""))
+	if w.has("minimized_unguarded"):
+		r["window_minimized"] = true
+		r["warning"] = "captured while MINIMIZED (allow_minimized) — this frame may be stale or " \
+			+ "blank, and `changed` cannot be trusted: a stale frame dedups as 'unchanged'."
+	var drift := _size_drift()
+	if not drift.is_empty():
+		r["window_warning"] = drift
+	return r
+
+## Window state (GTH.B5/B6). No args = report. `minimize`/`restore` exist so a scenario can
+## reproduce the minimize case B6 exists to handle — verifying the compensation needs a way to
+## induce the condition. Note the asymmetry that looks odd but isn't: the harness may set the
+## window's MODE, while B5 locks out *resizing* — because a resize silently invalidates every
+## coordinate we have handed out, and minimizing doesn't.
+func window_state(opts := {}) -> Dictionary:
+	if _headless():
+		return {headless = true, note = "no window in a headless session"}
+	if opts.get("minimize", false):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+		await _frames(3)
+	elif opts.get("restore", false):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		await _frames(3)
+	return _window_report()
 
 func wait_for(opts := {}) -> Dictionary:
 	if opts.has("ms"):
@@ -178,6 +229,110 @@ func run_scenario(spec: Variant) -> Dictionary:
 # ============================================================================================
 # internals
 # ============================================================================================
+
+# --- window guard (GTH.B5 / GTH.B6) ---------------------------------------------------------
+
+func _headless() -> bool:
+	return DisplayServer.get_name() == "headless"
+
+## GTH.B5 — every GTH coordinate is normalized against get_visible_rect().size, and every
+## geometry report describes one layout at one size. A resize mid-session silently invalidates
+## all of it at once: the rect_px a caller is still holding, the normalized coords baked into a
+## scenario file, the lot. So while the harness is active, the window does not resize.
+## RESIZE_DISABLED also greys out the maximize box on Windows, which covers the other half.
+func _lock_window() -> void:
+	if _headless() or not bool(_cfg.get("lock_window", true)):
+		return
+	_win_prev_resize_disabled = DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_RESIZE_DISABLED)
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_RESIZE_DISABLED, true)
+	_win_locked = true
+	# The baseline size is sampled lazily, on first use — NOT here. At _ready the window is
+	# not yet realised, so window_get_size() hands back the requested size from project.godot
+	# (1280x800) which the platform then adjusts (to 1290x810 on this box) before the first
+	# command runs. Baselining eagerly made _size_drift() cry wolf on every single session,
+	# which the first run of tests/harness/regression-b1-b6.json caught. A warning that always
+	# fires is a warning nobody reads — the same way a green test nobody questions hid
+	# btn-generate for a whole release.
+	print("[GTH] window lock on (resize/maximize disabled while the harness is active)")
+
+func _unlock_window() -> void:
+	if not _win_locked or _headless():
+		return
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_RESIZE_DISABLED, _win_prev_resize_disabled)
+	_win_locked = false
+
+func _exit_tree() -> void:
+	_unlock_window()
+
+## Non-empty when the window changed size despite the lock. B5 has two halves — prevent it,
+## and if it somehow happens anyway, SAY SO, rather than quietly answering from the new size
+## as though every coordinate already handed out were still good.
+func _size_drift() -> Dictionary:
+	if _headless() or not _win_locked:
+		return {}
+	var now := DisplayServer.window_get_size()
+	if _size_at_start == Vector2i.ZERO:  # first observation IS the baseline (see _lock_window)
+		_size_at_start = now
+		print("[GTH] window baseline %dx%d" % [now.x, now.y])
+		return {}
+	if now == _size_at_start:
+		return {}
+	return {resized = true, from = [_size_at_start.x, _size_at_start.y], to = [now.x, now.y],
+		note = "the window changed size mid-session despite the lock — every rect_px and "
+			+ "normalized coordinate issued before now was measured against the old size"}
+
+func _mode_name(m: int) -> String:
+	match m:
+		DisplayServer.WINDOW_MODE_WINDOWED: return "windowed"
+		DisplayServer.WINDOW_MODE_MINIMIZED: return "minimized"
+		DisplayServer.WINDOW_MODE_MAXIMIZED: return "maximized"
+		DisplayServer.WINDOW_MODE_FULLSCREEN: return "fullscreen"
+		DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN: return "exclusive_fullscreen"
+	return "?"
+
+func _window_report() -> Dictionary:
+	var drift := _size_drift()  # first, so it can baseline before we report size_at_start
+	var mode := DisplayServer.window_get_mode()
+	var size := DisplayServer.window_get_size()
+	var vp := get_tree().root.get_visible_rect().size
+	var r := {
+		mode = _mode_name(mode),
+		minimized = mode == DisplayServer.WINDOW_MODE_MINIMIZED,
+		size_px = [size.x, size.y],
+		viewport_px = [vp.x, vp.y],
+		focused = DisplayServer.window_is_focused(),
+		resize_locked = _win_locked,
+		size_at_start = [_size_at_start.x, _size_at_start.y],
+	}
+	if not drift.is_empty():
+		r["window_warning"] = drift
+	return r
+
+## GTH.B6 — a minimized window stops presenting, so the framebuffer goes stale and get_image()
+## hands back the last frame it managed to draw. That frame is byte-identical to its
+## predecessor, so `if_changed` dedup answers `changed: false` — the harness reporting "nothing
+## happened" when what it actually means is "I cannot see". Same false-reassurance direction as
+## B1/B4, and the reason this guard refuses to shoot and hope.
+func _ensure_presentable(opts := {}) -> Dictionary:
+	if _headless():
+		return {}
+	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MINIMIZED:
+		return {}
+	# Escape hatch, and the reason B6 is an answer rather than an assumption: without a way to
+	# shoot a minimized window on purpose, "minimize breaks capture" stays a plausible story.
+	# It carries a loud warning precisely because the result cannot be trusted.
+	if bool(opts.get("allow_minimized", false)):
+		return {minimized_unguarded = true}
+	if not bool(_cfg.get("restore_on_minimize", true)):
+		return {error = "window is minimized — it is not presenting, so a capture would be a stale "
+			+ "or blank frame that dedup would then call 'unchanged'. Restore the window, or leave "
+			+ "restore_on_minimize on."}
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	await _frames(3)
+	await get_tree().create_timer(0.15).timeout  # let the compositor actually present a frame
+	return {was_minimized = true}
+
+# --- misc -----------------------------------------------------------------------------------
 
 func _px(x: float, y: float, normalized: bool) -> Vector2:
 	if normalized:
@@ -254,6 +409,8 @@ func _load_config() -> Dictionary:
 		max_dim = 1280, format = "png", jpeg_quality = 0.8, if_changed = true, phash_threshold = 4,
 		settle_ms = 250, settle_timeout_ms = 3000, settle_interval_ms = 60,
 		warp_mouse = false, post_event_frames = 2, image_budget = 60, session_id = "s",
+		lock_window = true,          # GTH.B5 — no resize/maximize while the harness is active
+		restore_on_minimize = true,  # GTH.B6 — un-minimize rather than capture a stale frame
 	}
 	var loaded := _read_json_file("res://harness.config.json")
 	if typeof(loaded) == TYPE_DICTIONARY:

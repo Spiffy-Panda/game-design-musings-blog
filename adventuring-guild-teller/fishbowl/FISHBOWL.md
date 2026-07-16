@@ -31,7 +31,7 @@ fishbowl/
   data/                    THE LIVE TOWN — all features on; postings/sites authored here (see "Data contract")
   addons/gd_test_harness/  GTH test harness — project-agnostic input/inspect/capture addon (own README)
   harness.config.json      GTH config — artifacts dir, capture caps, bridge port
-  tests/harness/           GTH prescripted scenarios (smoke.json)
+  tests/harness/           GTH prescripted scenarios (smoke.json, regression-b1-b6.json)
   tests/towns/golden-town/ THE FROZEN GOLDEN FIXTURE — posting-free; the town every xUnit acceptance
                            test loads. Do not add features to it (PNO.D2)
   .captures/               capture output (gitignored; F9 DevHarness + GTH's .captures/gth/)
@@ -176,14 +176,28 @@ drivers over one GDScript core (InputInjector / SceneProbe / Capturer / Bridge):
   `.captures/gth/` + a `manifest.jsonl`, prints a JSON result. Bundled `smoke.json` gate-checks the whole
   surface (snapshot, clickability, element + location clicks with consumption reports, key injection,
   settle / sha-dedup / annotate capture). Verified 2026-07-15 — a synthetic `btn-step` click advances the
-  clock to slot 1; a location click selects a roster row.
+  clock to slot 1; a location click selects a roster row. **`regression-b1-b6.json`** (2026-07-16) is the
+  standing cover for the `GTH.B1`–`B6` fixes; it uses the observatory's own `btn-storylets` layout bug as
+  its fixture (see below) and runs green, 32 steps.
 - **Live (MCP)**: `--gth-serve` opens a loopback WebSocket for the external MCP server at
   `utils/dotnet/gth-mcp-server/` (.NET 8, live-verified 2026-07-15), **registered project-scoped in the repo
   `.mcp.json` as `gth-fishbowl`** (launch mode). After a fresh clone: `dotnet build
   utils/dotnet/gth-mcp-server`, restart the client, approve the server — then drive the observatory from chat.
   Tools appear as **`mcp__gth-fishbowl__*`**: `session_start` · `snapshot` · `query_element` · `read_element` ·
-  `hit_test` · `click_at` · `click_element` · `press_key` · `capture` · `wait_for` · `run_scenario`. Launch
-  mode starts (and stops) the observatory for you — no separate `run_project` needed.
+  `hit_test` · `click_at` · `click_element` · `press_key` · `capture` · `wait_for` · `window_state` ·
+  `run_scenario`. Launch mode starts (and stops) the observatory for you — no separate `run_project` needed.
+
+**Two things to know before you read a harness result** (both fixed 2026-07-16, both were live through the
+first release — see `GTH.B1`–`B6`):
+
+- `on_screen` is **strict** (fully inside the viewport) and is *not* the same as `clickable` (a click aimed
+  here would land). The observatory's own `btn-storylets` is the worked example: after a day runs, the `hash`
+  readout widens and shoves it to x=1278 in a 1290 viewport, leaving 13% of it showing. It reports
+  `on_screen: false, visible_fraction: 0.133, clipped: [right], clickable: true` — all four at once, because
+  all four are true. The harness used to just say `on_screen: true` and click 34px past the window edge.
+- **The window is resize-locked while the harness is active**, and a **minimized window is restored before
+  any capture**. Minimized, the framebuffer freezes while the sim keeps running, so a capture comes back
+  byte-identical to the last one and dedup calls it `changed: false`. Measured on this project, not assumed.
 
 **Stable handles** — the observatory tags every readout / button / knob with `test_id` meta, because the UI
 is code-built and auto-generated node names (`@HSlider@68`) shift on relayout. Resolve by these, not paths:

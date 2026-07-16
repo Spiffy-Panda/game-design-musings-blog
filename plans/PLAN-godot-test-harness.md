@@ -12,7 +12,8 @@ bottom of this file). A fresh clone still needs one `dotnet build utils/dotnet/g
 **All seven gates are ruled:** `GTH.D2` resolved **.NET**; `GTH.D1`/`D3`/`D4`/`D5`/`D7` adopted on the
 recommendation; `GTH.D6` split — the addon lives in the fishbowl (own copy, VFB isolation), the server is
 shared tooling in `../utils/dotnet/` (repo-wide convergence of both stays `GTH.Q4`).
-**Open:** the `GTH.B*` backlog below (six items) and the `GTH.M5` remainder (Mode-B trace, C# facade).
+**Open:** `GTH.M5`'s remainder (Mode-B active trace, the optional C# scenario facade) and the rulings
+`GTH.Q2`/`Q3`/`Q4`. The `GTH.B*` bugs are **all six fixed & verified 2026-07-16**; `GTH.Q1` is answered.
 **Home:** a Godot **addon** (`addons/gd_test_harness/`, drop-in, project-agnostic) **+** a per-project
 `harness.config.json` **+** the external **MCP server** (`../utils/dotnet/gth-mcp-server/`, built). Addon
 copy lives in the fishbowl; server in `utils/`.
@@ -126,14 +127,23 @@ Wraps the injection note's mechanism into reusable calls. Every call: build even
 **Clickability report for an element (`GTH.R5`) — computed predicate + reasons + geometry:**
 
 ```
-clickable = in_tree ∧ visible_in_tree ∧ ¬disabled ∧ mouse_filter≠IGNORE ∧ on_screen ∧ is_top_hit
+clickable = in_tree ∧ visible_in_tree ∧ ¬disabled ∧ mouse_filter≠IGNORE ∧ anchor_on_screen ∧ is_top_hit
 ```
+**Amended by `GTH.B1` (2026-07-16): `clickable` is decoupled from `on_screen`.** The original predicate
+`∧ on_screen` conflated two different questions, and once `on_screen` was made strict it would have
+called a 4px-visible button *unclickable* — which is just the old lie told backwards, since such a
+button genuinely can be clicked. The operative term is `anchor_on_screen`: **would a click aimed at
+this land on it?** — evaluated at the anchor *clamped into the control's visible part*, which is also
+the point `click_element` actually clicks.
+
 Returned fields: `exists`, `type`, `clickable` (+ per-factor booleans & human strings),
-`rect_px` & `rect_norm` (global), `screen_size_px`, `on_screen` (rect ∩ viewport-visible-rect,
-accounting for parent clip / SubViewport) + `offscreen_reason`, `visible`, `disabled`,
-`mouse_filter`, `focus_mode`, `z`/`CanvasLayer`/`layer`, `is_top_hit`, and `occluded_by` (what
-sits on top at the anchor — reuses Mode A). `query_element` returns all this **without clicking**;
-`hit_test(x,y)` is the read-only sibling of a location click.
+`rect_px` & `rect_norm` (in the owning viewport's space), `screen_size_px`, `viewport_px`,
+`on_screen` (**strict — fully inside**), `visible_fraction` + `clipped` edges + `offscreen_reason`
+("clipped right — only 13% of it is inside the 1290x810 viewport"), `anchor_point_px` +
+`anchor_clamped`, `visible`, `disabled`, `mouse_filter`, `focus_mode`, `z`/`CanvasLayer`/`layer`,
+`is_top_hit`, `occluded_by`, and — for embedded Windows — `in_embedded_window` / `blocked_by_window`.
+`query_element` returns all this **without clicking**; `hit_test(x,y)` is the read-only sibling of a
+location click. `snapshot` shares the same predicate rather than a cheaper approximation of it.
 
 ### 3. `Capturer.gd` — token-frugal imaging (`GTH.R6`)
 
@@ -261,18 +271,23 @@ deferred it here) and the optional C# scenario facade (`GTH.D2`), plus docs.
 - **`GTH.M5`** Optional Mode-B trace (`GTH.D3`), C# scenario facade (`GTH.D2`), docs, and first real
   adoption against an AGT prototype (opt-in, isolation rule honored).
 
-## Outstanding work (`GTH.B*`)
+## Bugs (`GTH.B*`) — **all six fixed & verified 2026-07-16**
 
-The live backlog. `GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the
-bottom of this file); `GTH.B5`–`B6` are Panda's, added 2026-07-16.
+`GTH.B1`–`B4` came out of the harness's first use in anger (the field report at the bottom of this file);
+`GTH.B5`–`B6` are Panda's, added 2026-07-16. All six are now closed, covered by
+`../adventuring-guild-teller/fishbowl/tests/harness/regression-b1-b6.json` (**green: 32 steps, 0
+failures**) and by an extended `--selftest`. The analysis is kept in full rather than deleted — it is why
+the fixes are shaped the way they are, and `B5`/`B6` are the standing reason two guards exist that a
+future reader would otherwise be tempted to remove.
 
-**The through-line, and the reason to fix these as a set rather than as four patches:** every one of
+**The through-line, and the reason these were fixed as a set rather than as four patches:** every one of
 `B1`–`B4` fails toward *false reassurance* — a false `clickable: true`, a dropped argument reported as
 success, a confidently wrong consumer. This repo has already ruled on that failure direction once: the
 sha-vs-phash call (DEV-LOG 2026-07-15) held that **for a test harness a false "unchanged" is the dangerous
 direction**, and demoted the perceptual hash to advisory for exactly this reason. `B1`–`B4` are that same
 ruling arriving in the other three modules. The harness is allowed to be wrong; it is not allowed to be
-*confidently* wrong.
+*confidently* wrong. `B6` then turned out to be the *literal* false-"unchanged" all over again — measured,
+not theorised (below).
 
 - **`GTH.B1` — `query_element` reports a false `clickable` / `on_screen`.** `scene_probe.gd`'s `_onscreen`
   is `Rect2(Vector2.ZERO, _vsize()).intersects(grect)` — *any* overlap counts, so a button spanning
@@ -287,6 +302,13 @@ ruling arriving in the other three modules. The harness is allowed to be wrong; 
   `on_screen`, because a 4px sliver genuinely *is* clickable and the report's job is to stop implying it is
   fully reachable. Also reconcile `snapshot()`, which computes `clickable` with a *different, weaker*
   formula that omits `is_top_hit`: two callers get two answers today.
+  **✅ Fixed.** `_onscreen` is now `encloses` (strict); `visible_fraction` / `clipped` / `anchor_clamped`
+  added; the anchor is clamped into the visible part and `click_element` now aims at *that* point rather
+  than re-deriving the raw centre (it did, which is why the click missed as well as the report lying);
+  `snapshot` shares the one predicate. Geometry is measured per **owning viewport**, so a dialog's button
+  is no longer measured against the root's size. **Verified against the real case:** post-day
+  `btn-storylets` reports `on_screen=false, visible_fraction=0.133, clipped=[right], clickable=true`,
+  anchor clamped 1323→1289, *"only 13% of it is inside the 1290x810 viewport"* — and the click lands.
 - **`GTH.B2` — `capture` with `region` throws.** `Trying to assign value of type 'String' to a variable of
   type 'Array'` at `capturer.gd:39`. Region capture is unusable via MCP; full-frame is fine.
 - **`GTH.B3` — `press_key` silently drops `repeat`.** `repeat: 6` presses once and reports success.
@@ -299,17 +321,44 @@ ruling arriving in the other three modules. The harness is allowed to be wrong; 
   the caller guessed. The fix is systemic rather than two patches: complete the schemas, implement `repeat`
   end-to-end, accept a tolerant `region`, and **make an unrecognised argument say so** instead of vanishing.
   `--selftest` passed neither argument, which is precisely why both shipped.
+  **✅ Fixed, and the drift is now structurally impossible.** The three copies of the contract (schema,
+  `Pick`'s allowlist, `Map`'s per-tool key list) collapsed to **two**: `Map` forwards exactly what
+  `Accepts` lists, and **`ContractErrors()` proves the schema and `Accepts` agree at startup**, failing
+  `--selftest` if they ever drift. An unrecognised argument now returns `gth_warning` naming it. `repeat`
+  is implemented end-to-end and the result echoes the count actually injected; `region`/`annotate` are
+  declared, tolerant (array / `"[x,y,w,h]"` / `"x,y,w,h"`), clamped to the frame, and reject garbage with
+  a *named* error instead of a GDScript type crash.
+  **The self-test gap was worse than "it never passed a region":** it called `bridge.CallAsync` directly,
+  so `Map()` — the layer both bugs lived in — was untested *by construction*. A self-test that had passed
+  a region would have handed the bridge a clean array and gone green while real MCP calls stayed broken.
+  It now routes through `Map()`. Verified over the live wire: `capture region [0,0,320,100] → 320x100`,
+  and `press_key repeat=2` fires the project's own F9 handler twice (its two `[capture]` log lines are the
+  independent witness — the harness is not merely echoing the number back).
 - **`GTH.B4` — the predictive hit-stack mis-attributes clicks over embedded `Window`s.** `scene_probe.gd`
   `continue`s past any `Window` child, so a click over a popup dialog is attributed to whatever
   main-viewport control sits underneath — it named a `CheckBox` as the consumer of a dialog-close click that
   control provably never received. The addon README documents embedded Windows as *excluded*, which
   undersells it: the failure is not a hole in the report, it is a wrong answer stated plainly. **Settles
   `GTH.Q1` for v1** — root viewport + embedded `Window`s, no arbitrary viewport auto-discovery.
+  **✅ Fixed.** `hit_report` finds embedded `Window`s over the point, reports `viewport:
+  "embedded_window"` + the window's identity, and walks *its* contents in *its* coords; `clickability`
+  marks a main-viewport control under one `blocked_by_window` and not clickable. **Verified:** a
+  `hit_test` at (0.5,0.5) with the storylet browser open now names a Button inside
+  `AcceptDialog "Storylet browser — force-fire (debug)"` at rect [435,168,420,473] — where it previously
+  named whatever main-viewport control happened to sit beneath the dialog.
 - **`GTH.B5` — lock window resize/maximize while the harness is active.** *(Panda, 2026-07-16.)* Every GTH
   coordinate is normalized against `get_visible_rect().size`, and every geometry report is a snapshot of one
   layout at one size — so a mid-session resize silently invalidates cached rects, normalized coordinates,
   and any `rect_px` the caller is still holding. Lock resize + maximize on activation, restore on stop, and
   if the size changes anyway, **say so in the report** rather than quietly answering from the new size.
+  **✅ Fixed.** `WINDOW_FLAG_RESIZE_DISABLED` on activation (which also greys out maximize on Windows),
+  restored on `_exit_tree`; `lock_window` config, default on. `snapshot` / `capture` / `window_state` carry
+  a `window_warning` if the size drifts anyway, and a new `window_state` command reports mode/size/focus/
+  lock. **The first run of the regression scenario immediately caught a false positive in this very
+  guard** — baselining the size in `_ready()` reads the *requested* 1280x800 from `project.godot`, which
+  the platform then adjusts to 1290x810 before the first command, so the drift warning fired on every
+  session. Baseline is now sampled lazily on first use. A warning that always fires is a warning nobody
+  reads — which is the same disease as a green test nobody questions.
 - **`GTH.B6` — does minimize-to-taskbar break the harness? Detect and compensate if so.** *(Panda,
   2026-07-16.)* Suspected to be `GTH.D7`'s constraint arriving at *runtime*: D7 established that a renderer
   with no framebuffer cannot produce pixels, and a minimized window on Windows may stop presenting — in
@@ -317,6 +366,18 @@ ruling arriving in the other three modules. The harness is allowed to be wrong; 
   again: a stale frame is byte-identical to its predecessor, so `if_changed` dedup would answer
   **`changed: false`** — the harness reporting "nothing happened" when the truth is "I cannot see."
   Investigate first, then detect (`DisplayServer.window_get_mode()`) and compensate.
+  **✅ Answered: YES, minimize breaks it — and the suspicion above was exactly right.** Measured with a
+  controlled step in the regression scenario (`allow_minimized`, a deliberate escape hatch, exists so
+  this is an experiment rather than a story): capture a frame, **minimize**, click `btn-step`, read the
+  clock — *the clock advances to `Day 2 · 00:30 (slot 1)`, so input is entirely unaffected* — then
+  capture again. **The sha comes back byte-identical (`2c6be602759f5fc5`) to the pre-minimize frame**,
+  while the post-restore frame is `fe5149114b74d101`. The framebuffer freezes while the game keeps
+  running. With the default `if_changed: true` that identical sha **would have deduped to
+  `changed: false`** — a false "unchanged", the precise failure the sha-vs-phash ruling exists to
+  prevent, arriving through a door nobody was watching. **Fixed:** `_ensure_presentable()` restores the
+  window before any capture and flags `window_was_minimized`; `restore_on_minimize` config, default on;
+  refusing rather than shooting when it is off; `allow_minimized` shoots anyway and carries a loud
+  warning that `changed` cannot be trusted.
 
 ## Open questions (`GTH.Q*`)
 
@@ -341,8 +402,8 @@ including a shipped feature that had never worked.** Launch mode, boot, `session
 `snapshot`, `click_element`, `click_at`, `read_element`, `wait_for`, and sha-dedup `capture` all
 behaved. That is the headline: it did its job.
 
-**Four defects in GTH itself**, worth fixing before the next build leans on it — now tracked as
-**`GTH.B1`–`B4`** in *Outstanding work* above, where triage added two things this report did not have:
+**Four defects in GTH itself**, worth fixing before the next build leans on it — tracked as
+**`GTH.B1`–`B4`** above and **all fixed 2026-07-16**. Triage added two things this report did not have:
 `B2` and `B3` turned out to share one root cause (the server silently drops undeclared arguments), and
 `B1` has a second half (the unclamped anchor) that this report missed.
 

@@ -6,6 +6,68 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — GTH.B1–B6 fixed: minimize really does freeze the framebuffer, and the self-test was testing the wrong layer
+
+All six harness bugs closed and verified — `tests/harness/regression-b1-b6.json` green (32 steps, 0
+failures) and `--selftest` extended. Four things here would surprise the next person; the first two are
+the ones worth the read.
+
+**`GTH.B6` is not a theory. Minimize freezes the framebuffer while the sim runs on, and dedup then calls
+the change "unchanged."** The guess going in was that a minimized window stops presenting. It does, and
+the measurement is unambiguous: capture a frame (`sha 2c6be602759f5fc5`), minimize, click `btn-step`,
+read the clock — **it advances to `Day 2 · 00:30 (slot 1)`**, so input is entirely unaffected — then
+capture again. **The sha comes back byte-identical.** Restore the window and it is `fe5149114b74d101`.
+So the harness had a path where the app visibly changed and the capture insisted nothing had: with the
+default `if_changed: true`, that identical sha **deduplicates to `changed: false`**. That is *the exact
+failure the sha-vs-phash ruling exists to prevent* (DEV-LOG 2026-07-15 — "for a test harness a false
+'unchanged' is the dangerous direction"), arriving through a third door in the same addon. Twice now the
+lesson has had to be re-learned rather than transferred; writing it on the plan is the third attempt.
+The fix restores the window before any capture. Proving it needed an `allow_minimized` escape hatch —
+without a way to *induce* the bad state on purpose, "minimize breaks capture" stays a story someone
+tells, and the guard becomes something a future reader deletes as superstition.
+
+**`GTH.B2`/`B3`: the self-test could not have caught these, and "add a region to the self-test" would
+not have fixed that.** The field report filed them as two bugs; triage found one root cause (the tool
+schemas never declared `region`/`annotate`/`repeat`, and `Pick()` dropped unrecognised args silently);
+but the deeper finding came from reading `SelfTest.cs`. **It called `bridge.CallAsync` directly — so
+`McpServer.Map()`, the layer both bugs actually lived in, was untested by construction.** A self-test
+that *had* passed a `region` would have handed the bridge a clean array, gone green, and left real MCP
+calls just as broken. Testing the wire is not testing the surface. So: the self-test now routes through
+`Map()`, and the contract stopped depending on anyone remembering. There were **three** copies of it —
+the JSON schema, `Pick`'s allowlist, and `Map`'s per-tool key list — free to drift in silence, and they
+had. Now there are two, and `ContractErrors()` proves they agree at startup, failing `--selftest` if a
+tool ever declares an argument it does not honour or honours one it never declared. An unrecognised
+argument comes back named in `gth_warning` instead of vanishing. `repeat` echoes the count actually
+injected — and the proof it is not just echoing the number back is that the *fish-bowl's own* F9 handler
+logs `[capture]` twice for `repeat: 2`.
+
+**The regression scenario caught a false positive in my own `B5` guard on its first run**, which is the
+best argument for having written it. Baselining the window size in `_ready()` reads the *requested*
+1280x800 out of `project.godot`; the platform then adjusts the real window to **1290x810** before the
+first command lands — so the drift warning fired on every single session. Sampled lazily on first use
+now. A warning that always fires is a warning nobody reads, which is the same disease as a green test
+nobody questions — and this repo already has the `btn-generate` scar to prove it.
+
+**`GTH.B1` had a second half and it forced a spec amendment.** The field report caught `_onscreen` using
+`intersects` (any overlap = "on screen"). It missed that the click *anchor* was unclamped too, so
+`click_element` re-derived the raw centre and aimed at x=1323 in a 1290-wide window: the report lied
+*and* the click sailed past the window edge. Fixing it broke `GTH.R5`'s stated predicate, because
+strict `on_screen` would then have called a 4px-visible button **unclickable** — the same lie told
+backwards. `clickable` is now decoupled from `on_screen` and means *"would a click aimed at this land?"*,
+evaluated at the clamped anchor. The real `btn-storylets` now reports `on_screen=false`,
+`visible_fraction=0.133`, `clipped=[right]`, `clickable=true` — all four true at once, and the click
+lands at x=1289. `snapshot` had a *second, weaker* clickable formula omitting `is_top_hit`; it now shares
+the one predicate, because two callers getting two answers about the same button is its own small lie.
+
+Two smaller notes for whoever works here next. The **scenario runner had no way to expect a failure**, so
+a negative test failed the scenario it was proving correct — which is precisely why the error paths were
+never covered; `expect_error` fixes that. And **the running MCP server holds its own DLL open**, so
+`dotnet build` cannot write `bin/` while the client is connected: the `mcp__gth-fishbowl__*` tools in a
+session are pinned to the binary from when the client started. Build out-of-tree (`-o <tmp>`) to verify
+server changes mid-session; the GDScript addon has no such problem, since Godot re-reads it every launch.
+`GTH.Q1` is answered by the `B4` fix (root viewport + embedded `Window`s; no arbitrary viewport
+auto-discovery). `GTH.Q2`/`Q3`/`Q4` still want a ruling and are not code.
+
 ## 2026-07-16 — GTH: the backlog gets handles; two of the four bugs share a root cause; the plan was lying about itself
 
 Panda added two harness items and asked for the backlog to be made real before it gets worked. Three things
