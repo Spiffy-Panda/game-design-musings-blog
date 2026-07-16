@@ -270,3 +270,36 @@ the MCP-stdio→model leg (can't be self-verified mid-session). Mode-B active tr
 - **`GTH.Q4`** Convergence: once GTH exists, do `morning-queue/` and `fishbowl/` retire their bespoke
   DevHarnesses onto it — and does that finally justify the shared library their isolation rule has so
   far deferred? (Post-v1, Panda's call.)
+
+## Field report — first real use in anger (2026-07-16)
+
+The live MCP path was driven hard for the first time since its `--selftest` verification: a full
+functional pass over the fish-bowl observatory (~213 tool calls, ~9 relaunches, every `test_id` in the
+table, four A/B experiments). **The harness held up — it found four genuine bugs in the fish-bowl,
+including a shipped feature that had never worked.** Launch mode, boot, `session_start`/`stop`,
+`snapshot`, `click_element`, `click_at`, `read_element`, `wait_for`, and sha-dedup `capture` all
+behaved. That is the headline: it did its job.
+
+**Four defects in GTH itself**, worth fixing before the next build leans on it:
+
+- **`capture` with `region` is broken.** Throws `Trying to assign value of type 'String' to a variable
+  of type 'Array'` at `capturer.gd:39` — **the .NET MCP server marshals the region array across the
+  wire as a String**, while `capturer.gd` expects `[x,y,w,h]`. A server-side marshalling bug, not a
+  GDScript one. Region capture is unusable via MCP today (full-frame capture is fine).
+- **`press_key` silently ignores `repeat`.** `repeat: 6` applied exactly one step. Silent, so a caller
+  reads the result as "the key did nothing" rather than "the harness dropped 5 of 6".
+- **`query_element` does not clamp to the viewport** — it reported `on_screen: true` and
+  `clickable: true` for a button occupying x=1276–1366 in a **1280**-wide viewport. It was in fact
+  4px reachable. **This is the dangerous one for a *test* harness**: a false "clickable" is the same
+  failure direction as the false "unchanged" that the sha-vs-phash decision (DEV-LOG 2026-07-15)
+  already rejected once. `on_screen` should mean on screen.
+- **The predictive hit-stack mis-attributes clicks over embedded Windows** — it claimed a `CheckBox`
+  consumed a dialog-close click that it demonstrably did not (the frame was byte-identical before and
+  after). Correctly documented as a Mode A limitation in the addon README, but it cost real debugging
+  time before that caveat was found.
+
+**Method note worth keeping:** the pass was framed as *"static analysis made four claims; you are the
+behavioral check on them"* — and behavior confirmed all four (the `storylet_rate` no-op above 1.0, the
+two knobs with no dial, the live-without-restart claim). **Pairing a code reader with a harness pass
+that tries to falsify it is cheap and it works.** The harness earns its keep as an *epistemic* tool,
+not just a clicking one.

@@ -38,6 +38,57 @@ public sealed class Townee
     public double Pressure(string drive) => Pressures.TryGetValue(drive, out var v) ? v : 0.0;
 }
 
+/// <summary>
+/// The paper on the board. <b>Never "quest"</b> (`PNO.D1`, ruled 2026-07-16): a posting is a piece of
+/// paper somebody has to take down; a quest is what a bard calls it afterward. "Quest" is reserved as
+/// a word characters say out loud, and is not a type name anywhere in this codebase.
+/// <para>
+/// Per `PNO.D1`, <b>"standing" is a state, not its own record type</b> — the board is simply the index
+/// of postings whose <see cref="State"/> is <see cref="PostingState.Standing"/>.
+/// </para>
+/// </summary>
+public sealed class Posting
+{
+    // Authored identity — set once when the posting is filed, never mutated after.
+    public required string Id { get; init; }
+    public required string TemplateId { get; init; }
+    public required string RequesterId { get; init; }
+
+    /// <summary>`posting` = the board, an adventurer, a site · `errand` = in-town, a neighbour handles
+    /// it (the existing fetch-arranged path). A town where every need becomes guild paperwork loses
+    /// its texture, so the threshold is authored per rule.</summary>
+    public required string Reach { get; init; }
+
+    public string? SiteId { get; init; }
+    public required IReadOnlyList<string> Tags { get; init; }
+
+    /// <summary>Paid into the taker's purse on `carried`. The only exit the fiction offers Corvo.</summary>
+    public double Reward { get; init; }
+
+    public required int FiledDay { get; init; }
+    public required int ExpiresDay { get; init; }
+
+    // Mutable sim state.
+    public PostingState State { get; set; } = PostingState.Standing;
+    public string? TakerId { get; set; }
+    public int? ResolvedDay { get; set; }
+
+    public bool IsStanding => State == PostingState.Standing;
+    public bool HasTag(string tag) => Tags.Contains(tag);
+}
+
+/// <summary>
+/// The posting lifecycle: <c>standing → taken → resolved</c> · <c>standing → expired</c> ·
+/// <c>taken → abandoned → standing</c>. Every transition appends a chronicle entry with its
+/// because-list, so the board is explainable on the same terms as everything else (`AGR.2`).
+/// <para>
+/// <b>Only Standing and Expired are reachable at `PNO.M1`</b> (the board ships before outings do);
+/// the rest arrive with the phase machine at `PNO.M2`/`M3`. The enum is complete from the start
+/// because the lifecycle is ruled, and because a half-enum invites a second one.
+/// </para>
+/// </summary>
+public enum PostingState { Standing, Taken, Resolved, Expired, Abandoned }
+
 /// <summary>A directed regard edge (suggestee→target dyad): score + tags (AGT.8).</summary>
 public sealed class RegardEdge
 {

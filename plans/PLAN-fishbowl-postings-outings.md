@@ -488,6 +488,20 @@ Also: `dayplans.json` gains `cooldown` variants (+ a shared `cooldown-default`),
 
 ## Observatory additions
 
+> **⚠ The observatory is already out of horizontal room — verified in-engine 2026-07-16 by a GTH
+> harness pass, before any `PNO` control was added.** The viewport is **1280** wide, and `btn-storylets`
+> **already falls off the right edge the moment a day completes**: the `hash` readout widens by ~103px
+> when it goes from `—` to 16 hex digits, shoving the button from x=1173 to x=1276 — a 4px sliver of a
+> 90px button. The force-fire debug tool is reachable only *before* you have anything to debug. Right-
+> panel bios and summary lines also clip mid-word past x=1280.
+>
+> **So the board panel and outing track cannot simply be appended to the top bar.** Budget the layout
+> first; adding two more readouts to a strip that is already overflowing will push `btn-storylets` fully
+> off and take the new controls with it. (Note the harness's own caveat: `query_element` reported
+> `on_screen:true`/`clickable:true` for a button at x=1276–1366 in a 1280 viewport — **it does not clamp
+> to the viewport**, so it will happily tell you an off-screen control is fine. Trust a click, not the
+> report.)
+
 - **Board panel** — standing postings as cards: requester, site, reward, days-to-expiry, taker.
   The board filling and emptying *is* the readout. `test_id`: `board`.
 - **Outing track** — for each adventurer not in town: site, leg, slots-in-leg, a four-pip track.
@@ -623,6 +637,20 @@ Two authored hooks are **wired to nothing**, verified by grep across the whole s
   > (`StoryletEngine.cs:75`), but the slider runs **0.0–3.0** (`Observatory.gd:171`). **The entire
   > 1.0→3.0 half is a no-op** — 2.5 behaves identically to 1.0. Anyone "turning storylet rate up" to
   > move `VFB.Q1` has been moving nothing. Only the 0.0→1.0 half thins.
+  >
+  > **All three confirmed in-engine 2026-07-16** by a GTH harness pass driving the real observatory —
+  > static analysis and behavior agree. `storylet_rate`, fresh boot per arm, seed 1123, day 1 → dawn:
+  >
+  > | `storylet_rate` | events | day-1 hash |
+  > |---|---|---|
+  > | 1.00 (default) | 12 | `0ccec96222e31dbe` |
+  > | **2.50** | **12** | **`0ccec96222e31dbe`** |
+  > | **3.00** | **12** | **`0ccec96222e31dbe`** |
+  > | 0.30 | 9 | `6ba1be1c6fc1bb4f` |
+  >
+  > Byte-identical at 2.5 and 3.0; 0.3 thins 12→9 and diverges the hash, proving the dial is wired at
+  > all. The knobs panel was confirmed three ways (snapshot, geometry, source) to hold **exactly six**
+  > controls — neither `copresence_bonus` nor `storylet_cooldown_scale` among them.
 - **`storylet_weight_mods` is unconsumed.** Every trait in `traits.json` authors it (`gossip-carrier:
   {social: 1.2}`, `curious: {social: 1.25}`, …), `TraitDto` declares it, and nothing reads it —
   `Weight` is used only to *order* candidates in `StoryletEngine.RunSlot`. Trait-flavoured firing

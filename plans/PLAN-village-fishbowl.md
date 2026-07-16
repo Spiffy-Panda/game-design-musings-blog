@@ -282,6 +282,42 @@ snapshot save/load.
 M4 ◑ (generator + four menus + stats + soak shipped; `VFB.Q1` yield-tuning is the open research
 question, not a build gap). Acceptance detail in `../adventuring-guild-teller/fishbowl/FISHBOWL.md`.
 
+> **⚠ M4 correction (2026-07-16) — the town generator has never worked from the observatory.** Found by
+> a GTH harness pass driving the real UI (fired while opening `PNO`; the fish-bowl had not been driven
+> end-to-end since release). **`btn-generate` fails every time**, and fails *quietly*:
+>
+> - `FishbowlBridge.cs:49` calls `TownLoader.Rebuild(World.Town, townees)` **before** it builds its
+>   storyletless town at lines 50–57. `Rebuild` (`TownLoader.cs:63`) copies `Storylets = from.Storylets`
+>   — the **old anchored** bank — swaps in the new cast, then validates; `SchemaValidator.cs:73` checks
+>   every `_binding` against the new `TowneeById`, **all 20 dangle**, and it throws. **The
+>   storylet-stripping at 50–57 is dead code** — it runs after the throw it was written to prevent.
+> - The failure surfaces only as a transient `_toast` (`catch → Err(e)`), so the roster simply doesn't
+>   change and it reads as "nothing happened".
+> - **`M4_GeneratorTests.Generated_Town_Holds_The_Invariants_And_Validates` passes** — because its own
+>   `BuildTownWith` helper strips storylets *before* validating. **The test exercises a path the bridge
+>   does not take.** The green test is why this survived release. A generator test that doesn't go
+>   through `GenerateTown` isn't testing the generator anyone can reach.
+>
+> Three more, same pass — none blocking, all real:
+>
+> - **`btn-storylets` is unreachable once a day has run.** The `hash` readout widens ~103px going from
+>   `—` to 16 hex digits, shoving the 90px button from x=1173 to x=1276 in a **1280** viewport. The
+>   force-fire debug tool is reachable only *before* there is anything to debug. Right-panel bios and
+>   summary lines clip mid-word past x=1280 too.
+> - **The `register` label lies about the lines beneath it.** `WorldView.SummaryJson` serves
+>   `w.Summaries[day]` — cached at dawn — while `register` is recomputed live from the current dial. So
+>   moving `actionability` across all three stops relabels the header while the five lines stay
+>   character-for-character identical. The engine is right (a fresh day at 1.00 renders true report
+>   lines); the readout is misleading. This is `VFB.Q5`'s instrument, and it half-lies.
+> - **`hearsay_required` is unobservable on the golden data.** Toggled off, the summary is identical
+>   — "events 12 · distinct types 12" either way. The gate never binds on seed 1123 because **every
+>   event is already witness-carried**; the cast is thick with gossip-carriers. Not a bug — but it
+>   means `VFB.Q1`'s hearsay dial cannot be measured on this fixture, which is worth knowing before
+>   tuning against it.
+>
+> Ruled out of `PNO`'s scope (they are `VFB`'s), but the generator one is a **shipped feature that has
+> never worked** and M4 is ticked as if it does. Panda's call on when.
+
 - **`VFB.M0` — scaffold.** Project boots; bridge echo test; `dotnet test` green including
   the **Godot-stringify round-trip suite** over every `data/` file; capture harness in
   place (ships disabled); `FISHBOWL.md` + `README.md` stubs. *Accept:* boot with zero

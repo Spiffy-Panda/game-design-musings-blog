@@ -117,4 +117,14 @@ public sealed record SimConfig
     public double Actionability { get; init; } = 0.5;
     public int SummaryLines { get; init; } = 5;
     public bool BioMarksEnabled { get; init; } = true;
+
+    // --- PNO.M1: the board. (Outing knobs — hazard/pace/cooldown/rout — land with PNO.M2.) ---
+
+    /// <summary>How readily needs become paper. Scales the posting-filing gate.</summary>
+    public double PostingRate { get; init; } = 1.0;
+
+    /// <summary>Scales each posting's authored `expires_days`. Drives `PNO.Q2` (does paper move?):
+    /// if postings rot on the board, self-selection is too shy; if they're gone within a slot, the
+    /// board isn't a board.</summary>
+    public double PostingExpiryScale { get; init; } = 1.0;
 }

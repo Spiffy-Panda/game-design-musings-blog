@@ -6,6 +6,51 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — GTH pass over the observatory: the town generator has never worked, and a green test hid it
+
+Drove the shipped fish-bowl end-to-end through the GTH MCP for the first time since release (~213 tool
+calls, ~9 relaunches, every `test_id`, four A/B experiments). Fired to establish a UI baseline before
+`PNO` touches `Observatory.gd`, and to make a *behavioral* check on four claims a code reader had made
+statically. **It found four real bugs, one of them a shipped feature that has never once worked.**
+
+**`btn-generate` fails every time, and fails silently.** `FishbowlBridge.cs:49` calls
+`TownLoader.Rebuild(World.Town, townees)` **before** building its storyletless town at lines 50–57.
+`Rebuild` copies `Storylets = from.Storylets` — the old **anchored** bank — swaps in the new cast, and
+validates; `SchemaValidator` checks every `_binding` against the new `TowneeById`, all 20 dangle, throw.
+**The storylet-stripping at 50–57 is dead code: it runs after the throw it exists to prevent.** The
+error surfaces only as a transient toast, so the roster just doesn't change and it reads as a no-op.
+
+**The part worth internalizing:** `M4_GeneratorTests.Generated_Town_Holds_The_Invariants_And_Validates`
+is **green**, and has been since release. It passes because its own `BuildTownWith` helper strips
+storylets *before* validating — **it exercises a path the bridge does not take.** A generator test that
+never calls `GenerateTown` isn't testing the generator anyone can reach. The green test is precisely
+why this survived a release: it bought confidence in the wrong code path. `VFB.M4` is ticked "seeded
+town generator ✅" on the strength of it. Corrected on the plan.
+
+Three more, none blocking: **`btn-storylets` is unreachable once a day has run** — the `hash` readout
+widens ~103px going from `—` to 16 hex digits and shoves the 90px button from x=1173 to x=1276 in a
+1280 viewport, so the force-fire debug tool is reachable only *before* there is anything to debug (this
+one lands on `PNO` directly — the observatory is out of horizontal room *before* the board panel and
+outing track are added; recorded in the spec). **The `register` label lies about the lines beneath it** —
+`WorldView.SummaryJson` serves dawn-cached lines while `register` recomputes live from the dial, so
+moving `actionability` relabels the header while the prose stays character-for-character identical
+(the engine is right; the readout misleads — and it is `VFB.Q5`'s instrument). **`hearsay_required` is
+unobservable on seed 1123** — the gate never binds because every event is already witness-carried, so
+`VFB.Q1`'s hearsay dial cannot be measured on the golden fixture at all.
+
+**Behavior confirmed all four static claims**, which is the other reason to write this down: the
+`storylet_rate` slider is a verified no-op above 1.0 (2.5 and 3.0 produce byte-identical hashes and
+event counts to 1.0; 0.3 thins 12→9 and diverges), and the knobs panel holds exactly six controls with
+neither `copresence_bonus` nor `storylet_cooldown_scale` among them. **Pairing a code reader with a
+harness pass told to falsify it is cheap, and it caught what neither would alone** — the reader could
+not see `btn-generate` fail, and the harness could not have known to look.
+
+GTH's own four defects (region-capture marshalling, `press_key` dropping `repeat`, `query_element` not
+clamping to the viewport, hit-stack mis-attribution over embedded Windows) are recorded in
+`plans/PLAN-godot-test-harness.md`. The `query_element` one matters most: it reported
+`on_screen: true` for a control at x=1276 in a 1280 viewport. For a *test* harness a false "reachable"
+is the same failure direction as the false "unchanged" that the sha-vs-phash decision already rejected.
+
 ## 2026-07-16 — PNO: nine rulings landed, three of the spec's own arguments struck, golden split out of `data/`
 
 Opened the `PNO` build (postings & outings; `plans/PLAN-fishbowl-postings-outings.md`). All nine gates

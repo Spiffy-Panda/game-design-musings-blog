@@ -34,6 +34,21 @@ public sealed class World
     public Dictionary<int, string> DayHashes { get; } = new();
     public Dictionary<int, List<SummaryLine>> Summaries { get; } = new();
 
+    /// <summary>Every posting filed this run, in filing order — which is deterministic (townees
+    /// resolve in stable id order, slots in order), so this list never needs re-sorting to be
+    /// reproducible. Empty for the golden fixture, which is posting-free by ruling (`PNO.D2`).</summary>
+    public List<Posting> Postings { get; } = new();
+
+    /// <summary>
+    /// <b>The board</b> — the postings currently standing, in filing order. Per `PNO.D1` this is an
+    /// index over <see cref="Posting.State"/>, not its own record type: "a new data type for standing"
+    /// reads as <i>the board is data, not gameplay</i>. `post` and `take`/`expire` add and remove by
+    /// moving state, and the board falls out of that.
+    /// </summary>
+    public IEnumerable<Posting> Board => Postings.Where(p => p.IsStanding);
+
+    public Posting? PostingById(string id) => Postings.FirstOrDefault(p => p.Id == id);
+
     /// <summary>Per-slot pressure samples for the inspector sparklines, keyed "id.drive".</summary>
     public Dictionary<string, List<double>> PressureLog { get; } = new();
 
@@ -124,6 +139,8 @@ public sealed class World
             "storylet_rate" => Config with { StoryletRate = value },
             "storylet_cooldown_scale" => Config with { StoryletCooldownScale = value },
             "copresence_bonus" => Config with { CopresenceBonus = value },
+            "posting_rate" => Config with { PostingRate = value },
+            "posting_expiry_scale" => Config with { PostingExpiryScale = value },
             "actionability" => Config with { Actionability = value },
             "summary_lines" => Config with { SummaryLines = (int)Math.Round(value) },
             "hearsay_required" => Config with { HearsayRequired = value != 0 },
@@ -187,11 +204,32 @@ public sealed class World
             chron.Add(new JsonObject { ["slot"] = e.Slot, ["id"] = e.StoryletId, ["who"] = who });
         }
 
+        // The postings digest. Sorted by id (not filing order) for the same reason regard and
+        // cooldowns are: the hash must not depend on insertion history.
+        //
+        // NOTE the shape: `state` is emitted as the full enum name, never as a bool or an ordinal.
+        // The `away` key above is the cautionary tale — a bool that collapses a richer state into
+        // one bit makes genuinely different worlds hash identically, and the determinism spine
+        // stops detecting the difference silently. An ordinal would be worse still: reordering the
+        // enum would rewrite history. Costs a few bytes; buys a hash that means something.
+        var postings = new JsonArray();
+        foreach (var p in Postings.OrderBy(p => p.Id, StringComparer.Ordinal))
+            postings.Add(new JsonObject
+            {
+                ["id"] = p.Id,
+                ["state"] = p.State.ToString(),
+                ["requester"] = p.RequesterId,
+                ["taker"] = p.TakerId,
+                ["filed"] = p.FiledDay,
+                ["expires"] = p.ExpiresDay,
+            });
+
         return new JsonObject
         {
             ["day"] = Day,
             ["townees"] = townees,
             ["cooldowns"] = cooldowns,
+            ["postings"] = postings,
             ["chronicle"] = chron,
         };
     }
