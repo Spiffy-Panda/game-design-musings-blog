@@ -6,6 +6,149 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — the view pass: two fixed rails and a derived pane; and the metric everyone measured was the wrong one
+
+The observatory's layout is rebuilt: **two fixed rails** (roster + place board left; knobs + inspector
+right) and **one fluid reading pane** (summary + chronicle) whose width is **derived, never declared**.
+Machine readouts (clock/hash/seed/stats) moved to a monospace status strip. The Dawn Summary went from
+**326px visible and cut mid-word** to **496px, `clipped:[]`**.
+
+**The overflow is dead by construction, and the construction is not what the study proposed.** The
+study's fix was monospace — reasoning that a 16-char hex string in a fixed-width font has one width
+forever. True, but *slack*: monospace fixes the hash being fixed-**length** in a **proportional** font,
+which is a different problem from the one that broke the layout. The actual guarantee is
+**`clip_text = true`**, which drops a `Label`'s minimum width to ~1 — its text stops being a layout
+demand for **any** font, **any** string, and any future edit. Both shipped; `_readout()` documents which
+solves what. The general rule is now recorded in FISHBOWL.md, because it is the kind of thing that gets
+re-broken by someone adding an innocent `Label`: **a bare Label's text IS its minimum width, and a
+minimum beats a `PRESET_FULL_RECT` anchor.** That is how 108px of hash forced the root to 1371px in a
+1290 viewport.
+
+Proof is at **two different day-hashes** (`b8d15299d8817639`, `5aa99deb4b587b10`) producing **identical
+layouts** — which is the only proof that counts for a data-dependent bug. Verifying against one seed
+would have been verifying against one sample of a moving target.
+
+**The two studies contradicted each other and neither noticed.** Study B measured the roster 45.9% empty
+and ~132px *over*-allocated. Study A proved that same roster illegible and priced the fix at "four
+`set_text` lines, contained." Both were right and they are the same finding: **in words, the roster's
+measured demand is ~464px — more than the 406 that B called over-allocation. The horizontal surplus
+*was* the illegibility, priced in pixels.** Neither study could see that alone, and the synthesis is the
+whole argument for running them as separate lenses rather than one "review the UI" agent.
+
+**And the headline metric was the wrong metric.** Dead space, measured A/B on the same tiling: boot
+**77.0% → 74.6%**, day-2 dawn **54.1% → 55.6% — up.** That is not a regression; it is the *expected*
+consequence of the wrap-instead-of-truncate trade, because wrapped prose is less pixel-dense than
+ellipsised prose. **The defect was never empty pixels. It was truncation sitting beside them.** The
+metric that actually moved: every `clipped:[right]` on the deliverable is now `clipped:[]`. Recorded
+because "reduce dead space" is the obvious brief for a next pass, and it is the wrong brief — a future
+agent optimising that number would re-truncate the summary to win it.
+
+**`regression-b1-b6.json` was pinning the bug it existed to catch.** It hard-asserted
+`expect btn-storylets on_screen: false` and ran green for a whole release. The assertion that should
+have caught the clipping was *encoding* it as intended behaviour, and FISHBOWL.md's `on_screen`-vs-
+`clickable` "worked example" was built on the same defect. Both corrected; the scenario is re-fixtured
+onto the invariant (green, 34 steps). **A real coverage gap is left open rather than papered over:**
+`GTH.B1`'s `on_screen:false` / clamped-anchor path now has no fixture, because restoring one would mean
+reintroducing the defect. It belongs in the addon's own test scene, not in a consumer's regression suite —
+which is the general lesson: *a project's UI bug is a bad fixture for a harness invariant, because
+fixing the project deletes the fixture.*
+
+**The legend question resolved by dissolving it.** A legend was **ill-defined, not expensive**: `🍺` meant
+innkeep *and* inn (the innkeep's row read `🍺|🍺`), `🔨` meant smith *and* workshop, `🧭` meant away-place
+*and* away-mode. Meaning depended on the column, so a legend needed one table **per column** — three
+tables to explain four columns. Worst was `Place`, keyed on `place_kind` while its tooltip showed
+`place_name`: it rendered the inn's `🍺` for people asleep in their own beds. So `Role`/`Place`/`Top
+drive` became words and `Doing` kept its five glyphs under a single on-screen legend. **This reverses
+Panda's explicit request for emoji in all four columns and is flagged for review, not settled** — see
+the next entry.
+
+Also landed: the day + **tense** on every `view_day` panel (computed, so it reads "today, live" mid-day
+and "yesterday" after dawn — the flip is the point); the chronicle's first row open by default, because
+the because-list was the best explanatory artifact in the project and it was hidden behind one
+character; the type scale un-inverted; the chronicle converted from a `Tree` to a wrapped VBox. All 23
+`test_id`s preserved — `chronicle` deliberately tags the ScrollContainer, since on the inner VBox it
+would report `clipped:[bottom]` forever.
+
+Dropped, with reasons: `A.11` (whether the dawn frame should publish at all — a model question the study
+declined to adjudicate, correctly), the `board`/`shut` dialog fields (a `CreatePlace` contract change;
+the dialog now at least *says* it always boards), and `Sparkline.gd`'s midline alpha (a one-character
+fix outside the pass's file — recommended, not taken).
+
+---
+
+## 2026-07-16 — a debug readout was resizing the whole app; the roster's "surplus" width was the illegibility, priced in pixels
+
+The view half of the observatory usability study. Two independent studies (space, comprehension) fed
+this pass; the interesting part is **where they contradicted each other**, which neither could see alone.
+
+**The overflow, and why the fix is `clip_text` and not a number.** `hash_label` was a bare `Label`. A
+Label with autowrap off reports its *whole single-line text* as its minimum width; an HBox's minimum is
+the sum of its children's; and a Control is clamped to at least its own minimum — **so a minimum beats a
+`PRESET_FULL_RECT` anchor**. When the hash populated at first dawn it grew 47px → 155px, and that 108px
+walked hash_label → top-bar HBox → PanelContainer → root VBox and forced the root to **1371px inside a
+1290px viewport**. `body` then re-divided 1371 by stretch ratio, so the two *emptiest* regions gained
+width (roster +24, chronicle +33) and the Dawn Summary — the deliverable — lost exactly their sum (−57),
+purely because it was the rightmost child. **Column order picked the victim; nothing about the summary's
+content selected it.**
+
+Study B prescribed monospace + a wide strip. That is right but it is *slack*, not construction — it
+argues the bug can't reach far enough, not that it can't happen. The actual guarantee is
+**`clip_text = true`**, which drops a Label's minimum width to ~1: its text stops being a layout demand
+at all, for any font, any string, any future edit. Monospace fixes a *different* thing — the hash is a
+fixed-*length* string in a *proportional* font, so its width was a sample, not a constant (three
+observed hashes rendered ~152/155/156px, which is why four documents in this repo recorded four
+different rects for one button). Both halves shipped; they solve different problems and the comments say
+which. Verified at day 2 (`b8d15299d8817639`) and day 5 (`5aa99deb4b587b10`): **different hash,
+identical layout**, `btn-storylets` at x=1134 `visible_fraction 1.0` in both.
+
+**Where the two studies collide, and the finding that came out of it.** Study B measured the roster
+45.9% empty in every state and ~132px *over*-allocated, and sized a 320px rail from its ~274px demand.
+Study A independently showed that same roster is 29 undocumented glyphs whose stated mitigation is a
+tooltip — void, since Panda ruled the screenshots get published and a PNG has no hover — and prescribed
+words at "four `set_text` lines, contained". **Both are right and they are incompatible.** Rendered in
+words the roster's honest demand is **~464px, measured** — *more* than the 406px Study B called
+over-allocation. The horizontal surplus was never real; **it was the illegibility, priced in pixels.**
+Study A's fix is not four lines: it costs ~156px of rail, and the only account it can be drawn from is
+the reading pane. Paid deliberately — a wider summary beside an unreadable roster fails the same
+publication test as a narrow one. Left rail 488, right rail 290 (the knobs+inspector only ever demanded
+~270, not the 320 they held), reading pane **496 and derived, not declared** — so the arithmetic is
+right at 1290 and at 1280 without a second number to keep in sync.
+
+I made the same class of error one scope down and it is worth recording: I sized the Top-drive column
+for `"purse 0.50"` and it clipped instantly on `"restlessness 0.45"`. **Every column minimum in the
+roster is now the widest value the *format* admits, measured off the running app** — my estimates were
+uniformly ~20% low.
+
+**On the legend — the argument, not the verdict.** A legend maps symbol → meaning. The old encoding had
+no such map: `🍺` was `ROLE_GLYPH["innkeep"]` *and* `PLACE_GLYPH["inn"]` (so the innkeep's row read
+`🍺 | 🍺`), `🔨` was smith *and* workshop, `🧭` was away-place *and* away-mode. The meaning depended on the
+column, so a legend would have had to be one legend **per column** — three more tables to explain the
+four already there. **The legend wasn't expensive; it was ill-defined.** Fixing that is what makes a
+legend possible: Role/Place/Top became words, `Doing` stayed glyphs (5 values, changes every slot, the
+one column you genuinely scan), and one vocabulary means one five-symbol legend, on screen, under the
+table. The `Place` glyph was also the worst of the four — keyed on `place_kind` while its tooltip said
+`place_name`, it rendered the inn's `🍺` for three people asleep in their own beds. Not a degenerate
+column: one that was **wrong in a way that read as right**.
+
+**A regression suite had encoded the bug as expected behaviour.** `regression-b1-b6.json` asserted
+`expect btn-storylets on_screen: false` and ran green on it for a release — the assertion that should
+have *caught* a debug readout resizing the application was *pinning* it instead. Re-fixtured onto the
+invariant (`on_screen: true` after the hash populates, plus `summary` un-clipped). **This leaves a real
+coverage gap, recorded rather than papered over:** B1's `on_screen:false` / clamped-anchor path now has
+no fixture here, and restoring one would mean reintroducing the defect. It belongs in the addon's own
+project-agnostic test scene. FISHBOWL.md's "worked example" prose leaned on the same clipping and is
+corrected in the same pass (Rule 3).
+
+**Dropped, with reasons.** The courier's four-rooms-at-once display (A.11) — conceptually the deepest
+thing in either study, but it only bites on mid-day frames while the musing publishes a dawn shot, and
+Study A itself declines to adjudicate whether the sim means literal presence or visits-within-the-slot.
+`Sparkline.gd`'s invisible 0.12-alpha midline (A.7) — a genuine one-character fix, but that file was
+outside this pass's ownership; flagged for whoever owns it. The `board`/`shut` fields missing from the
+New Place dialog (A.8/OBS.10) — the dialog now *says* it always boards, but adding the fields is a
+`CreatePlace` data-contract change, not a view change.
+
+---
+
 ## 2026-07-16 — the knobs were never live, the strip showed the wrong number, and the determinism test could not detect a determinism break
 
 A usability study of the observatory went looking for layout problems and found that **the instrument

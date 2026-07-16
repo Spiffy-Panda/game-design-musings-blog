@@ -1,9 +1,9 @@
 {
   "name": "gth-regression-b1-b6",
-  "note": "Regression cover for the GTH.B1-B6 fixes, driven against the observatory's real geometry (1280x800). It leans on a genuine fish-bowl layout bug as its fixture, which is the cheapest honest one available: once a day has run, the `hash` readout widens from a dash to 16 hex digits and shoves `btn-storylets` from x=1173 to x=1276 -- 4px of a 90px button inside a 1280 viewport. That control is the exact case B1 used to certify as on_screen:true + clickable:true, and its AcceptDialog is a real embedded Window for B4. Fishbowl-owned fixture; the addon stays project-agnostic.",
+  "note": "Regression cover for the GTH.B1-B6 fixes, driven against the observatory's real geometry (the window runs 1290x810 even though project.godot declares 1280x800 -- trust the rects). HISTORY, because it explains the shape of this file: this suite used to use a genuine fish-bowl LAYOUT BUG as its B1 fixture. Once a day had run, the `hash` readout widened from a dash to 16 hex digits, and that min-width shock propagated to the root VBox and shoved `btn-storylets` off the right edge -- so the suite asserted `on_screen: false` and went green on it for a release. It had encoded a defect as expected behaviour: the assertion that should have CAUGHT the bug was instead pinning it, and fixing the layout is what turned this suite red. The B1 assertions below now pin the INVARIANT the app actually wants -- every top-bar control fully on screen, before AND after the hash populates -- which is the test that would have caught the original bug on day one. KNOWN COVERAGE GAP, stated rather than papered over: with the layout fixed, this scenario no longer exercises B1's on_screen:false / visible_fraction / clipped / clamped-anchor path at all, because the observatory no longer has a clipped control to point at. That path is B1's actual subject and it is now uncovered here. It needs a control that is off-screen ON PURPOSE, which belongs in the addon's own project-agnostic test scene -- not in this app, since the only way to restore the fixture here would be to reintroduce the defect. Fishbowl-owned fixture; the addon stays project-agnostic.",
   "steps": [
     { "op": "window",
-      "note": "B5: expect resize_locked=true, mode=windowed, size 1280x800, no window_warning" },
+      "note": "B5: expect resize_locked=true, mode=windowed, size 1290x810, no window_warning" },
 
     { "op": "expect", "element": { "test_id": "btn-storylets" }, "on_screen": true, "clickable": true,
       "note": "B1 baseline: before a day runs, the button is wholly inside the viewport" },
@@ -11,14 +11,14 @@
     { "op": "click", "element": { "test_id": "btn-dawn" } },
     { "op": "wait", "settled_ms": 800 },
     { "op": "read", "element": { "test_id": "hash" },
-      "note": "the hash is now 16 hex digits -- the ~103px widening that shoves the button out" },
+      "note": "the hash is now 16 hex digits. It lives in the fixed-width monospace status strip and is clip_text'd, so its width is no longer a layout demand at all -- this read is what makes the two assertions below meaningful." },
 
     { "op": "query", "element": { "test_id": "btn-storylets" },
-      "note": "B1: expect on_screen=false, visible_fraction~0.04, clipped=[right], anchor_clamped=true" },
-    { "op": "expect", "element": { "test_id": "btn-storylets" }, "on_screen": false,
-      "note": "B1: 4px of overlap is NOT on_screen. This assertion used to be impossible to write." },
-    { "op": "expect", "element": { "test_id": "btn-storylets" }, "clickable": true,
-      "note": "B1: ...but it IS still clickable, because 4px of it genuinely is reachable. The pair is the fix." },
+      "note": "THE REGRESSION: expect on_screen=true, visible_fraction=1.0, clipped=[], and rect_px x=1134 -- the SAME x as before the dawn. A populated hash must move nothing." },
+    { "op": "expect", "element": { "test_id": "btn-storylets" }, "on_screen": true, "clickable": true,
+      "note": "The invariant, asserted where the bug used to live: the rightmost top-bar control stays wholly inside the viewport after the hash populates. This is the assertion whose absence let a debug readout resize the application." },
+    { "op": "expect", "element": { "test_id": "summary" }, "on_screen": true,
+      "note": "...and the deliverable it used to starve. `summary` reported clipped:[right] visible_fraction:0.801 from first dawn onward -- every line of the app's primary output cut mid-word. The rightmost column no longer absorbs an overflow, because there is no overflow." },
 
     { "op": "capture", "label": "b2-region-array", "region": [0, 0, 400, 120], "if_changed": false,
       "note": "B2: the declared shape" },
@@ -39,7 +39,7 @@
       "note": "M5 / Mode B over the roster Tree: prediction vs observation on a location click" },
 
     { "op": "click", "element": { "test_id": "btn-storylets" },
-      "note": "B1 second half: the clamped anchor must LAND. The old raw-centre anchor aimed at x=1321 -- outside the window -- and missed while reporting success." },
+      "note": "The click must LAND and open the dialog -- which is what B4 below needs. This step used to be B1's clamped-anchor proof (the old raw-centre anchor aimed at x=1321, outside the window, and missed while reporting success); the anchor is now at x=1179, wholly inside, so no clamping happens and that path is NOT covered here. See the coverage gap in the header note." },
     { "op": "wait", "settled_ms": 600 },
     { "op": "hit_test", "x": 0.5, "y": 0.5,
       "note": "B4: this point is over the storylets AcceptDialog. Expect viewport=embedded_window + the window's own contents -- NOT a main-viewport control that cannot receive the click." },
