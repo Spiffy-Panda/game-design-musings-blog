@@ -1,14 +1,15 @@
 { "id": "a-good-catch", "kind": "solo",
   "predicates": {
     "copresent": ["A"],
-    "pressure": { "A.purse": { "below": 0.5 } },
-    "cooldown_days": 1 },
+    "place": { "any": ["the-millpond"] },
+    "pressure": { "A.purse": { "below": 0.3 } },
+    "cooldown_days": 2 },
   "weight": 0.6, "streams": "storylets",
-  "effects": [ { "pressure": "A.purse", "delta": 0.05 },
+  "effects": [ { "pressure": "A.purse", "delta": 0.07 },
                { "pressure": "A.trade", "delta": 0.03 },
                { "chronicle": true, "tellability": 0.3, "mark": [] } ],
   "lines": {
     "hearsay": "The nets came up heavy off {place} today.",
-    "gossip":  "{A} landed a good catch at {place} — enough to keep the wolf back a while.",
-    "report":  "{A} worked {place} to a purse gain (purse {A.purse}), slot {slot}." },
+    "gossip":  "{A} landed a good catch at {place} — a good one, by {A}'s face, and the kind that buys a few days of nobody mentioning the rent.",
+    "report":  "{A} declared the day's catch at {place}, slot {slot}." },
   "_binding": { "A": "fenn-halloway" } }

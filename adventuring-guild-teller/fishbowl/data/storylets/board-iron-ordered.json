@@ -1,0 +1,14 @@
+{ "id": "board-iron-ordered", "kind": "posting",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "trait": { "A": "gruff" },
+    "cooldown_days": 4 },
+  "weight": 1.1, "streams": "storylets",
+  "effects": [ { "post": { "requester": "A", "template": "pig-iron-short" } },
+               { "chronicle": true, "tellability": 0.45, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was dictating going on at {place}, and a pen keeping up.",
+    "gossip":  "{A} never once walked it up to the board — {B} wrote the iron down for {A} at {place}, and neither of them said out loud whose cart it was that was late.",
+    "report":  "{A}'s requisition for pig iron taken down by {B} at {place}, slot {slot}." },
+  "_binding": { "A": "marrow-bray", "B": "dorrit-scrieve" } }

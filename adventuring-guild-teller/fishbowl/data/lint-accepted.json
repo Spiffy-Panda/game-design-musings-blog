@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "_comment": "READ THIS BEFORE ADDING A LINE. This is the ledger of defects a human has RULED ON and chosen to ship. It is not a suppression list and it must never become one. (1) NOTHING HERE IS SILENCED. Every accepted finding still prints in full, every run, under [ACCEPTED], with the reason and the ruling above it, and it keeps class=error because it is still a proof — only `gates` moves. If you want a finding to stop printing, fix it. (2) THE PRICE OF A LINE IS A REASON AND A RULING, both required and both non-blank. `reason` is the argument; `ruling` points at where the decision was made and by whom, and it has to resolve. An entry without them accepts nothing and fails the build (`lint-accepted`/malformed) — deliberately, because a bare list of ids records that someone stopped caring, not that someone decided. The linter cannot audit sincerity and does not pretend to: what makes this cost something is that it is tracked, dated, reviewed, and printed. (3) THE KEY IS EXACT: (check, kind, subject), ordinal, no patterns, no globs, subjects enumerated one at a time. A subject nobody listed is a NEW defect and it fails the build — that is the entire point of not silencing the old ones. `kind` must match the finding's `data.kind` exactly (see --lint --json); omitting it matches only a finding that has no kind at all, so a wrong or missing `kind` costs you a red gate rather than a silent over-acceptance. (4) ONE ENTRY = ONE RULING, with an explicit `subjects` array — 14 copies of one sentence would misrepresent one judgement as fourteen, and that is the repetition that makes somebody reach for a wildcard. (5) DELETE A SUBJECT THE DAY IT IS FIXED. --lint says so itself: an unmatched acceptance warns (`lint-accepted`/unmatched), because an acceptance outliving its finding is a standing pre-authorisation for that exact defect to walk back in unnoticed. (6) `load`, `lint-aborted` and `lint-accepted` can never be accepted, at any subject: each means the report itself is untrustworthy, so accepting one would forgive a defect on the evidence of a run that did not happen. (7) There is NO ledger in tests/towns/golden-town and there must never be one (frozen, PNO.D2). That town is genuinely defective and its 23 errors must stay red.",
+
+  "accepted": [
+    {
+      "check": "ratchets",
+      "kind": "ratchet",
+      "date": "2026-07-16",
+      "ruling": "Panda, 2026-07-16. Standing statement of the open question: Pressures.BaseDaily's own remarks — 'whether restlessness is directional-by-intent or wants a rest point like trade is an open ruling, not an oversight' (core/Fishbowl.Core/Engine/Pressures.cs). The milestone that closes it: PNO.M2 (outings) — plans/PLAN-fishbowl-postings-outings.md, 'PNO.M2 — outings'.",
+      "reason": "restlessness is directional BY DESIGN: the buildup exists to push a townee somewhere. Today there is nowhere to be pushed, so it runs to a clamp and stops — which is exactly what these 14 findings prove, and they prove it correctly. PNO.M2 (outings) is the somewhere: it is where a townee acts on the buildup and where the authored counter-push this check reports as missing gets written. Closing the drive now — a rest point like trade's, or a bank effect invented to balance it — would pre-empt the milestone that gives the drive its meaning, and would have to be unwound when M2 lands. So the defect ships, once, knowingly. These findings are NOT noise and are NOT weakened: they are the specification for what PNO.M2 has to discharge, and every one of them should disappear when it does. If they are still here after M2, the ruling was wrong and this entry is the evidence.",
+      "subjects": [
+        "alys-bray.restlessness",
+        "dob-millet.restlessness",
+        "dorrit-scrieve.restlessness",
+        "fenn-halloway.restlessness",
+        "grigg-paulet.restlessness",
+        "hollis-mire.restlessness",
+        "juno-fettle.restlessness",
+        "marrow-bray.restlessness",
+        "nan-pellow.restlessness",
+        "odile-vance.restlessness",
+        "ruel-oxenham.restlessness",
+        "sela-quick.restlessness",
+        "wick-tarrow.restlessness",
+        "widow-karsk.restlessness"
+      ]
+    }
+  ]
+}

@@ -1,20 +1,46 @@
 {
   "version": 1,
+  "_comment": "READ THIS BEFORE AUTHORING A TRAIT. (1) pressure_rate_mods is SIGNED-AWARE as of 2026-07-16: {\"gain\": n, \"decay\": m} scales the drift where the base rule pushes the drive UP (gain) and DOWN (decay), separately. That is what lets a trait name a direction. A BARE NUMBER still parses, and still means {gain: n, decay: n} — today's exact arithmetic, both ways — so it is a VOLATILITY scalar and cannot express a direction; --lint's `legacy-rate-mods` names any trait still authored that way. Migration is a judgement about what a word means, so it is never inferred. (2) pressure_targets says where a RESTORING drive RESTS, which is a different claim from how fast it gets there. Only `heart` reads one (Town.TargetedDrives), and NOT because it is the only restoring drive — `trade` restores too — but because heart's rest point is a single authorable number and trade's is not (see (2b)); SchemaValidator refuses a target on any other drive rather than letting the number sit inert. Default is 0.5, so a trait that authors none changes nothing. (2b) `trade` LANDED as a restoring force (NTD.Q1, ruled 2026-07-16 — this note used to say it was 'a flat -0.11/day for everyone, ruled, not yet landed', and that shape is gone). Pressures.BaseDaily now pulls it toward a PER-MODE rest — 0.55 while working, 0.12 otherwise — closing 20% of the gap per day, so a townee's rest point is the time-weighted blend their DAYPLAN sets: rest = [W*0.55 + (48-W)*0.12]/48 for W work slots. That is why pressure_targets.trade is refused at load: one scalar could not say which of the two modes it meant. What a rate mod on trade does now is NOT what this note used to claim, and the two halves differ (measured on the real engine over 56 days, scrap_scripts/csharp/02_trade_rate_mod, at W=24): a SYMMETRIC mod (a bare number, or gain == decay) CANNOT move where trade settles — it stayed at 0.3350 against an unmodded 0.3350 under a x2 scalar — because the daily sum cancels at the same value whatever you scale both sides by; all it buys is a faster approach and a WIDER intra-day swing (0.0215 -> 0.0430; trade sawtooths within the day, climbing toward 0.55 through the work block and falling back toward 0.12 at home, so 'where it rests' is a daily mean, not a fixed point). An ASYMMETRIC mod DOES move it, because TraitRateMod picks gain/decay off each slot's SIGN and on a mixed day the work slots and the idle slots then take different scalars: {gain 2.0, decay 0.5} settled at 0.4641 against 0.3350, i.e. rest becomes [W*g*0.55 + (48-W)*d*0.12]/[W*g + (48-W)*d] (predicted 0.4640). Same mechanism dayplans.json records for `frugal` on purse and DEV-LOG for `wanderlust` on restlessness. So a directional trade trait is expressible — it just has to be asymmetric, and it moves the rest point rather than the destination-of-a-countdown that used to be there. (3) storylet_weight_mods IS DEAD CODE — read by zero engine code (Weight only orders candidates in StoryletEngine.RunSlot). Authored below for forward use; nothing may depend on it. (4) hearsay_carrier is genuinely live — Summarizer.SealDay reads it. Every trait here carries a live pressure_rate_mod or pressure_target so no trait is decorative; 'early-riser' was dropped in the rebuild because it had neither a mod nor a predicate — its meaning was already in the dayplan.",
+
   "traits": [
-    { "id": "patient", "pressure_rate_mods": { "restlessness": 0.7 }, "storylet_weight_mods": {} },
-    { "id": "proud", "pressure_rate_mods": { "heart": 0.9 },
-      "storylet_weight_mods": { "social": 1.15 } },
-    { "id": "early-riser", "pressure_rate_mods": {}, "storylet_weight_mods": {} },
-    { "id": "gossip-carrier", "pressure_rate_mods": {},
+    { "id": "gossip-carrier", "pressure_rate_mods": { "heart": { "gain": 1.1, "decay": 1.1 } },
       "storylet_weight_mods": { "social": 1.2 }, "hearsay_carrier": true },
-    { "id": "cheerful", "pressure_rate_mods": { "heart": 1.1 }, "storylet_weight_mods": {} },
-    { "id": "curious", "pressure_rate_mods": { "restlessness": 1.1 },
+
+    { "id": "wanderlust", "pressure_rate_mods": { "restlessness": { "gain": 1.3, "decay": 0.7 } },
+      "storylet_weight_mods": { "social": 1.05 } },
+
+    { "id": "patient", "pressure_rate_mods": { "restlessness": { "gain": 0.7, "decay": 1.0 } },
+      "storylet_weight_mods": {} },
+
+    { "id": "curious", "pressure_rate_mods": { "restlessness": { "gain": 1.1, "decay": 0.9 } },
       "storylet_weight_mods": { "social": 1.1 } },
-    { "id": "gruff", "pressure_rate_mods": { "heart": 0.85 }, "storylet_weight_mods": {} },
-    { "id": "wanderlust", "pressure_rate_mods": { "restlessness": 1.3 }, "storylet_weight_mods": {} },
-    { "id": "stubborn", "pressure_rate_mods": {}, "storylet_weight_mods": { "social": 1.1 } },
-    { "id": "indebted-shame", "pressure_rate_mods": { "heart": 0.8, "purse": 0.9 },
+
+    { "id": "frugal", "pressure_rate_mods": { "purse": { "gain": 1.0, "decay": 0.85 } },
+      "storylet_weight_mods": {} },
+
+    { "id": "open-handed", "pressure_rate_mods": { "purse": { "gain": 1.0, "decay": 1.25 },
+                                                   "heart": { "gain": 1.1, "decay": 1.1 } },
+      "storylet_weight_mods": { "social": 1.15 } },
+
+    { "id": "proud", "pressure_rate_mods": { "heart": { "gain": 0.9, "decay": 0.9 } },
+      "storylet_weight_mods": { "social": 1.15 } },
+
+    { "id": "gruff", "pressure_targets": { "heart": 0.42 },
+      "storylet_weight_mods": {} },
+
+    { "id": "cheerful", "pressure_targets": { "heart": 0.6 },
+      "storylet_weight_mods": {} },
+
+    { "id": "stubborn", "pressure_rate_mods": { "restlessness": { "gain": 0.85, "decay": 0.85 },
+                                                "heart": { "gain": 0.9, "decay": 0.9 } },
+      "storylet_weight_mods": { "social": 1.1 } },
+
+    { "id": "indebted-shame", "pressure_targets": { "heart": 0.4 },
+      "pressure_rate_mods": { "purse": { "gain": 0.9, "decay": 1.0 } },
       "storylet_weight_mods": { "social": 1.25 } },
-    { "id": "frugal", "pressure_rate_mods": { "purse": 1.15 }, "storylet_weight_mods": {} }
+
+    { "id": "solitary", "pressure_rate_mods": { "restlessness": { "gain": 0.6, "decay": 1.0 },
+                                                "heart": { "gain": 0.8, "decay": 0.8 } },
+      "storylet_weight_mods": {} }
   ]
 }

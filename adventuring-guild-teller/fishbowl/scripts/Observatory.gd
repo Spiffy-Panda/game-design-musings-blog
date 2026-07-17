@@ -420,6 +420,10 @@ func _build_knobs() -> Control:
 	box.add_child(_header("Rendering — applies now"))
 	box.add_child(_slider("actionability", "register (actionability)", 0.0, 1.0, 0.01, 0.5, func(x): _knob("actionability", x)))
 	box.add_child(_slider("summary_lines", "summary lines", 3, 7, 1, 5, func(x): _knob("summary_lines", x)))
+	# Rendering, despite reading history: it re-orders finished nights on read (the summary is derived,
+	# never stored), so it applies now. 1.0 is OFF and restores the fixed leaderboard — drag it there to
+	# see the defect this knob exists to fix, live.
+	box.add_child(_slider("novelty_decay", "novelty decay", 0.0, 1.0, 0.05, 0.5, func(x): _knob("novelty_decay", x)))
 	box.add_child(_check("hearsay_required", "hearsay required", true, func(on): _knob("hearsay_required", 1.0 if on else 0.0)))
 	box.add_child(_header("Simulation — applies next dawn"))
 	box.add_child(_slider("storylet_rate", "storylet rate", 0.0, 3.0, 0.05, 1.0, func(x): _knob("storylet_rate", x)))

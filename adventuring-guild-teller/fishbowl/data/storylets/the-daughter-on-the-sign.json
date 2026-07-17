@@ -1,0 +1,14 @@
+{ "id": "the-daughter-on-the-sign", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["bray-and-daughter"] },
+    "trait": { "A": "proud" },
+    "cooldown_days": 3 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.02 },
+               { "chronicle": true, "tellability": 0.3, "mark": [] } ],
+  "lines": {
+    "hearsay": "{place} was open and counted out before the forge was even warm.",
+    "gossip":  "{A} had the shop front open and every price in her head at {place} before her father had his apron on — she has never once needed the book.",
+    "report":  "{A} opened the shop front at {place} and priced the day's stock unassisted, slot {slot}." },
+  "_binding": { "A": "alys-bray" } }

@@ -1,0 +1,19 @@
+{ "id": "axe-money-paid", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "B->A": { "tag": "debtor", "score_below": -0.05 },
+                "A->B": { "score_below": -0.2 } },
+    "pressure": { "B.purse": { "above": 0.28 } },
+    "cooldown_days": 7 },
+  "weight": 1.7, "streams": "storylets",
+  "effects": [ { "pressure": "B.purse", "delta": -0.22 },
+               { "pressure": "B.heart", "delta": 0.12 },
+               { "regard": "B->A", "delta": 0.3 },
+               { "regard": "A->B", "delta": 0.25 },
+               { "chronicle": true, "tellability": 0.9, "mark": ["A", "B"] } ],
+  "lines": {
+    "hearsay": "Money changed hands at {place}, in front of everyone, and the room went quiet for it.",
+    "gossip":  "{B} put the axe money in {A}'s hand at {place} without being asked once — {A} counted it, because {A} counts everything, and then bought {B} the drink {B} could not have afforded.",
+    "report":  "{B} discharged the outstanding debt to {A} in full at {place}, slot {slot}." },
+  "_binding": { "A": "marrow-bray", "B": "corvo-lunt" } }

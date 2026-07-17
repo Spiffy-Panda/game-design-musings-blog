@@ -150,6 +150,8 @@ public sealed class World
             "actionability" => Config with { Actionability = value },
             "summary_lines" => Config with { SummaryLines = (int)Math.Round(value) },
             "hearsay_required" => Config with { HearsayRequired = value != 0 },
+            // Rendering knob: re-orders finished nights on read. 1.0 is off.
+            "novelty_decay" => Config with { NoveltyDecay = Math.Clamp(value, 0.0, 1.0) },
             "bio_marks_enabled" => Config with { BioMarksEnabled = value != 0 },
             _ => Config,
         };

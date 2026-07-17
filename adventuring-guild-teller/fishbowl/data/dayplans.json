@@ -1,99 +1,165 @@
 {
   "version": 1,
-  "_comment": "slots are half-hour, 0 = midnight..0:30, 47 = 23:30..24:00. blocks are [start_slot, end_slot) with a place (townee's 'home'/'work'/haunt tokens resolve to that townee's actual assignment) and an activity label for the observatory readout.",
+  "_comment": "slots are half-hour, 0 = midnight..0:30, 47 = 23:30..24:00. blocks are [start_slot, end_slot) with a place token — EXACTLY work|home|away|haunt:<place-id>; a bare place id throws, and Clockwork.ResolvePlace's catch-all silently sends a typo home. SLEEP IS A STRING MATCH: Clockwork sets asleep for any block whose activity contains 'asleep' (case-insensitive) — never use that word loosely. THE TWO NUMBERS THAT GOVERN THIS FILE (Pressures.cs, at 48 slots/day): 18 work slots = purse-neutral; 18 engaged slots (work OR haunt) = restlessness-neutral. Above/below 18 sets each drive's drift SIGN. Villagers sit above 18 engaged (they settle); adventurers sit at 8 (they get itchy and go to the board). That gradient is the design, not an accident — see scrap_scripts/design/new-town-design.md. BOTH 18s ARE THE UNTRAITED NUMBERS, and a purse/restlessness trait MOVES the townee's personal neutral — check it per-townee before trusting 18. TraitRateMod picks gain above the neutral and decay below it, so an asymmetric mod shifts where the sums cancel: `frugal {gain 1.0, decay 0.85}` slows only the idle half, so purse-neutral becomes 0.05W = (48-W)(0.03*0.85) => W = 16.2, NOT 18. Widow Karsk sat at exactly 16 work slots against her own 16.2 and drifted -0.0003/day — flat for life, against a design whose invariant is that no drive is flat for anyone. She is at 15 now (-0.0019/day); the freed slot went to her market-row haunt so her engaged count stays 32 and only purse moved.",
   "dayplans": {
     "innkeep-default": {
       "weekday": [
-        { "start": 12, "end": 44, "place": "work", "activity": "tending the room" },
-        { "start": 44, "end": 48, "place": "home", "activity": "closing up" },
-        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" },
+        { "start": 12, "end": 46, "place": "work", "activity": "tending the room" },
+        { "start": 46, "end": 48, "place": "home", "activity": "asleep" }
       ]
     },
-    "herbalist-default": {
+    "scrivener-default": {
       "weekday": [
-        { "start": 10, "end": 14, "place": "haunt:market-row", "activity": "foraging the row" },
-        { "start": 14, "end": 32, "place": "work", "activity": "minding the shop" },
-        { "start": 32, "end": 44, "place": "home", "activity": "grinding stock" },
         { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
-        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+        { "start": 10, "end": 34, "place": "work", "activity": "writing other people's paper" },
+        { "start": 34, "end": 42, "place": "haunt:the-long-table", "activity": "reading the day's paper aloud" },
+        { "start": 42, "end": 48, "place": "home", "activity": "asleep" }
       ]
     },
     "smith-default": {
       "weekday": [
-        { "start": 12, "end": 40, "place": "work", "activity": "at the forge" },
-        { "start": 40, "end": 44, "place": "haunt:the-long-table", "activity": "a pint before home" },
-        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" },
+        { "start": 12, "end": 14, "place": "haunt:the-cartyard", "activity": "seeing what the cart brought" },
+        { "start": 14, "end": 34, "place": "work", "activity": "at the forge" },
+        { "start": 34, "end": 42, "place": "haunt:the-long-table", "activity": "a pint before home" },
+        { "start": 42, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "forge-hand-default": {
+      "weekday": [
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 10, "end": 12, "place": "haunt:guildhall-steps", "activity": "the board, on the way to open up" },
+        { "start": 12, "end": 32, "place": "work", "activity": "minding the shop front" },
+        { "start": 32, "end": 36, "place": "haunt:market-row", "activity": "the forge's stall" },
+        { "start": 36, "end": 44, "place": "haunt:the-long-table", "activity": "her father's pint, fetched" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
       ]
     },
     "apprentice-default": {
       "weekday": [
-        { "start": 8, "end": 12, "place": "haunt:the-long-table", "activity": "breakfast, restless" },
-        { "start": 12, "end": 38, "place": "work", "activity": "apprenticed at the forge" },
-        { "start": 38, "end": 44, "place": "haunt:guildhall-steps", "activity": "watching the road" },
-        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 8, "place": "home", "activity": "asleep" }
+        { "start": 0, "end": 8, "place": "home", "activity": "asleep" },
+        { "start": 8, "end": 10, "place": "home", "activity": "up before the forge" },
+        { "start": 10, "end": 14, "place": "haunt:guildhall-steps", "activity": "watching the road" },
+        { "start": 14, "end": 31, "place": "work", "activity": "apprenticed at the forge" },
+        { "start": 31, "end": 36, "place": "home", "activity": "chores at the Bray house" },
+        { "start": 36, "end": 44, "place": "haunt:the-long-table", "activity": "supper, restless" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "herbalist-default": {
+      "weekday": [
+        { "start": 0, "end": 8, "place": "home", "activity": "asleep" },
+        { "start": 8, "end": 16, "place": "haunt:the-reed-beds", "activity": "cutting sedge with Mire" },
+        { "start": 16, "end": 33, "place": "work", "activity": "minding the shop" },
+        { "start": 33, "end": 38, "place": "haunt:market-row", "activity": "the simples stall" },
+        { "start": 38, "end": 44, "place": "haunt:the-long-table", "activity": "a quiet one" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "reedcutter-default": {
+      "weekday": [
+        { "start": 0, "end": 8, "place": "home", "activity": "asleep" },
+        { "start": 8, "end": 30, "place": "work", "activity": "cutting reed" },
+        { "start": 30, "end": 34, "place": "home", "activity": "bundling at the hut" },
+        { "start": 34, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "miller-default": {
+      "weekday": [
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 10, "end": 12, "place": "haunt:guildhall-steps", "activity": "the board on the way down" },
+        { "start": 12, "end": 26, "place": "work", "activity": "at the millstones" },
+        { "start": 26, "end": 34, "place": "haunt:market-row", "activity": "selling flour" },
+        { "start": 34, "end": 40, "place": "haunt:the-long-table", "activity": "a pint, complaining" },
+        { "start": 40, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "fisher-default": {
+      "weekday": [
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 10, "end": 12, "place": "haunt:guildhall-steps", "activity": "reading the board" },
+        { "start": 12, "end": 28, "place": "work", "activity": "working the millpond" },
+        { "start": 28, "end": 36, "place": "haunt:market-row", "activity": "selling the catch" },
+        { "start": 36, "end": 44, "place": "haunt:the-long-table", "activity": "fish to the inn, a quiet drink" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "baker-default": {
+      "weekday": [
+        { "start": 0, "end": 6, "place": "home", "activity": "asleep" },
+        { "start": 6, "end": 14, "place": "home", "activity": "baking before dawn" },
+        { "start": 14, "end": 34, "place": "work", "activity": "selling at the row" },
+        { "start": 34, "end": 36, "place": "home", "activity": "boxing the day's leavings" },
+        { "start": 36, "end": 44, "place": "haunt:the-long-table", "activity": "bread to the inn" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "warden-default": {
+      "weekday": [
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" },
+        { "start": 12, "end": 14, "place": "haunt:guildhall-steps", "activity": "the notices, officially" },
+        { "start": 14, "end": 36, "place": "work", "activity": "keeping the row honest" },
+        { "start": 36, "end": 42, "place": "haunt:the-long-table", "activity": "an ale after shift" },
+        { "start": 42, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "landlady-default": {
+      "weekday": [
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" },
+        { "start": 12, "end": 14, "place": "haunt:guildhall-steps", "activity": "the board, for what's owed her" },
+        { "start": 14, "end": 29, "place": "work", "activity": "collecting rents" },
+        { "start": 29, "end": 36, "place": "haunt:market-row", "activity": "the week's marketing" },
+        { "start": 36, "end": 44, "place": "haunt:the-long-table", "activity": "an evening out" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "courier-default": {
+      "weekday": [
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 10, "end": 12, "place": "haunt:guildhall-steps", "activity": "the morning board" },
+        { "start": 12, "end": 38, "place": "work", "activity": "on her rounds",
+          "roams": ["market-row", "the-long-table", "petchs-simples", "guildhall-steps"] },
+        { "start": 38, "end": 44, "place": "haunt:the-long-table", "activity": "off her feet at last" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
+      ]
+    },
+    "carter-default": {
+      "weekday": [
+        { "start": 0, "end": 10, "place": "home", "activity": "asleep" },
+        { "start": 10, "end": 12, "place": "haunt:the-long-table", "activity": "breakfast before the road" },
+        { "start": 12, "end": 31, "place": "work", "activity": "the day's haul",
+          "roams": ["the-cartyard", "bray-and-daughter", "the-millpond", "market-row"] },
+        { "start": 31, "end": 34, "place": "haunt:the-reed-beds", "activity": "lifting Mire's bundles off the landing" },
+        { "start": 34, "end": 42, "place": "haunt:the-long-table", "activity": "the carter's corner" },
+        { "start": 42, "end": 48, "place": "home", "activity": "asleep" }
       ]
     },
     "adventurer-default": {
       "weekday": [
-        { "start": 16, "end": 20, "place": "haunt:guildhall-steps", "activity": "loitering by the steps" },
-        { "start": 20, "end": 44, "place": "home", "activity": "at the Long Table" },
-        { "start": 0, "end": 16, "place": "home", "activity": "asleep" },
+        { "start": 0, "end": 14, "place": "home", "activity": "asleep" },
+        { "start": 14, "end": 18, "place": "home", "activity": "at the Long Table, kicking heels" },
+        { "start": 18, "end": 22, "place": "haunt:guildhall-steps", "activity": "loitering by the steps" },
+        { "start": 22, "end": 30, "place": "home", "activity": "at the Long Table" },
+        { "start": 30, "end": 34, "place": "haunt:market-row", "activity": "spending what's left" },
+        { "start": 34, "end": 44, "place": "home", "activity": "at the Long Table" },
         { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
       ],
       "away": [
         { "start": 0, "end": 48, "place": "away", "activity": "on expedition" }
       ]
     },
-    "courier-default": {
+    "adventurer-early": {
       "weekday": [
-        { "start": 12, "end": 44, "place": "work", "activity": "on her rounds",
-          "roams": ["the-long-table", "petchs-simples", "the-millpond", "market-row"] },
-        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 12, "place": "home", "activity": "asleep" }
-      ]
-    },
-    "landlady-default": {
-      "weekday": [
-        { "start": 14, "end": 34, "place": "work", "activity": "collecting rents" },
-        { "start": 34, "end": 40, "place": "haunt:the-long-table", "activity": "an evening out" },
-        { "start": 40, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 14, "place": "home", "activity": "asleep" }
-      ]
-    },
-    "fisher-default": {
-      "weekday": [
-        { "start": 10, "end": 32, "place": "work", "activity": "working the millpond" },
-        { "start": 32, "end": 38, "place": "haunt:market-row", "activity": "selling the catch" },
-        { "start": 38, "end": 44, "place": "haunt:the-long-table", "activity": "a quiet drink" },
-        { "start": 44, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 10, "place": "home", "activity": "asleep" }
-      ]
-    },
-    "miller-default": {
-      "weekday": [
-        { "start": 10, "end": 32, "place": "work", "activity": "at the millstones" },
-        { "start": 32, "end": 36, "place": "haunt:market-row", "activity": "selling flour" },
-        { "start": 36, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 10, "place": "home", "activity": "asleep" }
-      ]
-    },
-    "baker-default": {
-      "weekday": [
-        { "start": 6, "end": 14, "place": "home", "activity": "baking before dawn" },
-        { "start": 14, "end": 34, "place": "work", "activity": "selling at the row" },
-        { "start": 34, "end": 38, "place": "haunt:the-long-table", "activity": "supper out" },
-        { "start": 38, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 6, "place": "home", "activity": "asleep" }
-      ]
-    },
-    "warden-default": {
-      "weekday": [
-        { "start": 14, "end": 34, "place": "work", "activity": "keeping the row honest" },
-        { "start": 34, "end": 38, "place": "haunt:the-long-table", "activity": "an ale after shift" },
-        { "start": 38, "end": 48, "place": "home", "activity": "asleep" },
-        { "start": 0, "end": 14, "place": "home", "activity": "asleep" }
+        { "start": 0, "end": 12, "place": "home", "activity": "asleep" },
+        { "start": 12, "end": 16, "place": "haunt:guildhall-steps", "activity": "first at the board" },
+        { "start": 16, "end": 24, "place": "home", "activity": "at the Long Table" },
+        { "start": 24, "end": 28, "place": "haunt:the-cartyard", "activity": "asking after work" },
+        { "start": 28, "end": 42, "place": "home", "activity": "at the Long Table" },
+        { "start": 42, "end": 48, "place": "home", "activity": "asleep" }
+      ],
+      "away": [
+        { "start": 0, "end": 48, "place": "away", "activity": "on expedition" }
       ]
     }
   }

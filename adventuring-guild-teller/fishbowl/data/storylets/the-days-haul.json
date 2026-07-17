@@ -1,0 +1,13 @@
+{ "id": "the-days-haul", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["the-cartyard"] },
+    "trait": { "A": "gruff" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "chronicle": true, "tellability": 0.25, "mark": [] } ],
+  "lines": {
+    "hearsay": "Something heavy was being got onto something else at {place}, slowly.",
+    "gossip":  "{A} had the cart loaded and roped at {place} before anybody thought to ask him to — out of habit more than kindness.",
+    "report":  "{A} loaded and secured the day's haul at {place} for carriage, slot {slot}." },
+  "_binding": { "A": "ruel-oxenham" } }

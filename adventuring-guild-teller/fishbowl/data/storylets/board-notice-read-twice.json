@@ -1,0 +1,15 @@
+{ "id": "board-notice-read-twice", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["guildhall-steps"] },
+    "trait": { "A": "frugal" },
+    "chronicle_since": { "days": 3, "kind": "posting" },
+    "cooldown_days": 3 },
+  "weight": 0.7, "streams": "storylets",
+  "effects": [ { "pressure": "A.restlessness", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.35, "mark": [] } ],
+  "lines": {
+    "hearsay": "Somebody at {place} was in no hurry at all over a notice.",
+    "gossip":  "{A} read the board through twice at {place} and left every notice where it hung, which is what {A} does, and which {A} will explain to you at length if you make the mistake of asking.",
+    "report":  "{A} reviewed the notices at {place}; no claim entered, slot {slot}." },
+  "_binding": { "A": "juno-fettle" } }

@@ -179,7 +179,7 @@ public static class WorldView
 
         var candidates = Summarizer.Candidates(w, day);
         int pool = candidates.Select(e => e.StoryletId).Distinct().Count();
-        int tellable = Summarizer.Deliver(w, candidates).Select(l => l.Text).Distinct().Count();
+        int tellable = Summarizer.Deliver(w, day, candidates).Select(l => l.Text).Distinct().Count();
 
         // An unstarted day is not a starved day. DayHashes is the exact "this day finalized"
         // witness (Simulation.FinalizeDay writes it), so a day-0 boot and every mid-day refresh

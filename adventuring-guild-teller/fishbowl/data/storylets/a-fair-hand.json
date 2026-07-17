@@ -1,0 +1,13 @@
+{ "id": "a-fair-hand", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["guildhall-steps"] },
+    "trait": { "A": "patient" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "chronicle": true, "tellability": 0.25, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was a queue at {place}, and no door open at the end of it.",
+    "gossip":  "{A} had his board on his knees at {place} again, writing down what people cannot spell for themselves — he has never once called the shut door behind him a problem.",
+    "report":  "{A} attended {place} to take dictation, the desk behind it remaining shut, slot {slot}." },
+  "_binding": { "A": "dorrit-scrieve" } }

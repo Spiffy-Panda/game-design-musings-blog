@@ -62,12 +62,25 @@ public static class StoryletEngine
         return world.Chronicle.Count > before ? world.Chronicle[^1] : null;
     }
 
-    private static bool OnCooldown(World world, StoryletDto s)
+    /// <summary>Is this rule still inside its cooldown today? The gate that runs before any predicate
+    /// is read, so a rule on cooldown is not "gated by its predicate" — nobody asked it.
+    /// <para>Public because <c>--lint</c> has to separate "did not fire because a predicate said no"
+    /// from "did not fire because it was not eligible", and the answer depends on
+    /// <c>storylet_cooldown_scale</c> and a ceiling — a linter that re-derived that arithmetic would
+    /// be one refactor away from reporting a rule at its cap as a rule that died.</para></summary>
+    public static bool OnCooldown(World world, StoryletDto s)
     {
         if (!world.Cooldowns.TryGetValue(s.Id, out int last)) return false;
         int scaledCooldown = (int)Math.Ceiling(s.Predicates.CooldownDays * world.Config.StoryletCooldownScale);
         return world.Day - last < scaledCooldown;
     }
+
+    /// <summary>Does a drive value satisfy a pressure threshold? Absent bound matches everything, so
+    /// <c>{}</c> is unconstrained — the same convention <see cref="PlaceMatches"/> follows.
+    /// <para>Public for the same reason: <c>--lint</c> observes whether a predicate ever says no, and
+    /// two definitions of "says no" is two things to keep in sync.</para></summary>
+    public static bool PressureMatches(PressurePredicateDto pp, double value) =>
+        (pp.Below is not double below || value < below) && (pp.Above is not double above || value > above);
 
     private static bool FireGate(World world, StoryletDto s)
     {
@@ -126,7 +139,14 @@ public static class StoryletEngine
         var pred = s.Predicates;
 
         // Co-presence: all bound roles share a common place this slot.
-        place = CommonPlace(world, slot, pred.Copresent.Select(r => bind[r]));
+        //
+        // The `place` predicate filters the *candidate set*, not the single ordinal-first pick: a
+        // roaming courier can be co-present with someone at two places in one slot, and constraining
+        // the winner after the fact would fail a rule that had a perfectly good place available.
+        // Absent predicate => matches everything => first candidate => byte-identical to the
+        // pre-predicate behaviour, which is what keeps the pinned golden hashes still.
+        var candidates = CommonPlaces(world, slot, pred.Copresent.Select(r => bind[r]));
+        place = candidates.FirstOrDefault(p => PlaceMatches(world, pred.Place, p)) ?? "";
         if (place is "") return false;
 
         // Awake gate: nobody quarrels or gossips in their sleep. Must-fire beats (a departure)
@@ -135,6 +155,16 @@ public static class StoryletEngine
         string placeName = world.Town.PlaceById.TryGetValue(place, out var pl) ? pl.Name : place;
         because.Add(new BecauseFact("co-present",
             $"{string.Join(", ", pred.Copresent.Select(r => Name(world, bind[r])))} at {placeName}, slot {slot}"));
+
+        // Place: only when it actually constrained something, same as regard.tag above. A because-list
+        // is the record of what made this fire, not a transcript of every check that passed trivially.
+        if (pred.Place is { } pl2)
+        {
+            if (pl2.Any.Count > 0)
+                because.Add(new BecauseFact("place", $"{placeName} is one of [{string.Join(", ", pl2.Any)}]"));
+            if (pl2.Kind.Count > 0)
+                because.Add(new BecauseFact("place", $"{placeName} is a {KindOf(world, place)}"));
+        }
 
         // Regard tags / scores.
         foreach (var (key, rp) in pred.Regard)
@@ -152,15 +182,18 @@ public static class StoryletEngine
             if (rp.ScoreAbove is double sa) { if (!(edge?.Score > sa)) return false; }
         }
 
-        // Pressure thresholds.
+        // Pressure thresholds. The test itself is PressureMatches (shared with --lint); the
+        // because-facts are this path's own business, and are only recorded once the whole predicate
+        // has passed — a partially-filled list is discarded by TryBind anyway.
         foreach (var (key, pp) in pred.Pressure)
         {
             var (role, drive) = SplitDrive(key);
             double v = world.TowneeById[bind[role]].Pressure(drive);
-            if (pp.Below is double bl) { if (!(v < bl)) return false;
-                because.Add(new BecauseFact("pressure", $"{Name(world, bind[role])} {drive} {v:0.00} < {bl:0.00}")); }
-            if (pp.Above is double ab) { if (!(v > ab)) return false;
-                because.Add(new BecauseFact("pressure", $"{Name(world, bind[role])} {drive} {v:0.00} > {ab:0.00}")); }
+            if (!PressureMatches(pp, v)) return false;
+            if (pp.Below is double bl)
+                because.Add(new BecauseFact("pressure", $"{Name(world, bind[role])} {drive} {v:0.00} < {bl:0.00}"));
+            if (pp.Above is double ab)
+                because.Add(new BecauseFact("pressure", $"{Name(world, bind[role])} {drive} {v:0.00} > {ab:0.00}"));
         }
 
         // Trait requirements.
@@ -199,6 +232,11 @@ public static class StoryletEngine
         var s = f.Storylet;
         ChronicleEntry? entry = null;
 
+        // Postings filed by this firing, in effect order. Collected rather than applied straight to a
+        // chronicle entry because the `post` and `chronicle` effects are separate entries and the
+        // chain below does not guarantee which lands first.
+        var filed = new List<string>();
+
         foreach (var e in s.Effects)
         {
             if (e.Regard is { Length: > 0 })
@@ -215,6 +253,15 @@ public static class StoryletEngine
                 var t = world.TowneeById[f.Bind[role]];
                 t.Pressures[drive] = Math.Clamp(t.Pressure(drive) + e.Delta, 0.0, 1.0);
             }
+            else if (e.Post is { } post)
+            {
+                // The requester is a ROLE, resolved through the binding. SchemaValidator has already
+                // proved the role is copresent and the template exists, so a null here means the
+                // paper is a duplicate (same requester, same template, same day) — not an error.
+                string requesterId = f.Bind.TryGetValue(post.Requester, out var rid) ? rid : "";
+                var posting = Board.File(world, post.Template, requesterId, world.Day, slot);
+                if (posting is not null) filed.Add(posting.Id);
+            }
             else if (e.Chronicle)
             {
                 entry = BuildEntry(world, f, slot, e);
@@ -223,6 +270,12 @@ public static class StoryletEngine
 
         if (entry is not null)
         {
+            // The paper reaches the chronicle. `Participants` stays townee-ids-only (WorldView
+            // resolves every one of them to a name), so a posting rides its own field rather than
+            // being smuggled into a list whose whole contract is "these are people".
+            entry.PostingIds.AddRange(filed);
+            foreach (var id in filed) entry.Because.Add(new BecauseFact("filed", id));
+
             world.Chronicle.Add(entry);
             onEvent?.Invoke(entry);
             ApplyMarks(world, f, slot);
@@ -256,8 +309,13 @@ public static class StoryletEngine
         foreach (var role in chron.Mark)
         {
             if (!f.Bind.TryGetValue(role, out var id)) continue;
+            // Not every bound role is a townee: `post` (and, at PNO.M2, a `posting` predicate role)
+            // put non-townee ids in the binding. `world.TowneeById[id]` would throw on one — an
+            // indexer on a dictionary keyed by townee id, reached from a list of arbitrary role
+            // names. Marks are a bio feature; a posting has no bio, so skipping is the whole fix.
+            if (!world.TowneeById.TryGetValue(id, out var t)) continue;
             string line = LineRenderer.Render(f.Storylet.Lines.Gossip, world, f.Bind, f.Place, slot);
-            world.TowneeById[id].Marks.Add(new MarkDto { Day = world.Day, Line = line });
+            t.Marks.Add(new MarkDto { Day = world.Day, Line = line });
         }
     }
 
@@ -279,18 +337,38 @@ public static class StoryletEngine
         return result;
     }
 
-    /// <summary>The ordinal-first place shared by all given townees this slot, or "" if none.</summary>
-    private static string CommonPlace(World world, int slot, IEnumerable<string> ids)
+    /// <summary>Every place (ordinal-sorted) shared by all given townees this slot. Usually one, but a
+    /// roamer (the courier) can share two rooms with the same person in the same slot.</summary>
+    private static List<string> CommonPlaces(World world, int slot, IEnumerable<string> ids)
     {
         HashSet<string>? common = null;
         foreach (var id in ids)
         {
             var here = PlacesOf(world, slot, id).ToHashSet(StringComparer.Ordinal);
             if (common is null) common = here; else common.IntersectWith(here);
-            if (common.Count == 0) return "";
+            if (common.Count == 0) return new List<string>();
         }
-        if (common is null || common.Count == 0) return "";
-        return common.OrderBy(x => x, StringComparer.Ordinal).First();
+        if (common is null) return new List<string>();
+        return common.OrderBy(x => x, StringComparer.Ordinal).ToList();
+    }
+
+    /// <summary>The ordinal-first place shared by all given townees this slot, or "" if none.</summary>
+    private static string CommonPlace(World world, int slot, IEnumerable<string> ids) =>
+        CommonPlaces(world, slot, ids).FirstOrDefault() ?? "";
+
+    private static string KindOf(World world, string placeId) =>
+        world.Town.PlaceById.TryGetValue(placeId, out var p) ? p.Kind : "";
+
+    /// <summary>Does a place satisfy the (optional) place predicate? Null predicate matches
+    /// everything — absent means unconstrained, which is what makes this addition hash-neutral.
+    /// <para>Public because <c>--lint</c> enumerates where a beat could fire, and a rule constrained
+    /// to one room must not be reported as able to fire in every room its cast passes through.</para></summary>
+    public static bool PlaceMatches(World world, PlacePredicateDto? pred, string placeId)
+    {
+        if (pred is null) return true;
+        if (pred.Any.Count > 0 && !pred.Any.Contains(placeId, StringComparer.Ordinal)) return false;
+        if (pred.Kind.Count > 0 && !pred.Kind.Contains(KindOf(world, placeId), StringComparer.Ordinal)) return false;
+        return true;
     }
 
     private static (string, string) SplitEdge(string key)

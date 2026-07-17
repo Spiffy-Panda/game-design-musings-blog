@@ -1,0 +1,18 @@
+{ "id": "praise-at-the-anvil", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B", "C"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "apprentice" }, "C->B": { "tag": "rival" } },
+    "pressure": { "B.restlessness": { "above": 0.56 } },
+    "cooldown_days": 3 },
+  "weight": 1.35, "streams": "storylets",
+  "effects": [ { "pressure": "B.heart", "delta": 0.04 },
+               { "pressure": "B.restlessness", "delta": -0.07 },
+               { "pressure": "C.heart", "delta": -0.05 },
+               { "regard": "C->B", "delta": -0.04 },
+               { "chronicle": true, "tellability": 0.76, "mark": ["C"] } ],
+  "lines": {
+    "hearsay": "Someone at {place} was being praised, at length, and the room got cooler for it.",
+    "gossip":  "{A} held up {B}'s weld at {place} and called it the best work in the shop, with {C} standing right there holding the accounts — {C} said nothing at all, which in {C} is the loudest thing available, and {B} stopped watching the door for a day and a half, which is the longest {A} has managed all season.",
+    "report":  "{A} commended {B}'s work at {place} in the presence of {C}, slot {slot}." },
+  "_binding": { "A": "marrow-bray", "B": "tam-underhill", "C": "alys-bray" } }

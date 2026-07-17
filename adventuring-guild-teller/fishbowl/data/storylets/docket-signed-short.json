@@ -1,0 +1,17 @@
+{ "id": "docket-signed-short", "kind": "paper",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "supplier" } },
+    "pressure": { "B.trade": { "below": 0.35 } },
+    "cooldown_days": 4 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "A.trade", "delta": 0.04 },
+               { "pressure": "A.heart", "delta": -0.03 },
+               { "pressure": "B.purse", "delta": -0.05 },
+               { "chronicle": true, "tellability": 0.55, "mark": [] } ],
+  "lines": {
+    "hearsay": "A load sat unsigned at {place} for a good while.",
+    "gossip":  "{A} counted {B}'s load against the docket at {place}, found it wanting, and signed for it anyway with a note in the margin — {A} keeps those notes, and one day {B} is going to find out how many.",
+    "report":  "{A} signed for {B}'s load short at {place}, discrepancy noted, slot {slot}." },
+  "_binding": { "A": "alys-bray", "B": "ruel-oxenham" } }

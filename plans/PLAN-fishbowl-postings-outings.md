@@ -2,6 +2,10 @@
 
 **Mnemonic:** `PNO` (gates `PNO.D*`, milestones `PNO.M*`, research questions `PNO.Q*`).
 **Status:** **building** — proposed 2026-07-16; **all nine rulings `PNO.D1`–`PNO.D9` landed 2026-07-16.**
+**`PNO.M1` (the board) ✅ landed 2026-07-16** — a posting files on day 2 and expires on day 6 in the live
+town; suite 53/53; `--lint --town data` clean at `errors=0 accepted=14 warnings=70`. **`PNO.M2` (outings)
+is next and carries two hard preconditions:** a ruling + `DEV-LOG.md` entry **before** the three hash
+literals move, and the **unresolved `haunt`-vs-restlessness collision** flagged under *The model — outings*.
 `PNO.D1` + `PNO.D3`–`PNO.D9` adopted on the recommendation; **`PNO.D2` was ruled *against* the
 recommendation**, and the ruling is better than the recommendation (see *The asks*). Re-drift-checked
 against the code 2026-07-16 before building: **21 of 22 claims confirmed, 1 drifted** — and **three of
@@ -221,6 +225,23 @@ co-presence happens to be somewhere with no roof. ~~**with zero engine changes**
 > - **`haunt:` mislabels the mode.** `ModeOf` (`Clockwork.cs:76-82`) would tag a site visit `haunt`, and
 >   mode feeds `Pressures.BaseDaily` (`Pressures.cs:47`) — **restlessness would burn off at the site**,
 >   which is precisely backwards for an outing.
+>   > **⚠ This now collides with a live ruling, and the collision is UNRESOLVED — `PNO.M2` must settle it**
+>   > (raised 2026-07-16, deliberately not decided here). Panda ruled **restlessness ships broken**
+>   > (mode-constant `−0.10` engaged / `+0.06` at rest; **16 of the live town's 18 ride a clamp — 13
+>   > floored, 3 pegged**), on the reasoning that restlessness is **directional by design** — the buildup
+>   > exists to push a townee somewhere, and today there is nowhere to be pushed — and that **`PNO.M2` is
+>   > that somewhere.** `data/lint-accepted.json`'s 14 accepted ratchets cite `PNO.M2` by name as the
+>   > milestone that discharges them.
+>   >
+>   > **But that reading and this bullet point in the same direction only if the discharge is an authored
+>   > `take`/`resolve` effect.** If M2 takes the cheap `haunt:<site-id>` path, the mode label alone burns
+>   > restlessness off *at the site* — the drive would discharge by **going**, not by **doing**, which is
+>   > this bullet's "precisely backwards", and it would clear the 14 findings **for the wrong reason**:
+>   > green ledger, unchanged design. **That is the `NTD.Q1` trap wearing new clothes** — a mode-constant
+>   > shape whose fix relocates the ratchet while silencing the check, *a green gate over a live
+>   > countdown*. Whoever opens M2 owns this question; do not let it be answered by an implementation
+>   > detail. **The ledger is the test: if the 14 are still there after M2, the ruling was wrong; if they
+>   > vanish because a mode label changed, the ruling was dodged.**
 > - **`offscreen: true` is silently ignored until `PlaceDto` grows the field** — `DataJson.Options`
 >   doesn't set `UnmappedMemberHandling.Disallow`. Additive and safe; also means a **typo'd key is
 >   silently dropped**.
@@ -312,6 +333,14 @@ longest outing, or the rule must key off the outing record instead.)~~
   - **This is the first system that cannot be `_binding`-anchored.** v0's entire bank is anchored,
     which is what makes the golden day exact — but *who takes which posting* is emergent by
     definition. The search path stops being a "leave it open for later" and becomes load-bearing.
+    > **⚠ The search path is narrower than "open", and the linter's own advice walks into it**
+    > (2026-07-16). `CandidateBindings` handles **1–2 roles only**. `--lint`'s `partial-binding` check
+    > tells authors to *"drop `_binding` to opt into the search path"* — **and its own remediation advice
+    > creates the defect it warns about**: proved by taking it, on a 3-role rule, which then fired **0 of
+    > 56 days**. For `PNO.M2` this is survivable *only* because `PNO.D8` (solo outings) keeps townee-role
+    > arity at ≤2 — `(adventurer, posting)` is one townee role. **`PNO.D8` is therefore load-bearing on
+    > the binder, not just on scope.** Anyone reconsidering party outings is also reopening the search
+    > path's arity, and should read this first.
   - `Apply` handles exactly Regard/Pressure/Chronicle; add the three new effects.
   - **The `Flag` predicate is hardcoded to one flag** — `bool actual = flag == "departing_today" &&
     ...DepartingToday;`. Any other flag silently evaluates false and fails the predicate rather than
@@ -422,11 +451,57 @@ and move on.
 > (drift check, 2026-07-16). `DeterminismPrimitivesTests.cs:13-15` pins **three literal hex hashes**
 > (`""`→`cbf29ce484222325`, `"a"`, `"foobar"`) and `:23` pins a canonical-JSON format literal. They pin
 > the **hash function and canonical format**, not any day-state — so the *conclusion* survives intact.
-> The accurate statement is narrower: **no test pins a day-hash *value*; the hash *function and format*
-> are pinned.** Changing what enters `World.ToHashNode` is free. Changing `FnvHash` or
+> ~~The accurate statement is narrower: **no test pins a day-hash *value*; the hash *function and format*
+> are pinned.** Changing what enters `World.ToHashNode` is free.~~ Changing `FnvHash` or
 > `CanonicalJson`'s 6-decimal float format is **not** — that reddens those literals *and* moves every
 > day-hash. (Where the doubt likely came from: `FnvHash.cs:31-33`'s own comment says the hex form is
 > *"pinned in golden tests"* — true of the *form*, and it reads fast as the opposite.)
+
+> **Struck again — the narrower claim is false too now, and in the best possible way** (2026-07-16, after
+> `db64c30`). **A day-hash *value* is pinned, absolutely.** `M1_ClockworkDeterminismTests.cs:37-53` —
+> `Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned` — hard-asserts the day-1..3 sequence as three
+> literals: ~~**`b8d15299d8817639` · `e3478bc4ff7d4848` · `02bc86b987c547c3`**~~ **`2a6a8a3af0a1a81d` ·
+> `d615d01daa2c8020` · `619649026a9d8895`**. **Changing what enters `World.ToHashNode` is no longer
+> free.** (The *Hash.* paragraph directly above — *"costs nothing … M1 compares run-to-run"* — is the
+> same error one level up; read it through this block.)
+>
+> > **The literals moved, once, later the same day — and NOT for `PNO`** (2026-07-16). Ruled by Panda
+> > (`NTD.Q1` + `FBT.Q1`), with the hash consequence stated explicitly before the work started and the
+> > `DEV-LOG.md` entry of that date standing as the ruling — i.e. **the obligation this block pre-wrote
+> > was discharged exactly as written**, which is the first time in this file that a predicted process
+> > actually ran. Cause: `Pressures.BaseDaily`'s `trade` arm stopped being a flat `−0.11/day` countdown
+> > and became a restoring force. Two sibling fixes landed in the same change and moved **nothing**,
+> > verified by staging them alone and watching the old literals stay green.
+> >
+> > **`PNO.M2`'s obligation is unchanged and now has a worked precedent:** the `phase` key will redden
+> > this test **by design**, and a Panda ruling + a `DEV-LOG.md` entry must land **before** those strings
+> > move. Re-baselining to green is still the one forbidden move. Note the bar the `NTD.Q1` move set:
+> > the new literals were verified **identical across three fresh CLI processes and the xunit runner**,
+> > one of them at `--seed 999999` so `At_Default_Config_Hash_Is_Seed_Independent`'s invariant still
+> > holds. *A pin is worthless if it pins a number you got once.*
+>
+> - **Why it exists.** `Twelve_Townees_Three_Days_Identical_Hash_Sequence` (`:27-34`) only ever compared
+>   run A to run B **within a single build** — self-consistency, not stability — so a change that moved
+>   every hash *consistently* sailed through it green. It literally did: per `db64c30`, *"It stayed green
+>   while a perturbed `ToHashNode` moved the hash."* The determinism contract claims **stability**, and
+>   nothing was testing it.
+> - **The pin is built on `PNO.D2` — a nice result, not an inconvenience.** The test's own comment: the
+>   literals *"were captured from the frozen golden fixture and are the value the contract refers to; the
+>   golden town cannot drift (PNO.D2), so nothing but a real change to what enters the hash can move
+>   them."* **The ruling this spec records is what makes an absolute pin possible at all** — a hash
+>   literal asserted against a town that could be edited underneath it pins nothing, which is precisely
+>   the flaw `PNO.D2` cut out. The struck recommendation could never have carried this test.
+> - **THE NUANCE — the pin runs against the posting-free frozen fixture.** `RunHashes` (`:68-73`) reaches
+>   its town through `TestSupport.LoadGoldenTown()`, and that fixture is posting-free forever. So
+>   **authoring `postings.json` / `sites.json` into `data/` cannot move these literals — `PNO.M1` is
+>   unaffected**, and the board can land with the test untouched. Only a change to `ToHashNode`'s *shape*
+>   moves them — which means **`PNO.M2`'s `phase` key (this spec's own "`ToHashNode` must emit `phase`,
+>   not `away`") WILL turn this test red, deliberately, and it is right to.**
+> - **The obligation, pre-written by the test itself:** *"If you are here because this test went red: that
+>   is the test working. Do not re-baseline it to make it green. Either the change was not supposed to
+>   touch the hash — fix the change — or it was, and that needs a ruling in DEV-LOG.md before these
+>   strings move."* **Hard `PNO.M2` precondition: a Panda ruling + a `DEV-LOG.md` entry land BEFORE those
+>   three literals move.** Re-baselining to green is the one forbidden move.
 
 ## Data (JSON, `fishbowl/data/`, `"version": 1`, ints tolerant-parsed)
 
@@ -488,19 +563,49 @@ Also: `dayplans.json` gains `cooldown` variants (+ a shared `cooldown-default`),
 
 ## Observatory additions
 
-> **⚠ The observatory is already out of horizontal room — verified in-engine 2026-07-16 by a GTH
+> ~~**⚠ The observatory is already out of horizontal room — verified in-engine 2026-07-16 by a GTH
 > harness pass, before any `PNO` control was added.** The viewport is **1280** wide, and `btn-storylets`
 > **already falls off the right edge the moment a day completes**: the `hash` readout widens by ~103px
 > when it goes from `—` to 16 hex digits, shoving the button from x=1173 to x=1276 — a 4px sliver of a
 > 90px button. The force-fire debug tool is reachable only *before* you have anything to debug. Right-
-> panel bios and summary lines also clip mid-word past x=1280.
+> panel bios and summary lines also clip mid-word past x=1280.~~
 >
-> **So the board panel and outing track cannot simply be appended to the top bar.** Budget the layout
+> ~~**So the board panel and outing track cannot simply be appended to the top bar.** Budget the layout
 > first; adding two more readouts to a strip that is already overflowing will push `btn-storylets` fully
 > off and take the new controls with it. (Note the harness's own caveat: `query_element` reported
 > `on_screen:true`/`clickable:true` for a button at x=1276–1366 in a 1280 viewport — **it does not clamp
 > to the viewport**, so it will happily tell you an off-screen control is fine. Trust a click, not the
-> report.)
+> report.)~~
+
+> **Struck — the hazard is fixed, and the warning had become a trap** (2026-07-16, after `0b0112f`). It
+> was true when written; left standing, it would have a future agent budget around a constraint that no
+> longer exists. **There is no overflow to budget around.**
+>
+> - **The overflow dies by construction.** The layout was rebuilt as **two fixed rails** (roster+board /
+>   knobs+inspector) around **one fluid reading pane whose width is derived, never declared** —
+>   `FISHBOWL.md:27-34` records the rule as load-bearing. The arithmetic comes out right at 1290 *and* at
+>   1280 with no second number to keep in sync, so **a new panel no longer has to fight for room**:
+>   `PNO`'s board panel has a rail to land in rather than a top bar to overflow. (Also: the **real
+>   viewport is 1290×810** — the struck text's 1280 was `project.godot`'s declared figure, not the
+>   measured one.)
+> - **The fix was `clip_text`, not monospace — this is the reusable lesson, keep it.** Monospace only
+>   addresses *a fixed-length string in a proportional font*; **`clip_text` drops a Label's minimum to ~1,
+>   so its text stops being a layout demand for any font and any string.** A bare Label's text **is** its
+>   minimum width, and a minimum **beats a `FULL_RECT` anchor** — that is how a 108px `hash` once forced
+>   the root to 1371px in a 1290 viewport and starved the Dawn Summary. Machine readouts
+>   (clock/hash/seed/stats) now go through `_readout()`.
+> - **Proven at two different day-hashes producing identical layouts** — the only proof that counts for a
+>   **data-dependent** bug. One hash is one string, and one string proves nothing.
+> - **The numbers:** Dawn Summary **326px, cut mid-word → 496px, `clipped:[]`**; later **481px**, when the
+>   roster rail went 488→503 to buy back legibility — re-verified, not assumed (`visible_fraction 1.0`,
+>   `clipped:[]`, at two day-hashes). Narrowing an autowrap pane spends width on *height*, not on
+>   clipping.
+> - **The `query_element` caveat above is stale too — and its replacement is worse.** `GTH.B1` fixed the
+>   viewport clamping: `on_screen` is now **strict** and correctly decoupled from `clickable`, so the
+>   report can be trusted (`FISHBOWL.md:225-230`) — "trust a click, not the report" is retired. **But
+>   `GTH.B9` is open: `run_scenario` over MCP is a *silent no-op*** — it returns `{}` and executes nothing
+>   (`FISHBOWL.md:206-208`). **Every `PNO` gate-check must drive the individual tools directly**, never via
+>   a scenario, or it will report success having done nothing at all.
 
 - **Board panel** — standing postings as cards: requester, site, reward, days-to-expiry, taker.
   The board filling and emptying *is* the readout. `test_id`: `board`.
@@ -518,10 +623,36 @@ fixture at `tests/towns/golden-town/`; `data/` → the live all-features town) l
 `PNO.M1`** — every later milestone authors into `data/`, so the split has to precede the first posting.
 It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
 
-- **`PNO.M1` — the board.** ◑ **in progress.** The `PNO.D2` restructure + postings data + `Board` +
-  `post`/expire effects + the `posting` predicate + board panel. **Town-side only, no outings.**
+- **`PNO.M1` — the board.** ~~◑ **in progress.**~~ ✅ **LANDED 2026-07-16 — accepted, measured.** The
+  `PNO.D2` restructure + postings data + `Board` + `post`/expire effects + the `posting` predicate +
+  board panel. **Town-side only, no outings.**
   *Accept:* Petch's shortage files a posting; it stands, ages, expires; every transition has a
   because-list; all existing tests green.
+  > **Accepted on measurement, not assertion** (live town, `--days 7 --chronicle`, seed 1123):
+  > **a posting files on day 2** (`posting-filed`, Petch @ Petch's Simples, slot 16) and **expires on
+  > day 6** (`posting-expired`, slot 0 at the Guildhall Steps — 4 days, matching `expires_days: 4`).
+  > The full `standing → expired` arc runs in the town you actually play. Suite **53/53**;
+  > `--lint --town data` = `errors=0 accepted=14 warnings=70 exit=0`.
+  >
+  > **The two pieces of real work were real, and one of them was worse than predicted.**
+  > - **`expire` synthesizes its own because-list** — 5 facts (`posting`, `filed`, `stood`, `expired`,
+  >   `posting_expiry_scale`). As predicted, it is the first chronicle entry ever built outside
+  >   `BuildEntry`, because expiry is a **board mechanism, not a rule**.
+  > - **`post` was not "work to do" — it was a *silent no-op that was already shipping*.**
+  >   `StoryletEffectDto` had no `Post` field, so `System.Text.Json` **dropped the key**, and
+  >   `Board.File()` had **zero callers** — *while the chronicle cheerfully printed "filed a posting"*.
+  >   The effect union is now enforced at load, so a dropped key is a load error rather than a
+  >   plausible nothing. This is the same defect shape the spec already names twice (`copresence_bonus`,
+  >   `unknown-drive`): **a number authored in good faith that no engine code ever reads.**
+  >
+  > **Also fixed, and not on anyone's list: the `place` predicate did not exist.** Before it, prose
+  > lied about location — `a-good-catch` could render *"the nets came up heavy off the Long Table"*.
+  > `{any:[ids]}` / `{kind:[kinds]}` now gates it. `ApplyMarks` is guarded (it would have **thrown** on
+  > `world.TowneeById[id]` if a posting role were ever marked — exactly as the drift check predicted).
+  >
+  > **What did NOT happen, as predicted:** the three hash literals did not move for `PNO.M1`. The pin
+  > runs against the posting-free frozen fixture, so authoring `postings.json` into `data/` cannot reach
+  > it. **They did move — for `NTD.Q1`, a Pressures ruling, on the same day.** See *Determinism*.
   - **Why M1 is the right first slice, confirmed by the drift check:** every break the readers found
     (the four `Away` writers, the lossy snapshot, `TownGenerator.cs:44`, the `Pressures` freeze,
     `chronicle_since`'s missing role scope, the `ResetDayStreams` rewind) lands in **`PNO.M2`/`M3`**.
@@ -535,6 +666,10 @@ It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
   outing track. *Accept:* a townee takes a standing posting, leaves, is findable at the site at every
   slot, returns, cools down, re-enters daily life — and **`Away`'s one-way trapdoor is gone**.
   Same-seed hash sequence reproduces editor-vs-CLI.
+  - **Gated precondition (added 2026-07-16):** M2's `phase` hash key reddens
+    `Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned` **by design** — a **Panda ruling + a `DEV-LOG.md`
+    entry must land BEFORE those three literals move**, and re-baselining to green is forbidden. See
+    *Determinism*.
 - **`PNO.M3` — the loop closes.** Rewards paid; `rout` → gear lost → retrieval posting; the
   `tale-told` retelling reaches a dawn summary. *Accept:* **the Corvo fixture** — Corvo takes a
   paying posting, returns `carried`, pays Marrow, the `debtor` tag clears, and `debt-nagged` stops
@@ -546,10 +681,24 @@ It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
 ## Research questions (what this build exists to answer)
 
 - **`PNO.Q1` — the gossip trade.** Outings **remove bodies from town** — fewer co-present townees,
-  fewer beats — then pay it back as a burst on the return day. `VFB.Q1` already sits at **~4.4 distinct
-  lines/night with 3/21 nights below 4**. Does the board's own traffic (filed/taken/expired/paid) cover
+  fewer beats — then pay it back as a burst on the return day. ~~`VFB.Q1` already sits at **~4.4 distinct
+  lines/night with 3/21 nights below 4**.~~ Does the board's own traffic (filed/taken/expired/paid) cover
   the hole while the party is out, or does the town go quiet exactly when two of twelve leave?
-  **This could make `VFB.Q1` worse before it makes it better, and that is the thing to measure.**
+  ~~**This could make `VFB.Q1` worse before it makes it better, and that is the thing to measure.**~~
+  > **Struck — you cannot measure this with `VFB.Q1`, because `VFB.Q1` cannot go down** (2026-07-16).
+  > It is `min(pool, summary_lines)` averaged over a pool of ≥20, reads a flat **5.00**, and holds that
+  > with **30 of 46 rules deleted**. **Take two of eighteen out of town and it will still read 5.00** —
+  > this question, asked of that metric, is unanswerable and would have come back "no impact" no matter
+  > what M2 did to the town. **Ask it of `Api/Variety.cs` instead** (`--soak` / `--report`): distinct
+  > rendered *texts*, `rules_fired_but_never_told`, `repeat(any)`. Baseline to measure the hole against,
+  > live town, 3 seeds × 14 nights, 2026-07-16 — **47 distinct sentences / 70 delivered lines · novelty
+  > 0.67 · repeat(N−1) 0.00 · repeat(any) 0.35 · told/fired 70/319 = 0.22 · 5 of 50 rules never told.**
+  > **`told/fired` will not move** — it is `summary_lines × nights / beats fired`, structural, invariant
+  > under any reordering. The number that answers `PNO.Q1` is **distinct**, and `repeat(any)` rising is
+  > what "the town went quiet" will actually look like.
+  > **Also note the board already pays some of this back before M2 exists:** `posting-expired` fires 10×
+  > per fortnight and reached a summary once (day 8), at tellability 0.3 — board traffic is already
+  > tellable content, so M2's hole opens against a floor that is not zero.
 - **`PNO.Q2` — does paper move?** Time-to-take on a standing posting. If postings rot on the board,
   self-selection (`PNO.D4`) is too shy. If they're gone within a slot, the board isn't a board.
 - **`PNO.Q3` — is the silence right?** A party is away for days and the summary never mentions them.

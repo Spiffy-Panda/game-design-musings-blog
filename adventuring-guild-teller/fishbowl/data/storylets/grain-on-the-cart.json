@@ -1,0 +1,16 @@
+{ "id": "grain-on-the-cart", "kind": "supply",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-millpond"] },
+    "regard": { "A->B": { "tag": "customer" } },
+    "cooldown_days": 2 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "B.trade", "delta": 0.025 },
+               { "pressure": "A.purse", "delta": 0.01 },
+               { "pressure": "B.purse", "delta": -0.01 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "Sacks were going onto a cart at {place} since first light.",
+    "gossip":  "{A} loaded {B}'s grain at {place} without being asked twice, which at the mill is worth more than the rate — {B} has stopped counting the sacks {A} carries, and {B} counts everything.",
+    "report":  "{A} took {B}'s grain onto the cart at {place} against the day's manifest, slot {slot}." },
+  "_binding": { "A": "ruel-oxenham", "B": "dob-millet" } }

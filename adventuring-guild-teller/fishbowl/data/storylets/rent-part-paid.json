@@ -1,0 +1,18 @@
+{ "id": "rent-part-paid", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["market-row", "the-long-table"] },
+    "regard": { "A->B": { "tag": "debtor", "score_below": -0.2 } },
+    "pressure": { "B.purse": { "above": 0.36 } },
+    "cooldown_days": 3 },
+  "weight": 1.45, "streams": "storylets",
+  "effects": [ { "pressure": "B.purse", "delta": -0.14 },
+               { "pressure": "A.purse", "delta": 0.05 },
+               { "pressure": "B.heart", "delta": 0.06 },
+               { "regard": "A->B", "delta": 0.12 },
+               { "chronicle": true, "tellability": 0.78, "mark": ["B"] } ],
+  "lines": {
+    "hearsay": "{place} went quiet a moment while somebody counted coins onto a table.",
+    "gossip":  "{B} put money in {A}'s hand at {place} before {A} had to ask for it, which has not happened since the spring — {A} counted it twice and still called it short, and {B} did not argue, because {B} worked out years ago that letting {A} have the last word costs less than the arrears do.",
+    "report":  "{B} tendered part payment against arrears to {A} at {place}, slot {slot}." },
+  "_binding": { "A": "widow-karsk", "B": "fenn-halloway" } }

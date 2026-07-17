@@ -1,0 +1,17 @@
+{ "id": "fish-to-the-inn", "kind": "supply",
+  "predicates": {
+    "copresent": ["A", "B", "C"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "B->A": { "tag": "supplier" }, "C->A": { "tag": "debtor" } },
+    "cooldown_days": 5 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "B.trade", "delta": 0.04 },
+               { "pressure": "A.purse", "delta": 0.03 },
+               { "pressure": "B.purse", "delta": -0.02 },
+               { "pressure": "A.heart", "delta": -0.02 },
+               { "chronicle": true, "tellability": 0.58, "mark": [] } ],
+  "lines": {
+    "hearsay": "Fish came into {place}, and the room went quiet a moment.",
+    "gossip":  "{B} paid {A} for the catch at {place} with {C} sitting three seats down, and {A} took the money slower than anyone needed — {C} did not look up, and the room noticed that more than if {C} had.",
+    "report":  "{A} supplied fish to {B} at {place}; settled in coin, {C} present, slot {slot}." },
+  "_binding": { "A": "fenn-halloway", "B": "odile-vance", "C": "widow-karsk" } }

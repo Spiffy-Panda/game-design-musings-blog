@@ -1,0 +1,17 @@
+{ "id": "scriveners-favour", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["guildhall-steps"] },
+    "regard": { "B->A": { "tag": "scrivener" } },
+    "pressure": { "B.purse": { "below": 0.25 } },
+    "cooldown_days": 2 },
+  "weight": 1.15, "streams": "storylets",
+  "effects": [ { "pressure": "B.purse", "delta": 0.1 },
+               { "pressure": "B.restlessness", "delta": -0.05 },
+               { "regard": "B->A", "delta": 0.02 },
+               { "chronicle": true, "tellability": 0.64, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was a low conversation at {place} that stopped whenever anyone came near.",
+    "gossip":  "{A} wrote {B} onto a haulage docket at {place} and never once looked up while {B} explained why {B} needed it — {A} charges the ones who can pay, and did not mention a fee.",
+    "report":  "{A} engrossed a day-labour docket for {B} ({B} purse low) at {place}, slot {slot}." },
+  "_binding": { "A": "dorrit-scrieve", "B": "corvo-lunt" } }

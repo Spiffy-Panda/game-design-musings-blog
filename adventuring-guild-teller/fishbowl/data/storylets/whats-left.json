@@ -1,0 +1,14 @@
+{ "id": "whats-left", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["market-row"] },
+    "trait": { "A": "open-handed" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.02 },
+               { "chronicle": true, "tellability": 0.35, "mark": [] } ],
+  "lines": {
+    "hearsay": "Someone was buying at {place} like the purse had no bottom to it.",
+    "gossip":  "{A} spent what was left at {place} the way he always does, on other people — he will be back at the board inside the week.",
+    "report":  "{A} disbursed the remainder of his takings at {place}, slot {slot}." },
+  "_binding": { "A": "wick-tarrow" } }

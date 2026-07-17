@@ -1,0 +1,17 @@
+{ "id": "the-good-paper", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "A->B": { "tag": "rival" } },
+    "pressure": { "A.purse": { "below": 0.25 } },
+    "cooldown_days": 3 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.03 },
+               { "regard": "B->A", "delta": -0.02 },
+               { "pressure": "A.heart", "delta": -0.04 },
+               { "chronicle": true, "tellability": 0.55, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was an argument at {place} about a notice nobody in it had taken.",
+    "gossip":  "{A} held the table at {place} on the subject of the posting {A} would have taken, and {B} waited for the very end before mentioning it had come down two days ago — {B} reads every notice twice and takes none, which is exactly why {B} knew.",
+    "report":  "{A} disputed {B}'s account of a standing notice at {place}, slot {slot}." },
+  "_binding": { "A": "wick-tarrow", "B": "juno-fettle" } }

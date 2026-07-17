@@ -1,0 +1,17 @@
+{ "id": "over-the-books", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "heir" } },
+    "pressure": { "A.heart": { "below": 0.45 } },
+    "cooldown_days": 4 },
+  "weight": 1.25, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.03 },
+               { "pressure": "A.heart", "delta": 0.05 },
+               { "pressure": "B.heart", "delta": -0.03 },
+               { "chronicle": true, "tellability": 0.68, "mark": [] } ],
+  "lines": {
+    "hearsay": "There were two voices going over the same page at {place}, again and again.",
+    "gossip":  "{A} put the ledger in front of {B} at {place} and asked {B} to find the entry {A} had already found — {B} did not look down, and {A} did not put it away, and that is how the Brays have their arguments: nobody wins, and only one of them sleeps fine after.",
+    "report":  "{A} contested {B}'s entry in the shop accounts at {place}, slot {slot}." },
+  "_binding": { "A": "alys-bray", "B": "marrow-bray" } }

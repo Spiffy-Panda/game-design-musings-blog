@@ -1,0 +1,16 @@
+{ "id": "bread-to-the-inn", "kind": "supply",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "B->A": { "tag": "supplier" } },
+    "cooldown_days": 4 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "B.trade", "delta": 0.02 },
+               { "pressure": "A.purse", "delta": 0.015 },
+               { "pressure": "B.purse", "delta": -0.01 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "Bread was going into {place} long after the baking was done.",
+    "gossip":  "{A} carried the day's leavings down to {B} at {place} and would not hear of a discount — {A} has never once let a loaf go stale in this village, and would like that known.",
+    "report":  "{A} supplied bread to {B} at {place} on the evening account, slot {slot}." },
+  "_binding": { "A": "nan-pellow", "B": "odile-vance" } }

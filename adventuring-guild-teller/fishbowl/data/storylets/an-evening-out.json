@@ -1,0 +1,14 @@
+{ "id": "an-evening-out", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["the-long-table"] },
+    "trait": { "A": "frugal" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": -0.02 },
+               { "chronicle": true, "tellability": 0.35, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was one at {place} making a half of ale last the whole evening.",
+    "gossip":  "{A} took a table at {place} and made one half of ale last the whole evening, and nobody sat down with her.",
+    "report":  "{A} attended {place} for the evening, unaccompanied, slot {slot}." },
+  "_binding": { "A": "widow-karsk" } }

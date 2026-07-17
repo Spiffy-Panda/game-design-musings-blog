@@ -5,7 +5,7 @@
     "pressure": { "A.trade": { "above": 0.4 } },
     "cooldown_days": 1 },
   "weight": 0.6, "streams": "storylets",
-  "effects": [ { "pressure": "A.purse", "delta": 0.04 },
+  "effects": [ { "pressure": "A.purse", "delta": 0.01 },
                { "pressure": "A.heart", "delta": 0.03 },
                { "chronicle": true, "tellability": 0.3, "mark": [] } ],
   "lines": {

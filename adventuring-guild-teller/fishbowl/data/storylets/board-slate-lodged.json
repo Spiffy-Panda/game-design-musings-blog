@@ -1,0 +1,13 @@
+{ "id": "board-slate-lodged", "kind": "posting",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["guildhall-steps"] },
+    "cooldown_days": 7 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "post": { "requester": "A", "template": "karsk-roof-slate" } },
+               { "chronicle": true, "tellability": 0.5, "mark": [] } ],
+  "lines": {
+    "hearsay": "Somebody at {place} stood watching a notice get written, very closely.",
+    "gossip":  "{A} stood over {B} at {place} until the roof slate was written out to {A}'s satisfaction — 'reasonable terms', which at the Rents has never once meant reasonable.",
+    "report":  "{A} lodged a notice for roof slate with {B} at {place}, slot {slot}." },
+  "_binding": { "A": "widow-karsk", "B": "dorrit-scrieve" } }

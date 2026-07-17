@@ -1,0 +1,17 @@
+{ "id": "iron-on-the-cart", "kind": "supply",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "B->A": { "tag": "supplier" } },
+    "cooldown_days": 2 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "B.trade", "delta": 0.03 },
+               { "pressure": "A.purse", "delta": 0.01 },
+               { "pressure": "B.purse", "delta": -0.01 },
+               { "regard": "B->A", "delta": 0.01 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "Iron was coming off a cart at {place} all morning.",
+    "gossip":  "{A} got the pig iron into {B}'s shop at {place} before the fire was properly hot, and said nothing about it — {A} has worked out that saying nothing is the one thing {B} cannot argue with.",
+    "report":  "{A} delivered pig iron to {B} at {place} against the standing order, slot {slot}." },
+  "_binding": { "A": "ruel-oxenham", "B": "marrow-bray" } }

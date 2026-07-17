@@ -1,0 +1,16 @@
+{ "id": "iron-runs-late", "kind": "supply",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "supplier" } },
+    "pressure": { "B.trade": { "below": 0.35 } },
+    "cooldown_days": 4 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.03 },
+               { "pressure": "A.heart", "delta": -0.03 },
+               { "chronicle": true, "tellability": 0.52, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was somebody at {place} counting days out loud.",
+    "gossip":  "{A} announced to everyone at {place} that {B} was late with the iron again, and {B} let {A} finish — {A} says that every time, and {B} has never once said it back.",
+    "report":  "{A} entered a complaint of late delivery against {B} at {place}, slot {slot}." },
+  "_binding": { "A": "marrow-bray", "B": "ruel-oxenham" } }

@@ -6,6 +6,433 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-16 — the town was rebuilt around the fixture that pins it; and `VFB.Q1` has been reading a number that cannot move
+
+The closing entry for the fish-bowl rebuild. **The three entries below this one already cover the
+novelty term, the hash move, `FBT.Q1` and `NTD.Q1`'s three fixes** — none of that is repeated here.
+This records what they don't: the rebuild ruling, the metric that turned out to be saturated, the
+instruments built to see it, the restlessness ruling, and one finding that falsified the coordinator's
+own diagnosis.
+
+### The rebuild, and a deviation that was ruled *into* the design
+
+**The ruling.** Panda, 2026-07-16: **a wholesale rebuild of the live town.** The old town is preserved
+twice — at `b086c96`, and, better, **frozen in-repo as the test fixture** `tests/towns/golden-town/`
+that `PNO.D2` had already split out. The old town is still running. It is running as **the thing that
+pins the new one**, which is the nicest shape any of this took today.
+
+Live town now: **18 townees · 16 places (8 board) · 4 adventurers · 50 storylets · 49 regard edges**,
+postings authored with all templates reachable.
+
+**The honest part.** The 12 original townee **names and bios were kept** (and 6 added). The spine agent
+**admitted this deviated from the ruling and that its own reason was wrong**: 3 of its 4 justifications
+were "keep `data/` loading / keep M0 green", which had been *pre-authorized away*, and the genuine
+constraint covered **4 ids, not 12**. Panda then ruled to **keep** the retained cast — not because the
+argument was rescued, but because **the thing the ruling was actually asking for had happened
+underneath**: of 16 dayplans, **5 are wholly new and essentially no block boundary survived**, and
+**39 of 49 regard edges are new**. And every *retained* edge is now actually convened, which it had not
+been: **Tam↔Brindle 0→6 awake slots, Corvo↔Marrow unreachable→8, Karsk↔Fenn ~4→14.** A cast list is not
+a town; the schedule and the web are. **Worth keeping for the shape, not the outcome: a bad argument
+for a defensible thing is still a bad argument, and it got named as one before it got ruled on.**
+
+### THE HEADLINE — `VFB.Q1` is saturated, and saturation looks exactly like success
+
+**`VFB.Q1` — the research question this entire prototype exists to answer — has been reading a number
+that cannot move.** It is specified as *"avg distinct tellable lines/night"*. The soak computes it as
+the distinct texts **within one night's summary** — but the summary has already been truncated to
+`summary_lines` (5) by then. So the metric is **`min(pool, 5)` averaged**, asking *"is the pool ≥ 5?"*
+of a pool that measures **≥20 every night**. It reads a flat **5.00**.
+
+**The ablation that settled it, and it is not close: delete 30 of the 46 rules and it still reads 5.00,
+with 0/42 nights below 4.** A metric that survives the deletion of two-thirds of the content it
+measures is not measuring the content. The `M4` acceptance bar ("soak shows ≥4 distinct summary lines
+per night") is therefore **unfailable, and M4 has been ticked against it**. So has the stats strip's
+"summary starvation warning (fires when < 4 candidate lines)", which has never fired and structurally
+cannot.
+
+**The old figure is superseded, not falsified — and this is why it stays in the plan.** `~4.4 distinct
+lines/night, 3/21 nights below 4` was honestly measured on the 12-townee town of 2026-07-15, and was
+true. **The pair of numbers is the finding**: an honest 4.4 that meant something, and a 5.00 that means
+nothing, with **nothing in between to announce the transition**. The metric drifted into its own
+ceiling as the bank grew from 12 rules to 50. Deleting the 4.4 would delete the evidence that this
+happens.
+
+**What it never asked, which is the part that mattered.** `VFB.Q1` never compares night N to night N−1.
+`_binding` pins each rule's cast and `place` pins its room, so **a told rule renders the identical
+sentence every time it fires.** The town could say the same five things forever and score a perfect
+5.00.
+
+**The replacement: `Api/Variety.cs`.** Distinct rendered **texts** — keyed on the final sentence, never
+the rule id, because two fires of one rule with a different cast or room are two different sentences
+and that distinction is the entire point. Plus told/fired, rules-fired-but-never-told, repeat vs N−1
+and vs any prior night. **Deliberately un-scored: no threshold, because "a threshold invites tuning
+toward it"** — and it was written by a **different agent than the ones it judges**, which is the only
+reason to trust the abstention. That un-scored-ness then immediately earned its keep on the
+`novelty_decay` default (see the entry below: variety alone wanted 0.0, which would have made
+`tellability` meaningless).
+
+### The instruments, and the one rule that makes the ledger not a suppression list
+
+Built this pass: **`--lint`** (a *content* linter — it runs the **real** `Clockwork`/`Simulation`,
+because a linter that reimplements what it audits eventually audits its own fiction), **`--report`**
+(machine-readable JSON), **`--knob name=value`**, and the **`--soak`** variety instrument.
+
+**`data/lint-accepted.json`** is a per-town acceptance ledger keyed exactly on `(check, kind, subject)`,
+requiring a written **reason** *and* a **ruling that resolves**, both non-blank or the build fails. The
+design rule that matters, and the reason it isn't a suppression list: **nothing is silenced.** Every
+accepted finding **still prints in full, every run**, with its reason and ruling above it, and keeps
+`class=error` because it is still a proof — only `gates` moves. **A subject nobody listed is a new
+defect and still gates**, which was proved rather than asserted, by injecting a 15th ratchet and
+watching it go red. An acceptance that outlives its finding **warns**, because otherwise it is a
+standing pre-authorisation for that exact defect to walk back in.
+
+Current: live town **errors=0 accepted=14 warnings=70 exit=0**. Frozen fixture **exit 1, 23 errors** —
+**correct**: it has no ledger and it really is defective. There must never be one there (`PNO.D2`).
+
+**Two of the linter's own checks were badly wrong, which is why the third gets no benefit of the
+doubt.** `latch-die` "got 7 of 7 of its condemnations backwards" (`Linter.cs:578`) — and the two rules
+it most confidently told authors to delete, `market-cheer` and `the-inn-is-well-found`, were **the two
+most *ungated* rules in the bank**, firing 56/56 and 28/28 days. `ratchets` reported 3 findings, all
+by-design, while blind to all 26 real ones, because it tested the **per-mode sign** instead of the
+**net drift over the day actually lived**. Both were hand-modelling the engine instead of asking it.
+That is the whole reason `NetDaily` lives in `Pressures.cs` and not in the linter.
+
+### `_V.4` — the cooldown finding, which falsified the coordinator's own diagnosis
+
+**The claim I put to the work was wrong, and the correction is more useful than the claim.** I
+diagnosed: *"effects dwarf drift by 15×, so each firing re-plants the drive and the gate stands open"* —
+therefore lengthen the gated rule's cooldown. The truth: **cooldowns do make pressures matter, but
+never the gated rule's own cooldown.**
+
+**2 of the 3 ungated rules read a drive they never write.** `market-cheer` gates on `A.trade above 0.4`
+and its effects write **only** `A.purse` and `A.heart` — **no value of its own cooldown can move its own
+gate.** The third writes its gate drive in the *closing* direction, so the theory runs backwards there.
+**In 0 of 3 cases was the fix "lengthen this rule's cooldown"; in 3 of 3 it was "lengthen the cooldown
+of a rule that WRITES the drive."** Reader and writer are different rules nearly everywhere.
+
+Result: ungated **3 → 0 at zero variety cost.** And the generalisable half: **effects-vs-drift was never
+the binding constraint — *who writes the drive* is.** A drive's gate is a conversation between two rules
+that have never heard of each other.
+
+### Restlessness ships broken, on purpose, with the reason recorded so it can be checked later
+
+**Ruled: leave it, ship the finding.** `restlessness` is mode-constant (`−0.10` engaged / `+0.06` at
+rest) — **exactly the shape `NTD.Q1` just cured `trade` of.** Break-even is **18 engaged slots of 48
+bare**, but `TraitRateMod` picks gain/decay off each slot's *sign*, so an asymmetric trait
+(`wanderlust {gain 1.3, decay 0.7}`) re-weights the halves and **moves it to ~25** — the kind of
+correction that only appears if you ask the engine instead of summing the constants. The cast sits at 8
+or 22–36, so **16 of 18 ride a clamp (13 floored, 3 pegged)**. It is `trade`'s bug one drive later.
+
+**Why ship it:** restlessness is **directional by design** — the buildup exists to push a townee
+*somewhere*, and today there is nowhere to be pushed. Closing it now (a rest point, or a bank effect
+invented to balance it) would pre-empt `PNO.M2` (outings), which is the milestone that gives the drive
+its meaning, and would have to be unwound when M2 lands. The 14 ledger subjects **are the specification
+M2 has to discharge.**
+
+> **⚠ AND THIS IS NOT SETTLED — flagged, deliberately not resolved.**
+> `plans/PLAN-fishbowl-postings-outings.md:222` argues that a `haunt`-tagged site visit burning off
+> restlessness is **"precisely backwards for an outing"** — which reads *against* the ruling's own
+> reasoning. The two reconcile **only if M2's discharge is an authored `take`/`resolve` effect rather
+> than a mode-label side-effect.** Nobody has ruled which, and the cheap path (`haunt:<site-id>`) is the
+> one that dodges it: the drive would discharge by **going**, not by **doing**, and the 14 findings
+> would clear **for the wrong reason** — green ledger, unchanged design. That is `NTD.Q1`'s trap in new
+> clothes. **The ledger is the test: still there after M2 ⇒ the ruling was wrong; gone because a mode
+> label changed ⇒ the ruling was dodged.**
+
+### Engine and content fixes worth knowing about
+
+- **The `post` effect was a *silent no-op that was already shipping*.** `StoryletEffectDto` had no
+  `Post` field, so `System.Text.Json` **dropped the key**, and `Board.File()` had **zero callers** —
+  *while the chronicle cheerfully printed "filed a posting"*. The effect union is now enforced at load,
+  so a dropped key is a load error instead of a plausible nothing. Same defect shape as
+  `copresence_bonus` and `--lint`'s `unknown-drive`: **a number authored in good faith that no engine
+  code ever reads.** This repo's signature defect, now three for three.
+- **The `place` predicate did not exist**, and prose lied about location because of it —
+  `a-good-catch` could render *"the nets came up heavy off the Long Table"*. Now `{any:[ids]}` /
+  `{kind:[kinds]}`.
+- **`ApplyMarks` is guarded** — it would have thrown on `world.TowneeById[id]` if a posting role were
+  ever marked, exactly as the `PNO` drift check predicted.
+- **`PNO.M1` (the board) landed and was accepted on measurement, not assertion**: a posting **files on
+  day 2** and **expires on day 6** in the live town (4 days, matching `expires_days: 4`). Expiry is a
+  **board mechanism, not a rule**, so it is the first chronicle entry ever built outside `BuildEntry`
+  and synthesizes its own 5-fact because-list. It is tellable at 0.3: over 14 nights it fires **10×**
+  and reaches a summary **once**, on day 8.
+- **Tests 30 → 53**, including `M2_TradeEquilibriumTests` (the guard whose absence let the ratchet
+  live), the novelty tests, the report tests and the variety tests.
+
+### Correction to the entry directly below — its A/B numbers went stale the same day
+
+**Re-measured today against the live town** (`--soak --days 14 --town data`, seed 1123; the entry below
+reports the arms as `29 → 47` / `23 → 6` / `0.63 → 0.35`):
+
+| | entry below | **measured now** |
+|---|---|---|
+| distinct, `novelty_decay=1.0` → 0.5 | 29 → 47 | **31 → 47** |
+| rules never told | 23 → 6 | **20 → 5** (of 50) |
+| `repeat(any)` | 0.63 → 0.35 | **0.60 → 0.35** |
+| `repeat(N−1)` | 0.00 → 0.00 | 0.00 → 0.00 ✓ |
+| told/fired | 0.21 (~340 beats) | **0.22** (70/319) |
+| distinct saturates below | 51 from 0.3 down | **50 from 0.3 down** |
+
+**The conclusions all survive; only the arithmetic moved.** Note *which* numbers moved: **the default
+arm is exact** (47 / 0.35 / 0.00, unchanged), and every drifted number is on the **ablated** arm or a
+total. **I did not isolate the cause and am not going to guess at one** — I ruled out the obvious
+suspect by building a probe town without `posting-filed.json` and getting **31 anyway**; a second probe
+that also dropped `postings.json` was rejected by the validator (`post.template ... is not a posting
+template`), which is the validator working and my probe being invalid.
+
+**The lesson is the one this log already learned in a different room, and it is now 2 for 2:**
+*"measurements pasted into prose go stale silently, which is an argument for asserting them in a
+scenario where they'd go red."* That was written about a button's geometry, where three documents gave
+three numbers. **It has now happened to an A/B result inside its own DEV-LOG entry, on the same day it
+was written, because the content underneath kept moving.** The soak prints these numbers on demand in
+under a second. Nothing that cheap to re-derive should be transcribed into prose and trusted — and the
+next person should re-run it rather than believe this table either.
+
+---
+
+## 2026-07-16 — the Summarizer stops being a fixed leaderboard; and the metric that would have picked the wrong default
+
+**The ruling.** Panda, 2026-07-16: add novelty/fatigue to `Summarizer.Score`, after measurement showed the
+town fires ~340 beats in a fortnight, tells 70, and says **29 distinct sentences** — with **23 rules that
+fire never once told**.
+
+**The thing that decided the design.** `tellability` is *authored-static per rule* — `rent-quarrel` scores
+0.800 every night it fires, `a-fair-hand` 0.250 every night it fires. So `Score` was not "mostly a
+leaderboard"; it was literally a constant ranking, and every rule below fifth place was unreachable
+*forever*. Two consequences that a less careful term would have missed:
+
+- **`repeat(N−1)` was already 0.00**, so a "don't repeat yesterday" term buys **nothing**. The told set is
+  cooldown-paced and never repeats consecutively; the defect is entirely in the ~40 rules permanently under
+  the waterline. A term that only reorders the winners moves `repeat(any)` a little and fixes nothing.
+- **Fatigue had to key on *telling*, not *firing*.** `a-fair-hand`, `market-cheer`, `the-daily-grind` and
+  `carefuller-math` fire **every single night** and were told **zero** times. A firing-keyed term would have
+  fatigued exactly the rules most in need of surfacing. `M3_NoveltyFatigueTests.Fatigue_Counts_Tellings_Not_Firings`
+  pins this, and it is the test most worth keeping.
+
+**Multiplicative, not subtractive.** Surfacing the floor needs the top of the bank pushed *below* it — a swing
+of 0.65, not a nudge. A subtractive penalty that large drives high-tellability rules negative and inverts the
+bank; a multiplier cannot change a sign and its reach is unbounded in the exponent.
+
+**A window, not a lifetime tally.** Two reasons, one a bug: a town that will never again mention the mill fire
+because it mentioned it once 200 nights ago is not alive; and an unbounded exponent underflows `decay^n` to
+zero on a long run, collapsing the order into the slot/id tiebreak — a fixed leaderboard again, which is the
+defect being removed. `Summarizer.NoveltyWindow = 7`.
+
+**Why the default is 0.5 and not lower, which is the part worth reading.** `Api/Variety.cs` was left
+deliberately un-scored by its author because *"a threshold invites tuning toward it."* That warning earned its
+keep here. Sweeping `novelty_decay` against the variety metric alone, **lower is monotonically better right
+down to 0.0** — and 0.0 means *a rule told once is silenced for a week regardless of how good it is*, i.e.
+`tellability` stops meaning anything and the town narrates its dullest rule as readily as its best. The metric
+applauds that. So the default was set from a **stated inequality** instead: each telling halves a rule's claim,
+chosen so two tellings drop the best entry in the bank (0.90 with the carrier bump → 0.225) below the most
+mundane fresh one (0.25). Measured (`scrap_scripts/python/42_tellability_intent_check.py`), rank correlation
+between authored tellability and times-told falls **0.76 (off) → 0.50 (0.5) → 0.33 (at 0.0)**, while distinct
+sentences **saturate at 51 from 0.3 downward** — the last stretch spends authorial intent and buys *nothing*.
+Variety cannot see that axis, by construction. It is a good instrument; it is not a fitness function.
+
+**Result (seed 1123, 14 nights, `--knob novelty_decay=1.0` vs default 0.5):** distinct sentences **29 → 47**,
+rules-never-told **23 → 6**, `repeat(any)` **0.63 → 0.35**, `repeat(N−1)` **0.00 → 0.00** (no regression).
+
+**`told/fired` stayed 0.21 and always will.** It is `5 lines × 14 nights / ~340 beats` — a *structural*
+ratio fixed by `summary_lines` and the firing rate, invariant under **any** reordering. Predicted before the
+run and confirmed after. If a future change appears to move it, the summary has started affecting the sim.
+
+**What this did NOT fix — the honest half.** 6 rules still never surface at the default, and **2 survive even
+at `novelty_decay=0.0`** (`market-squabble`, `warden-rounds` — both fire on only 7 of 14 nights). That residue
+is **slot scarcity, not reach**: ~45 gate-eligible rules compete for 70 delivered lines, and the waterline is
+now *at* the bank's floor (0.250 — rules at the very bottom do get told). Fatigue cannot fix it and should not
+try; the levers are `summary_lines`, a longer horizon, or content. Deliberately left alone.
+
+**Surprises for the next person.**
+- **The novelty ledger is re-derived on every render, not cached, and that is the point.** Night N's ranking
+  depends on night N−1's *delivery*, which is not stored anywhere (`World` holds no summary, on purpose), so
+  `TellingsBefore` re-folds it out of the chronicle by walking forward from night 1. A cache would break the
+  knob's retroactivity and `Snapshot_Round_Trip_Preserves_The_Summary`. **Cost: a render is O(nights), so a
+  measured run is O(nights²).** Accepted, not overlooked. If it ever matters, pass a caller-scoped memo —
+  never a field on `World`.
+- **The ledger is keyed on rule id, never rendered text.** Text-keyed would score *better* on the variety
+  metric and is wrong: `Actionability.Pick` makes text a function of the `actionability` dial, so a text-keyed
+  ledger would let one rendering knob silently reorder another's output.
+- **The day-hash never moved**, and the golden fixture is the proof: `tests/towns/golden-town/` is frozen and
+  has no `novelty_decay` key, so it now runs *with* fatigue on via the C# default — and
+  `2a6a8a3af0a1a81d / d615d01daa2c8020 / 619649026a9d8895` are unmoved. All 14 live-town day-hashes are
+  byte-identical with the knob at 1.0 and 0.5. The summary is not in the hash, verified rather than assumed.
+- `novelty_decay = 1.0` is the **exact** pre-change Summarizer (the ledger pass is skipped outright, not merely
+  neutral), which is what makes the A/B an ablation rather than an approximation.
+
+**Also, small:** `--report` now serializes through `DataJson.ReportPretty` (ASCII-escaped) per Panda's ruling —
+machine output has a different job from authored prose. `data/` keeps `UnsafeRelaxedJsonEscaping`; that
+convention is unchanged. Verified the report is byte-for-byte pure ASCII. Ironically, the first check of that
+claim used a `grep -P` that **failed on locale while a `||` fallback printed "0"** — the very "reported 0
+instead of erroring" failure the escaping exists to prevent, reproduced live while verifying the fix for it.
+
+---
+
+## 2026-07-16 — the day-hash moved, once, on a ruling; and the golden day was pinning the bug instead of catching it
+
+**The rulings.** Panda, in chat, 2026-07-16. First, on three proposals put with the hash consequence stated
+explicitly: trait rate mods are direction-blind (`_P.1`); `cheerful`/`gruff` are miscategorised (`_P.2`);
+`trade` is a guaranteed one-way ratchet (`NTD.Q1`). All three authorized, including pre-authorization to
+move `M1_ClockworkDeterminismTests.Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned`'s literals — the
+second branch of that test's own comment (“*or it was, and that needs a ruling in DEV-LOG.md before these
+strings move*”). Then, on `FBT.Q1`, raised mid-work when the third fix turned out to break the frozen
+fixture's day-1 acceptance: **`golden/day1.json` may drop its `stock-runs-low` and `fetch-arranged`
+expectations, because both are fossils of the ratchet.** Panda's reasoning, recorded because it is the
+durable part: **“frozen” in `PNO.D2` means the fixture does not drift silently underneath the thing it
+pins** — its text bans *adding* postings, sites or cast. It was never a claim that a fossil cannot be
+corrected by an explicit ruling.
+
+**The literals moved, exactly once, with all three fixes in:**
+
+| | day 1 | day 2 | day 3 |
+|---|---|---|---|
+| **was** | `b8d15299d8817639` | `e3478bc4ff7d4848` | `02bc86b987c547c3` |
+| **now** | `2a6a8a3af0a1a81d` | `d615d01daa2c8020` | `619649026a9d8895` |
+
+Verified before being written down, to the same standard as the old ones: **identical across three fresh
+CLI processes and the xunit runner**, one of them with `--seed 999999` (so `At_Default_Config_Hash_Is_Seed_Independent`'s
+invariant still holds). A pin is worthless if it pins a number you got once.
+
+**Which fix moved them was predicted first, then tested — not assumed.** The prediction: *the fixture's hash
+moves from FIX 3 and nothing else*, because the fixture authors bare-number rate mods (so `_P.1`'s split is
+arithmetically identical on it) and no `pressure_targets` (so `_P.2`'s default of 0.5 changes nothing).
+Checked by **staging**: FIX 1 + FIX 2 landed alone ran **30/30 green on the old literals**, which is what
+“hash-neutral” has to mean if it means anything; FIX 3 then reddened the pin on the next run. Prediction
+held exactly.
+
+### THE FINDING — an acceptance test that encodes a defect looks exactly like one that encodes a requirement
+
+**This is the most valuable thing to come out of this work, and it is the second time this repo has hit it.**
+
+FIX 3 did not only move the hash. It **deleted 2 of the 7 beats `golden/day1.json` pins** —
+`stock-runs-low [petch]` and `fetch-arranged [sela-quick, petch]`. Both gate on Petch's trade having
+**fallen** below 0.35, and it only ever fell there because of the defect the ruling corrects. **The golden
+master's day-1 acceptance was pinning the bug rather than catching it.**
+
+`FISHBOWL.md:231-239` already records the identical failure one layer up: `regression-b1-b6.json` had
+encoded a layout bug as `expect on_screen: false` and **ran green on it for a full release**, so the
+assertion that should have caught the bug was preserving it. It happened again, in the golden master, and
+this time it survived **a hash pin, a 30-test suite, and a determinism contract** — because a ratchet is
+perfectly deterministic and perfectly reproducible. **Determinism was never the property that was missing;
+two-wayness was, and nothing asserted it.** The only thing that told a fossil from a requirement was fixing
+the defect and watching the test object.
+
+The guard that was missing is now `M2_TradeEquilibriumTests` (4 tests). It asserts the **property** — a
+drive settles to an interior value it can still be moved from; it neither pegs nor flatlines — and
+deliberately hard-codes **none** of the tuning constants: it recovers each mode's rest point from
+`Pressures.BaseDaily` itself by probing at 0.0 and 1.0, so retuning stays cheap and only a *shape* change
+goes red. It also pins the closed form the design rests on,
+`rest = [W·rest_work + (48−W)·rest_idle] / 48`, which matches the engine to three decimals.
+
+### FIX 1 — `pressure_rate_mods` is now signed-aware (landed)
+
+The root cause is one sentence: **multiplication preserves sign, so a scalar can only ever scale a drift's
+magnitude, never its direction.** Every trait was therefore a volatility knob wearing a direction's name.
+`wanderlust ×1.3` scaled an engaged Tam's `restlessness` drift of `−0.10` to `−0.13` — it made a restless
+man **settle 30% faster**. `frugal ×0.75` on Widow Karsk slowed her *earning* as much as her spending.
+
+`{"gain": n, "decay": m}` splits the scalar by the sign of the base drift. **A bare number still parses and
+still means `{gain: n, decay: n}` — today's arithmetic, to the bit** — which is both the back-compat rule
+and the reason the frozen fixture (`PNO.D2`) is untouched by this. Migration is a judgement about what a
+word means, so the loader must never make it silently; `--lint`'s new `legacy-rate-mods` names the traits
+still authored bare (8 in the golden fixture, deliberately and forever; 0 in `data/`).
+
+**What will surprise the next person: this is not a cosmetic change to the live town.** `data/traits.json`
+is migrated, and **Tam Underhill's restlessness drift went from −0.0548/day to −0.0041/day — a factor of
+13, and effectively flat.** That is the fix working (`wanderlust` now resists settling instead of hastening
+it), but it invalidates the design doc's arithmetic: `scrap_scripts/design/new-town-design.md` budgets
+`road-stories` at `+0.15 / cd 2` = `+0.075/day` against the old `−0.0548`, which would now **peg Tam at
+1.0**. That doc's drift table and both its "arithmetic obligations" are re-measured and corrected in the
+same change.
+
+**And a real regression, flagged not papered over — `WK.1`, open and assigned elsewhere.** `frugal
+{gain 1.0, decay 0.85}` moves the purse-neutral work-slot count *for a frugal townee* from 18 to **16.2**,
+and Widow Karsk sits at exactly **16** — so her purse drift is now **−0.0003/day**, a hundredth of anything
+else in town and flat in every practical sense, against a design-doc invariant that reads "no drive is flat
+for anyone". Her whole premise is a landlady whose purse is quietly losing. **The honest fix is one slot in
+her dayplan (16→15 gives −0.0019), NOT a retune of `frugal`'s ruled 0.85** — the trait is finally correct
+and the collision is that her day was tuned against the broken version. `frugal` is deliberately left at
+`{1.0, 0.85}` exactly as ruled; the dayplan was not this pass's to touch, and Panda assigned it separately.
+Anyone tempted to "fix" the flat by moving 0.85 is undoing `_P.1` for one townee.
+
+### FIX 2 — `cheerful`/`gruff` become `pressure_targets`, not rate mods (landed)
+
+`heart` is a restoring force — `(target − current) × 0.20` — so scaling its *rate* only changes how fast it
+converges, never on what. `cheerful ×1.1` and `gruff ×0.85` were therefore **indistinguishable in the
+limit**: both landed on 0.5, one slightly sooner. "Cheerful" is a claim about **where you rest**, and no
+rate could ever have expressed it. `pressure_targets: {"heart": 0.6}` can. Default stays 0.5, so an
+unauthored trait is unchanged — which is exactly why the fixture doesn't feel this.
+
+Two things worth knowing. **The combining rule for two targets is the mean, and that is a determinism
+decision, not an aesthetic one**: "last wins" would make the day-hash depend on the order traits happen to
+sit in a townee's JSON array. And **`SchemaValidator` now refuses a target on any drive but `heart`**
+(`Town.TargetedDrives`) — a `pressure_targets: {"purse": 0.7}` would otherwise be a number authored in good
+faith that `BaseDaily` never reads, which is this codebase's most-repeated defect (cf. `--lint`'s
+`unknown-drive`, which renders as a plausible `0.00`).
+
+### FIX 3 — `trade` stops being a countdown (landed; this is the one that moved the hash)
+
+The diagnosis is confirmed exactly: `TradeDepletion` was `−0.11/day` in every mode for every townee and
+`BaseDaily` had no positive trade path at all, so trade only ever fell, for all 18, by construction.
+`--lint` agreed: **15 of the 19 live ratchets were trade**, and 9 of the golden fixture's 11.
+
+**The brief's steer was to give `work` a positive trade path. On contact with the code that is necessary but
+not sufficient, and the reason is the whole lesson: a mode-constant drift has no interior fixed point at
+all.** Whatever the constants, the daily sum is some constant `D` — the drive pegs at 1.0 if `D>0`, at 0.0
+if `D<0`, and "balanced" means authoring `D` to exactly zero and then never letting a storylet touch it. A
+purse-shaped trade would only have **relocated** the ratchet: high-work townees to 1.0, low-work to 0.0 —
+*and silenced `--lint`, which tests the per-mode sign, not the net drift*. **A green gate over a live
+countdown is strictly worse than the bug**, and it is the same failure this whole pass exists to kill. The
+bank's budget under that shape is literally zero: any sustained surplus pegs, eventually. (The steer was
+withdrawn on this argument; it is recorded because the next person to look at `purse` will be tempted by
+exactly the same shape.)
+
+So `trade` must be **restoring**, like `heart`, and the rest point must be per-mode so that work means
+something: `(TradeRestFor(mode) − current) × 0.20`, with `0.55` at work and `0.12` idle. The rest point is
+then the *time-weighted blend* of the two — i.e. **set by the dayplan's work-slot count**, which is the same
+lever the town already uses for purse and restlessness. Measured on the real engine over 14 bank-silent
+days, and it matches the closed form `rest = [W·0.55 + (48−W)·0.12] / 48` to three decimals:
+
+| townee | work slots | day 14 | rest |
+|---|---|---|---|
+| `odile-vance` | 34 | 0.447 | **0.425** |
+| `petch` | 17 | 0.280 | **0.272** |
+| `dob-millet` | 14 | 0.258 | **0.245** |
+| `brindle-ashe` | 0 (adventurer) | 0.131 | **0.120** |
+
+Nothing pegs, nothing flatlines, and the low-trade rules keep a window they can enter. It clears **15/15**
+live trade ratchets and **9/9** golden (19→4 and 11→2; the remainder are the adventurers' purse, which is
+ruled-deliberate — that drain is what walks them to the board).
+
+**The budget the bank author needs — quotable, and it replaces the old table:**
+
+> Work now pays subsistence, so **holding trade costs the bank nothing** (the old table demanded
+> `+0.11/day` sustained — `+0.33` per fire at cd 3 — which no rule in the bank could pay).
+> The chain pays *prosperity* instead: **a sustained `B`/day of trade effects moves a townee's rest point
+> to `rest + B/0.20`, i.e. every `+0.02/day` buys `+0.10` of resting trade.** A beat at `+0.06` on
+> `cooldown_days: 2` is `+0.03/day` → **`+0.15`**, lifting Petch 0.27 → 0.42 and closing
+> `stock-runs-low`'s window when he is well served. **The ceiling is `0.20 × (1 − rest)` ≈ `+0.115/day`**
+> for the best-placed shopkeeper — about 2 fires/day at `+0.06` sustained — and *that* is when trade pegs.
+> Budget against `≈+0.115/day`, not against the old `−0.11`.
+
+**What it cost, and why no amount of tuning could have avoided the cost.** This is the part not to
+re-litigate by fiddling with the constants. Golden Petch starts at `0.40` and must reach `<0.35` on day 1
+with no storylet help. Under *any* rule of the form "pull toward rest `R` at rate `k`", the day-1 fall from
+0.40 is `(0.40 − R)·(1 − e^(−k))`. Requiring `≥0.05` forces **`R ≤ 0.124` at `k=0.20`** — i.e. Petch, an
+18-work-slot shopkeeper, would have to rest exactly where an adventurer who never works at all rests.
+**The two lost beats come back precisely when "work means you don't starve" goes away.** The same trap
+catches the lazier fix: keeping `−0.11` and adding a work gain preserves the beats only while the gain is
+`≤0.05`, which leaves Petch net-negative — still a ratchet, just slower. The fossil and the fix are the same
+number pulling opposite ways, which is *why* it took a ruling rather than a retune.
+
+**Corroboration that the drive started working the moment it stopped counting down:** FIX 3 **revives
+`market-cheer`**, which the design doc records as killed at day 2 by this exact ratchet (*"which is exactly
+what killed `market-cheer` at day 2 in the old town"*). Under the fix it fires day 1 **and** day 2. Two
+beats died and one came back, and all three moved for the same reason.
+
+---
+
 ## 2026-07-16 — two cosmetic fixes, priced in pixels; and the convergence commit left its own sync check failing
 
 The closing round of the fish-bowl usability run: no new ground, two flagged cosmetics taken, everything

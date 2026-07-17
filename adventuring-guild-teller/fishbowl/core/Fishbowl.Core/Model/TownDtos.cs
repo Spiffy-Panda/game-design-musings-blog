@@ -99,9 +99,51 @@ public sealed record TraitsFile
 public sealed record TraitDto
 {
     public string Id { get; init; } = "";
-    public Dictionary<string, double> PressureRateMods { get; init; } = new();
+
+    /// <summary>How fast a drive moves for this townee, <b>per direction</b>. See <see cref="RateModDto"/>:
+    /// a bare number is still legal and still means <c>{gain: n, decay: n}</c> — today's meaning, exactly.</summary>
+    public Dictionary<string, RateModDto> PressureRateMods { get; init; } = new();
+
+    /// <summary>Where a restoring drive <b>rests</b> for this townee — a different claim from how fast it
+    /// gets there, and the reason this field exists at all (see <see cref="Engine.Pressures.BaseDaily"/>).
+    /// <para>Only drives in <see cref="Town.TargetedDrives"/> read a target; <see cref="Data.SchemaValidator"/>
+    /// rejects the rest rather than letting an authored number sit here doing nothing.</para></summary>
+    public Dictionary<string, double> PressureTargets { get; init; } = new();
+
     public Dictionary<string, double> StoryletWeightMods { get; init; } = new();
     public bool HearsayCarrier { get; init; }
+}
+
+/// <summary>
+/// A per-direction rate scalar for one drive. <c>gain</c> scales the delta when the base drift is
+/// <b>positive</b>, <c>decay</c> when it is <b>negative</b>.
+///
+/// <para><b>Why this is not one number.</b> <see cref="Engine.Pressures.BaseDaily"/> is already signed, and
+/// multiplication preserves sign — so a single scalar can only ever scale a drift's <i>magnitude</i>,
+/// never its direction. That made every trait direction-blind: <c>wanderlust ×1.3</c> scaled an engaged
+/// townee's <c>restlessness</c> drift of <c>-0.10</c> to <c>-0.13</c>, i.e. it made a restless man
+/// <b>settle faster</b>. Splitting the scalar in two is the smallest change that lets a trait mean what
+/// its word means, and it stays a pure multiplier: still minutes-scaled, still stacking.</para>
+///
+/// <para><b>A bare number keeps today's meaning.</b> <c>"restlessness": 1.3</c> parses to
+/// <c>{gain: 1.3, decay: 1.3}</c> — arithmetically identical to what the single scalar did — and is
+/// flagged by <c>--lint</c>'s <c>legacy-rate-mods</c> as un-migrated. That is deliberate: migration is a
+/// judgement about what a word means, so it must be made per trait by a human, never inferred. The
+/// frozen golden fixture (PNO.D2) relies on this and keeps its bare numbers forever.</para>
+/// </summary>
+public sealed record RateModDto
+{
+    /// <summary>Scales the drift where the base rule pushes the drive <b>up</b>.</summary>
+    public double Gain { get; init; } = 1.0;
+
+    /// <summary>Scales the drift where the base rule pushes the drive <b>down</b>.</summary>
+    public double Decay { get; init; } = 1.0;
+
+    /// <summary>True when authored as a bare number rather than a <c>{gain, decay}</c> pair. Carried so
+    /// <c>--lint</c> can name the un-migrated traits; never read by the engine, which sees only the two
+    /// numbers, and identical either way.</summary>
+    [JsonIgnore]
+    public bool Legacy { get; init; }
 }
 
 public sealed record SimConfig
@@ -116,6 +158,27 @@ public sealed record SimConfig
     public bool HearsayRequired { get; init; } = true;
     public double Actionability { get; init; } = 0.5;
     public int SummaryLines { get; init; } = 5;
+
+    /// <summary>
+    /// <b>Rendering knob.</b> The multiplier a rule's score takes for each night inside
+    /// <see cref="Engine.Summarizer.NoveltyWindow"/> on which it was already told. <c>1.0</c> disables
+    /// fatigue entirely (and is exactly the pre-novelty fixed leaderboard); <c>0.0</c> makes one
+    /// telling silence a rule for the whole window.
+    /// <para>Defaults ON per the 2026-07-16 ruling. Off, the town says 29 distinct sentences in a
+    /// fortnight and 23 rules that fire are never once told.</para>
+    /// <para><b>Why 0.5 and not lower, when lower scores better.</b> Each telling halves a rule's
+    /// claim on the summary — chosen so that <i>two</i> tellings drop the juiciest beat in the bank
+    /// (0.90 with the carrier bump → 0.225) below the most mundane fresh one (0.25), which is the
+    /// reach the term needs, stated as an inequality. Pushing further keeps buying variety, and the
+    /// variety metric would applaud all the way to 0.0 — but tellability is an authored dial, and at
+    /// 0.0 a rule told once is silenced outright, so the town narrates its dullest rule as readily as
+    /// its best. Measured over 14 nights, rank correlation between authored tellability and times
+    /// told falls 0.76 (off) → 0.50 (here) → 0.33 (at 0.0), while distinct sentences saturate at 51
+    /// from 0.3 down: the last stretch spends authorial intent and buys nothing. 0.5 is the far side
+    /// of the stated inequality, not the far side of the metric.</para>
+    /// </summary>
+    public double NoveltyDecay { get; init; } = 0.5;
+
     public bool BioMarksEnabled { get; init; } = true;
 
     // --- PNO.M1: the board. (Outing knobs — hazard/pace/cooldown/rout — land with PNO.M2.) ---

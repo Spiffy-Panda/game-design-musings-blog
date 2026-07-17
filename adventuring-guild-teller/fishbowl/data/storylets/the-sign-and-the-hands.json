@@ -1,0 +1,18 @@
+{ "id": "the-sign-and-the-hands", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "rival" } },
+    "pressure": { "A.heart": { "above": 0.45 } },
+    "cooldown_days": 4 },
+  "weight": 1.2, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": -0.03 },
+               { "regard": "B->A", "delta": -0.02 },
+               { "pressure": "A.heart", "delta": -0.05 },
+               { "pressure": "B.heart", "delta": -0.04 },
+               { "chronicle": true, "tellability": 0.74, "mark": [] } ],
+  "lines": {
+    "hearsay": "{place} was quiet in the way a workshop gets when two people are not speaking.",
+    "gossip":  "{A} priced a job over {B}'s shoulder at {place} and said the number twice — everyone in that shop understood it but {B}, which was the point, and {A} was flat about it for the rest of the afternoon, which nobody expected including {A}.",
+    "report":  "{A} entered a correction against {B}'s work at {place}, slot {slot}." },
+  "_binding": { "A": "alys-bray", "B": "tam-underhill" } }

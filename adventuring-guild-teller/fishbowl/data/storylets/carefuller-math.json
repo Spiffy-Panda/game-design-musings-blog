@@ -1,0 +1,13 @@
+{ "id": "carefuller-math", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["petchs-simples"] },
+    "trait": { "A": "patient" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "chronicle": true, "tellability": 0.25, "mark": [] } ],
+  "lines": {
+    "hearsay": "Somebody at {place} was a long time over the same short column.",
+    "gossip":  "{A} went down the same column more than once at {place} and got a different answer each time — he blamed the light.",
+    "report":  "{A} reconciled the day's tally at {place} against stock in hand, slot {slot}." },
+  "_binding": { "A": "petch" } }

@@ -1,0 +1,14 @@
+{ "id": "board-routes-cross", "kind": "hearsay-chain",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["market-row"] },
+    "trait": { "A": "gruff", "B": "gossip-carrier" },
+    "cooldown_days": 3 },
+  "weight": 0.8, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "Two sets of rounds crossed at {place}, and stopped a while.",
+    "gossip":  "{B} was going one way and {A} the other, and they stopped dead in the middle of {place} long enough to block it — whatever {A} brought off the mill road was halfway round the village before the cart moved again.",
+    "report":  "{A} and {B} exchanged the day's dispatches at {place}, slot {slot}." },
+  "_binding": { "A": "ruel-oxenham", "B": "sela-quick" } }

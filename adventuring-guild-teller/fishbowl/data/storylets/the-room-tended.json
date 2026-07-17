@@ -1,0 +1,14 @@
+{ "id": "the-room-tended", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["the-long-table"] },
+    "trait": { "A": "open-handed" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.02 },
+               { "chronicle": true, "tellability": 0.3, "mark": [] } ],
+  "lines": {
+    "hearsay": "The fires at {place} were lit early, and the door left open.",
+    "gossip":  "{A} had {place} swept and the fires going before the first of them came in, and she will tell you it is not kindness, only trade.",
+    "report":  "{A} opened {place} for victualling and took the first of the day's custom, slot {slot}." },
+  "_binding": { "A": "odile-vance" } }

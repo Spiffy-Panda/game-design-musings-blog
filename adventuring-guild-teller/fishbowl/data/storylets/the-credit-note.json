@@ -1,0 +1,17 @@
+{ "id": "the-credit-note", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["market-row"] },
+    "regard": { "A->B": { "tag": "rival", "score_below": -0.15 },
+                "B->A": { "score_below": -0.15 } },
+    "cooldown_days": 4 },
+  "weight": 1.15, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": 0.07 },
+               { "regard": "B->A", "delta": 0.07 },
+               { "pressure": "B.heart", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.64, "mark": [] } ],
+  "lines": {
+    "hearsay": "Something at {place} got weighed twice, and the second weighing settled it.",
+    "gossip":  "{A} put the sacks back on the scale at {place} with {B} standing over them, and {A} read the short weight out loud before {B} could — which is not a thing {A} has ever done in living memory, and {B} let it go at that.",
+    "report":  "{A} entered a credit against {B}'s account for short weight at {place}, slot {slot}." },
+  "_binding": { "A": "dob-millet", "B": "nan-pellow" } }

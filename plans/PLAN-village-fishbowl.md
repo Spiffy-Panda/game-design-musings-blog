@@ -5,8 +5,12 @@
 recommendations (the staged `data/` already committed to them); **M0–M3 complete + gate-checked, M4
 in place** (22 xUnit green, golden day reproduces, observatory boots clean). The code + frozen
 interfaces live in [`../adventuring-guild-teller/fishbowl/FISHBOWL.md`](../adventuring-guild-teller/fishbowl/FISHBOWL.md);
-build-time decisions are logged in `../DEV-LOG.md`. **Open:** `VFB.Q1` gossip-yield tuning (soak sits
-at avg ~4.4 distinct lines/night — a live-knob research question, not a code gap).
+build-time decisions are logged in `../DEV-LOG.md`. ~~**Open:** `VFB.Q1` gossip-yield tuning (soak sits
+at avg ~4.4 distinct lines/night — a live-knob research question, not a code gap).~~
+**`VFB.Q1` IS SATURATED — the metric cannot see the thing it was built to measure (2026-07-16).** It
+reads a flat **5.00** and is `min(pool, summary_lines)` averaged over a pool of ≥20. It is not a tuning
+question any more; it is a measurement defect. **Read the correction under *Research questions* before
+citing this number anywhere.** Its replacement is `Api/Variety.cs`.
 **Parent musing:** `../adventuring-guild-teller/` (AGT). Proposal pages:
 `fishbowl-studies.html` (machinery studies `FBS.1`–`FBS.6`) and `fishbowl.html`
 (prototype claims `FB.1`–`FB.10`, the hand-cranked observatory mock).
@@ -254,6 +258,9 @@ observatory via synthetic input and captures to `.captures/gth/` — see `PLAN-g
   its chronicle entry; re-renders live when the actionability dial moves.
 - **Stats strip:** events/day by type · distinct-vs-repeat ratio · summary starvation
   warning (fires when < 4 candidate lines) — these are the `VFB.Q*` instruments.
+  > **The starvation warning has never fired and structurally cannot** (2026-07-16): the candidate
+  > pool measures ≥20 every night against a threshold of 4. It is not evidence of health. Same
+  > defect as `VFB.Q1` — see its correction below.
 
 ## Debug knobs (bind to `simconfig`; ~~all live without restart~~ — see the correction)
 
@@ -285,6 +292,22 @@ snapshot save/load.
 >
 > Neither dead hook is being fixed inside `PNO` — wiring them would change what fires and move
 > `VFB.Q1`'s numbers mid-measurement. They need a ruling of their own.
+>
+> **Addendum (2026-07-16): a seventh knob landed, and it is the one that moves the needle.**
+> `novelty_decay` (default **0.5**, slider 0.0–1.0, `test_id` `knob-novelty_decay`) fatigues a rule's
+> claim on the summary by that factor per night it was **told** in the last 7. It is a **rendering**
+> knob — it re-orders nights that are already finished, because the summary is derived on read rather
+> than stored — so **drag it to 1.0 to ablate it and see the pre-2026-07-16 defect live**: a literal
+> constant ranking that told 31 distinct sentences in a fortnight and never once told 20 of the 50 rules
+> that fired. The `VFB.Q1` dial nobody could find was never `copresence_bonus`; the bank's floor was
+> unreachable **by construction**, and no existing knob addressed it.
+>
+> **Why the old knobs could not have fixed it, which is why this needed code and not tuning.**
+> `tellability` is *authored-static per rule* — `rent-quarrel` scores 0.800 every night it fires,
+> `a-fair-hand` 0.250 every night it fires. `Score` was `tellability + 0.05 carrier bump`, sorted,
+> `Take(5)`: not "mostly a leaderboard" but **literally a constant ranking**, with every rule below
+> fifth place unreachable *forever*. No `storylet_rate`, no `hearsay_required`, no
+> `storylet_cooldown_scale` reaches that.
 
 ## Creation menus (first pass — the creator pillar's v0, `AGT.9`/`AGR.5` scoped)
 
@@ -301,9 +324,16 @@ snapshot save/load.
 
 ## Milestones (each gate-checked in-engine before the next opens)
 
-**Status (2026-07-15):** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ (golden day reproduces its 7 beats) ·
-M4 ◑ (generator + four menus + stats + soak shipped; `VFB.Q1` yield-tuning is the open research
-question, not a build gap). Acceptance detail in `../adventuring-guild-teller/fishbowl/FISHBOWL.md`.
+**Status (2026-07-15):** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ (golden day reproduces its ~~7~~ beats) ·
+M4 ◑ (generator + four menus + stats + soak shipped; ~~`VFB.Q1` yield-tuning is the open research
+question, not a build gap~~). Acceptance detail in `../adventuring-guild-teller/fishbowl/FISHBOWL.md`.
+
+> **Updated 2026-07-16.** The suite is **53 tests** (was 22 at release, 30 mid-day). The golden day now
+> pins **5** beats, not 7 — `FBT.Q1` ruled that `stock-runs-low` and `fetch-arranged` be dropped, both
+> being **fossils of the trade ratchet**: they fired only because Petch's trade fell below 0.35, which
+> only happened *because of the defect*. The fixture's acceptance list had been **pinning the bug rather
+> than catching it**. And `VFB.Q1` is not an open tuning question — it is saturated; see *Research
+> questions*.
 
 > **⚠ M4 correction (2026-07-16) — the town generator has never worked from the observatory.** Found by
 > a GTH harness pass driving the real UI (fired while opening `PNO`; the fish-bowl had not been driven
@@ -358,13 +388,75 @@ question, not a build gap). Acceptance detail in `../adventuring-guild-teller/fi
   text) pinned in `data/golden/`; dial's three stops render three distinct reads.
 - **`VFB.M4` — creation + research instruments.** All four menus; town generator; stats
   strip; CLI soak (3 seeds × 7 days → report JSON). *Accept:* a menu-created townee
-  appears in the next dawn's chronicle candidates; soak shows ≥4 distinct summary lines
-  per night with ≤1 repeated type (else tune before calling it done — that's `VFB.Q1`).
+  appears in the next dawn's chronicle candidates; ~~soak shows ≥4 distinct summary lines
+  per night with ≤1 repeated type (else tune before calling it done — that's `VFB.Q1`)~~.
+  > **The acceptance bar is void (2026-07-16).** "≥4 distinct summary lines per night" is
+  > unfailable — it is `min(pool, 5)` against a pool of ≥20, and it holds with 30 of 46 rules
+  > deleted. **M4 has been ticked against a test that cannot fail.** The honest replacement is
+  > `Api/Variety.cs`, and it is deliberately un-scored, so **M4's acceptance is now a human
+  > read of a number, not a gate** — see the `VFB.Q1` correction under *Research questions*.
 
 ## Research questions (what the prototype exists to answer)
 
 - **`VFB.Q1` — gossip yield.** Does CPS at 12 townees sustain ≥4 distinct tellable
   events per night across a week without repetition fatigue? *(stats strip + CLI soak)*
+
+  > **⚠ SATURATED — RETIRED AS A TARGET, KEPT AS A RECORD (2026-07-16, measured).** This question was
+  > answered "yes, ~4.4" and the answer was honest. **The metric is broken, and it is broken in the way
+  > that is hardest to see: it passes.**
+  >
+  > **The defect.** `VFB.Q1` is specified as "avg distinct *tellable* lines/night". The soak computes it
+  > as the distinct texts **within one night's summary** — but the summary has already been truncated to
+  > `summary_lines` (5) by the time it is counted. So the metric is **`min(pool, 5)` averaged**, and it
+  > is asking "is the pool ≥ 5?" of a pool that measures **≥20 every night**. It reads a flat **5.00**
+  > and it cannot move.
+  >
+  > **The ablation that settled it.** **Delete 30 of the 46 rules and it still reads 5.00, with 0/42
+  > nights below 4.** It cannot see two-thirds of the bank. A metric that survives the deletion of most
+  > of the content it measures is not measuring the content.
+  >
+  > **The old figure is superseded, not falsified — and the comparison IS the finding.** ~~avg ~4.4
+  > distinct lines/night, 3/21 nights below 4~~ was truly measured on the 12-townee town of 2026-07-15.
+  > **It is deliberately not deleted.** The pair of numbers — an honest 4.4 that meant something, and a
+  > 5.00 that means nothing — is the whole lesson: the metric drifted into its own ceiling as the bank
+  > grew, and *nothing said so*, because saturation looks exactly like success.
+  >
+  > **What it never asked, which is the part that mattered.** `VFB.Q1` never compares night N to night
+  > N−1. Because `_binding` pins each rule's cast and `place` pins its room, a told rule renders the
+  > **identical sentence** every time it fires. The town could say the same five things forever and score
+  > a perfect 5.00.
+  >
+  > **The replacement: `Api/Variety.cs`** (`--soak`, `--report`). Distinct rendered **texts** — keyed on
+  > the final sentence, never the rule id, since two fires of one rule with a different cast or room are
+  > two different sentences and that distinction is the entire point. Plus told/fired,
+  > rules-fired-but-never-told, repeat vs N−1 and vs any prior night. **Deliberately un-scored — no
+  > threshold, because "a threshold invites tuning toward it"**, and it was written by a different agent
+  > than the ones it judges. It reports; a human reads.
+  >
+  > **The live town, measured 2026-07-16** (3 seeds × 14 nights, all three seeds identical — this town
+  > draws no RNG at its authored knobs, so the seed sweep measures one run three times):
+  >
+  > | | `novelty_decay=1.0` (ablated) | **0.5 (default)** |
+  > |---|---|---|
+  > | distinct sentences / 14 nights | 31 | **47** |
+  > | delivered lines | 70 | 70 |
+  > | novelty rate | 0.44 | **0.67** |
+  > | repeat vs night N−1 | 0.00 | **0.00** |
+  > | repeat vs any prior night | 0.60 | **0.35** |
+  > | told / fired | 70/319 = 0.22 | 70/319 = 0.22 |
+  > | rules fired but never told | 20 of 50 | **5 of 50** |
+  >
+  > **`told/fired` is structural and will not move.** It is `summary_lines × nights / beats fired` —
+  > fixed by the truncation and the firing rate, invariant under **any** reordering. If it ever appears
+  > to move, the summary has started affecting the sim.
+  >
+  > **Do not tune against the replacement either.** The `novelty_decay` sweep is the worked example:
+  > measured against variety alone, **lower is monotonically better right down to 0.0** — and 0.0 means a
+  > rule told once is silenced for a week regardless of how good it is, i.e. `tellability` stops meaning
+  > anything. The metric applauds that. Distinct **saturates at 50 from 0.3 downward** while the rank
+  > correlation between authored tellability and times-told collapses **0.76 (off) → 0.50 (0.5) → 0.33
+  > (at 0.0)**. The last stretch spends authorial intent and buys nothing. **Variety cannot see that
+  > axis, by construction. It is a good instrument; it is not a fitness function.**
 - **`VFB.Q2` — explainability.** Can a reader trace any summary line to its causes in
   ≤2 clicks (line → chronicle → because-list)? *(walkthrough at M3 review)*
 - **`VFB.Q3` — authoring cost.** New townee via menu ≤3 min; new storylet via JSON

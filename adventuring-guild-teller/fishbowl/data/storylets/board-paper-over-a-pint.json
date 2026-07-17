@@ -1,0 +1,15 @@
+{ "id": "board-paper-over-a-pint", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "A->B": { "tag": "regular" } },
+    "chronicle_since": { "days": 1, "kind": "posting" },
+    "cooldown_days": 2 },
+  "weight": 0.9, "streams": "storylets",
+  "effects": [ { "pressure": "B.heart", "delta": 0.04 },
+               { "chronicle": true, "tellability": 0.45, "mark": [] } ],
+  "lines": {
+    "hearsay": "The day's paper got read out at {place}, and the room listened.",
+    "gossip":  "{A} keeps a pint in front of {B} all evening at {place} so {B} will read the board out to the room, and {A} has never once called it what it is, which is the cheapest entertainment in the village.",
+    "report":  "{B} read the day's filings to the room at {place}, {A} presiding, slot {slot}." },
+  "_binding": { "A": "odile-vance", "B": "dorrit-scrieve" } }

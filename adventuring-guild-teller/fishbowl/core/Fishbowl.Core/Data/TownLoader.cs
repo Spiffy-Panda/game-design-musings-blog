@@ -8,6 +8,20 @@ public static class TownLoader
 {
     public static Town Load(string dataDir)
     {
+        var town = LoadUnvalidated(dataDir);
+        SchemaValidator.Validate(town);
+        return town;
+    }
+
+    /// <summary>
+    /// Parse a town without the validation gate. <b>Only <c>--lint</c> should call this</b> — the sim
+    /// requires <see cref="Load"/>, because validate-then-run is the whole discipline and a dangling
+    /// reference resolving to nothing mid-tick is the exact poison it exists to stop. The linter is
+    /// the one caller that must be able to read a town that does not load, so it can say *why*.
+    /// <para>Malformed JSON and missing required files still throw here: there is no town to report on.</para>
+    /// </summary>
+    public static Town LoadUnvalidated(string dataDir)
+    {
         if (!Directory.Exists(dataDir))
             throw new DirectoryNotFoundException($"Town data directory not found: {dataDir}");
 
@@ -32,6 +46,14 @@ public static class TownLoader
         if (File.Exists(goldenPath))
             golden = DataJson.Deserialize<GoldenDayFile>(DataJson.ReadText(goldenPath));
 
+        // Postings: OPTIONAL, exactly like storylets/ and golden/ above — absent means a
+        // posting-free town, which the frozen golden fixture is by ruling (PNO.D2). Required-ness
+        // here would force that fixture to carry an empty stub about a system it must never know.
+        IReadOnlyList<PostingTemplateDto> postings = Array.Empty<PostingTemplateDto>();
+        var postingsPath = Path.Combine(dataDir, "postings.json");
+        if (File.Exists(postingsPath))
+            postings = DataJson.Deserialize<PostingsFile>(DataJson.ReadText(postingsPath)).Postings;
+
         var town = new Town
         {
             Config = config,
@@ -41,13 +63,13 @@ public static class TownLoader
             Traits = traits,
             Storylets = storylets,
             Golden = golden,
+            Postings = postings,
             PlaceById = ToLookup(places, p => p.Id, "place"),
             TowneeById = ToLookup(townees, t => t.Id, "townee"),
             TraitById = ToLookup(traits, t => t.Id, "trait"),
             StoryletById = ToLookup(storylets, s => s.Id, "storylet"),
         };
 
-        SchemaValidator.Validate(town);
         return town;
     }
 
@@ -61,6 +83,11 @@ public static class TownLoader
         {
             Config = from.Config, Places = p, Townees = t, DayPlans = from.DayPlans,
             Traits = from.Traits, Storylets = from.Storylets, Golden = from.Golden,
+            // Carried explicitly. This initializer is hand-written, so a field omitted here is
+            // silently dropped from every rebuilt town rather than failing to compile — which is
+            // the exact shape of the btn-generate bug (a Rebuild that quietly kept the wrong
+            // Storylets). If you add a field to Town, add it here in the same commit.
+            Postings = from.Postings,
             PlaceById = ToLookup(p, x => x.Id, "place"),
             TowneeById = ToLookup(t, x => x.Id, "townee"),
             TraitById = from.TraitById, StoryletById = from.StoryletById,

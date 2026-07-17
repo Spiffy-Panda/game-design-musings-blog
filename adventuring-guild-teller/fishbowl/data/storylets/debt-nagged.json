@@ -1,14 +1,15 @@
 { "id": "debt-nagged", "kind": "social",
   "predicates": {
     "copresent": ["A", "B"],
-    "regard": { "A->B": { "tag": "debtor", "flip": true } },
+    "place": { "any": ["the-long-table"] },
+    "regard": { "A->B": { "tag": "debtor", "flip": true, "score_below": -0.05 } },
     "cooldown_days": 3 },
   "weight": 1.1, "streams": "storylets",
-  "effects": [ { "regard": "A->B", "delta": -0.05 },
+  "effects": [ { "regard": "A->B", "delta": -0.04 },
                { "pressure": "B.heart", "delta": -0.05 },
-               { "chronicle": true, "tellability": 0.5, "mark": [] } ],
+               { "chronicle": true, "tellability": 0.72, "mark": [] } ],
   "lines": {
-    "hearsay": "There was some grumbling about an unpaid debt near {place}.",
-    "gossip":  "{A} needled {B} about the axe money again, right there at {place}.",
+    "hearsay": "Someone at {place} was being reminded of a debt, and not quietly.",
+    "gossip":  "{A} needled {B} about the axe money again at {place}, loud enough for the room — and {B} bought a round afterward like a man with money, which fooled nobody.",
     "report":  "{A} raised {B}'s outstanding debt at {place}, slot {slot}." },
   "_binding": { "A": "marrow-bray", "B": "corvo-lunt" } }

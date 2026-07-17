@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "_comment": "Authored posting TEMPLATES — the seed bank. Runtime postings are sim state (Board), not this file. reach:\"posting\" = board + adventurer + site; reach:\"errand\" = in-town neighbour, site null. site ids resolve at PNO.M2 (sites.json); shape-validated, not existence-checked, at M1. lines use {requester} only — the renderer resolves a bare role to a townee name and passes every other token through verbatim.",
+  "postings": [
+    { "id": "sedgewort-short", "reach": "posting",
+      "requester": "petch", "site": "the-sedge-fen",
+      "tags": ["fetch", "herbs"], "reward": 0.25,
+      "expires_days": 4,
+      "lines": {
+        "hearsay": "There's paper up for a herb-picking job somewhere out in the wet.",
+        "gossip":  "{requester} has a posting up — sedgewort, and not a little of it.",
+        "report":  "{requester} filed for sedgewort from the Sedge Fen; 0.25 on delivery, expires in 4d." } },
+
+    { "id": "pig-iron-short", "reach": "posting",
+      "requester": "marrow-bray", "site": "the-cinder-drift",
+      "tags": ["haul", "ore"], "reward": 0.4,
+      "expires_days": 6,
+      "lines": {
+        "hearsay": "Something heavy wants hauling out of the old workings, and it pays.",
+        "gossip":  "{requester} put pig iron on the board and priced it high enough that nobody had to ask why.",
+        "report":  "{requester} filed for pig iron from the Cinder Drift; 0.4 on delivery, expires in 6d." } },
+
+    { "id": "karsk-roof-slate", "reach": "posting",
+      "requester": "widow-karsk", "site": "the-slate-scarp",
+      "tags": ["haul", "stone"], "reward": 0.15,
+      "expires_days": 7,
+      "lines": {
+        "hearsay": "There's slate wanted off the high ground, and the pay is what it is.",
+        "gossip":  "{requester} wants slate for the Rents' roof, and the paper says 'reasonable terms' in a hand that dares you to argue.",
+        "report":  "{requester} filed for roof slate from the Slate Scarp; 0.15 on delivery, expires in 7d." } },
+
+    { "id": "pellow-flour-run", "reach": "errand",
+      "requester": "nan-pellow", "site": null,
+      "tags": ["fetch", "flour"], "reward": 0.05,
+      "expires_days": 1,
+      "lines": {
+        "hearsay": "Somebody at the market needs a sack carried, and won't carry it themselves.",
+        "gossip":  "{requester} is paying a neighbour to walk to the mill so she doesn't have to, and everyone knows exactly why.",
+        "report":  "{requester} filed an errand for flour from the mill; 0.05 on delivery, expires in 1d." } }
+  ]
+}

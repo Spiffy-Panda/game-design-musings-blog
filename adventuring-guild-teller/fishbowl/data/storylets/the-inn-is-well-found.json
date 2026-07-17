@@ -1,0 +1,14 @@
+{ "id": "the-inn-is-well-found", "kind": "supply",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["the-long-table"] },
+    "pressure": { "A.trade": { "above": 0.5 } },
+    "cooldown_days": 2 },
+  "weight": 0.6, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.02 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "The cellar at {place} stood open a good while.",
+    "gossip":  "{A} went through the whole cellar at {place} before the first customer and came up pleased — {A} will not say so, but {place} has not been this well found since the year the road was good.",
+    "report":  "{A} took stock at {place} and found the cellar in hand (trade {A.trade}), slot {slot}." },
+  "_binding": { "A": "odile-vance" } }

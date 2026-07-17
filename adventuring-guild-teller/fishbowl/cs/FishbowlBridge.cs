@@ -52,6 +52,14 @@ public partial class FishbowlBridge : Node
                 Config = generated.Config, Places = generated.Places, Townees = generated.Townees,
                 DayPlans = generated.DayPlans, Traits = generated.Traits,
                 Storylets = System.Array.Empty<StoryletDto>(), Golden = null,
+                // Dropped for the same reason as the storylets above — and STATED rather than
+                // defaulted. Every authored template names a `requester` from the golden cast, and
+                // a generated cast contains none of them; a template requesting paper from a townee
+                // who does not exist is not a board, it is a dangling reference. Town.Postings is
+                // defaulted (not required), so leaving this line out would drop them SILENTLY and
+                // be indistinguishable from an oversight. See TownLoader.Rebuild, which carries
+                // Postings across on purpose — the two call sites differ, and both say why.
+                Postings = System.Array.Empty<PostingTemplateDto>(),
                 PlaceById = generated.PlaceById, TowneeById = generated.TowneeById,
                 TraitById = generated.TraitById, StoryletById = new System.Collections.Generic.Dictionary<string, StoryletDto>(),
             };

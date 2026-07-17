@@ -1,0 +1,15 @@
+{ "id": "warden-looks-away", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["market-row"] },
+    "regard": { "A->B": { "tag": "ward" } },
+    "chronicle_since": { "days": 1, "kind": "market-supply" },
+    "cooldown_days": 2 },
+  "weight": 0.8, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": -0.03 },
+               { "chronicle": true, "tellability": 0.5, "mark": [] } ],
+  "lines": {
+    "hearsay": "Nobody at {place} was making anything of the weighing, officially.",
+    "gossip":  "{A} stood close enough to {B} at {place} to hear every word of it and found something to look at in the other direction — {A} has kept that stall's peace for years by never once being where the trouble is.",
+    "report":  "{A} recorded no disturbance at {place}, slot {slot}." },
+  "_binding": { "A": "grigg-paulet", "B": "dob-millet" } }

@@ -1,0 +1,17 @@
+{ "id": "the-name-in-the-book", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["bray-and-daughter"] },
+    "regard": { "A->B": { "tag": "rival", "score_below": -0.2 },
+                "B->A": { "score_below": 0.1 } },
+    "cooldown_days": 5 },
+  "weight": 1.25, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": 0.1 },
+               { "regard": "B->A", "delta": 0.05 },
+               { "pressure": "B.heart", "delta": 0.04 },
+               { "chronicle": true, "tellability": 0.68, "mark": ["B"] } ],
+  "lines": {
+    "hearsay": "There was a long silence at {place}, and then a pen moving.",
+    "gossip":  "{A} wrote {B}'s name against the hinge work in the shop book at {place} — {A}'s own hand, in the ledger {A} lets nobody else touch — and has not mentioned it since, which in that shop is as near an apology as anyone is going to get.",
+    "report":  "{A} credited the hinge work to {B} in the shop's account book at {place}, slot {slot}." },
+  "_binding": { "A": "alys-bray", "B": "tam-underhill" } }

@@ -19,6 +19,19 @@ public sealed class Simulation
     public event Action<int, IReadOnlyList<SummaryLine>>? DawnReady;     // (day, summary)
     public event Action<int, string>? HashReady;                        // (day, hash)
 
+    /// <summary>
+    /// (day, slot) — fired after the drift and <b>before any storylet is evaluated</b>: the exact
+    /// snapshot <c>StoryletEngine.CheckPredicates</c> is about to read. <see cref="SlotTicked"/> is
+    /// the other side of the same slot and reports post-effect state, which is a different number
+    /// whenever anything fired.
+    /// <para>It exists because <c>--lint</c> needs to observe what the engine sees rather than model
+    /// it. The slot's phase order was already documented in this class's remarks; this makes the
+    /// documented seam observable instead of leaving an instrument to guess at it. Like every event
+    /// here it is hash-invisible: the day-hash is sealed in <see cref="FinalizeDay"/> from
+    /// <c>World.ToHashNode</c>, and a subscriber that mutates state is misusing this.</para>
+    /// </summary>
+    public event Action<int, int>? SlotOpening;
+
     public Simulation(Town town) => World = World.Build(town);
     public Simulation(World world) => World = world;
 
@@ -26,6 +39,7 @@ public sealed class Simulation
     {
         int day = World.Day, slot = World.Slot;
         Pressures.DriftSlot(World, slot);
+        SlotOpening?.Invoke(day, slot);
         StoryletEngine.RunSlot(World, slot, e => EventLogged?.Invoke(e));
         World.RecordPressures();
         SlotTicked?.Invoke(day, slot);
@@ -61,6 +75,17 @@ public sealed class Simulation
         // rebuilds occupancy for the new day.
         World.Day = day + 1;
         World.Slot = 0;
+
+        // The board ages before the clockwork resolves. Ordering is load-bearing and this is the
+        // slot PNO.M2's Outings.ResolveDay will share: clockwork picks a townee's block list from
+        // their phase, so phase must already be settled when it runs. M1 gets to prove the slot
+        // while it still draws no RNG.
+        //
+        // `World.Day` is passed, not read inside: it is already day+1 here, so "the day being
+        // resolved" is the incoming one. Explicit beats correct-by-accident — and at M2 the same
+        // line has real teeth, because Clockwork.ResolveDay's first act is ResetDayStreams().
+        Board.ResolveDay(World, World.Day);
+
         Clockwork.ResolveDay(World);
     }
 }

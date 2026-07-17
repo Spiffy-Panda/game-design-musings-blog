@@ -3,7 +3,7 @@
     "copresent": ["A", "B"],
     "trait": { "A": "gossip-carrier" },
     "chronicle_since": { "days": 1, "kind": "social" },
-    "cooldown_days": 1 },
+    "cooldown_days": 2 },
   "weight": 0.9, "streams": "storylets",
   "effects": [ { "chronicle": true, "tellability": 0.4, "mark": [] } ],
   "lines": {

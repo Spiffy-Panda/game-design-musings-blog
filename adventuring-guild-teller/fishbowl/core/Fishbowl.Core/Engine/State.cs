@@ -109,6 +109,18 @@ public sealed class ChronicleEntry
     public required List<string> Participants { get; init; }   // townee ids, bound order
     public double Tellability { get; init; }
 
+    /// <summary>
+    /// The paper this entry is about — filed by a <c>post</c> effect, or taken down by
+    /// <see cref="Board"/>. Empty for everything else, which is every entry the golden fixture makes.
+    /// <para>Deliberately <b>not</b> folded into <see cref="Participants"/>: that list's contract is
+    /// "townee ids, bound order" and <c>Api/WorldView.ChronicleJson</c> resolves every element of it
+    /// to a townee name. A posting id in there would render as a raw slug and quietly make the
+    /// projection lie. It is also hash-invisible on purpose — the chronicle digest in
+    /// <c>World.ToHashNode</c> emits slot/id/who, and the postings digest already carries the board's
+    /// real state, so recording the link twice would add nothing but a way to disagree.</para>
+    /// </summary>
+    public List<string> PostingIds { get; init; } = new();
+
     /// <summary>The because-list: the predicate facts, human-readable (AGR.2 explainability).</summary>
     public List<BecauseFact> Because { get; init; } = new();
 

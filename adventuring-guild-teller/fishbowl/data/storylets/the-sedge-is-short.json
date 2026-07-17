@@ -1,0 +1,17 @@
+{ "id": "the-sedge-is-short", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-reed-beds"] },
+    "regard": { "A->B": { "tag": "supplier" } },
+    "pressure": { "A.trade": { "below": 0.38 } },
+    "cooldown_days": 3 },
+  "weight": 1.05, "streams": "storylets",
+  "effects": [ { "pressure": "A.trade", "delta": -0.04 },
+               { "pressure": "B.purse", "delta": -0.03 },
+               { "regard": "A->B", "delta": -0.02 },
+               { "chronicle": true, "tellability": 0.6, "mark": [] } ],
+  "lines": {
+    "hearsay": "The cutting at {place} was slower than the season wants.",
+    "gossip":  "{A} came out to {place} for sedgewort and went back with half a bundle — {B} has not said why, and {A} has stopped asking, which between those two counts as a conversation.",
+    "report":  "{A} recorded a short delivery of sedgewort from {B} at {place}, slot {slot}." },
+  "_binding": { "A": "petch", "B": "hollis-mire" } }

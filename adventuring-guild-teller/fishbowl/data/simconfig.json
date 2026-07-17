@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "_comment": "THE LIVE TOWN's knob defaults — data/ is the all-features town (PNO.D2), so every knob the engine reads is authored here explicitly rather than left to SimConfig's C# defaults. Two of these are known-dead and authored only so the file stays a complete inventory: copresence_bonus is read by ZERO engine code, and the storylet_rate slider's 1.0-3.0 half is a no-op (FireGate early-returns at rate >= 1.0, so only 0.0-1.0 thins). storylet_cooldown_scale is genuinely live (StoryletEngine.cs:68) but has no slider.",
   "slots_per_day": 48,
   "seed": 1123,
   "pressure_rates": { "purse": 1.0, "trade": 1.0, "heart": 1.0, "restlessness": 1.0 },
@@ -9,5 +10,8 @@
   "hearsay_required": true,
   "actionability": 0.5,
   "summary_lines": 5,
-  "bio_marks_enabled": true
+  "novelty_decay": 0.5,
+  "bio_marks_enabled": true,
+  "posting_rate": 1.0,
+  "posting_expiry_scale": 1.0
 }

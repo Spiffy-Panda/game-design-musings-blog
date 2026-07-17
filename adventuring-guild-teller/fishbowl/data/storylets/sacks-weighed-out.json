@@ -1,0 +1,16 @@
+{ "id": "sacks-weighed-out", "kind": "market-supply",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["market-row"] },
+    "regard": { "A->B": { "tag": "rival" } },
+    "cooldown_days": 3 },
+  "weight": 1.0, "streams": "storylets",
+  "effects": [ { "pressure": "B.trade", "delta": 0.05 },
+               { "pressure": "A.purse", "delta": 0.03 },
+               { "pressure": "B.purse", "delta": -0.035 },
+               { "chronicle": true, "tellability": 0.5, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was a weighing at {place}, and an audience for it.",
+    "gossip":  "{A} made {B} watch every sack onto the beam at {place}, and {B} made {A} weigh two of them again — those two have not trusted each other's arithmetic since before the flood.",
+    "report":  "{A} delivered flour to {B} at {place}, weighed at the public beam, slot {slot}." },
+  "_binding": { "A": "dob-millet", "B": "nan-pellow" } }

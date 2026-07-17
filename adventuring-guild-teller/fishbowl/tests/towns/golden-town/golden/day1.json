@@ -1,12 +1,10 @@
 {
   "version": 1,
-  "_comment": "pinned per VFB.M3 acceptance: day 1 must produce these beat TYPES and PARTICIPANTS (not exact text). Seed/config come from ../simconfig.json unmodified.",
+  "_comment": "pinned per VFB.M3 acceptance: day 1 must produce these beat TYPES and PARTICIPANTS (not exact text). Seed/config come from ../simconfig.json unmodified. THIS LIST LOST TWO BEATS ON 2026-07-16 (`FBT.Q1`, ruled by Panda; see DEV-LOG) and the reason is the only reason that will ever be good enough: `stock-runs-low [petch]` and `fetch-arranged [sela-quick, petch]` both gate on Petch's trade having FALLEN below 0.35, and it only ever fell there because `Pressures.TradeDepletion` counted every townee's trade down to 0 unconditionally. They were fossils of a defect, not requirements — this file was PINNING the bug rather than catching it, exactly as `regression-b1-b6.json` once pinned a layout bug as `expect on_screen: false` and ran green on it for a release (FISHBOWL.md:231-239). Fixing the drive is what made them stop firing. DO NOT re-add them to turn a red green, and DO NOT retune Pressures' trade constants to bring them back: the tuning that restores these two beats is arithmetically the same tuning that restores the ratchet (proof in the DEV-LOG). PNO.D2 still holds — this fixture takes no new postings, sites, or cast; a fossil corrected by an explicit ruling was never what `frozen` meant.",
   "seed": 1123,
   "day": 1,
   "expected_beats": [
     { "storylet": "rent-quarrel", "participants": ["widow-karsk", "fenn-halloway"] },
-    { "storylet": "stock-runs-low", "participants": ["petch"] },
-    { "storylet": "fetch-arranged", "participants": ["sela-quick", "petch"] },
     { "storylet": "departure-farewell", "participants": ["brindle-ashe", "tam-underhill"] },
     { "storylet": "debt-nagged", "participants": ["marrow-bray", "corvo-lunt"] },
     { "storylet": "rumor-retold", "participants": ["odile-vance", "sela-quick"] },

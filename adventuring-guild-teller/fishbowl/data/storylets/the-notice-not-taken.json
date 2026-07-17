@@ -1,0 +1,17 @@
+{ "id": "the-notice-not-taken", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-long-table"] },
+    "regard": { "A->B": { "tag": "rival", "score_below": -0.18 },
+                "B->A": { "score_below": -0.2 } },
+    "cooldown_days": 4 },
+  "weight": 1.1, "streams": "storylets",
+  "effects": [ { "regard": "A->B", "delta": 0.06 },
+               { "regard": "B->A", "delta": 0.07 },
+               { "pressure": "B.heart", "delta": 0.04 },
+               { "chronicle": true, "tellability": 0.62, "mark": [] } ],
+  "lines": {
+    "hearsay": "A piece of paper changed hands at {place}, and nothing was said over it.",
+    "gossip":  "{A} slid the notice across the table at {place} to {B} — the good one, the one {A} had read twice and decided against — and never once said whose idea it had been.",
+    "report":  "{A} transferred an unclaimed notice to {B} at {place}, slot {slot}." },
+  "_binding": { "A": "juno-fettle", "B": "wick-tarrow" } }

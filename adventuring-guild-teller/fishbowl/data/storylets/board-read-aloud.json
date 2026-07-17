@@ -1,0 +1,15 @@
+{ "id": "board-read-aloud", "kind": "posting",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["guildhall-steps"] },
+    "regard": { "A->B": { "tag": "client" } },
+    "chronicle_since": { "days": 2, "kind": "posting" },
+    "cooldown_days": 3 },
+  "weight": 0.9, "streams": "storylets",
+  "effects": [ { "regard": "B->A", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was reading going on out loud at {place}, for one listener.",
+    "gossip":  "{A} read the notice out to {B} at {place} without being asked — {B} had been squinting at it since the bell, and neither of them called it a kindness.",
+    "report":  "{A} read a notice from the board aloud to {B} at {place}, slot {slot}." },
+  "_binding": { "A": "dorrit-scrieve", "B": "brindle-ashe" } }

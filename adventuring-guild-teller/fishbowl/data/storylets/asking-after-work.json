@@ -1,0 +1,14 @@
+{ "id": "asking-after-work", "kind": "solo",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["the-cartyard"] },
+    "trait": { "A": "proud" },
+    "cooldown_days": 1 },
+  "weight": 0.5, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": -0.02 },
+               { "chronicle": true, "tellability": 0.3, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was somebody at {place} asking after work that wasn't on paper.",
+    "gossip":  "{A} came by {place} asking after anything that wanted hauling — which is beneath her record, and she asked anyway.",
+    "report":  "{A} enquired at {place} after unposted work, slot {slot}." },
+  "_binding": { "A": "juno-fettle" } }

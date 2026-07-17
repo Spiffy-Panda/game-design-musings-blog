@@ -1,0 +1,16 @@
+{ "id": "what-mire-said", "kind": "social",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["the-reed-beds"] },
+    "regard": { "A->B": { "tag": "customer" } },
+    "pressure": { "A.purse": { "below": 0.28 } },
+    "cooldown_days": 4 },
+  "weight": 1.1, "streams": "storylets",
+  "effects": [ { "pressure": "A.heart", "delta": 0.06 },
+               { "regard": "B->A", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.58, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was talking out at {place}, which there mostly is not.",
+    "gossip":  "{B} got three whole sentences out of {A} at {place} about the water sitting wrong this year — {B} is the only one who ever gets any, and has never once mentioned that to a living soul.",
+    "report":  "{A} gave {B} an account of the fen's condition at {place}, slot {slot}." },
+  "_binding": { "A": "hollis-mire", "B": "petch" } }

@@ -1,15 +1,17 @@
 { "id": "fetch-arranged", "kind": "social",
   "predicates": {
     "copresent": ["A", "B"],
+    "place": { "any": ["petchs-simples"] },
     "regard": { "A->B": { "tag": "kin" } },
     "pressure": { "B.trade": { "below": 0.35 } },
-    "cooldown_days": 2 },
+    "cooldown_days": 3 },
   "weight": 1.0, "streams": "storylets",
   "effects": [ { "regard": "A->B", "delta": 0.05 },
-               { "pressure": "B.trade", "delta": 0.08 },
+               { "pressure": "B.trade", "delta": 0.12 },
+               { "pressure": "B.heart", "delta": 0.03 },
                { "chronicle": true, "tellability": 0.55, "mark": [] } ],
   "lines": {
-    "hearsay": "Someone at {place} was sorting out a supply run.",
-    "gossip":  "{A} promised {B} she'd fetch what {place} was short on.",
-    "report":  "{A} arranged a fetch-run for {B} at {place}, slot {slot}." },
+    "hearsay": "{place} was short of a good deal, and somebody had already gone for it.",
+    "gossip":  "{A} took {B}'s shortages off the counter at {place} without being asked and had the lot of it in the cart by dusk — {A} does this for {B} about once a week and calls it passing by, and {B} has never once called it anything at all.",
+    "report":  "{A} undertook a fetch-run against {B}'s standing shortages at {place}, slot {slot}." },
   "_binding": { "A": "sela-quick", "B": "petch" } }

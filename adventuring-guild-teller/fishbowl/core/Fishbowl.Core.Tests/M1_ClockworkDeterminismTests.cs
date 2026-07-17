@@ -47,8 +47,24 @@ public class M1_ClockworkDeterminismTests
         // If you are here because this test went red: that is the test working. Do not re-baseline
         // it to make it green. Either the change was not supposed to touch the hash — fix the change
         // — or it was, and that needs a ruling in DEV-LOG.md before these strings move.
+        //
+        // THESE STRINGS HAVE MOVED EXACTLY ONCE. 2026-07-16, ruled by Panda (NTD.Q1 + FBT.Q1) — the
+        // second branch above, and the DEV-LOG entry of that date is the ruling. They were
+        // b8d15299d8817639 / e3478bc4ff7d4848 / 02bc86b987c547c3, and they moved because
+        // Pressures.BaseDaily's `trade` arm stopped being a flat -0.11/day countdown and became a
+        // restoring force. Two other fixes landed in the same change (signed pressure_rate_mods,
+        // heart pressure_targets) and moved NOTHING here — verified by staging them alone and watching
+        // the old literals stay green, which is what "hash-neutral" has to mean if it means anything.
+        //
+        // What the next reader most needs to know, because it is the part that generalises: the same
+        // ruling deleted 2 of the 7 beats in ../../tests/towns/golden-town/golden/day1.json. Both
+        // (`stock-runs-low`, `fetch-arranged`) only ever fired BECAUSE of the ratchet, so that
+        // acceptance list had been pinning the defect rather than catching it — and it did that
+        // underneath this pin, a 30-test suite, and a determinism contract, all of them green, because
+        // a ratchet is perfectly deterministic. Determinism was never the missing property.
+        // M2_TradeEquilibriumTests is the guard that was missing, and it asserts two-wayness directly.
         Assert.Equal(
-            new[] { "b8d15299d8817639", "e3478bc4ff7d4848", "02bc86b987c547c3" },
+            new[] { "2a6a8a3af0a1a81d", "d615d01daa2c8020", "619649026a9d8895" },
             RunHashes(3));
     }
 

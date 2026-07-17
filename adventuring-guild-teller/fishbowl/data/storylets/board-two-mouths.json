@@ -1,0 +1,14 @@
+{ "id": "board-two-mouths", "kind": "hearsay-chain",
+  "predicates": {
+    "copresent": ["A", "B"],
+    "place": { "any": ["guildhall-steps"] },
+    "trait": { "A": "gossip-carrier", "B": "curious" },
+    "cooldown_days": 3 },
+  "weight": 0.8, "streams": "storylets",
+  "effects": [ { "pressure": "B.heart", "delta": 0.03 },
+               { "chronicle": true, "tellability": 0.4, "mark": [] } ],
+  "lines": {
+    "hearsay": "There was comparing of notes at {place}, and no hurry about it.",
+    "gossip":  "{A} keeps the paper and {B} keeps the road, so the two of them squared the day up between them at {place} — and where the two accounts disagreed, {B}'s is the one the village will be repeating by supper.",
+    "report":  "{A} and {B} reconciled the day's accounts at {place}, slot {slot}." },
+  "_binding": { "A": "dorrit-scrieve", "B": "sela-quick" } }
