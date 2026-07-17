@@ -81,6 +81,10 @@ public partial class FishbowlBridge : Node
     public string GetRoster() => WorldView.RosterJson(World);
     public string GetTownee(string id) => WorldView.TowneeJson(World, id);
     public string GetPlaces() => WorldView.PlacesJson(World);
+    /// <summary>The postings board. Takes no day on purpose — the board is current state, not a
+    /// timeline (see <see cref="WorldView.BoardJson"/>); every other readout with a day parameter
+    /// answers "what happened then", and this one answers "what is up now".</summary>
+    public string GetBoard() => WorldView.BoardJson(World);
     public string GetChronicle(int day) => WorldView.ChronicleJson(World, day);
     public string GetSummary(int day) => WorldView.SummaryJson(World, day);
     public string GetStats(int day) => WorldView.StatsJson(World, day);

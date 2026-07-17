@@ -51,7 +51,8 @@
       "weekday": [
         { "start": 0, "end": 8, "place": "home", "activity": "asleep" },
         { "start": 8, "end": 16, "place": "haunt:the-reed-beds", "activity": "cutting sedge with Mire" },
-        { "start": 16, "end": 33, "place": "work", "activity": "minding the shop" },
+        { "start": 16, "end": 18, "place": "haunt:guildhall-steps", "activity": "the board, on the way in from the fen" },
+        { "start": 18, "end": 33, "place": "work", "activity": "minding the shop" },
         { "start": 33, "end": 38, "place": "haunt:market-row", "activity": "the simples stall" },
         { "start": 38, "end": 44, "place": "haunt:the-long-table", "activity": "a quiet one" },
         { "start": 44, "end": 48, "place": "home", "activity": "asleep" }

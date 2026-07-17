@@ -13,6 +13,7 @@ var seed_label: Label
 var seed_spin: SpinBox
 var roster_tree: Tree
 var places_box: VBoxContainer
+var postings_box: VBoxContainer
 var chronicle_box: VBoxContainer
 var chronicle_header: Label
 var summary_header: Label
@@ -392,6 +393,7 @@ func _build_center(v: VBoxContainer) -> void:
 
 func _build_right(v: VBoxContainer) -> void:
 	v.add_child(_build_knobs())
+	_build_board(v)
 	v.add_child(_header("Inspector"))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -399,6 +401,61 @@ func _build_right(v: VBoxContainer) -> void:
 	inspector_box = VBoxContainer.new()
 	inspector_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(inspector_box)
+	v.add_child(scroll)
+
+## The postings board — the paper hanging on the guildhall steps. This panel IS PNO.M1's gate: the
+## board filling and emptying is the readout, and until this existed the board filled and emptied
+## every run with nothing able to render it.
+##
+## `postings`, not `board` (ruled 2026-07-17). Three things in this app answer to "board":
+## PlaceDto.board is the place-card flag (pinned by M0), World.Board is the postings index, and the
+## LEFT rail carries a panel headed "Place board". PNO.D1 rules that the vocabulary IS the
+## positioning and names "posting" as the brand noun — so the handle takes the noun the ruling names.
+##
+## CURRENT STATE, not a per-day readout. It deliberately does not read `view_day`, and therefore
+## keeps no header reference and never rewrites its heading — compare the chronicle and the summary,
+## which hold theirs in a member var and restate day + tense on every refresh precisely because they
+## scrub. The board is a thing that is true now; "what hung on day 3" is a different question, and
+## nobody has asked it.
+##
+## IN THE RIGHT RAIL, and it was built in the left one first (ruled 2026-07-17, on the measurement).
+## The left rail is thematically right — roster + place board + postings is "the town as it is now" —
+## and it does not fit. Measured at 1290x810: the rail has ~754px, the roster's floor is 360, the
+## place board needs 328 for the live town's 8 board-places, and this panel needs ~138 for three
+## cards. Something had to scroll, and in the left rail it was the place board: 8/8 visible dropped
+## to 5/8 behind a scrollbar, in an app whose screenshots are published and have no scroll.
+##
+## The legend-bill table at the top of this file prices the place board at "fits, ~80px spare" — that
+## is TRUE AND STALE, and the staleness is the whole finding: it was measured against VFB.D4's SIX
+## board-places, and the 2026-07-16 rebuild took the live town to EIGHT. The spare was already spent
+## before this panel asked for any. The right rail had ~470px of dead space under "Select a townee."
+## and nothing regressed by moving here. Cards are narrower (290 vs 503) so they wrap a line further;
+## that costs height this rail has and the other one did not.
+func _build_board(v: VBoxContainer) -> void:
+	v.add_child(_header("Postings board"))
+	var scroll := ScrollContainer.new()
+	# A fixed bite, NOT size_flags_vertical = EXPAND_FILL: the inspector below is EXPAND_FILL and
+	# fills this rail the moment a townee is selected, so an expanding board would fight it for room
+	# on every click. Taking a fixed slice leaves the inspector the rest, which is the split that
+	# matches how the two are read — the board is a glance, the inspector is a study.
+	#
+	# 170 is measured, not guessed, and it is sized for the BOARD'S worst case rather than today's
+	# content: the live bank has four `post` effects, so four postings can stand at once, and a card
+	# is two lines at ~40px. 4 x 40 = 160, plus the separation. Sizing it to the three that happened
+	# to be up on the day I looked is the same error the `hash` readout made one scope down.
+	scroll.custom_minimum_size = Vector2(0, 170)
+	# Autowrapped children need the horizontal axis pinned, or the ScrollContainer offers them
+	# unbounded width and they never wrap — which would make their text a layout demand again and
+	# re-create the overflow 0b0112f killed by construction. Both lines are load-bearing together.
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# The handle goes on the SCROLL VIEWPORT, not the content VBox — tagging the inner box would
+	# redefine `postings` to mean "the content's extent", which is taller than its viewport whenever
+	# the board is full and would report clipped/off-screen as its permanent normal state. That is a
+	# harness handle that cries wolf forever. Same reasoning as `chronicle`; FISHBOWL.md tabulates both.
+	scroll.set_meta("test_id", "postings")
+	postings_box = VBoxContainer.new()
+	postings_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(postings_box)
 	v.add_child(scroll)
 
 func _build_knobs() -> Control:
@@ -428,6 +485,19 @@ func _build_knobs() -> Control:
 	box.add_child(_header("Simulation — applies next dawn"))
 	box.add_child(_slider("storylet_rate", "storylet rate", 0.0, 3.0, 0.05, 1.0, func(x): _knob("storylet_rate", x)))
 	box.add_child(_slider("pressure_rates.trade", "trade drift rate", 0.0, 3.0, 0.05, 1.0, func(x): _knob("pressure_rates.trade", x)))
+	# Simulation, and next-FILING rather than next-dawn — Board.File bakes the scaled span into the
+	# posting's ExpiresDay at the moment it is filed (Math.Max(1, Round(expires_days × scale))), so
+	# moving this cannot re-date paper already on the board. That is why `_knob` does not repaint the
+	# board: there is nothing retroactive to repaint, and a live redraw would imply otherwise. It
+	# drives PNO.Q2 — does paper move? At 0.25 the sedgewort posting stands 1 day instead of 4.
+	#
+	# `posting_rate` is deliberately NOT here, and its absence is the point: it is declared, settable,
+	# projected and authored, and NO ENGINE CODE READS IT (verified by grep across the subproject,
+	# 2026-07-17). Giving it a slider would build the dial-connected-to-nothing that this project has
+	# twice been grateful not to have — `copresence_bonus`'s severity argument was corrected to
+	# "nobody was misled by a slider, because nobody could turn one." Flagged for a ruling; wiring it
+	# would draw RNG at filing time and cost M1 its deliberate no-RNG property.
+	box.add_child(_slider("posting_expiry_scale", "posting expiry scale", 0.25, 3.0, 0.25, 1.0, func(x): _knob("posting_expiry_scale", x)))
 	# Not a display toggle, despite reading like one next to hearsay_required: this writes hashed
 	# bio Marks at storylet-fire time, so it affects the day-hash and must stay next-dawn.
 	box.add_child(_check("bio_marks_enabled", "bio marks enabled", true, func(on): _knob("bio_marks_enabled", 1.0 if on else 0.0)))
@@ -438,6 +508,7 @@ func _build_knobs() -> Control:
 func _refresh_all() -> void:
 	_refresh_top()
 	_refresh_roster()
+	_refresh_board()
 	_refresh_places()
 	_refresh_chronicle()
 	_refresh_summary()
@@ -528,6 +599,50 @@ func _short_name(full: String) -> String:
 func _short_place(full: String) -> String:
 	var head := full.split(",", false)[0] if full.find(",") != -1 else full
 	return head.strip_edges()
+
+## Every string here is data-derived, so every one goes through `_wrapped()`. A bare `_mk_label` in a
+## fixed rail makes its own text the rail's minimum width, and a minimum beats a FULL_RECT anchor —
+## that is how a 108px `hash` once forced the root to 1371px in a 1290 viewport. `_rail(503)` is a
+## FLOOR, not a ceiling, and the roster's columns already spend 495 of it: one unwrapped posting line
+## would widen the rail and starve the reading pane. The failure would be data-dependent — fine at
+## boot, broken on the first posting — which is exactly the kind this app has shipped before.
+func _refresh_board() -> void:
+	for c in postings_box.get_children():
+		c.queue_free()
+	var data = _j(bridge.GetBoard())
+	# An empty board is the NORMAL state and the most common one: the live town files nothing until
+	# day 2, so every boot — and every published boot screenshot — shows this branch. A bare header
+	# over a void reads as "postings don't exist"; "no paper up" states the fact. Same reasoning as
+	# the inspector's empty regard sections, which exist for the same misreading.
+	if data.postings.size() == 0:
+		postings_box.add_child(_wrapped("No paper up.", 11))
+		return
+	for p in data.postings:
+		var row := VBoxContainer.new()
+		# Who wants what. There is no title field on a posting, so the tags ARE the job — without
+		# them a card says who filed and where it goes and never what it is for.
+		var tags := ""
+		for tg in p.tags:
+			tags += ("%s, " % tg)
+		row.add_child(_wrapped("%s — %s" % [p.requester_name, tags.trim_suffix(", ")], 12))
+		# An errand is in-town by definition and carries no site (the validator enforces both
+		# directions), so naming the reach's destination is the honest way to render a null.
+		var where = str(p.site_name) if p.reach == "posting" else "in town"
+		# "untaken" is a stated fact, not a blank. Only Standing and Expired are reachable at PNO.M1,
+		# and a posting WITH a taker is Taken — which is by definition NOT on the board. So this reads
+		# "untaken" for every row, forever, at this milestone. An empty slot would imply missing data;
+		# this is a decided value, and it is the field PNO.M2 will make move.
+		var taker = str(p.taker_name) if p.taker != null else "untaken"
+		var d := int(p.days_to_expiry)
+		# "pays 0.25", not "0.25 on delivery": measured off the running app at 4.9px/char, the longer
+		# form is ~245px in the 503 rail this panel was first built in and ~290 in the one it lives in
+		# now — i.e. it wrapped to a second line and doubled every card's height. Naming the number
+		# beats leaving it bare, and a bare 0.25 after a place name is not obviously a reward.
+		var meta := _wrapped("%s · pays %.2f · %d day%s left · %s"
+			% [where, float(p.reward), d, "" if d == 1 else "s", taker], 11)
+		meta.modulate = Color(0.72, 0.78, 0.84)
+		row.add_child(meta)
+		postings_box.add_child(row)
 
 func _refresh_places() -> void:
 	for c in places_box.get_children():

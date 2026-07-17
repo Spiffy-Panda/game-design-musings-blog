@@ -101,7 +101,7 @@
     { "id": "petch", "name": "Petch", "role": "herbalist", "adventurer": false,
       "traits": ["patient", "curious"],
       "dayplan": "herbalist-default", "home": "petchs-cottage", "work": "petchs-simples",
-      "haunts": ["the-reed-beds", "market-row", "the-long-table"],
+      "haunts": ["the-reed-beds", "guildhall-steps", "market-row", "the-long-table"],
       "pressures": { "purse": 0.35, "trade": 0.4, "heart": 0.5, "restlessness": 0.25 },
       "regard": {
         "sela-quick": { "score": 0.3, "tags": ["kin"] },

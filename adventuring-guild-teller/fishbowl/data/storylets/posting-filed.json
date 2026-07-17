@@ -1,14 +1,14 @@
 { "id": "posting-filed", "kind": "posting",
   "predicates": {
     "copresent": ["A"],
-    "place": { "any": ["petchs-simples"] },
+    "place": { "any": ["guildhall-steps"] },
     "pressure": { "A.trade": { "below": 0.35 } },
     "cooldown_days": 5 },
   "weight": 1.2, "streams": "storylets",
   "effects": [ { "post": { "requester": "A", "template": "sedgewort-short" } },
                { "chronicle": true, "tellability": 0.5, "mark": [] } ],
   "lines": {
-    "hearsay": "There was talk near {place} of fresh paper going up on the guild board.",
-    "gossip":  "{A} gave up on the arithmetic at {place} and wrote the shortage out for the board.",
+    "hearsay": "There was fresh paper on the board at {place} before the shops were open.",
+    "gossip":  "{A} came in off the fen with the basket short and stopped at {place} on the way to open up — the shortage has been on the shelves a week and in {A}'s arithmetic for longer, and pinning it up is the first time {A} has let the town see the sum.",
     "report":  "{A} filed a posting at {place} (trade {A.trade}), slot {slot}." },
   "_binding": { "A": "petch" } }

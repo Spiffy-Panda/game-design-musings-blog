@@ -2,10 +2,18 @@
 
 **Mnemonic:** `PNO` (gates `PNO.D*`, milestones `PNO.M*`, research questions `PNO.Q*`).
 **Status:** **building** — proposed 2026-07-16; **all nine rulings `PNO.D1`–`PNO.D9` landed 2026-07-16.**
-**`PNO.M1` (the board) ✅ landed 2026-07-16** — a posting files on day 2 and expires on day 6 in the live
-town; suite 53/53; `--lint --town data` clean at `errors=0 accepted=14 warnings=70`. **`PNO.M2` (outings)
-is next and carries two hard preconditions:** a ruling + `DEV-LOG.md` entry **before** the three hash
-literals move, and the **unresolved `haunt`-vs-restlessness collision** flagged under *The model — outings*.
+**`PNO.M1` (the board) ✅ landed 2026-07-16; its VISIBLE half landed 2026-07-17** — the board had no
+projection, no bridge getter and no panel, so the milestone could not be gate-checked against its own
+criterion (*"the board filling and emptying IS the readout"*). Now: `WorldView.BoardJson` → `GetBoard()`
+→ the **Postings board** panel (`test_id: postings`, right rail), plus posting-template validation,
+which did not exist. Gate-checked in-engine: a posting **files day 2 slot 16 @ Guildhall Steps** and
+**expires day 6**; suite **71/71** (was 53, all still green verbatim); `--lint --town data` clean at
+`errors=0 accepted=14 warnings=70`; editor and CLI agree on the day-3 hash. **Two rulings landed
+2026-07-17** — `test_id` is **`postings`** not `board`, and **filing is gated at the board itself**
+(Petch is routed past it), which cost **distinct sentences 47 → 45**; see *Research questions*.
+**`PNO.M2` (outings) is next and carries two hard preconditions:** a ruling + `DEV-LOG.md` entry
+**before** the three hash literals move, and the **unresolved `haunt`-vs-restlessness collision**
+flagged under *The model — outings*.
 `PNO.D1` + `PNO.D3`–`PNO.D9` adopted on the recommendation; **`PNO.D2` was ruled *against* the
 recommendation**, and the ruling is better than the recommendation (see *The asks*). Re-drift-checked
 against the code 2026-07-16 before building: **21 of 22 claims confirmed, 1 drifted** — and **three of
@@ -119,6 +127,33 @@ plausibly file it. That is a storylet, exactly as Panda guessed — and the bank
 proof of concept: `stock-runs-low` (Petch) + `fetch-arranged` (Sela) is a **proto-posting** that
 resolves as an in-town courier favor. Postings generalize that pair from *a favor someone does in
 town* to *a job on the board someone leaves town for*.
+
+> **"Somewhere they could plausibly file it" now means the board. Ruled 2026-07-17.** `PNO.M1` shipped
+> `posting-filed` gated on `place: {any: ["petchs-simples"]}` — **Petch filed at his own shop**, and
+> the paper reached the guildhall steps by magic, with the prose covering for it (*"wrote the shortage
+> out for the board"*). The `place` predicate this needs **exists** — it landed inside `PNO.M1`; the
+> gate was simply pointed at the wrong place. **Ruled: route him past the board, then gate there.**
+>
+> Three things the naive version gets wrong, all worth carrying into `M2`'s authoring:
+> - **`trade` is a *restoring* drive now** (`NTD.Q1`), resting at 0.55 at work and 0.12 idle, so it
+>   **climbs all through a shopkeeper's work block**. The obvious "he closes up and walks over"
+>   placement would evaluate `trade below 0.35` at the drive's **daily maximum**. A pressure gate has
+>   to sit at the drive's awake **minimum** — for Petch, the end of his long idle stretch, right
+>   before the shop opens. **Under a restoring drive, *when* you check is now part of the predicate.**
+> - **The town already had a board rush and an idiom.** Nine dayplans pass `guildhall-steps` between
+>   slots 10 and 16, and `forge-hand-default` (Alys, also a shopkeeper) already authors the exact
+>   activity *"the board, on the way to open up"*. Petch's minimum lands inside that window: the
+>   reroute joins a convention rather than inventing one.
+> - **Where the slots come from is not free, and `--lint` is the referee.** Taking them from the reed
+>   beds dropped Petch↔Mire to **6 awake-co-present slots** and tripped `unconvened-bonds` (8-slot
+>   floor) — un-convening an edge the 2026-07-16 rebuild had deliberately convened. Taking them from
+>   the **shop** side instead keeps the bond at exactly 8, preserves Petch's trade equilibrium, and
+>   lands the gate on the true minimum. Lint unchanged at `errors=0 accepted=14 warnings=70`.
+>
+> **Measured:** `posting-filed` fires **day 2, slot 16, @ Guildhall Steps**, expires **day 6** — the
+> `expires_days: 4` arc intact, at the board this time. The chain also reads better: he pins the
+> shortage up on the way in, then opens the shop and spends the day moving jars forward on the shelves.
+> **The cost is real and is recorded under `PNO.Q1`: distinct sentences 47 → 45.**
 
 Keep both. A town where every need becomes guild paperwork loses its texture — so postings carry a
 **`reach`**: `errand` (in-town, a neighbour handles it, the existing `fetch-arranged` path) vs
@@ -608,7 +643,37 @@ Also: `dayplans.json` gains `cooldown` variants (+ a shared `cooldown-default`),
 >   a scenario, or it will report success having done nothing at all.
 
 - **Board panel** — standing postings as cards: requester, site, reward, days-to-expiry, taker.
-  The board filling and emptying *is* the readout. `test_id`: `board`.
+  The board filling and emptying *is* the readout. ~~`test_id`: `board`.~~ **`test_id`: `postings`**
+  (ruled 2026-07-17). ✅ **LANDED 2026-07-17** — `WorldView.BoardJson` → `GetBoard()` → the panel, in
+  the **right rail**.
+  > **The handle.** `board` was free — the existing "Place board" panel carries no `test_id` at all —
+  > so this was never a collision, only a vocabulary one. But three things answer to "board" in one
+  > app: `PlaceDto.Board` (the place-card flag, pinned by `M0`), `World.Board` (the postings index),
+  > and the panel headed *"Place board"*. **`PNO.D1` rules that the vocabulary IS the positioning and
+  > names *posting* as the brand noun** — so the handle takes the noun the ruling actually names. A
+  > `test_id` table listing `board` = postings, one rail from a panel headed "Place board", is the
+  > ambiguity `PNO.D1` exists to refuse.
+  >
+  > **The right rail, and the left one was tried first.** The left rail is thematically right —
+  > roster + place board + postings is "the town as it is now" — and **it does not fit.** At 1290×810
+  > it holds ~754px: roster floor 360, place board 328 for the live town's 8 board-places, this panel
+  > ~138 for three cards. In the left rail the place board dropped **8/8 → 5/8 behind a scrollbar**,
+  > in an app whose screenshots are published and have no scroll. Compression was not available: at
+  > 11px the longest card autowraps to two lines in a 503 rail regardless.
+  > **`Observatory.gd`'s legend-bill table prices the place board at *"fits, ~80px spare"* — true,
+  > measured, and STALE**, and the staleness is the finding: it was measured against `VFB.D4`'s **six**
+  > board-places and the 2026-07-16 rebuild took the live town to **eight**. *The spare was already
+  > spent before this panel asked for any.* The right rail had ~470px dead under "Select a townee.";
+  > nothing regressed. Final: 290×170, `clipped: []`, `visible_fraction: 1.0`, sized for **four** cards
+  > (the bank has four `post` effects) rather than the three that were up on the day.
+  >
+  > **`days_to_expiry` is derived in the projection, against `World.Day`, never in GDScript** — and it
+  > can never read 0: expiry runs at `day >= ExpiresDay` at the incoming dawn, so anything still
+  > standing has at least its last day left. **The panel takes no `view_day`**: the board is
+  > current-state, and "which paper hung on day 3" is a different question nobody has asked.
+  > **`taker` reads "untaken" for every row, forever, at this milestone** — a posting *with* a taker is
+  > `Taken`, which is by definition not on the board. It is a decided value, not missing data, and it
+  > is the field `PNO.M2` makes move.
 - **Outing track** — for each adventurer not in town: site, leg, slots-in-leg, a four-pip track.
   `test_id`: `outings`.
 - **Inspector** — phase chip + current outing + posting history.
@@ -626,6 +691,19 @@ It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
 - **`PNO.M1` — the board.** ~~◑ **in progress.**~~ ✅ **LANDED 2026-07-16 — accepted, measured.** The
   `PNO.D2` restructure + postings data + `Board` + `post`/expire effects + the `posting` predicate +
   board panel. **Town-side only, no outings.**
+  > **⚠ "board panel" was not true when this was ticked, and stayed untrue for a day** (corrected
+  > 2026-07-17). There was **no `WorldView` projection, no `GetBoard()` on the bridge, and no panel** —
+  > the board filled and emptied every run with nothing able to render it, which is this milestone's
+  > *gate*, not a garnish: *"the board filling and emptying IS the readout."* The engine half was
+  > accepted on a CLI `--chronicle` trace, and a CLI trace cannot see a missing panel. **The lesson is
+  > cheap and general: a milestone whose accept criterion names a readout cannot be gate-checked by an
+  > instrument that does not render.** All of it is now built and gate-checked in-engine with the GTH
+  > harness (suite 53 → **71**, all 53 pre-existing green verbatim). See *Observatory additions*.
+  > **`SchemaValidator` also had no posting-template validation at all** — and `Board.File` is a
+  > *copier*, so a dangling requester or a typo'd `reach` was never a crash; it was a posting that
+  > existed and was quietly wrong for the rest of the run. Seven checks now, each with a real
+  > silent-failure story, plus a test that the live town's own templates pass them (`--lint` has twice
+  > shipped a check that got its condemnations backwards).
   *Accept:* Petch's shortage files a posting; it stands, ages, expires; every transition has a
   because-list; all existing tests green.
   > **Accepted on measurement, not assertion** (live town, `--days 7 --chronicle`, seed 1123):
@@ -696,9 +774,32 @@ It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
   > **`told/fired` will not move** — it is `summary_lines × nights / beats fired`, structural, invariant
   > under any reordering. The number that answers `PNO.Q1` is **distinct**, and `repeat(any)` rising is
   > what "the town went quiet" will actually look like.
-  > **Also note the board already pays some of this back before M2 exists:** `posting-expired` fires 10×
+  > ~~**Also note the board already pays some of this back before M2 exists:** `posting-expired` fires 10×
   > per fortnight and reached a summary once (day 8), at tellability 0.3 — board traffic is already
-  > tellable content, so M2's hole opens against a floor that is not zero.
+  > tellable content, so M2's hole opens against a floor that is not zero.~~
+  >
+  > > **Struck — the floor is zero now, and `PNO.M1`'s own visible half is what took it there**
+  > > (2026-07-17). Routing Petch to the board (see *The model — postings*) moved the live town's
+  > > variety: **distinct sentences 47 → 45**, novelty 0.67 → 0.64, repeat(any) 0.35 → 0.38. A
+  > > before/after `--report` diff names it exactly — **`carefuller-math` and `posting-expired` both
+  > > fall 1 → 0 summarized**, while `posting-filed`, `stock-runs-low` and `board-two-mouths` each rise
+  > > 1 → 2. **`posting-expired` now reaches no summary at all**, so the specific evidence this
+  > > paragraph rests on is gone.
+  > >
+  > > **The counterweight, and it is the honest half:** *total* board traffic reaching summaries is
+  > > **unchanged at 2 lines/fortnight**. The claim "board traffic is already tellable content" survives;
+  > > only "the notice coming down is the tellable part" died. **The town now hears about paper going
+  > > *up* twice and never about paper coming *down* unanswered** — a flavour shift, not a volume one,
+  > > and arguably the worse half to lose: an unanswered notice is the beat that says the board *fails*,
+  > > which is exactly what `PNO.Q2` is asking about.
+  > >
+  > > **Deliberately not retuned.** Raising `posting-expired`'s tellability to buy the line back is
+  > > tuning toward a threshold — the move `Api/Variety.cs` was written un-scored to prevent, and the
+  > > one `--lint`'s own bank check warns against by name (*"Do NOT retune these upward on the strength
+  > > of this count alone"*). **Needs a ruling if the beat is wanted back.** Note what it demonstrates
+  > > for free, though: `M2`'s hole will open against a floor that is **whatever the board's own traffic
+  > > displaces**, and board traffic competes with itself. Two `post`-effect rules firing more often
+  > > silenced a third board rule. That is `PNO.Q1`'s mechanism showing up a milestone early.
 - **`PNO.Q2` — does paper move?** Time-to-take on a standing posting. If postings rot on the board,
   self-selection (`PNO.D4`) is too shy. If they're gone within a slot, the board isn't a board.
 - **`PNO.Q3` — is the silence right?** A party is away for days and the summary never mentions them.
@@ -763,7 +864,41 @@ the argument still had to go, because the next agent would have budgeted from it
 
 ## Found while speccing (adjacent, and it bears on `VFB.Q1`)
 
-Two authored hooks are **wired to nothing**, verified by grep across the whole subproject:
+~~Two~~ **Four** authored hooks are **wired to nothing**, verified by grep across the whole subproject.
+
+> **Two of the four are `PNO`'s own, found 2026-07-17 while building the board panel** — which makes
+> this section's shape the finding rather than its contents. The defect is not a historical accident
+> being cleaned up; **this plan is still producing it**, and `PNO.M1` has now produced it three times
+> (`post` was the first — a silent no-op *while the chronicle printed "filed a posting"*). The pattern
+> is stable enough to state as a rule: **a field is authored, declared, settable and projected in one
+> change, and its consumer is deferred to a later milestone that then inherits no way to notice.**
+> Both new ones are **pending a ruling** and neither should be quietly fixed inside `PNO` — same
+> reasoning as the original two.
+>
+> - **`posting_rate` is a dead knob.** Declared (`TownDtos.cs:187`), settable (`World.cs:148`),
+>   projected (`RunReport.cs:188`), authored (`simconfig.json:15`) — **four hits, not one a consumer.**
+>   Exactly `copresence_bonus`'s shape, one plan later, and the handoff brief lists it as *working*.
+>   **It deliberately has no slider**, and the reason is this file's own corrected argument:
+>   *"nobody was misled by a slider, because nobody could turn one."* Building the dial would
+>   manufacture the condition the correction was relieved not to have. **Wiring it is not free either**
+>   — "how readily needs become paper" implies a draw, and that would cost `PNO.M1` its deliberate
+>   no-RNG property, which exists so `M2` inherits a day-boundary already exercised.
+> - **`PostingTemplateDto.Lines` is a dead field, and it is the largest instance yet.** `Board.File`
+>   copies `Reach`/`SiteId`/`Tags`/`Reward` and **never `tpl.Lines`**; the runtime `Posting` has no
+>   `Lines` member to copy them into. **All 12 authored sentences in `postings.json`** (4 templates ×
+>   hearsay/gossip/report) are read by nothing — and the DTO's docstring asserts the opposite in so
+>   many words: *"reused rather than re-declared so the dial renders a posting exactly as it renders
+>   anything else."* **The dial has never rendered a posting.**
+>   **The live possibility, flagged not taken:** the board panel is plausibly what those lines were
+>   written *for* — rendering each posting at the current actionability register would let the dial do
+>   to paper what it does to gossip, which is this musing's thesis (warm bureaucracy; the paperwork
+>   *is* the game) running on the board itself. But *Observatory additions* specifies a **structured
+>   card**, and only the card can carry a **live** countdown: the authored `report` line says
+>   *"expires in 4d"* — the authored span, forever, not the days remaining. **Card built, field
+>   flagged.** If the ruling is "render the lines", the two are not exclusive: prose at the register,
+>   with the countdown beneath it.
+
+The original two:
 
 - **`copresence_bonus` is a dead knob.** It is declared (`TownDtos.cs:115`), settable
   (`World.cs:126`), projected to the UI (`WorldView.cs:171`), authored in `simconfig.json:8` — and

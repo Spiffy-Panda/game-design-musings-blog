@@ -14,7 +14,7 @@ It's a **Godot 4.6 (mono)** front-end over an **engine-free C# core**, with **JS
 **The sim, headless** (no Godot needed — this is where the logic and tests live):
 
 ```bash
-dotnet test  core/Fishbowl.Core.Tests/Fishbowl.Core.Tests.csproj   # the whole suite (53 tests)
+dotnet test  core/Fishbowl.Core.Tests/Fishbowl.Core.Tests.csproj   # the whole suite (71 tests)
 dotnet run   --project core/Fishbowl.Cli -- --days 3 --chronicle   # watch three days scroll by
 dotnet run   --project core/Fishbowl.Cli -- --soak --days 14       # how much does this town actually SAY?
 dotnet run   --project core/Fishbowl.Cli -- --lint --town data     # the content linter
@@ -39,10 +39,11 @@ headlessly. On a fresh checkout run the import pass once so `class_name Sparklin
 
 In the window: **Step** advances one half-hour slot, **Run to Dawn** finishes the day, and the
 panels update — roster, place board, chronicle (expand a row for the *because-list* that let the
-event fire), the dawn summary, and a townee inspector with pressure sparklines and directed
-regard. The **debug knobs** are live: slide *actionability* to re-read the summary from hearsay to
-report, turn *storylet_rate* down to thin the chronicle, and so on. **F9** saves a screenshot to
-`.captures/`. The top bar shows the day-hash — the same seed always produces the same hash.
+event fire), the dawn summary, the postings board, and a townee inspector with pressure sparklines
+and directed regard. The **debug knobs** are live: slide *actionability* to re-read the summary
+from hearsay to report, turn *storylet_rate* down to thin the chronicle, and so on. **F9** saves a
+screenshot to `.captures/`. The status strip along the bottom shows the day-hash — the same seed
+always produces the same hash.
 
 **The knob worth playing with is `novelty decay`.** It fatigues a story the town has told recently, so
 tomorrow's summary reaches further down the bank. Drag it to **1.0** to turn it off, and you get the
@@ -64,15 +65,16 @@ the summary is derived when you read it, never stored.
 - `data/` — **the live town**: townees, places, day-plans, traits, storylets, postings, and the
   linter's acceptance ledger. All features on; this is the town the observatory runs.
 - `tests/towns/golden-town/` — **the frozen fixture**: a full, separate, posting-free copy of the
-  original 12-townee town, which every test loads. It is deliberately *not* inside `data/` — a golden
-  master living in the live data directory tracks the very thing it is supposed to be pinning, which is
-  exactly what it did until 2026-07-16. It will drift from `data/` over time; for a frozen master,
-  **drift is the feature**.
+  original 12-townee town, which most of the suite loads (the board tests can't — a posting-free town
+  has no board — so they assert invariants against `data/` instead). It is deliberately *not* inside
+  `data/` — a golden master living in the live data directory tracks the very thing it is supposed to
+  be pinning, which is exactly what it did until 2026-07-16. It will drift from `data/` over time; for
+  a frozen master, **drift is the feature**.
 - `addons/gd_test_harness/` — a drop-in **test harness** (synthetic input + scene inspection +
   token-frugal capture); inert unless activated. See its `README.md`; spec in the repo-root
   `plans/PLAN-godot-test-harness.md`.
 
-For the full contract — the frozen bridge surface, the determinism rules and the hash literals, the
+For the full contract — the bridge surface, the determinism rules and the hash literals, the
 two towns, the linter's ledger, the data shapes, and milestone status — see
 [`FISHBOWL.md`](./FISHBOWL.md). For *why* it's built this way, see the parent
 [`plans/PLAN-village-fishbowl.md`](../../plans/PLAN-village-fishbowl.md) and the repo `DEV-LOG.md`.
@@ -80,8 +82,9 @@ two towns, the linter's ledger, the data shapes, and milestone status — see
 ## Status
 
 Milestones M0–M3 are complete and gate-checked; M4 (creation menus, generator, stats, soak) is in
-place. The **board** landed 2026-07-16 (`PNO.M1`): a posting files, stands, ages, and expires in the
-town you actually run. **Outings — an adventurer taking a posting and leaving town — are next**
+place. The **board** landed 2026-07-16 (`PNO.M1`) and reached the screen on 2026-07-17: a posting
+files, stands, ages, and expires in the town you actually run, and the **Postings board** panel shows
+what is up right now. **Outings — an adventurer taking a posting and leaving town — are next**
 (`PNO.M2`), and they are the reason `restlessness` currently ships as a known-broken drive: the buildup
 exists to push a townee somewhere, and today there is nowhere to be pushed.
 

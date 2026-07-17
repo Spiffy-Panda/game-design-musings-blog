@@ -24,20 +24,30 @@ fishbowl/
   cs/FishbowlBridge.cs   THE ONLY C# the engine touches directly — JSON strings across the boundary
   scenes/Observatory.tscn  root Control + Observatory.gd (UI built in code, not hand-authored nodes)
   scripts/Observatory.gd   the observatory: readouts, knobs, creation menus (node scripting only).
-                           LAYOUT RULE, load-bearing: two FIXED rails (roster+board / knobs+inspector)
-                           and ONE fluid reading pane (summary+chronicle) whose width is derived, never
-                           declared. Machine readouts (clock/hash/seed/stats) go through `_readout()` —
-                           monospace + `clip_text`, so their text can never be a layout demand. A bare
-                           Label's text IS its minimum width, and a minimum beats a FULL_RECT anchor:
-                           that is how a 108px `hash` once forced the root to 1371px in a 1290 viewport
-                           and starved the Dawn Summary. Don't put a variable-width bare Label in a
-                           width-negotiating container.
+                           LAYOUT RULE, load-bearing: two FIXED rails (roster+places / knobs+postings+
+                           inspector) and ONE fluid reading pane (summary+chronicle) whose width is
+                           derived, never declared. Machine readouts (clock/hash/seed/stats) go through
+                           `_readout()` — monospace + `clip_text`, so their text can never be a layout
+                           demand. A bare Label's text IS its minimum width, and a minimum beats a
+                           FULL_RECT anchor: that is how a 108px `hash` once forced the root to 1371px
+                           in a 1290 viewport and starved the Dawn Summary. Don't put a variable-width
+                           bare Label in a width-negotiating container — route data-derived strings
+                           through `_wrapped()`.
+                           WIDTH is solved; HEIGHT is now the contested axis, and its headline number
+                           is STALE. The legend-bill table in that file prices the place board at
+                           "fits, ~80px spare" — measured against VFB.D4's SIX board-places. The
+                           2026-07-16 rebuild took the live town to EIGHT (8 x 41px = 328px), so the
+                           spare was already spent before PNO's board panel asked for any: dropped into
+                           the left rail it pushed the place board to 5/8 behind a scrollbar, and a
+                           published PNG has no scroll. Hence the postings board lives in the RIGHT
+                           rail (ruled 2026-07-17), which had ~470px dead under "Select a townee.".
+                           Budget height before adding a left-rail panel; re-measure, don't cite.
   scripts/Sparkline.gd     class_name Sparkline — inspector pressure sparkline
   core/Fishbowl.Core/      engine-free classlib: Determinism/ Json/ Model/ Data/ Engine/ Text/ Api/
   core/Fishbowl.Cli/       headless runner (--town --seed --days --report --chronicle --soak --lint
                            --json --seeds --knob). Linter.cs runs the REAL Clockwork/Simulation — a
                            linter that reimplements what it audits eventually audits its own fiction
-  core/Fishbowl.Core.Tests/  xUnit — 53 tests incl. the Godot-stringify round-trip suite
+  core/Fishbowl.Core.Tests/  xUnit — 71 tests incl. the Godot-stringify round-trip suite
   data/                    THE LIVE TOWN — all features on; postings authored here (see "Data contract").
                            Also `lint-accepted.json` — the per-town acceptance ledger --lint reads
   addons/gd_test_harness/  GTH test harness — a GENERATED COPY. Canonical: ../../utils/godot/
@@ -154,7 +164,12 @@ drive *converges* instead of *arriving*.
 > ratchets are the specification M2 has to discharge; if they are still there after M2, the ruling was
 > wrong and that ledger entry is the evidence.
 
-## The bridge surface (frozen — `cs/FishbowlBridge.cs`)
+## The bridge surface (`cs/FishbowlBridge.cs`) — **unfrozen by `PNO`, 2026-07-17**
+
+~~frozen~~ — `PNO.M1` added `GetBoard()`, because the board had no way to reach the screen and its
+milestone gate is *"the board filling and emptying IS the readout"*. It stays **additive**: nothing
+was removed or re-signatured, so every existing caller is untouched. Expect `PNO.M2` to add an outing
+projection on the same terms.
 
 GDScript calls these; **JSON strings cross the boundary** (never typed objects). Getters are
 pull-based; state also arrives via four signals. C# `[Signal]` names stay **PascalCase** in
@@ -162,9 +177,16 @@ GDScript (`bridge.SlotTicked.connect(...)`).
 
 - Lifecycle: `LoadTown(path)`, `GenerateTown(configJson)`, `Reseed(seed)`
 - Tick: `StepSlot()`, `RunToDawn()`, `RunDays(n)`, `CurrentDay()`
-- Readouts (JSON out): `GetClock()`, `GetRoster()`, `GetTownee(id)`, `GetPlaces()`,
+- Readouts (JSON out): `GetClock()`, `GetRoster()`, `GetTownee(id)`, `GetPlaces()`, **`GetBoard()`**,
   `GetChronicle(day)`, `GetSummary(day)`, `GetStats(day)`, `GetKnobs()`,
   `GetPressureSeries(id,drive)`, `GetStorylets()`
+
+**`GetBoard()` takes no day, and that is a decision rather than an omission.** Every other readout with
+a timeline takes one and answers *"what happened then"*; the board answers *"what is up now"*. Giving
+it a `view_day` would silently answer the unasked question ("which paper hung on day 3" — reconstructible
+only from filing/expiry dates) with today's board. `days_to_expiry` is derived in the projection against
+`World.Day`, never in GDScript, and can never read 0: expiry runs at `day >= ExpiresDay` at the incoming
+dawn, so anything still standing has at least its last day left.
 - Knobs: `SetKnob(name,value)`, `SetAway(id,away)`
 - Creation: `CreateTownee(json)`, `CreatePlace(json)`, `InjectStorylet(id,participantsJson)`
 - Snapshots: `SaveSnapshot(path)`, `LoadSnapshot(path)`
@@ -181,7 +203,7 @@ the bridge is a thin marshalling shim.
 
 | | `data/` — **the live town** | `tests/towns/golden-town/` — **the frozen fixture** |
 |---|---|---|
-| Who loads it | the observatory (`FishbowlBridge._Ready()` → `res://data`), the CLI (default; `--town` overrides) | every xUnit test, via `TestSupport.LoadGoldenTown()` |
+| Who loads it | the observatory (`FishbowlBridge._Ready()` → `res://data`), the CLI (default; `--town` overrides), and the tests that need a board — via `TestSupport.LoadLiveTown()` | **every acceptance test**, via `TestSupport.LoadGoldenTown()` |
 | Counts *(measured 2026-07-16)* | **18** townees · **16** places (**8** `board:true`) · **4** adventurers · **50** storylets · **49** regard edges | **12** townees · **12** places (**6** `board:true`) · **2** adventurers · **12** storylets · **10** regard edges |
 | Features | **all of them** — postings are authored here | **posting-free, forever** |
 | `--lint` | `errors=0 accepted=14 warnings=70 exit=0` — clean, via its ledger | `errors=23 accepted=0 warnings=64 exit=1` — **correct**: it has no ledger and it really is defective |
@@ -200,6 +222,15 @@ an explicit ruling. It has been corrected exactly once: `FBT.Q1` (2026-07-16) dr
 7 beats — `stock-runs-low`, `fetch-arranged` — because both were **fossils of the trade ratchet**, firing
 only because Petch's trade fell below 0.35, which only happened *because of the defect*. **That acceptance
 list had been pinning the bug rather than catching it.** The golden day now pins **5** beats.
+
+**The fixture is posting-free, so board tests structurally cannot use it** — there is no board in it to
+test. That leaves the live town (`TestSupport.LoadLiveTown()`, added 2026-07-17) or a hand-built one, and
+postings are authored in the live one. **The rule that follows is the important half: assert the machine,
+never that town's current numbers.** A test pinning "files on day 2, expires on day 6" against a directory
+whose whole purpose is to grow would be pinning today's authoring, and would redden on the next re-author
+with no bug in sight — which is exactly the trap `golden/day1.json` fell into (`FBT.Q1`). `PNO_M1_BoardTests`
+asserts invariants any posting town must satisfy: paper files, stands, expires, carries a because-list,
+never shows a countdown below its last day.
 
 **Do not add postings, sites, or cast to the fixture.** Its entire value is that it stopped changing.
 A golden master living inside the live data directory tracks the very thing it is meant to pin — which
@@ -261,17 +292,40 @@ Anything placed under `data/` joins that suite; that is why the fixture lives un
   > **47 distinct sentences of 70 delivered lines · novelty 0.67 · repeat(N−1) 0.00 · repeat(any) 0.35 ·
   > told/fired 70/319 = 0.22 · 5 of 50 rules fired but never told.**
 - **PNO.M1 the board** ✅ *(see `plans/PLAN-fishbowl-postings-outings.md`)* — `Engine/Board.cs`, the
-  `post` effect, the `posting` predicate, `postings.json`. Measured on the live town: a posting **files
-  on day 2** (`posting-filed`, Petch @ Petch's Simples, slot 16) and **expires on day 6**
-  (`posting-expired`, slot 0 — `expires_days: 4`). Expiry is a **board mechanism, not a rule**, so it is
-  the first chronicle entry ever built outside `BuildEntry` and synthesizes its own because-list (5
-  facts). It is tellable at 0.3: over 14 nights it fires 10× and reaches a summary **once**, on day 8.
+  `post` effect, the `posting` predicate, `postings.json`. Expiry is a **board mechanism, not a rule**,
+  so it is the first chronicle entry ever built outside `BuildEntry` and synthesizes its own
+  because-list (5 facts).
+  > **The visible half landed 2026-07-17** — `WorldView.BoardJson` → `GetBoard()` → the **Postings
+  > board** panel (`test_id: postings`, right rail). Until then the board filled and emptied every run
+  > with **nothing able to render it**, so the milestone could not be gate-checked against its own
+  > criterion. Also then: `SchemaValidator` gained posting-template validation (there was none — and
+  > `Board.File` is a copier, so a bad template was a posting that existed and was quietly wrong for
+  > the whole run, never a crash). Suite **53 → 71**; the three pinned hash literals **did not move**
+  > and could not have, since all of this lands in `data/` and the pin runs against the fixture.
+  > **Filing moved to the board itself** (ruled 2026-07-17): `posting-filed` was gated at
+  > `petchs-simples`, so Petch filed at his own shop and the paper reached the steps by magic.
+  > `herbalist-default` now routes him past `guildhall-steps` at slots 16–18 — joining the town's
+  > existing board rush (nine dayplans pass the steps between slots 10 and 16) and landing on his
+  > awake `trade` **minimum**, which matters because `trade` is restoring now and climbs all through
+  > his shop hours: gating at the end of the work block would read the drive at its daily peak. The
+  > slots come from the **shop** side, not the reed beds — taking them from the reed beds dropped
+  > Petch↔Mire to 6 awake-co-present slots and tripped `--lint`'s `unconvened-bonds` floor.
+  > Measured on the live town: a posting **files on day 2, slot 16, @ Guildhall Steps** and **expires
+  > on day 6** (`expires_days: 4`) — the arc intact, at the board this time.
+  > **The cost, measured (3 seeds × 14 nights): distinct sentences 47 → 45**, novelty 0.67 → 0.64,
+  > repeat(any) 0.35 → 0.38. A `--report` diff names it exactly: **`carefuller-math` and
+  > `posting-expired` both fall 1 → 0 summarized** while `posting-filed`/`stock-runs-low`/
+  > `board-two-mouths` each rise 1 → 2. **So `posting-expired` no longer reaches any summary** — read
+  > that against `PNO.Q1`, which leans on it as proof that "M2's hole opens against a floor that is
+  > not zero." Total board traffic in summaries is **unchanged at 2 lines/fortnight**; the town simply
+  > hears about paper going *up* twice and never about paper coming *down* unanswered. **Not retuned**
+  > — buying the line back with tellability is tuning toward a threshold.
 
 ## Build · test · run
 
 ```bash
 # core (engine-free — no Godot needed)
-dotnet test  core/Fishbowl.Core.Tests/Fishbowl.Core.Tests.csproj      # 53 tests
+dotnet test  core/Fishbowl.Core.Tests/Fishbowl.Core.Tests.csproj      # 71 tests
 dotnet run   --project core/Fishbowl.Cli -- --days 3 --chronicle      # readable trace
 dotnet run   --project core/Fishbowl.Cli -- --soak --days 14          # variety instrument (VFB.Q1 is saturated)
 dotnet run   --project core/Fishbowl.Cli -- --lint --town data        # content linter: errors=0 accepted=14 warnings=70
@@ -402,10 +456,41 @@ is code-built and auto-generated node names (`@HSlider@68`) shift on relayout. R
 | Group | `test_id`s |
 |---|---|
 | Readouts | `clock` · `hash` · `seed` · `register` · `stats` · `summary` |
-| Tables | `roster` · `chronicle` |
+| Tables | `roster` · `chronicle` · `postings` |
 | Buttons | `btn-step` · `btn-dawn` · `btn-run3` · `btn-reseed` · `btn-generate` · `btn-townee` · `btn-place` · `btn-storylets` · `seed-spin` |
 | Knobs — *rendering, applies now* | `knob-actionability` · `knob-summary_lines` · `knob-novelty_decay` · `knob-hearsay_required` |
-| Knobs — *simulation, applies next dawn* | `knob-storylet_rate` · `knob-pressure_rates.trade` · `knob-bio_marks_enabled` |
+| Knobs — *simulation, applies next dawn* | `knob-storylet_rate` · `knob-pressure_rates.trade` · `knob-posting_expiry_scale` · `knob-bio_marks_enabled` |
+
+**`postings` is the postings board, and `board` is deliberately not a handle here** (ruled 2026-07-17).
+Three things in this app answer to "board" — `PlaceDto.Board` (the place-card flag, pinned by `M0`),
+`World.Board` (the postings index), and the left rail's panel headed *"Place board"* — so the spec's
+`test_id: board` was struck for the noun `PNO.D1` actually rules on: **posting**. The handle was free
+(the Place board panel carries no `test_id`), so this bought clarity rather than settling a collision.
+Like `chronicle`, it tags the **scroll viewport**, never the inner content box.
+
+**`knob-posting_expiry_scale` is simulation, and next-*filing* rather than next-dawn.** `Board.File`
+bakes the scaled span into a posting's `ExpiresDay` at the moment it is filed, so moving this dial
+**cannot re-date paper already on the board** — which is why the board is not repainted on knob-change
+and why a rendered countdown can never go stale.
+`PNO_M1_BoardTests.Posting_Expiry_Scale_Is_Baked_At_Filing_And_Cannot_Re_Date_Standing_Paper` pins it.
+
+> **⚠ `posting_rate` has no slider, and its absence is load-bearing.** It is declared, settable,
+> projected and authored — and **no engine code reads it** (grepped across the subproject, 2026-07-17:
+> four hits, not one a consumer). It is the third instance of this project's signature defect, beside
+> `copresence_bonus` and `storylet_weight_mods`. Giving it a dial would manufacture exactly the
+> condition `copresence_bonus`'s corrected severity argument was relieved not to have —
+> *"nobody was misled by a slider, because nobody could turn one."* **Do not wire it as a drive-by:**
+> it would draw RNG at filing time and cost `PNO.M1` its deliberate no-RNG property, which exists so
+> `PNO.M2` inherits a day-boundary that has already been exercised. Pending a ruling.
+>
+> **And `PostingTemplateDto.Lines` is a fourth, larger one.** `Board.File` copies `Reach`/`Site`/
+> `Tags`/`Reward` and **never `Lines`**; the runtime `Posting` has no field to copy them into. All 12
+> authored sentences in `postings.json` (4 templates × 3 registers) are read by nothing, and that
+> DTO's docstring — *"so the dial renders a posting exactly as it renders anything else"* — is false.
+> Plausibly they were written **for** the board panel, which would let the actionability dial do to
+> paper what it does to gossip; but the spec specifies a structured card, and only the card can show a
+> **live** countdown (the authored `report` line says "expires in 4d", the authored span, forever).
+> Pending a ruling.
 
 **The `test_id`s are the knob KEYS and never change; the on-screen labels are not the keys.** Two read
 differently to a human: `knob-actionability` is labelled *"register (actionability)"* (it is the register

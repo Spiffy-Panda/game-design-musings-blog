@@ -115,6 +115,68 @@ public static class SchemaValidator
             }
         }
 
+        // Posting templates. `postings.json` is OPTIONAL — an absent file means a posting-free town,
+        // which is exactly the frozen golden fixture (PNO.D2) — so this loop is a no-op there and
+        // costs the fixture nothing. But every template that does exist is authored identity, and
+        // `Board.File` is a copier: it stamps reach/site/tags/reward onto the runtime posting and
+        // never looks back. Nothing downstream re-checks any of it. So a bad value here is not a
+        // crash, it is a posting that exists and is quietly wrong for the rest of the run — the
+        // failure mode this whole file was written to refuse.
+        var reaches = new[] { "posting", "errand" };
+        var seenPostings = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var p in t.Postings)
+        {
+            // Board.File resolves a template with FirstOrDefault(p => p.Id == templateId), so a
+            // duplicate id does not conflict — the first one silently wins and the second is
+            // unreachable authored prose. Same shape as `unreachable-posting` in --lint, but that
+            // is a warn about a template nothing names; this is two templates fighting over a name.
+            if (!seenPostings.Add(p.Id))
+                errors.Add($"posting '{p.Id}' is declared more than once — Board.File takes the first "
+                         + "match by id, so the later one can never be filed.");
+
+            if (!t.TowneeById.ContainsKey(p.Requester))
+                errors.Add($"posting '{p.Id}' requester '{p.Requester}' is not a townee. Board.File "
+                         + "copies it onto the posting unchecked, and both readers fall back to the raw "
+                         + "id when the lookup misses — so the board would render paper filed by a slug, "
+                         + "and the expiry line would name that slug as a person.");
+
+            if (!reaches.Contains(p.Reach, StringComparer.Ordinal))
+                errors.Add($"posting '{p.Id}' reach '{p.Reach}' unrecognized (posting|errand). No engine "
+                         + "code branches on reach yet, so this does not throw anywhere — it is a word "
+                         + "that reaches the board projection and decides how the card reads, and a typo "
+                         + "would render a site posting as an in-town errand with no error.");
+
+            // reach and site have to agree, in both directions, because each disagreement loses a
+            // different thing silently. Existence is NOT checked: sites.json lands at PNO.M2, so a
+            // site id has nothing to resolve against yet and shape is all that can honestly be
+            // asserted here. (postings.json says so in its own header.)
+            bool hasSite = !string.IsNullOrWhiteSpace(p.Site);
+            if (p.Reach == "posting" && !hasSite)
+                errors.Add($"posting '{p.Id}' has reach 'posting' but no site — a posting is the board, "
+                         + "an adventurer, and a site, and the board projection has nothing to name as the "
+                         + "destination. If it is handled in town by a neighbour, its reach is 'errand'.");
+            if (p.Reach == "errand" && hasSite)
+                errors.Add($"posting '{p.Id}' has reach 'errand' but names site '{p.Site}' — an errand is "
+                         + "in-town by definition, so Board.File would carry a site that nothing will ever "
+                         + "route to and the board would still read it as in-town.");
+
+            // Board.File does Math.Max(1, Round(ExpiresDays * PostingExpiryScale)), so a 0 or a
+            // negative does not fail — it silently becomes 1 and the author's intent is gone. The
+            // clamp is right (paper that expires before it is filed is not a state); catching the
+            // input that needs clamping is this file's job.
+            if (p.ExpiresDays < 1)
+                errors.Add($"posting '{p.Id}' expires_days is {p.ExpiresDays} — Board.File clamps the span "
+                         + "to a minimum of 1 day, so this would be silently rewritten rather than honoured.");
+
+            // Not consumed until PNO.M3 pays it into a taker's purse — but it is already on screen:
+            // the board projection emits it and the panel prints it as the terms of the job. A
+            // negative reward reads as paper that charges you for taking it.
+            if (p.Reward < 0)
+                errors.Add($"posting '{p.Id}' reward is {p.Reward} — a reward is paid into the taker's purse "
+                         + "(PNO.M3) and is rendered on the board as the job's terms; a negative one is a "
+                         + "posting that bills the person who takes it.");
+        }
+
         // The kind vocabulary is whatever this town's places actually use — not a hardcoded enum, so
         // a town may invent a kind without a code change, and a typo still fails because it matches
         // nothing the town has.

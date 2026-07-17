@@ -114,6 +114,74 @@ public static class WorldView
         return S(new JsonObject { ["slot"] = slot, ["places"] = arr });
     }
 
+    /// <summary>
+    /// The board — the postings standing right now, in filing order (deterministic by construction,
+    /// so it never needs re-sorting).
+    /// <para><b>Current-state, not per-day, and that is the one design decision here.</b> Every other
+    /// projection with a timeline takes a <c>day</c> parameter; this one must not. The board is a
+    /// thing that is true *now* — "which paper hung on day 3" is a different question, answerable
+    /// only by replaying filing and expiry dates, and nobody has asked it. Handing this a
+    /// <c>view_day</c> would silently answer the unasked question with today's board.</para>
+    /// <para><b><c>days_to_expiry</c> is derived here, against <c>w.Day</c>, not in GDScript</b> —
+    /// the view has no business owning the boundary. <see cref="Board.ResolveDay"/> expires at
+    /// <c>day &gt;= ExpiresDay</c> and runs at the dawn of the incoming day, so anything still on the
+    /// board has <c>ExpiresDay &gt; Day</c> and the smallest value this can emit is <b>1</b> — its
+    /// last day up. A 0 is unreachable: that paper came down before any projection could show it.</para>
+    /// </summary>
+    public static string BoardJson(World w)
+    {
+        var arr = new JsonArray();
+        foreach (var p in w.Board)
+            arr.Add(new JsonObject
+            {
+                ["id"] = p.Id,
+                ["template"] = p.TemplateId,
+                ["requester"] = p.RequesterId,
+                ["requester_name"] = Name(w, p.RequesterId),
+                ["reach"] = p.Reach,
+                ["site"] = p.SiteId,
+                ["site_name"] = SiteName(p.SiteId),
+                ["tags"] = new JsonArray(p.Tags.Select(x => (JsonNode)x!).ToArray()),
+                ["reward"] = Math.Round(p.Reward, 3),
+                ["filed_day"] = p.FiledDay,
+                ["expires_day"] = p.ExpiresDay,
+                ["days_to_expiry"] = p.ExpiresDay - w.Day,
+                // Null for every row at PNO.M1, and that is a decided value rather than missing data:
+                // a posting WITH a taker is PostingState.Taken, and Taken is by definition not on the
+                // board. The view says "untaken" rather than rendering a blank, for that reason.
+                ["taker"] = p.TakerId,
+                ["taker_name"] = p.TakerId is null ? null : Name(w, p.TakerId),
+            });
+
+        bool known = w.Town.PlaceById.TryGetValue(Board.BoardPlaceId, out var place);
+        return S(new JsonObject
+        {
+            ["day"] = w.Day,
+            ["place"] = Board.BoardPlaceId,
+            ["place_name"] = known ? place!.Name : Board.BoardPlaceId,
+            ["postings"] = arr,
+        });
+    }
+
+    /// <summary>
+    /// A site's display name. <b><c>sites.json</c> lands at <c>PNO.M2</c></b> — until then no site has
+    /// an authored name anywhere in the town, so this de-slugifies the id (<c>the-sedge-fen</c> →
+    /// <c>the Sedge Fen</c>, which is what the authored posting prose already calls it). When sites
+    /// land, resolve from them and keep this as the fallback: the same <c>known ? name : derived</c>
+    /// shape every other lookup in this file uses.
+    /// <para>What it must never do is put the raw slug on screen. <see cref="Board"/>'s expiry entry
+    /// refuses exactly that for <c>Posting.Id</c> on <c>AGT.10</c> grounds — the summary is gossip,
+    /// not telemetry — and a site id is the same class of thing. Leading "the" stays lowercase to
+    /// match the town's own convention: <c>places.json</c> authors "the Cartyard", not "The Cartyard".</para>
+    /// </summary>
+    private static string? SiteName(string? siteId)
+    {
+        if (string.IsNullOrWhiteSpace(siteId)) return null;
+        var words = siteId.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        return string.Join(" ", words.Select((word, i) =>
+            i == 0 && word == "the" ? word : char.ToUpperInvariant(word[0]) + word[1..]));
+    }
+
     public static string ChronicleJson(World w, int day)
     {
         var arr = new JsonArray();

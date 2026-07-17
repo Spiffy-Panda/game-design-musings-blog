@@ -6,6 +6,162 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-17 — `PNO.M1` grows its missing half: the board can finally be seen, and two more numbers turn out to be authored in good faith and read by nothing
+
+`PNO.M1` shipped the board and no way to look at it. `Board.cs` filed and expired paper every run,
+`postings.json` was authored, the digest was in the hash — and there was **no projection, no bridge
+getter, and no panel**. The milestone's own gate is *"the board filling and emptying IS the readout"*,
+so it could not be gate-checked in the app it ships in. This entry closes that, and records four
+things found on the way that are worth more than the panel.
+
+### Two rulings, both Panda's, both taken against my draft
+
+**`postings`, not `board`, for the `test_id`.** The spec spends the handle `board` on this panel. I
+checked first and the handle was **free** — the existing "Place board" panel carries no `test_id` at
+all — so this was never a collision, only a vocabulary one. Three things in one app answer to "board":
+`PlaceDto.Board` (the place-card flag, pinned by `M0`), `World.Board` (the postings index), and the
+panel headed *"Place board"*. **Ruled: take the noun `PNO.D1` actually names.** That ruling names
+*posting* as the brand noun and says the vocabulary IS the positioning — so `postings` serves it
+better than `board` did. The spec's `board` is struck in place.
+
+**Filing moved to the board, and Petch now walks to it.** The spec says paper is filed when the
+requester is *"somewhere they could plausibly file it"*. That line read as unenforced, and the handoff
+said no `place` predicate existed — **both stale**: the predicate landed inside `PNO.M1` and
+`posting-filed` was already using it, gated on `place: {any: ["petchs-simples"]}`. So Petch filed at
+his own shop and the paper appeared on the steps by magic, which the prose covered for
+(*"wrote the shortage out for the board"*). Ruled: **route him past the board, then gate there.**
+
+The routing is the interesting part, because the naive version is wrong twice over.
+
+- **`trade` is a restoring drive now** (`NTD.Q1`, yesterday), resting at 0.55 at work and 0.12 idle.
+  So it climbs all through Petch's shop hours. Putting the board visit at the END of his work block —
+  the obvious "he closes up and walks over" reading — would evaluate `trade below 0.35` at the drive's
+  **daily maximum**, and the rule might never fire. The gate has to sit at his awake **minimum**,
+  which is the end of his long idle stretch, right before the shop opens.
+- **The town already had an idiom and a rush hour.** Nine dayplans route past `guildhall-steps`
+  between slots 10 and 16, and `forge-hand-default` — Alys, also a shopkeeper — already authors the
+  exact activity *"the board, on the way to open up"*. Petch's minimum lands inside that window. The
+  reroute is joining a convention, not inventing one.
+- **My first cut took the two slots from the reed beds, and `--lint` caught it**: `unconvened-bonds`
+  went 0→1, *"hollis-mire+petch: authored regard (customer) but only 6 awake-co-present slot(s)/day —
+  under the 8-slot floor"*. Convening every authored edge was the **stated goal of yesterday's
+  rebuild**, and I had just un-convened one. Taking the slots from the shop side instead costs
+  nothing measurable, keeps Petch↔Mire at exactly 8, and puts the gate on the true minimum. Lint back
+  to `errors=0 accepted=14 warnings=70`, unchanged from baseline. **The linter earned its keep here:
+  the check that caught this is a heuristic floor, and the two reed-beds rules fire fine at 6 slots —
+  so it was arguably a false positive, and I moved anyway rather than argue with a check on the
+  strength of my own change being fine.**
+
+Result: `posting-filed` fires **day 2, slot 16, at the Guildhall Steps** — same day, same slot as
+before, now at the board he is standing at — and expires **day 6**, the `expires_days: 4` arc intact.
+The causal chain also reads better than it did: he pins the shortage up on his way in, then opens the
+shop and spends the day moving jars forward on the shelves.
+
+**The cost, measured, because the ruling accepted a cost and did not licence hiding it.** Live town,
+3 seeds × 14 nights: **distinct sentences 47 → 45**, novelty 0.67 → 0.64, repeat(any) 0.35 → 0.38.
+A before/after `--report` diff names the two rules exactly: **`carefuller-math` and `posting-expired`
+both go 1 → 0 summarized**, while `posting-filed`, `stock-runs-low` and `board-two-mouths` each go
+1 → 2. **`posting-expired` never reaching a summary matters more than the −2**, because the spec
+leans on it: *"the board already pays some of this back before M2 exists — `posting-expired` fires 10×
+per fortnight and reached a summary once, so M2's hole opens against a floor that is not zero."*
+**That floor is now zero.** The honest counterweight is that total board traffic reaching summaries is
+**unchanged at 2 lines/fortnight** — the town now hears about paper going *up* twice and never about
+paper coming *down* unanswered, which is a flavour shift, not a volume one. **Not retuned.** Raising
+`posting-expired`'s tellability to buy the line back is tuning toward a threshold, which is the move
+this project keeps writing down as forbidden. Flagged for `PNO.Q1`.
+
+### THE HEADLINE — the defect this project keeps naming has two new instances, and one of them is *twelve authored sentences*
+
+The spec names `copresence_bonus` and `storylet_weight_mods` as its signature defect: **a number
+authored in good faith that no engine code ever reads.** `PNO.M1` already found a third (`post` was a
+silent no-op while the chronicle printed *"filed a posting"*). There are two more, and I found them by
+grepping before wiring a slider rather than after.
+
+- **`posting_rate` is a dead knob.** Declared (`TownDtos.cs:187`), settable (`World.cs:148`),
+  projected (`RunReport.cs:188`), authored (`simconfig.json:15`) — **four hits, not one a consumer.**
+  The handoff lists it under "Working". It is not. **So it did not get a slider**, and that is the
+  point rather than an omission: `copresence_bonus`'s severity argument was *corrected* to
+  *"nobody was misled by a slider, because nobody could turn one"* — building the dial would have
+  manufactured the exact condition this project was relieved not to have. Wiring it is also not free:
+  it would draw RNG at filing time and cost `M1` its deliberate no-RNG property, which exists so `M2`
+  inherits an exercised day-boundary. **Needs a ruling.**
+- **`PostingTemplateDto.Lines` is a dead field, and it is the bigger one.** `Board.File` copies
+  `Reach`, `SiteId`, `Tags`, `Reward` — and **never `tpl.Lines`**. The runtime `Posting` has no
+  `Lines` member to copy them into. So **all 12 authored sentences in `postings.json`** (4 templates ×
+  hearsay/gossip/report) are read by nothing, and the DTO's own docstring — *"reused rather than
+  re-declared so the dial renders a posting exactly as it renders anything else"* — **is false.**
+  **The interesting possibility, and why I did not act on it:** the board panel is plausibly exactly
+  what those lines were written *for* — render each posting at the current actionability register and
+  the dial would do to paper what it does to gossip, which is the musing's whole thesis. But the spec
+  specifies a **structured card** (requester/site/reward/days/taker), and only the card can show a
+  live countdown — the authored `report` line says *"expires in 4d"*, the authored span, forever.
+  Building the card and flagging the field beats redesigning the panel under my own authority.
+  **Needs a ruling.**
+
+### The panel was built in the wrong rail first, and the measurement that proves it was stale
+
+Built in the left rail per the handoff — thematically right, roster + place board + postings is *"the
+town as it is now"*. **It does not fit.** At 1290×810 the left rail has ~754px: roster floor 360,
+place board 328 for the live town's 8 board-places, this panel ~138 for three cards. In it went, and
+the place board dropped from 8/8 visible to **5/8 behind a scrollbar** — in an app whose screenshots
+are published and have no scroll.
+
+**The layout headnote prices the place board at *"fits, ~80px spare"*. That is true, measured, and
+stale — and the staleness is the finding.** It was measured against `VFB.D4`'s **six** board-places;
+yesterday's rebuild took the live town to **eight**. 8 × 41px = 328px. **The spare was already spent
+before this panel asked for any.** I could not compress my way out either: at 11px the longest card
+autowraps to two lines in a 503 rail regardless, so a "one-line card" is the same height.
+
+Ruled: **the right rail**, above the inspector, which had ~470px of dead space under *"Select a
+townee."* Nothing regressed — the place board is back to 8/8. The narrower rail cost a wrap, fixed by
+measuring the real thing: the meta line renders at **4.9px/char**, so *"pays 0.25"* fits one line
+where *"0.25 on delivery"* did not. Panel is 290×170, `clipped: []`, `visible_fraction: 1.0`, sized
+for **four** cards (the bank has four `post` effects) rather than the three that happened to be up
+when I looked — which is the `hash` readout's own error one scope down.
+
+### The handoff was wrong about four things, all checkable
+
+Recorded because the next agent gets the same brief. **30/30 tests** → the suite was already **53**.
+**"no place predicate exists"** → it exists and `posting-filed` uses it. **"`posting_rate` /
+`posting_expiry_scale` knobs working"** → `posting_rate` is dead. And **"add it to `_knob()`, or
+`posting_expiry_scale` will leave days-to-expiry lying"** → **false, and now tested.**
+`Board.File` bakes the scaled span into `ExpiresDay` at the moment of filing (`Board.cs:49`), so
+turning the dial **cannot** re-date paper already on the board; a countdown derived from a stored date
+cannot go stale, and a board repaint on knob-change would imply a retroactivity the engine does not
+have. `_knob()` gains nothing —
+`Posting_Expiry_Scale_Is_Baked_At_Filing_And_Cannot_Re_Date_Standing_Paper` is the check.
+
+### Also landed
+
+- **`SchemaValidator` now validates posting templates** — nothing did. `Board.File` is a *copier*:
+  it stamps the template onto the runtime posting and nothing downstream re-checks it, so every bad
+  value here is a posting that exists and is quietly wrong for the whole run, never a crash. Seven
+  checks, each with a real silent-failure story: dangling requester (renders a slug as a person),
+  unknown `reach` (decides how the card reads and nothing branches on it), `posting` with no site /
+  `errand` with one, `expires_days < 1` (`Math.Max(1, …)` silently rewrites the author), negative
+  reward, duplicate ids (`FirstOrDefault` — the first silently wins). `The_Live_Towns_Own_Templates_Validate`
+  is the guard against a check strict enough to condemn the town it ships with; `--lint` has twice
+  shipped one that got its condemnations backwards.
+- **`WorldView.BoardJson`** — current-state, **no `day` parameter**, deliberately: every other
+  timeline projection takes one, and handing this one a `view_day` would silently answer *"what hung
+  on day 3"* with today's board. `days_to_expiry` is derived here against `w.Day`, never in GDScript;
+  it can never emit 0, because expiry runs at `day >= ExpiresDay` at the incoming dawn, so anything
+  still standing has at least its last day left.
+- **Site names are de-slugged in the projection** (`the-sedge-fen` → `the Sedge Fen`, which is what
+  the authored prose already calls it). `sites.json` lands at `PNO.M2`; until then no site has an
+  authored name anywhere, and putting the raw slug on screen is what `Board.Expire` already refuses to
+  do for `Posting.Id` on `AGT.10` grounds. When sites land, resolve from them and keep this as the
+  fallback — the `known ? name : derived` shape every other lookup here uses.
+- **"untaken" is printed, not left blank.** Only `Standing` and `Expired` are reachable at `M1` and a
+  posting *with* a taker is `Taken`, which is by definition not on the board — so the field is null
+  for every row, forever, at this milestone. A blank implies missing data; this is a decided value,
+  and it is the one `PNO.M2` makes move.
+- **Suite 53 → 71**, all 53 pre-existing green **verbatim**. The three pinned hash literals **did not
+  move** and could not have: everything here lands in `data/`, and the pin runs against the frozen
+  posting-free fixture. Editor and CLI agree on day 3 (`941f128fe9047b00`), checked in-engine.
+
+---
+
 ## 2026-07-16 — the town was rebuilt around the fixture that pins it; and `VFB.Q1` has been reading a number that cannot move
 
 The closing entry for the fish-bowl rebuild. **The three entries below this one already cover the

@@ -18,6 +18,20 @@ internal static class TestSupport
     /// and the golden day's 7 beats true while the live town grows features.</summary>
     public static Town LoadGoldenTown() => TownLoader.Load(ProjectPaths.GoldenTownDir());
 
+    /// <summary>
+    /// The LIVE town as a <see cref="Town"/>. <b>Board tests structurally cannot use the fixture</b> —
+    /// it is posting-free forever by ruling (PNO.D2), so there is no board in it to test. That leaves
+    /// this or a hand-built town, and the live one is where postings are authored.
+    /// <para><b>Therefore: assert the machine, never this town's current numbers.</b> A test that pins
+    /// "files on day 2, expires on day 6" against a directory whose whole purpose is to grow would be
+    /// pinning today's authoring, and the moment someone re-authors a dayplan it reddens without a bug.
+    /// That is exactly the trap `golden/day1.json` fell into (`FBT.Q1`): it pinned two beats that fired
+    /// only because of a defect, and looked identical to a test encoding a requirement. Assert
+    /// invariants that must hold for any posting town — paper files, stands, expires, carries a
+    /// because-list, never shows a nonsense countdown.</para>
+    /// </summary>
+    public static Town LoadLiveTown() => TownLoader.Load(ProjectPaths.DataDir());
+
     public static Town MakeEmptyTown() => new()
     {
         Config = new SimConfig(),
