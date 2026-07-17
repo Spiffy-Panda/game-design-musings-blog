@@ -23,8 +23,36 @@ public sealed class Townee
     public Dictionary<string, RegardEdge> Regard { get; } = new(); // target id -> directed edge
     public List<MarkDto> Marks { get; } = new();
 
-    /// <summary>Adventurer away-flag knob — the expedition system's stand-in (AGT.11).</summary>
-    public bool Away { get; set; }
+    /// <summary>
+    /// Where this townee is in the outing lifecycle (`PNO.M2`). <see cref="Phase.Daily"/> is around-town
+    /// life; <see cref="Phase.Outing"/> is on a trip; <see cref="Phase.Cooldown"/> is resting after one.
+    /// Clockwork picks the day-plan block list by this.
+    /// </summary>
+    public Phase Phase { get; set; } = Phase.Daily;
+
+    /// <summary>The active outing, when <see cref="Phase"/> is <see cref="Phase.Outing"/> AND it is a real
+    /// trip (a taken posting). Null for a <b>bare</b> departure — a `departs_day` adventurer or the
+    /// `SetAway` knob puts a townee in <see cref="Phase.Outing"/> with no site, no legs, no return
+    /// (`PNO.D6`, the legacy stand-in), and Clockwork sends that townee off-screen ("away") rather than
+    /// to a site. So `Phase == Outing` is necessary but not sufficient for "at a site".</summary>
+    public Outing? Outing { get; set; }
+
+    /// <summary>The day <see cref="Phase.Cooldown"/> ends and daily life resumes. Set when the outing
+    /// resolves; read at the day boundary by <see cref="Outings.ResolveDay"/>.</summary>
+    public int CooldownUntilDay { get; set; }
+
+    /// <summary>
+    /// The adventurer away-flag (AGT.11), now <b>derived</b> from <see cref="Phase"/> rather than stored
+    /// (`PNO.M2`). It is <see cref="Phase.Outing"/> only: a townee in <see cref="Phase.Cooldown"/> is back
+    /// <i>in town</i> — resting, mending gear, paying off what the trip was for — so they are on-screen and
+    /// co-present, not away. "Away" keeps meaning "off in the world", which is what its two readers (the
+    /// roster badge, the `SetAway` round-trip) have always shown.
+    /// <para><b>Not in the day-hash.</b> `World.ToHashNode` emits <c>phase</c> now, never this bool — a
+    /// bool that collapsed a three-state phase into one bit would make a townee in cooldown and a townee
+    /// living a daily day hash identically, and the determinism spine would stop distinguishing a third of
+    /// the new state space in silence. See that method's note.</para>
+    /// </summary>
+    public bool Away => Phase == Phase.Outing;
 
     // Resolved once per day by the clockwork (length = slots_per_day).
     public string[] Itinerary { get; set; } = Array.Empty<string>();   // place id (or "away") per slot
@@ -88,6 +116,47 @@ public sealed class Posting
 /// </para>
 /// </summary>
 public enum PostingState { Standing, Taken, Resolved, Expired, Abandoned }
+
+/// <summary>
+/// The outing lifecycle (`PNO.M2`, generalizing `Away` from a bool into a three-state machine):
+/// <c>Daily ──take──▶ Outing ──resolve──▶ Cooldown ──restored──▶ Daily</c>. `Away` is now the derived
+/// answer to "is Phase == Outing".
+/// <para>The enum is emitted into the day-hash <b>by name</b> (never an ordinal), so reordering these
+/// members can never rewrite determinism history — same discipline <see cref="PostingState"/> follows.</para>
+/// </summary>
+public enum Phase { Daily, Outing, Cooldown }
+
+/// <summary>What an outing ended as. <c>Pending</c> until the track completes and the hazard is rolled.
+/// <b>`Carried`/`Rout` are decided at `PNO.M2`; their consequences</b> — reward paid, gear lost seeding a
+/// retrieval posting, the tale told on return — <b>land at `PNO.M3`</b>. `TurnedBack` (abandoned mid-trip)
+/// has no trigger yet and is reserved.</summary>
+public enum OutingOutcome { Pending, Carried, Rout, TurnedBack }
+
+/// <summary>
+/// One adventurer's trip against one posting — the runtime record the phase machine walks. Created by the
+/// <c>take</c> effect, advanced a leg at a time by <see cref="Outings.StepSlot"/>, resolved when the track
+/// runs out.
+/// <para><b>Solo, by ruling (`PNO.D8`).</b> One taker, one posting, one site — which is also what keeps
+/// the storylet binder's O(n²) search untouched, because a <c>(adventurer, posting)</c> rule is still one
+/// townee role. Parties are the floor pillar's eventual business.</para>
+/// </summary>
+public sealed class Outing
+{
+    public required string TakerId { get; init; }
+    public required string PostingId { get; init; }
+    public required string SiteId { get; init; }
+
+    /// <summary>The day the trip began — the key half of the deterministic <c>outings</c> sub-stream draw
+    /// (<c>SubRngFor("outings", PostingId)</c> is seeded per posting, so bank growth never re-rolls an
+    /// unrelated outing). Recorded for the chronicle/readout, not for the draw.</summary>
+    public required int StartedDay { get; init; }
+
+    // Mutable progress along the site's leg track.
+    public int LegIndex { get; set; }        // which leg (index into Site.Legs)
+    public int SlotsIntoLeg { get; set; }    // slots elapsed in the current leg
+    public bool Complete { get; set; }       // the track ran out; outcome is settled
+    public OutingOutcome Outcome { get; set; } = OutingOutcome.Pending;
+}
 
 /// <summary>A directed regard edge (suggestee→target dyad): score + tags (AGT.8).</summary>
 public sealed class RegardEdge

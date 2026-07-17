@@ -79,12 +79,51 @@ public sealed record StoryletPredicatesDto
     /// <summary>Keyed role → required trait id.</summary>
     public Dictionary<string, string> Trait { get; init; } = new();
 
-    /// <summary>Keyed "A.departing_today": boolean sim flags.</summary>
+    /// <summary>Keyed "A.departing_today": boolean sim flags. <b>Only <c>departing_today</c> is known</b>;
+    /// <c>SchemaValidator</c> rejects any other key at load, because the check silently evaluates an
+    /// unknown flag to false and would fail a rule's predicate rather than erroring (`PNO.M2` trap #1).
+    /// Phase conditions go through <see cref="Phase"/>, not here.</summary>
     public Dictionary<string, bool> Flag { get; init; } = new();
+
+    /// <summary>Binds a <b>standing posting</b> from the board to a role (`PNO.M2`), for the <c>take</c>
+    /// effect to act on. The bound role is <b>not</b> a townee and <b>not</b> co-presence-bound — it sits
+    /// in the binding beside the townee roles and is excluded from the co-presence intersection for free,
+    /// because that intersection runs over <see cref="Copresent"/> only.</summary>
+    public PostingPredicateDto? Posting { get; init; }
+
+    /// <summary>Keyed role → required <see cref="Engine.Phase"/> name (<c>daily</c>/<c>outing</c>/
+    /// <c>cooldown</c>). "Only an adventurer living the daily rotation may take a posting" is
+    /// <c>{"A": "daily"}</c>. Case-insensitive against the enum name.</summary>
+    public Dictionary<string, string> Phase { get; init; } = new();
+
+    /// <summary>Keyed role → required <c>adventurer</c> flag. "Only an adventurer takes a posting" is
+    /// <c>{"A": true}</c>. Reads the authored <see cref="TowneeDto.Adventurer"/> bit directly, so no
+    /// decorative marker trait is needed — the town keeps none by design (see <c>traits.json</c>). The
+    /// villager/adventurer split is exactly this bit (`PNO.T1`).</summary>
+    public Dictionary<string, bool> Adventurer { get; init; } = new();
 
     public ChronicleSinceDto? ChronicleSince { get; init; }
 
     public int CooldownDays { get; init; }
+}
+
+/// <summary>
+/// Selects a standing posting off the board and binds it to <see cref="Role"/> (`PNO.M2`). The first
+/// posting matching <see cref="State"/> and every tag in <see cref="Tags"/>, in filing order (which is
+/// deterministic), wins — so the binder naturally works down the board slot by slot as postings are taken.
+/// </summary>
+public sealed record PostingPredicateDto
+{
+    /// <summary>The role the chosen posting is bound to (e.g. <c>"P"</c>). Referenced by a <c>take</c>
+    /// effect's <c>posting</c> field. Must not also appear in <c>copresent</c>.</summary>
+    public string Role { get; init; } = "";
+
+    /// <summary>Required <see cref="Engine.PostingState"/> name; defaults to matching <c>standing</c>, which
+    /// is the only sensible thing to take. Case-insensitive.</summary>
+    public string? State { get; init; }
+
+    /// <summary>Every tag here must be on the posting (a <c>["fetch"]</c> adventurer skips haul jobs).</summary>
+    public List<string> Tags { get; init; } = new();
 }
 
 /// <summary>
@@ -155,6 +194,10 @@ public sealed record StoryletEffectDto
     /// threshold is already this storylet's because-list, so the board inherits the explanation.</summary>
     public PostEffectDto? Post { get; init; }
 
+    /// <summary>Take a standing posting off the board and start an outing (`PNO.M2`). The taker leaves
+    /// town, the posting becomes <c>Taken</c>, and the phase machine walks the site's legs from here.</summary>
+    public TakeEffectDto? Take { get; init; }
+
     public bool Chronicle { get; init; }
     public double Tellability { get; init; }
     /// <summary>Roles whose bios get a dated one-liner appended (FB.8, behind the toggle).</summary>
@@ -176,6 +219,22 @@ public sealed record PostEffectDto
 
     /// <summary>A posting template id from <c>postings.json</c>.</summary>
     public string Template { get; init; } = "";
+}
+
+/// <summary>
+/// The <c>take</c> effect's payload: <c>{"take": {"adventurer": "A", "posting": "P"}}</c> (`PNO.M2`).
+/// <para><b>Both fields are roles, validated at load.</b> <c>adventurer</c> must be one of the storylet's
+/// <c>copresent</c> roles (the townee who leaves); <c>posting</c> must be the role of its <c>posting</c>
+/// predicate (the paper taken). A <c>take</c> without a <c>posting</c> predicate to bind <c>P</c> is a rule
+/// that can never resolve its own effect — caught at load, not mid-tick.</para>
+/// </summary>
+public sealed record TakeEffectDto
+{
+    /// <summary>A <i>role</i> from <c>copresent</c> — the adventurer who leaves on the outing.</summary>
+    public string Adventurer { get; init; } = "";
+
+    /// <summary>The <c>posting</c> predicate's role — the standing posting taken off the board.</summary>
+    public string Posting { get; init; } = "";
 }
 
 public sealed record StoryletLinesDto

@@ -1,0 +1,16 @@
+{ "id": "posting-taken", "kind": "posting",
+  "predicates": {
+    "copresent": ["A"],
+    "place": { "any": ["guildhall-steps"] },
+    "adventurer": { "A": true },
+    "phase": { "A": "daily" },
+    "posting": { "role": "P", "state": "standing" },
+    "cooldown_days": 1 },
+  "weight": 1.3, "streams": "storylets",
+  "_comment": "The FIRST rule that cannot be _binding-anchored (PNO.M2) — who takes which posting is emergent, so no _binding: the search binds A to the first daily adventurer at the steps and P to the first standing posting. A is co-presence-bound; P is NOT (it is a posting role, excluded from the intersection). cooldown_days 1 paces it to one take a day; the taker leaves for the site next slot, so they cannot take again until they return and cool down.",
+  "effects": [ { "take": { "adventurer": "A", "posting": "P" } },
+               { "chronicle": true, "tellability": 0.7, "mark": ["A"] } ],
+  "lines": {
+    "hearsay": "Someone lifted paper off the board at {place} and was not seen at the Table after.",
+    "gossip":  "{A} took a posting clean off the board at {place} and was gone up the road before anyone thought to ask which one it was.",
+    "report":  "{A} took a standing posting off the board at {place}, slot {slot}." } }

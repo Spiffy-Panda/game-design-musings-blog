@@ -166,6 +166,39 @@ public static class StoryletEngine
                 because.Add(new BecauseFact("place", $"{placeName} is a {KindOf(world, place)}"));
         }
 
+        // Posting: bind a standing posting off the board to a NON-townee role (`PNO.M2`). The board is the
+        // standing subset in filing order, which is deterministic, so "the first that matches" is a stable
+        // choice and the binder works down the board slot by slot as papers are taken. This role sits in
+        // `bind` beside the townee roles but is NOT in `pred.Copresent`, so the co-presence intersection
+        // above never saw it — the exclusion the drift check promised, for free.
+        if (pred.Posting is { } postingPred)
+        {
+            var match = world.Board.FirstOrDefault(p =>
+                (postingPred.State is null || string.Equals(p.State.ToString(), postingPred.State, StringComparison.OrdinalIgnoreCase))
+                && postingPred.Tags.All(p.HasTag));
+            if (match is null) return false;
+            bind[postingPred.Role] = match.Id;
+            because.Add(new BecauseFact("posting", $"{match.Id} standing on the board"));
+        }
+
+        // Phase: the bound townee must be in the required lifecycle phase (`PNO.M2`). "Only a daily-life
+        // adventurer may take a posting" is `{"A": "daily"}`. Unlike the hardcoded Flag check below, an
+        // unparseable phase name is a load-time error (SchemaValidator), not a silent false here.
+        foreach (var (role, phaseName) in pred.Phase)
+        {
+            if (!Enum.TryParse<Phase>(phaseName, ignoreCase: true, out var want)) return false;
+            if (world.TowneeById[bind[role]].Phase != want) return false;
+            because.Add(new BecauseFact("phase", $"{Name(world, bind[role])} is {phaseName.ToLowerInvariant()}"));
+        }
+
+        // Adventurer: the villager/adventurer split (PNO.T1), read straight off the authored bit. A
+        // villager at the board never takes a posting; that is the whole reason this predicate exists.
+        foreach (var (role, want) in pred.Adventurer)
+        {
+            if (world.TowneeById[bind[role]].Adventurer != want) return false;
+            because.Add(new BecauseFact("adventurer", $"{Name(world, bind[role])} {(want ? "is" : "is not")} an adventurer"));
+        }
+
         // Regard tags / scores.
         foreach (var (key, rp) in pred.Regard)
         {
@@ -232,10 +265,12 @@ public static class StoryletEngine
         var s = f.Storylet;
         ChronicleEntry? entry = null;
 
-        // Postings filed by this firing, in effect order. Collected rather than applied straight to a
-        // chronicle entry because the `post` and `chronicle` effects are separate entries and the
-        // chain below does not guarantee which lands first.
+        // Postings this firing touched, in effect order. Collected rather than applied straight to a
+        // chronicle entry because the `post`/`take` and `chronicle` effects are separate entries and the
+        // chain below does not guarantee which lands first. `filed` and `taken` are kept apart only so the
+        // because-list reads true — both land in the same PostingIds field ("which paper").
         var filed = new List<string>();
+        var taken = new List<string>();
 
         foreach (var e in s.Effects)
         {
@@ -262,6 +297,17 @@ public static class StoryletEngine
                 var posting = Board.File(world, post.Template, requesterId, world.Day, slot);
                 if (posting is not null) filed.Add(posting.Id);
             }
+            else if (e.Take is { } take)
+            {
+                // Both are roles: the adventurer from copresent, the posting from the `posting` predicate
+                // (bound into f.Bind during CheckPredicates). Outings.Take is the guard — it refuses a
+                // non-daily taker, a gone posting, or an errand — so a null here is a race the board lost,
+                // not an error. Same shape as `post` returning null on a duplicate.
+                string takerId = f.Bind.TryGetValue(take.Adventurer, out var aid) ? aid : "";
+                string postingId = f.Bind.TryGetValue(take.Posting, out var pid) ? pid : "";
+                var outing = Outings.Take(world, takerId, postingId, world.Day);
+                if (outing is not null) taken.Add(outing.PostingId);
+            }
             else if (e.Chronicle)
             {
                 entry = BuildEntry(world, f, slot, e);
@@ -274,7 +320,9 @@ public static class StoryletEngine
             // resolves every one of them to a name), so a posting rides its own field rather than
             // being smuggled into a list whose whole contract is "these are people".
             entry.PostingIds.AddRange(filed);
+            entry.PostingIds.AddRange(taken);
             foreach (var id in filed) entry.Because.Add(new BecauseFact("filed", id));
+            foreach (var id in taken) entry.Because.Add(new BecauseFact("taken", id));
 
             world.Chronicle.Add(entry);
             onEvent?.Invoke(entry);

@@ -21,6 +21,14 @@ public sealed class Town
     /// bank must be the natural state rather than a stub every caller has to remember to pass.</summary>
     public IReadOnlyList<PostingTemplateDto> Postings { get; init; } = Array.Empty<PostingTemplateDto>();
 
+    /// <summary>Adventure sites (`data/sites.json`, `PNO.M2`) — the leg tracks an outing walks. <b>Defaulted,
+    /// not required</b>, for the same reason as <see cref="Postings"/>: a site-free town is legal and is
+    /// exactly the frozen fixture. Each site is also synthesized into <see cref="Places"/> as an offscreen
+    /// place, so co-presence at a site works with no new engine code.</summary>
+    public IReadOnlyList<SiteDto> Sites { get; init; } = Array.Empty<SiteDto>();
+
+    public SiteDto? SiteById(string id) => Sites.FirstOrDefault(s => s.Id == id);
+
     // Lookups (built once). Keys are stable ids.
     public required IReadOnlyDictionary<string, PlaceDto> PlaceById { get; init; }
     public required IReadOnlyDictionary<string, TowneeDto> TowneeById { get; init; }

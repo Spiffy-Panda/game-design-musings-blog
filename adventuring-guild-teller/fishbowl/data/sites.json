@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "_comment": "Adventure SITES (PNO.M2) — leg tracks an outing walks. Each is ALSO synthesized into an offscreen place at load (board:false, offscreen:true), so the party is co-present there and site storylets fire off-screen. 'kind' is a tag, not a structure (PNO.D7). Leg hazards SUM (× outing_hazard_scale) into the one rout probability rolled per outing, so keep a site's total well under 1.0 — these sit ~0.22-0.30, a moderate risk at scale 1 and near-certain at scale 3 ('the fen eats everyone'). Collision-checked vs the AGT desk-prototype record; 'moonwort' is theirs, not reused.",
+  "sites": [
+    { "id": "the-sedge-fen", "name": "the Sedge Fen", "kind": "fen", "distance_slots": 6,
+      "legs": [
+        { "id": "approach", "slots": 4,  "hazard": 0.03, "activity": "wading in" },
+        { "id": "search",   "slots": 8,  "hazard": 0.07, "activity": "casting about the reeds" },
+        { "id": "the-find", "slots": 3,  "hazard": 0.10, "activity": "at the thing itself" },
+        { "id": "return",   "slots": 4,  "hazard": 0.02, "activity": "walking it home" } ] },
+
+    { "id": "the-cinder-drift", "name": "the Cinder Drift", "kind": "workings", "distance_slots": 8,
+      "legs": [
+        { "id": "approach", "slots": 6,  "hazard": 0.04, "activity": "down the old adits" },
+        { "id": "search",   "slots": 10, "hazard": 0.10, "activity": "sounding the pillars" },
+        { "id": "the-find", "slots": 4,  "hazard": 0.14, "activity": "at the pig-iron seam" },
+        { "id": "return",   "slots": 6,  "hazard": 0.02, "activity": "hauling it up" } ] },
+
+    { "id": "the-slate-scarp", "name": "the Slate Scarp", "kind": "mountain", "distance_slots": 7,
+      "legs": [
+        { "id": "approach", "slots": 5,  "hazard": 0.05, "activity": "up the scree" },
+        { "id": "search",   "slots": 8,  "hazard": 0.08, "activity": "prying the good courses" },
+        { "id": "the-find", "slots": 3,  "hazard": 0.11, "activity": "on the exposed face" },
+        { "id": "return",   "slots": 5,  "hazard": 0.03, "activity": "down with the load" } ] }
+  ]
+}

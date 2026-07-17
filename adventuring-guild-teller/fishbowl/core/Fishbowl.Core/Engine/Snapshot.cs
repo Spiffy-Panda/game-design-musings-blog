@@ -19,7 +19,16 @@ public static class Snapshot
             Seed = world.Seed, Day = world.Day, Slot = world.Slot, Config = world.Config,
             Townees = world.Townees.Select(t => new SnapTownee
             {
-                Id = t.Id, Away = t.Away,
+                // Phase, not Away (PNO.M2): a bool cannot round-trip a three-state machine plus a trip's
+                // leg progress, and M2_PressuresSnapshotTests is the tripwire — a lossy snapshot would
+                // reload to a different forward hash. The whole outing rides along or the reload diverges.
+                Id = t.Id, Phase = t.Phase.ToString(), CooldownUntilDay = t.CooldownUntilDay,
+                Outing = t.Outing is not { } o ? null : new SnapOuting
+                {
+                    PostingId = o.PostingId, SiteId = o.SiteId, StartedDay = o.StartedDay,
+                    LegIndex = o.LegIndex, SlotsIntoLeg = o.SlotsIntoLeg,
+                    Complete = o.Complete, Outcome = o.Outcome.ToString(),
+                },
                 Pressures = new Dictionary<string, double>(t.Pressures),
                 Regard = t.Regard.ToDictionary(kv => kv.Key,
                     kv => new SnapRegard { Score = kv.Value.Score, Tags = new List<string>(kv.Value.Tags) }),
@@ -27,6 +36,17 @@ public static class Snapshot
             }).ToList(),
             Cooldowns = new Dictionary<string, int>(world.Cooldowns),
             Chronicle = world.Chronicle.Select(SnapOf).ToList(),
+            // Postings ARE snapshot state (PNO.M2). They were not until now, and nothing caught it — the
+            // only snapshot test runs the posting-free fixture, so a live-town reload silently dropped the
+            // whole board and diverged from the forward hash sequence the contract promises. An active
+            // outing on a reloaded townee would also point its PostingId at a posting that no longer exists.
+            Postings = world.Postings.Select(p => new SnapPosting
+            {
+                Id = p.Id, TemplateId = p.TemplateId, RequesterId = p.RequesterId, Reach = p.Reach,
+                SiteId = p.SiteId, Tags = new List<string>(p.Tags), Reward = p.Reward,
+                FiledDay = p.FiledDay, ExpiresDay = p.ExpiresDay, State = p.State.ToString(),
+                TakerId = p.TakerId, ResolvedDay = p.ResolvedDay,
+            }).ToList(),
             DayHashes = world.DayHashes.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value),
         };
         return DataJson.Serialize(file);
@@ -44,7 +64,14 @@ public static class Snapshot
         foreach (var st in file.Townees)
         {
             if (!byId.TryGetValue(st.Id, out var t)) continue;
-            t.Away = st.Away;
+            t.Phase = Enum.TryParse<Phase>(st.Phase, ignoreCase: true, out var ph) ? ph : Phase.Daily;
+            t.CooldownUntilDay = st.CooldownUntilDay;
+            t.Outing = st.Outing is not { } so ? null : new Outing
+            {
+                TakerId = t.Id, PostingId = so.PostingId, SiteId = so.SiteId, StartedDay = so.StartedDay,
+                LegIndex = so.LegIndex, SlotsIntoLeg = so.SlotsIntoLeg, Complete = so.Complete,
+                Outcome = Enum.TryParse<OutingOutcome>(so.Outcome, ignoreCase: true, out var oc) ? oc : OutingOutcome.Pending,
+            };
             t.Pressures.Clear();
             foreach (var (d, v) in st.Pressures) t.Pressures[d] = v;
             t.Regard.Clear();
@@ -60,6 +87,16 @@ public static class Snapshot
 
         world.Cooldowns.Clear();
         foreach (var (k, v) in file.Cooldowns) world.Cooldowns[k] = v;
+        world.Postings.Clear();
+        foreach (var sp in file.Postings)
+            world.Postings.Add(new Posting
+            {
+                Id = sp.Id, TemplateId = sp.TemplateId, RequesterId = sp.RequesterId, Reach = sp.Reach,
+                SiteId = sp.SiteId, Tags = sp.Tags.ToArray(), Reward = sp.Reward,
+                FiledDay = sp.FiledDay, ExpiresDay = sp.ExpiresDay,
+                State = Enum.TryParse<PostingState>(sp.State, ignoreCase: true, out var st) ? st : PostingState.Standing,
+                TakerId = sp.TakerId, ResolvedDay = sp.ResolvedDay,
+            });
         world.Chronicle.Clear();
         world.Chronicle.AddRange(file.Chronicle.Select(RuntimeOf));
         foreach (var (k, v) in file.DayHashes) world.DayHashes[int.Parse(k)] = v;
@@ -102,17 +139,47 @@ public sealed record SnapshotFile
     public SimConfig? Config { get; init; }
     public List<SnapTownee> Townees { get; init; } = new();
     public Dictionary<string, int> Cooldowns { get; init; } = new();
+    public List<SnapPosting> Postings { get; init; } = new();
     public List<SnapChronicle> Chronicle { get; init; } = new();
     public Dictionary<string, string> DayHashes { get; init; } = new();
+}
+
+public sealed record SnapPosting
+{
+    public string Id { get; init; } = "";
+    public string TemplateId { get; init; } = "";
+    public string RequesterId { get; init; } = "";
+    public string Reach { get; init; } = "posting";
+    public string? SiteId { get; init; }
+    public List<string> Tags { get; init; } = new();
+    public double Reward { get; init; }
+    public int FiledDay { get; init; }
+    public int ExpiresDay { get; init; }
+    public string State { get; init; } = "Standing";
+    public string? TakerId { get; init; }
+    public int? ResolvedDay { get; init; }
 }
 
 public sealed record SnapTownee
 {
     public string Id { get; init; } = "";
-    public bool Away { get; init; }
+    public string Phase { get; init; } = "Daily";
+    public int CooldownUntilDay { get; init; }
+    public SnapOuting? Outing { get; init; }
     public Dictionary<string, double> Pressures { get; init; } = new();
     public Dictionary<string, SnapRegard> Regard { get; init; } = new();
     public List<MarkDto> Marks { get; init; } = new();
+}
+
+public sealed record SnapOuting
+{
+    public string PostingId { get; init; } = "";
+    public string SiteId { get; init; } = "";
+    public int StartedDay { get; init; }
+    public int LegIndex { get; init; }
+    public int SlotsIntoLeg { get; init; }
+    public bool Complete { get; init; }
+    public string Outcome { get; init; } = "Pending";
 }
 
 public sealed record SnapRegard

@@ -13,5 +13,10 @@
   "novelty_decay": 0.5,
   "bio_marks_enabled": true,
   "posting_rate": 1.0,
-  "posting_expiry_scale": 1.0
+  "posting_expiry_scale": 1.0,
+  "outing_hazard_scale": 1.0,
+  "outing_pace_scale": 1.0,
+  "cooldown_days": 2,
+  "rout_seeds_retrieval": true,
+  "self_select_bias": 1.0
 }

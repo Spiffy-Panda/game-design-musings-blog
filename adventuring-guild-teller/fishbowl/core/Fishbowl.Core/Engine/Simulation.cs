@@ -39,6 +39,10 @@ public sealed class Simulation
     {
         int day = World.Day, slot = World.Slot;
         Pressures.DriftSlot(World, slot);
+        // Advance every active outing a slot BEFORE storylets evaluate, so a site storylet sees the leg
+        // the party is on this slot (PNO.M2 ordering). Before SlotOpening too, so the linter's observed
+        // snapshot is the one CheckPredicates will read.
+        Outings.StepSlot(World, slot);
         SlotOpening?.Invoke(day, slot);
         StoryletEngine.RunSlot(World, slot, e => EventLogged?.Invoke(e));
         World.RecordPressures();
@@ -76,14 +80,13 @@ public sealed class Simulation
         World.Day = day + 1;
         World.Slot = 0;
 
-        // The board ages before the clockwork resolves. Ordering is load-bearing and this is the
-        // slot PNO.M2's Outings.ResolveDay will share: clockwork picks a townee's block list from
-        // their phase, so phase must already be settled when it runs. M1 gets to prove the slot
-        // while it still draws no RNG.
-        //
-        // `World.Day` is passed, not read inside: it is already day+1 here, so "the day being
-        // resolved" is the incoming one. Explicit beats correct-by-accident — and at M2 the same
-        // line has real teeth, because Clockwork.ResolveDay's first act is ResetDayStreams().
+        // Phase transitions settle FIRST — a completed outing → cooldown, a finished cooldown → daily —
+        // because Clockwork.ResolveDay below picks each townee's block list from their phase. This is the
+        // slot Board.ResolveDay proved at M1 with zero RNG, now carrying its intended M2 tenant. Both take
+        // the incoming `World.Day` as a parameter (it is already day+1 here) rather than reading it: the
+        // teeth the M1 comment promised are real now, because Clockwork.ResolveDay's first act is
+        // ResetDayStreams(), and Outings resolves off SubRngFor, which is cache-immune to that reset.
+        Outings.ResolveDay(World, World.Day);
         Board.ResolveDay(World, World.Day);
 
         Clockwork.ResolveDay(World);

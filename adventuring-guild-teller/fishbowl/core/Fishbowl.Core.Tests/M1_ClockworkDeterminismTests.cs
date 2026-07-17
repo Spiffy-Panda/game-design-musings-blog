@@ -48,23 +48,32 @@ public class M1_ClockworkDeterminismTests
         // it to make it green. Either the change was not supposed to touch the hash — fix the change
         // — or it was, and that needs a ruling in DEV-LOG.md before these strings move.
         //
-        // THESE STRINGS HAVE MOVED EXACTLY ONCE. 2026-07-16, ruled by Panda (NTD.Q1 + FBT.Q1) — the
-        // second branch above, and the DEV-LOG entry of that date is the ruling. They were
-        // b8d15299d8817639 / e3478bc4ff7d4848 / 02bc86b987c547c3, and they moved because
-        // Pressures.BaseDaily's `trade` arm stopped being a flat -0.11/day countdown and became a
-        // restoring force. Two other fixes landed in the same change (signed pressure_rate_mods,
-        // heart pressure_targets) and moved NOTHING here — verified by staging them alone and watching
-        // the old literals stay green, which is what "hash-neutral" has to mean if it means anything.
+        // THESE STRINGS HAVE MOVED TWICE, both times on a Panda ruling with a DEV-LOG entry — never
+        // re-baselined to make a red go green.
         //
-        // What the next reader most needs to know, because it is the part that generalises: the same
-        // ruling deleted 2 of the 7 beats in ../../tests/towns/golden-town/golden/day1.json. Both
-        // (`stock-runs-low`, `fetch-arranged`) only ever fired BECAUSE of the ratchet, so that
-        // acceptance list had been pinning the defect rather than catching it — and it did that
-        // underneath this pin, a 30-test suite, and a determinism contract, all of them green, because
-        // a ratchet is perfectly deterministic. Determinism was never the missing property.
-        // M2_TradeEquilibriumTests is the guard that was missing, and it asserts two-wayness directly.
+        //   1) 2026-07-16 (NTD.Q1 + FBT.Q1): b8d15299d8817639 / e3478bc4ff7d4848 / 02bc86b987c547c3 →
+        //      2a6a8a3af0a1a81d / d615d01daa2c8020 / 619649026a9d8895, because Pressures.BaseDaily's
+        //      `trade` arm stopped being a flat -0.11/day countdown and became a restoring force. Two
+        //      sibling fixes in that change (signed pressure_rate_mods, heart pressure_targets) moved
+        //      NOTHING, verified by staging them alone — which is what "hash-neutral" has to mean.
+        //
+        //   2) 2026-07-17 (PNO.M2, the phase machine): the previous literals →
+        //      55a6a33de66834df / cfffcde39b479b1e / f2e15c51f07b3c33, because World.ToHashNode stopped
+        //      emitting the `away` bool and started emitting `phase` (+ per-townee outing/cooldown state).
+        //      This was PRE-COMMITTED: the M1-era note here and PNO's spec both said in advance that the
+        //      phase key WOULD redden this test by design and required a ruling first. The fixture is
+        //      posting-free AND outing-free (PNO.D2), so it still draws ZERO RNG — the new sequence was
+        //      verified identical across three fresh CLI processes and at --seed 999999, so
+        //      At_Default_Config_Hash_Is_Seed_Independent still holds. Authoring postings/sites into
+        //      data/ did NOT reach these (that town is not this one); only ToHashNode's shape did.
+        //
+        // The generalising lesson from move 1, still worth carrying: that same ruling deleted 2 of the 7
+        // beats in ../../tests/towns/golden-town/golden/day1.json — `stock-runs-low`, `fetch-arranged` —
+        // which fired only BECAUSE of the trade ratchet, so the golden day had been pinning a defect
+        // under a green determinism contract. A ratchet is perfectly deterministic; determinism was never
+        // the missing property. M2_TradeEquilibriumTests asserts the two-wayness that was.
         Assert.Equal(
-            new[] { "2a6a8a3af0a1a81d", "d615d01daa2c8020", "619649026a9d8895" },
+            new[] { "55a6a33de66834df", "cfffcde39b479b1e", "f2e15c51f07b3c33" },
             RunHashes(3));
     }
 

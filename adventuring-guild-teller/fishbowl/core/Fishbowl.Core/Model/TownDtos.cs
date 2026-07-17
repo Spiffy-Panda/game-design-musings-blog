@@ -59,6 +59,13 @@ public sealed record PlaceDto
     public int Capacity { get; init; }
     public bool Board { get; init; }
     public bool Shut { get; init; }
+
+    /// <summary>An off-screen place — an adventure site (`PNO.M2`), reached only by an outing, never part
+    /// of daily-life routing. Defaulted false, so every authored place is unaffected and this is
+    /// hash-neutral (PlaceDto never enters the day-hash). <b>Load-bearing in one spot:</b>
+    /// <c>TownGenerator</c> must not house a generated townee here — a site is somewhere you go, not
+    /// somewhere you live.</summary>
+    public bool Offscreen { get; init; }
 }
 
 public sealed record HoursDto
@@ -76,7 +83,21 @@ public sealed record DayPlansFile
 public sealed record DayPlanDto
 {
     public List<DayBlockDto> Weekday { get; init; } = new();
+
+    /// <summary>The legacy bare-departure block list (`departs_day` / the `SetAway` knob) — place tokens
+    /// resolve to "away", off-screen. Kept as a read alias for <see cref="Outing"/> (`PNO.D6`): a plan with
+    /// only an <c>away</c> list still routes an outing-phase townee off-screen, which is exactly the
+    /// bare-departure behaviour.</summary>
     public List<DayBlockDto>? Away { get; init; }
+
+    /// <summary>The block list for <see cref="Engine.Phase.Outing"/> — a real trip. Its <c>site</c> place
+    /// token resolves to the townee's active outing site, so the party is co-present there. Falls back to
+    /// <see cref="Away"/> then <see cref="Weekday"/> when unauthored.</summary>
+    public List<DayBlockDto>? Outing { get; init; }
+
+    /// <summary>The block list for <see cref="Engine.Phase.Cooldown"/> — resting in town after a trip. Falls
+    /// back to a shared <c>cooldown-default</c> plan, then <see cref="Weekday"/>.</summary>
+    public List<DayBlockDto>? Cooldown { get; init; }
 }
 
 public sealed record DayBlockDto
@@ -181,13 +202,36 @@ public sealed record SimConfig
 
     public bool BioMarksEnabled { get; init; } = true;
 
-    // --- PNO.M1: the board. (Outing knobs — hazard/pace/cooldown/rout — land with PNO.M2.) ---
+    // --- PNO.M1: the board. ---
 
-    /// <summary>How readily needs become paper. Scales the posting-filing gate.</summary>
+    /// <summary>How readily needs become paper. <b>Read by no engine code — a dead knob</b> (verified
+    /// 2026-07-17); volume lives in the authored bank, not here (`PNO.T1`). Kept so the report/projection
+    /// keep serializing it, and flagged pending a ruling.</summary>
     public double PostingRate { get; init; } = 1.0;
 
-    /// <summary>Scales each posting's authored `expires_days`. Drives `PNO.Q2` (does paper move?):
-    /// if postings rot on the board, self-selection is too shy; if they're gone within a slot, the
-    /// board isn't a board.</summary>
+    /// <summary>Scales each posting's authored `expires_days`, baked into <c>ExpiresDay</c> at filing time.
+    /// Drives `PNO.Q2` (does paper move?): if postings rot on the board, self-selection is too shy; if
+    /// they're gone within a slot, the board isn't a board.</summary>
     public double PostingExpiryScale { get; init; } = 1.0;
+
+    // --- PNO.M2: outings. ---
+
+    /// <summary>Scales every leg's hazard weight. <c>0</c> = nobody is ever routed; <c>3</c> = the fen eats
+    /// everyone. The A/B lever for `PNO.Q4` (does the rout loop land?) and the Corvo fixture's second half.</summary>
+    public double OutingHazardScale { get; init; } = 1.0;
+
+    /// <summary>Scales every leg's slot duration — how long a trip takes. Drives `PNO.Q5` (cooldown a beat
+    /// or a lull?) alongside <see cref="CooldownDays"/>.</summary>
+    public double OutingPaceScale { get; init; } = 1.0;
+
+    /// <summary>Days a returned adventurer rests before re-entering daily life.</summary>
+    public int CooldownDays { get; init; } = 2;
+
+    /// <summary>The `AGT.12` loop, toggleable for A/B: a rout files a retrieval posting for the lost gear
+    /// (`PNO.M3`). Read at resolve time.</summary>
+    public bool RoutSeedsRetrieval { get; init; } = true;
+
+    /// <summary>Trait/pressure weighting on who self-selects a posting (`PNO.D4`), applied inside `PNO`'s own
+    /// take path — never by retrofitting the dead `storylet_weight_mods` hook.</summary>
+    public double SelfSelectBias { get; init; } = 1.0;
 }

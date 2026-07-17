@@ -41,7 +41,10 @@ public static class TownGenerator
             : template.Townees.GroupBy(t => t.Role).ToDictionary(g => g.Key, g => g.Count());
         var roleBag = roleMix.SelectMany(kv => Enumerable.Repeat(kv.Key, Math.Max(1, kv.Value))).ToArray();
 
-        var homes = template.Places.Where(p => p.Kind == "home" || !p.Board).Select(p => p.Id).ToArray();
+        // `!p.Board` catches residences (homes carry no board card), but an offscreen SITE is also
+        // board:false and is emphatically NOT somewhere a townee lives (PNO.M2) — housing a generated
+        // townee in the fen is the break the drift check flagged. Exclude offscreen places from the pool.
+        var homes = template.Places.Where(p => p.Kind == "home" || (!p.Board && !p.Offscreen)).Select(p => p.Id).ToArray();
         var fallbackHome = homes.Length > 0 ? homes : template.Places.Select(p => p.Id).ToArray();
         var traitIds = template.Traits.Select(t => t.Id).ToArray();
         string? gossipTrait = template.Traits.FirstOrDefault(t => t.HearsayCarrier)?.Id;

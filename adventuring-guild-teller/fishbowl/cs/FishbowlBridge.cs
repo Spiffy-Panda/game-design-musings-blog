@@ -85,6 +85,10 @@ public partial class FishbowlBridge : Node
     /// timeline (see <see cref="WorldView.BoardJson"/>); every other readout with a day parameter
     /// answers "what happened then", and this one answers "what is up now".</summary>
     public string GetBoard() => WorldView.BoardJson(World);
+    /// <summary>The quest board as a kanban (Template/Standing/Taken/Completed) — the expand modal's board view.</summary>
+    public string GetQuestBoard() => WorldView.QuestBoardJson(World);
+    /// <summary>One townee's whole event log across all days, newest first — the expand modal's townee view.</summary>
+    public string GetTowneeEvents(string id) => WorldView.TowneeEventsJson(World, id);
     public string GetChronicle(int day) => WorldView.ChronicleJson(World, day);
     public string GetSummary(int day) => WorldView.SummaryJson(World, day);
     public string GetStats(int day) => WorldView.StatsJson(World, day);

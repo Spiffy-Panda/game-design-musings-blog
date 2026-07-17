@@ -53,8 +53,13 @@ public static class Pressures
         double perSlot = world.MinutesPerSlot / 1440.0;
         foreach (var t in world.Townees)
         {
-            if (t.Away) continue; // away townees are off-sim until they return
             string mode = t.Mode.Length > slot ? t.Mode[slot] : "home";
+            // Freeze only the truly off-screen (a bare departure, mode "away"): off-sim until they return.
+            // A REAL outing has mode "outing" and DOES drift — the trip is lived, not paused. Keying off the
+            // itinerary rather than the derived Away flag is what lets those two cases part ways (PNO.M2):
+            // under one bool an on-outing townee would be co-present at the site AND frozen, reading stale
+            // pressures all trip. Cooldown is in-town daily-ish and was never frozen.
+            if (mode == "away") continue;
             double heartTarget = HeartTarget(world.Town, t);
             foreach (var drive in Town.Drives)
             {
@@ -167,7 +172,10 @@ public static class Pressures
         "purse" => mode == "work" ? PurseAtWork : PurseIdle,
         "trade" => (TradeRestFor(mode) - current) * TradePullToRest,
         "heart" => (heartTarget - current) * HeartPullToTarget,
-        "restlessness" => mode is "work" or "haunt" ? RestEngaged : RestAtRest,
+        // "outing" joins work/haunt as an ENGAGED mode: being out on the trip burns restlessness off, the
+        // continuous half of the PNO.M2 discharge ruling (the other half is the authored take/resolve
+        // bursts). The buildup exists to push a townee somewhere; on an outing, they went.
+        "restlessness" => mode is "work" or "haunt" or "outing" ? RestEngaged : RestAtRest,
         _ => 0.0,
     };
 

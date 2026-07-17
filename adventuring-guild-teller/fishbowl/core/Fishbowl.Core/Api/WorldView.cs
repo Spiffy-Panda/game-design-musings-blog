@@ -87,12 +87,95 @@ public static class WorldView
         return S(new JsonObject
         {
             ["id"] = t.Id, ["name"] = t.Name, ["role"] = t.Role, ["adventurer"] = t.Adventurer,
-            ["away"] = t.Away, ["bio"] = t.Bio,
+            ["away"] = t.Away, ["phase"] = t.Phase.ToString().ToLowerInvariant(), ["outing"] = OutingJson(w, t),
+            ["bio"] = t.Bio,
             ["traits"] = new JsonArray(t.Traits.Select(x => (JsonNode)x!).ToArray()),
             ["pressures"] = pressures, ["regard_out"] = regardOut, ["regard_in"] = regardIn,
             ["marks"] = marks, ["place_now"] = w.PlaceOf(t, slot), ["itinerary"] = itinerary,
         });
     }
+
+    /// <summary>An adventurer's current outing — the rail inspector's phase line and the expand modal's
+    /// outing block both read this. Null when the townee is not on a real trip (a bare departure has a
+    /// phase but no outing record). Leg progress is against the site's authored track.</summary>
+    private static JsonNode? OutingJson(World w, Townee t)
+    {
+        if (t.Outing is not { } o) return null;
+        var site = w.Town.SiteById(o.SiteId);
+        int legCount = site?.Legs.Count ?? 0;
+        string activity = site is not null && o.LegIndex < legCount ? site.Legs[o.LegIndex].Activity : "";
+        return new JsonObject
+        {
+            ["posting"] = o.PostingId, ["site"] = o.SiteId, ["site_name"] = SiteName(o.SiteId),
+            ["leg"] = o.LegIndex, ["leg_count"] = legCount, ["activity"] = activity,
+            ["slots_into_leg"] = o.SlotsIntoLeg, ["complete"] = o.Complete,
+            ["outcome"] = o.Outcome.ToString().ToLowerInvariant(),
+        };
+    }
+
+    /// <summary>
+    /// A townee's whole event log — every chronicle beat they were a participant in, across all days,
+    /// <b>newest first</b>. The expand modal's townee view. Distinct from <see cref="ChronicleJson"/>
+    /// (one day, everyone): this is one townee, every day, which is the "what has happened to this
+    /// person" a player scrubbing a life wants — and the natural place an adventurer's outings read as a
+    /// history once they return and the trip itself is silent (`AGT.10`).
+    /// </summary>
+    public static string TowneeEventsJson(World w, string id)
+    {
+        var arr = new JsonArray();
+        foreach (var e in w.Chronicle.Where(e => e.Participants.Contains(id))
+                     .OrderByDescending(e => e.Day).ThenByDescending(e => e.Slot))
+            arr.Add(new JsonObject
+            {
+                ["day"] = e.Day, ["slot"] = e.Slot, ["clock"] = SlotClock(e.Slot, w.SlotsPerDay),
+                ["storylet"] = e.StoryletId, ["kind"] = e.Kind, ["place_name"] = e.PlaceName,
+                ["gossip"] = e.Gossip, ["report"] = e.Report,
+            });
+        return S(new JsonObject { ["id"] = id, ["name"] = Name(w, id), ["events"] = arr });
+    }
+
+    /// <summary>
+    /// The quest board as a kanban (the expand modal's board view): <b>Template</b> (the seed bank — jobs
+    /// the town can produce) → <b>Standing</b> (posted, untaken) → <b>Taken</b> (by whom) →
+    /// <b>Completed</b> (resolved + expired). A posting's own lifecycle IS the board — no PM vocabulary,
+    /// no priority, no points (ruled 2026-07-17). Runtime columns are in filing order (deterministic).
+    /// </summary>
+    public static string QuestBoardJson(World w)
+    {
+        var templates = new JsonArray();
+        foreach (var tpl in w.Town.Postings.OrderBy(p => p.Id, StringComparer.Ordinal))
+            templates.Add(new JsonObject
+            {
+                ["id"] = tpl.Id, ["requester"] = tpl.Requester, ["requester_name"] = Name(w, tpl.Requester),
+                ["reach"] = tpl.Reach, ["reward"] = Math.Round(tpl.Reward, 3),
+                ["site_name"] = SiteName(string.IsNullOrWhiteSpace(tpl.Site) ? null : tpl.Site),
+            });
+
+        JsonArray Column(Func<Posting, bool> pick)
+        {
+            var a = new JsonArray();
+            foreach (var p in w.Postings.Where(pick)) a.Add(PostingCard(w, p));
+            return a;
+        }
+
+        return S(new JsonObject
+        {
+            ["day"] = w.Day,
+            ["templates"] = templates,
+            ["standing"] = Column(p => p.State == PostingState.Standing),
+            ["taken"] = Column(p => p.State == PostingState.Taken),
+            ["completed"] = Column(p => p.State is PostingState.Resolved or PostingState.Expired),
+        });
+    }
+
+    private static JsonObject PostingCard(World w, Posting p) => new()
+    {
+        ["id"] = p.Id, ["requester"] = p.RequesterId, ["requester_name"] = Name(w, p.RequesterId),
+        ["reach"] = p.Reach, ["site_name"] = SiteName(p.SiteId), ["reward"] = Math.Round(p.Reward, 3),
+        ["state"] = p.State.ToString().ToLowerInvariant(),
+        ["taker"] = p.TakerId, ["taker_name"] = p.TakerId is null ? null : Name(w, p.TakerId),
+        ["filed_day"] = p.FiledDay, ["resolved_day"] = p.ResolvedDay, ["days_to_expiry"] = p.ExpiresDay - w.Day,
+    };
 
     public static string PlacesJson(World w)
     {

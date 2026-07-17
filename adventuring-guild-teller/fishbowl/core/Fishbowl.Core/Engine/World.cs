@@ -84,7 +84,7 @@ public sealed class World
                 Id = dto.Id, Name = dto.Name, Role = dto.Role, Adventurer = dto.Adventurer,
                 Traits = dto.Traits.ToArray(), DayplanId = dto.Dayplan, Home = dto.Home,
                 Work = dto.Work, Haunts = dto.Haunts.ToArray(), Bio = dto.Bio,
-                DepartsDay = dto.DepartsDay, Away = false,
+                DepartsDay = dto.DepartsDay,   // Phase defaults to Daily; Away is derived from it now
             };
             foreach (var drive in Town.Drives)
                 n.Pressures[drive] = dto.Pressures.TryGetValue(drive, out var v) ? v : 0.5;
@@ -147,6 +147,11 @@ public sealed class World
             "copresence_bonus" => Config with { CopresenceBonus = value },
             "posting_rate" => Config with { PostingRate = value },
             "posting_expiry_scale" => Config with { PostingExpiryScale = value },
+            "outing_hazard_scale" => Config with { OutingHazardScale = value },
+            "outing_pace_scale" => Config with { OutingPaceScale = value },
+            "cooldown_days" => Config with { CooldownDays = (int)Math.Round(value) },
+            "rout_seeds_retrieval" => Config with { RoutSeedsRetrieval = value != 0 },
+            "self_select_bias" => Config with { SelfSelectBias = value },
             "actionability" => Config with { Actionability = value },
             "summary_lines" => Config with { SummaryLines = (int)Math.Round(value) },
             "hearsay_required" => Config with { HearsayRequired = value != 0 },
@@ -158,10 +163,17 @@ public sealed class World
         if (name == "seed") Seed = (long)value;
     }
 
-    /// <summary>The away-flag knob — send or return an adventurer (expedition stand-in, AGT.11).</summary>
+    /// <summary>The away-flag knob — send or return an adventurer (expedition stand-in, AGT.11), now a
+    /// phase write: `true` sends them on a BARE outing (no site, no posting, no legs — the legacy
+    /// stand-in), `false` returns them straight to daily and clears any outing. A `departs_day` townee
+    /// re-departs at the next <see cref="Clockwork.ResolveDay"/>, so `SetAway(id, false)` stays the no-op
+    /// it always was for them (PNO.D6).</summary>
     public void SetAway(string towneeId, bool away)
     {
-        if (TowneeById.TryGetValue(towneeId, out var t)) { t.Away = away; Clockwork.ResolveDay(this); }
+        if (!TowneeById.TryGetValue(towneeId, out var t)) return;
+        t.Phase = away ? Phase.Outing : Phase.Daily;
+        if (!away) { t.Outing = null; t.CooldownUntilDay = 0; }
+        Clockwork.ResolveDay(this);
     }
 
     /// <summary>
@@ -192,7 +204,14 @@ public sealed class World
             townees.Add(new JsonObject
             {
                 ["id"] = t.Id,
-                ["away"] = t.Away,
+                // `phase`, never `away` (PNO.M2). The old bool collapsed a three-state machine into one
+                // bit — a townee in cooldown and one living a daily day hashed identically, and the spine
+                // stopped distinguishing a third of the new state space silently. Emitted by NAME, never
+                // an ordinal, so reordering the enum cannot rewrite determinism history. Its value MOVED
+                // the three pinned literals in M1_ClockworkDeterminismTests, by design and by ruling.
+                ["phase"] = t.Phase.ToString(),
+                ["outing"] = OutingNode(t),
+                ["cooldown_until"] = t.CooldownUntilDay,
                 ["teller_regard"] = TellerRegardOf(t),
                 ["pressures"] = pressures,
                 ["regard"] = regard,
@@ -248,4 +267,18 @@ public sealed class World
     // hash for forward-compat by reading it from the source DTO.
     private double TellerRegardOf(Townee t) =>
         Town.TowneeById.TryGetValue(t.Id, out var dto) ? dto.TellerRegard : 0.5;
+
+    // The outing's progress — null when the townee is not on a real trip (which is every townee in the
+    // frozen fixture, so this key is present-but-null there and the postings/outings additions never
+    // reach it). Leg + slot progress is in the hash because two worlds mid-outing that differ only in how
+    // far along the party is are genuinely different futures, exactly the away-bool's lost distinction.
+    private static JsonNode? OutingNode(Townee t) => t.Outing is not { } o ? null : new JsonObject
+    {
+        ["posting"] = o.PostingId,
+        ["site"] = o.SiteId,
+        ["leg"] = o.LegIndex,
+        ["slots"] = o.SlotsIntoLeg,
+        ["complete"] = o.Complete,
+        ["outcome"] = o.Outcome.ToString(),
+    };
 }

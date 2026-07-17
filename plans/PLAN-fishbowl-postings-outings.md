@@ -11,9 +11,15 @@ which did not exist. Gate-checked in-engine: a posting **files day 2 slot 16 @ G
 `errors=0 accepted=14 warnings=70`; editor and CLI agree on the day-3 hash. **Two rulings landed
 2026-07-17** — `test_id` is **`postings`** not `board`, and **filing is gated at the board itself**
 (Petch is routed past it), which cost **distinct sentences 47 → 45**; see *Research questions*.
-**`PNO.M2` (outings) is next and carries two hard preconditions:** a ruling + `DEV-LOG.md` entry
-**before** the three hash literals move, and the **unresolved `haunt`-vs-restlessness collision**
-flagged under *The model — outings*.
+**`PNO.M2` (the phase machine) ✅ landed 2026-07-17 — gate met.** take → leave → findable at the site
+every slot → return → cooldown → daily; the one-way trapdoor is gone; same-seed reproduces editor-vs-CLI
+(`bc6cf150b190201b`); suite **81/81**. Both preconditions discharged as written: the ruling + `DEV-LOG`
+entry landed before the three hash literals moved (verified across three CLI processes), and the
+**`haunt`-vs-restlessness collision was ruled 2.1 — BOTH** an authored `take`/`resolve` burst AND a
+tick-while-out, which discharged a ledger ratchet on its own (accepted 14 → 13, the ruling's own test).
+The **outing track became an expand modal** (spec change): townee dossier + quest-board kanban, with a
+dimmed margin that closes it and consumes the click. **`PNO.M3` (the loop closes — reward paid, `rout` →
+retrieval posting, the `tale-told` retelling) is next.**
 `PNO.D1` + `PNO.D3`–`PNO.D9` adopted on the recommendation; **`PNO.D2` was ruled *against* the
 recommendation**, and the ruling is better than the recommendation (see *The asks*). Re-drift-checked
 against the code 2026-07-16 before building: **21 of 22 claims confirmed, 1 drifted** — and **three of
@@ -674,9 +680,24 @@ Also: `dayplans.json` gains `cooldown` variants (+ a shared `cooldown-default`),
   > **`taker` reads "untaken" for every row, forever, at this milestone** — a posting *with* a taker is
   > `Taken`, which is by definition not on the board. It is a decided value, not missing data, and it
   > is the field `PNO.M2` makes move.
-- **Outing track** — for each adventurer not in town: site, leg, slots-in-leg, a four-pip track.
-  `test_id`: `outings`.
-- **Inspector** — phase chip + current outing + posting history.
+- **The expand modal** (spec change, ruled 2026-07-17 — replaces the standalone "outing track" panel).
+  A **reusable full-screen pop-up inspector**, opened from two places, closed the same way:
+  - **Not quite full-screen** — a dimmed margin is left all round. Clicking the margin closes the modal
+    **and consumes the event** before it reaches the main layer (so the closing click never also hits a
+    control underneath). Clicking the panel itself does not close it. The margin dim reads instinctively
+    as "click off to exit".
+  - **From the townee inspector** → the townee's **event log** (every chronicle beat they were in,
+    newest first). This is also where an adventurer's **current outing** (site, leg, progress) and, when
+    it lands, **equipment/loadout** will live — the detail that has no room in the rail. Replaces the
+    rail's cramped "phase chip + current outing + posting history".
+  - **From the quest board** → a **kanban** of postings by lifecycle: **Template** (the seed bank — jobs
+    the town can produce) · **Standing** (posted, untaken) · **Taken** (by whom) · **Completed** (the
+    resolved/expired log). *No PM vocabulary* — no priority, no points; a posting's own state is the
+    whole board. *(Reading "added and temp" as the template column; flag if it meant something else.)*
+  - `test_id`: `modal` (the overlay) · `modal-close` (the dim margin) · `btn-inspect` (open townee) ·
+    `btn-questboard` (open kanban). The outing track's old `outings` handle is retired with the panel.
+- **Inspector (rail)** — keeps a compact **phase chip + current-outing line**; the full log/loadout is the
+  modal above. The rail stays a glance; the modal is the study.
 - **Stats strip** — postings filed/taken/expired per day · outing outcome mix · **time-to-take**
   (how long paper sits) · the `PNO.Q1` yield split.
 - Every new control tagged with a `test_id` per the GTH contract in `FISHBOWL.md`.
@@ -740,14 +761,24 @@ It is a pure move: two lines in `TestSupport`/`ProjectPaths`, no test edited.
     chronicle (`BuildEntry` builds `participants` from `Copresent` only), and **expiry needs a
     synthesized because-list** — `post` gets one free from its storylet, but `expire` is a `Board`
     mechanism, not a storylet, so it is the first chronicle entry ever built outside `BuildEntry`.
-- **`PNO.M2` — outings.** Phase machine + sites + legs + `take`/`resolve` + cooldown day-plans +
-  outing track. *Accept:* a townee takes a standing posting, leaves, is findable at the site at every
-  slot, returns, cools down, re-enters daily life — and **`Away`'s one-way trapdoor is gone**.
-  Same-seed hash sequence reproduces editor-vs-CLI.
-  - **Gated precondition (added 2026-07-16):** M2's `phase` hash key reddens
-    `Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned` **by design** — a **Panda ruling + a `DEV-LOG.md`
-    entry must land BEFORE those three literals move**, and re-baselining to green is forbidden. See
-    *Determinism*.
+- **`PNO.M2` — outings.** ✅ **LANDED 2026-07-17 — gate met.** Phase machine + sites + legs + `take` +
+  cooldown day-plans + the expand modal. *Accept, all confirmed:* an adventurer takes a standing posting,
+  leaves, is findable at the site every slot, returns, cools down, re-enters daily life; **`Away`'s
+  one-way trapdoor is gone** (derived `Phase == Outing`, a real return path); same-seed hash sequence
+  reproduces **editor-vs-CLI** (`bc6cf150b190201b`). Suite 71 → 81.
+  > **The gated precondition was discharged as written.** M2's `phase` hash key reddened
+  > `Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned` by design; a Panda ruling (2.2) + a `DEV-LOG.md`
+  > entry landed **before** the three literals moved (`2a6a…/d615…/6196…` → `55a6…/cfff…/f2e1…`), verified
+  > identical across three CLI processes and at `--seed 999999` — never re-baselined to green.
+  > **`resolve` stayed a `PNO.M3` effect, not M2:** resolution is engine-driven (the outcome rolls when
+  > the leg track runs out), so return is *guaranteed* rather than gated on a storylet that could fail its
+  > predicate and strand the adventurer — a fresh trapdoor. `carried`/`rout` are decided at M2; their
+  > consequences are M3. **Restlessness discharge (ruling 2.1) works and the ledger proved it** — live-town
+  > `--lint` accepted findings dropped **14 → 13** on their own, an adventurer having gone out and burned a
+  > ratchet off via the authored bursts, not a mode-label dodge. **Also fixed here:** postings are now in
+  > the snapshot (they were not — a live-town reload silently dropped the board; the fixture-only test could
+  > not see it). **The outing track became the expand modal** (spec change above): the dossier carries the
+  > current outing, the kanban carries taken-by-who.
 - **`PNO.M3` — the loop closes.** Rewards paid; `rout` → gear lost → retrieval posting; the
   `tale-told` retelling reaches a dawn summary. *Accept:* **the Corvo fixture** — Corvo takes a
   paying posting, returns `carried`, pays Marrow, the `debtor` tag clears, and `debt-nagged` stops
@@ -950,6 +981,31 @@ tactical resolution (legs + hazard scalars, never a combat sim) · gear as inven
 **flag and a posting**, not an item ledger) · parties (`PNO.D8`) · site pathfinding or any map (a site
 is a graph node; travel is slot arithmetic, exactly as places are today) · injuries, morale, XP,
 levels · the desk prototype's posting vocabulary (`PNO.D9`) · new drives (four stay four).
+
+## Backlog (added 2026-07-17, Panda)
+
+- **`PNO.T1` — the town is short of ADVENTURERS; grow the cast to a villager:adventurer balance.**
+  Ruling 2026-07-17 (corrected from a typo — Panda's "adventures" throughout meant **adventurers**, the
+  people who take postings, not the jobs). **`townees = villagers ⊍ adventurers`, and the town should
+  carry as many adventurers as villagers.** Today: **18 townees = ~14 villagers + 4 adventurers** (and
+  Brindle departs day 1) — 4 is not even a full party. Target: **~28 townees = ~14 villagers + ~14
+  adventurers**, i.e. add ~10 adventurers. Why it matters: the unbuilt **"nighttime guild floor"** — the
+  half of the game with no prototype — is *primarily about adventurers*: their loadouts and adventuring
+  parties. Adventurers are its whole cast, and there is not currently a party's worth.
+  - **Adventurers are CHEAP content, and that is the point.** They need far fewer storylets than
+    villagers, because they spend their time *out adventuring* rather than *advancing in-town stories*.
+    An adventurer's stories are their **leveling** (out of scope here), **loadouts** (out of scope), and
+    **parties** (much later) — none of it bowl-storylet content. So adding ~10 adventurers is NOT ~10×
+    the social bank: the villager web stays the content weight, and adventurers mostly take paper and go.
+  - **The lever is DATA config, not a knob** (Panda: *"the bug can be in the data config not the
+    knobs"*) — `posting_rate` is dead (read by no engine code), so supply comes from authored cast +
+    dayplans, not a dial.
+  - Bears on `PNO.M2` (outings need takers) and the future guild-floor prototype; does not block the
+    `M2` gate — one adventurer taking one posting proves the loop.
+- **`PNO.T2` — knobs may move to a menu if the observatory needs the room** (ruled 2026-07-17). The
+  debug knobs *"don't need to be constantly visible."* When `PNO.M2`'s outing track wants rail space,
+  the knobs panel is the first thing to fold into a popup/menu rather than an always-open right-rail
+  block. Frees the whole knobs column.
 
 ## Sync footer (Rule 3)
 

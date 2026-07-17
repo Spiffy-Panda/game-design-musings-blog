@@ -6,6 +6,110 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-07-17 — `PNO.M2` engine core: the outing loop closes, `Away`'s one-way trapdoor is gone, and the pinned hash moves a second time (ruled, verified)
+
+The phase machine landed — `Daily ──take──▶ Outing ──resolve──▶ Cooldown ──restored──▶ Daily`. An
+adventurer takes a standing posting off the board, leaves town, is findable at an offscreen site every
+slot, walks its legs, rolls one outcome, cools down, and re-enters daily life. **The return path `Away`
+never had now exists**, so the trapdoor is gone by construction. Suite **71 → 80**, all green; the loop
+runs end-to-end in the live town and reproduces byte-identical across processes. This is the engine
+half; the outing-track UI and the in-engine editor-vs-CLI gate-check are the next slice.
+
+### The two rulings this was gated on
+
+**`2.1` — restlessness discharges BOTH ways.** Panda: *"both, burst at accepting/completing and tick
+while out."* So there are three discharges: an authored `−0.15` burst on `take`, an authored `−0.25`
+burst on resolve, and restlessness burning off continuously while `Phase == Outing` (the "outing" mode
+joins work/haunt as engaged in `Pressures.BaseDaily`). **This is the answer to the spec's open question**
+— whether M2 discharges restlessness by *going* (a mode-label side effect, the dodge) or by *doing*
+(authored effects, the real fix). Both, and the authored bursts are what make it legitimate. **The lint
+ledger is the proof, and it moved on its own:** live-town `--lint` accepted findings dropped **14 → 13**
+— one restlessness ratchet discharged because an adventurer actually went out and burned it off, not
+because a mode label changed. The spec's test (*"if the 14 are still there after M2 the ruling was
+wrong; if they vanish because a mode label changed it was dodged"*) came back the right way.
+
+**`2.2` — pin the hash once, don't spin on it.** Panda: *"only use the hash literal when you need it and
+it helps. A lot of places it seems to cause agents to soft-lock-spin."* So I did NOT re-pin every
+iteration as the hash shape churned; I built the whole `ToHashNode` change, then re-pinned the three
+literals **once**, at the end, verified. `2a6a8a3af0a1a81d / d615d01daa2c8020 / 619649026a9d8895` →
+`55a6a33de66834df / cfffcde39b479b1e / f2e15c51f07b3c33`. Cause: `ToHashNode` stopped emitting the
+`away` bool and started emitting `phase` (+ per-townee outing/cooldown state). **This was pre-committed**
+— the test's own comment and PNO's spec both said in advance the phase key would redden it by design and
+required a ruling first. Verified to the NTD.Q1 standard: **identical across three fresh CLI processes
+and at `--seed 999999`**, because the frozen fixture is posting-free AND outing-free (`PNO.D2`) so it
+still draws zero RNG — `At_Default_Config_Hash_Is_Seed_Independent` still holds. Authoring
+`postings.json`/`sites.json` into `data/` could not reach these literals; only `ToHashNode`'s shape did.
+
+### The design decisions the drift check said I'd have to make
+
+- **`Away` is derived `Phase == Outing`, and it is Outing-ONLY.** A townee in cooldown is back in town
+  (resting, mending gear) — on-screen, co-present, not away. The hash emits `phase` precisely so
+  daily/cooldown/outing are three distinct states rather than one bit; the old `away` bool would have
+  hashed a cooldown townee and a daily townee identically.
+- **`Pressures` freezes on `mode == "away"`, not on the `Away` flag.** This is the "Away's two meanings"
+  fork the drift check named: a real outing (mode `outing`) must DRIFT (the party lives, off-screen),
+  while a bare departure (mode `away`) stays frozen. Keying off the itinerary is what lets the two part.
+- **A site is authored once and synthesized into a place.** `sites.json` carries the leg track; `TownLoader`
+  makes each site a `board:false, offscreen:true` place, so co-presence + predicates + chronicle work
+  off-screen with no new engine code. The dynamic `site` day-plan token resolves to the townee's runtime
+  outing site (`site`, not `site:<id>`, because the destination is which-posting-they-took, not a constant).
+- **`TownGenerator` stops housing townees in `board:false` places** — it now excludes `offscreen`, or a
+  generated townee gets a home in the fen (the drift check's THE BREAK).
+- **`departs_day` stays a one-way bare departure (`PNO.D6`), and only the fixture has one.** The live
+  town carries none — its own comment already said so and named M2's phase machine as the replacement.
+  So the bare-departure path (Phase.Outing with a null outing, routed off-screen) is exercised only by
+  the fixture's Brindle, and a test pins that it still works.
+- **Resolution is engine-driven, so return is guaranteed.** The outcome (carried/rout) is rolled when
+  the leg track runs out, in `Outings`, not by a storylet firing — a storylet-gated resolution could
+  fail its predicate and strand the adventurer, a fresh trapdoor. `carried`/`rout` are DECIDED at M2;
+  their consequences (reward paid, gear→retrieval posting, the tale told on return) are `PNO.M3`.
+- **The villager/adventurer split is a predicate, not a marker trait.** The town keeps no decorative
+  traits by design, and `Townee.Adventurer` is already authored — so `posting-taken` gates on a new
+  `adventurer: {A: true}` predicate that reads that bit. A villager at the board never takes paper.
+
+### Also
+
+- **`Outings.ResolveDay` runs before `Board.ResolveDay` before `Clockwork.ResolveDay`** — phase settles
+  first, because clockwork picks the block list from it. This is the slot M1 proved with zero RNG;
+  `Outings` draws off `SubRngFor` (cache-immune) so `Clockwork`'s `ResetDayStreams` cannot rewind it.
+- **`SchemaValidator` now walks all four block lists** (Outing/Cooldown were unvalidated), validates
+  sites (legs present, positively sized, hazards in range), the `take`/`posting`/`phase`/`adventurer`
+  constructs, and **rejects unknown `flag` keys** — the M2 trap where an unknown flag silently evaluates
+  false. The snapshot grew from an `Away` bool to phase + full outing progress (the lossy-snapshot
+  tripwire `M2_PressuresSnapshotTests` guards; a round-trip test pins a mid-flight outing survives).
+- **Outing knobs added and live**: `outing_hazard_scale` (0 = nobody routed, 3 = the fen eats everyone),
+  `outing_pace_scale`, `cooldown_days`, `rout_seeds_retrieval`, `self_select_bias`.
+
+### The expand modal (a spec change), and a determinism gap it surfaced
+
+**The UI is an expand modal, ruled 2026-07-17 — it replaced the standalone outing-track panel.** Panda:
+a reusable not-quite-full-screen pop-up with a **dimmed margin that closes it and consumes the click**
+before it reaches the layout beneath. Two modes on one shell: the **townee dossier** (`btn-inspect` → the
+townee's whole event log, newest first, + current outing + a loadout placeholder for the future guild
+floor) and the **quest-board kanban** (`btn-questboard` → Template · Standing · Taken · Completed, and
+*no PM vocabulary* — a posting's own state is the whole board). Verified in-engine (GTH): the margin
+click hits `modal-close` and the roster underneath reports `received: false` — the consume works. Two UI
+gotchas worth keeping: the modal must attach to the scene **Control**, not the layout **VBox** (a VBox
+lays it out in the vertical flow and hands it 0 height — the first pass had exactly this), and the panel
+needs an **opaque** stylebox or the content floats over the dimmed observatory and the two read as one
+layer (the dim was full-rect and consuming the whole time; it just wasn't visible over a dark app).
+
+**Building the dossier's board data surfaced a real determinism gap: postings were never in the
+snapshot.** `SnapshotFile` carried townees, cooldowns, chronicle — but not `world.Postings`. Nothing
+caught it because the only snapshot test runs the posting-free fixture, so a **live-town** reload silently
+dropped the entire board and diverged from the forward hash sequence the contract promises (and an active
+outing on a reloaded townee pointed its `PostingId` at a posting that no longer existed). This is the
+project's signature shape again — *a green test over a live gap, because the test could not reach the
+gap*. Fixed: postings snapshot in full, and `Live_Town_Snapshot_Reproduces_The_Forward_Hash_Sequence` is
+the guard the fixture-only test structurally could not be. Suite **80 → 81**.
+
+**M2's gate is met.** take → leave → findable at the site every slot → return → cooldown → daily; the
+trapdoor is gone; same-seed reproduces editor-vs-CLI (`bc6cf150b190201b`). What's deferred to `PNO.M3`:
+reward paid on `carried`, gear-loss → retrieval posting on `rout`, the `tale-told` retelling. And `PNO.T1`
+(grow the adventurer cast toward the villager count) is backlog, not a gate.
+
+---
+
 ## 2026-07-17 — `PNO.M1` grows its missing half: the board can finally be seen, and two more numbers turn out to be authored in good faith and read by nothing
 
 `PNO.M1` shipped the board and no way to look at it. `Board.cs` filed and expired paper every run,

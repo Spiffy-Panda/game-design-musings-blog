@@ -21,6 +21,8 @@ var inspector_box: VBoxContainer
 var summary_box: VBoxContainer
 var register_label: Label
 var stats_label: Label
+var modal: Control
+var modal_body: VBoxContainer
 var _mono_font: SystemFont
 
 const DRIVES := ["purse", "trade", "heart", "restlessness"]
@@ -194,6 +196,14 @@ func _build_ui() -> void:
 	body.add_child(_rail(290, func(v): _build_right(v)))
 
 	root.add_child(_build_status_strip())
+
+	# The expand modal attaches to SELF (the full-rect scene Control), NOT to `root` (the VBox) — a VBox
+	# would lay it out in the vertical flow and hand it 0 height. Added after `root`, so it renders above
+	# everything; while open it covers the whole viewport with mouse-STOP controls, so no click reaches
+	# the layout beneath it. Starts hidden.
+	modal = _build_modal()
+	add_child(modal)
+	modal.visible = false
 
 func _build_top_bar() -> Control:
 	var panel := PanelContainer.new()
@@ -394,7 +404,13 @@ func _build_center(v: VBoxContainer) -> void:
 func _build_right(v: VBoxContainer) -> void:
 	v.add_child(_build_knobs())
 	_build_board(v)
-	v.add_child(_header("Inspector"))
+	var insp_head := HBoxContainer.new()
+	var ih := _header("Inspector")
+	ih.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	insp_head.add_child(ih)
+	# Opens the full dossier: the selected townee's whole event log (+ outing, + future loadout).
+	insp_head.add_child(_btn("⤢", func(): _open_townee_modal(selected_id), "btn-inspect"))
+	v.add_child(insp_head)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -402,6 +418,150 @@ func _build_right(v: VBoxContainer) -> void:
 	inspector_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(inspector_box)
 	v.add_child(scroll)
+
+# --- the expand modal -----------------------------------------------------------------------
+# A reusable full-screen pop-up (ruled 2026-07-17). NOT quite full-screen: a dimmed margin is left all
+# round, and clicking it closes the modal AND consumes the click (mouse-STOP) before it can reach a
+# control on the layout beneath. Clicking the panel itself does nothing. Two content modes, one shell:
+# the townee dossier (event log + outing + future loadout) and the quest-board kanban.
+func _build_modal() -> Control:
+	var layer := Control.new()
+	layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	layer.set_meta("test_id", "modal")
+
+	# The dim fills everything, eats clicks, and closes on one. Because it is STOP and the whole layer
+	# is on top, a click here never reaches the main layout — which is the "consume the event" the spec asks for.
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0.0, 0.0, 0.0, 0.72)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	dim.set_meta("test_id", "modal-close")
+	dim.gui_input.connect(_on_modal_dim_input)
+	layer.add_child(dim)
+
+	# The panel is inset by a margin so the dim shows all round (the instinctive click-off-to-exit target).
+	# The MarginContainer is mouse-IGNORE, so a click in the margin falls through to the dim and closes;
+	# a click on the panel hits the panel (STOP) and does not.
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		margin.add_theme_constant_override(side, 64)
+
+	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	# An OPAQUE card, or the content floats over the dimmed observatory and the two layers read as one.
+	# The default PanelContainer stylebox is near-transparent in this app's theme, which is why the first
+	# pass looked undimmed even though the dim was full-rect and consuming clicks (GTH confirmed both).
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.10, 0.12, 0.16, 1.0)
+	sb.set_border_width_all(1)
+	sb.border_color = Color(0.30, 0.36, 0.45, 1.0)
+	sb.set_corner_radius_all(6)
+	panel.add_theme_stylebox_override("panel", sb)
+	var pad := MarginContainer.new()
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		pad.add_theme_constant_override(side, 16)
+	modal_body = VBoxContainer.new()
+	modal_body.add_theme_constant_override("separation", 8)
+	pad.add_child(modal_body)
+	panel.add_child(pad)
+	margin.add_child(panel)
+	layer.add_child(margin)
+	return layer
+
+func _on_modal_dim_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_close_modal()
+		get_viewport().set_input_as_handled()
+
+func _open_modal() -> void:
+	modal.visible = true
+	modal.move_to_front()
+
+func _close_modal() -> void:
+	modal.visible = false
+
+## The townee dossier: their whole event log, newest first, plus a current-outing line and a loadout
+## placeholder. This is the "study" to the rail inspector's "glance".
+func _open_townee_modal(id: String) -> void:
+	if id == "":
+		return
+	for c in modal_body.get_children():
+		c.queue_free()
+	var t = _j(bridge.GetTownee(id))
+	modal_body.add_child(_header(str(t.name) + " — dossier"))
+	modal_body.add_child(_wrapped("Phase: " + str(t.phase), 12))
+	if t.outing != null:
+		var o = t.outing
+		modal_body.add_child(_wrapped("Out at %s — %s (leg %d of %d)"
+			% [str(o.site_name), str(o.activity), int(o.leg) + 1, int(o.leg_count)], 12))
+
+	modal_body.add_child(_header("loadout"))
+	modal_body.add_child(_wrapped("— no equipment yet; adventurer loadout lands with the guild floor.", 11))
+
+	modal_body.add_child(_header("event log"))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
+	var log = _j(bridge.GetTowneeEvents(id))
+	if log.events.size() == 0:
+		box.add_child(_wrapped("Nothing recorded yet.", 11))
+	for e in log.events:
+		box.add_child(_wrapped("Day %d · %s · %s" % [int(e.day), str(e.clock), str(e.gossip)], 11))
+	modal_body.add_child(scroll)
+	_open_modal()
+
+## The quest-board kanban: Template → Standing → Taken → Completed. A posting's own state is the whole
+## board — no PM vocabulary (ruled 2026-07-17).
+func _open_board_modal() -> void:
+	for c in modal_body.get_children():
+		c.queue_free()
+	var d = _j(bridge.GetQuestBoard())
+	modal_body.add_child(_header("Quest board — day %d" % int(d.day)))
+	var cols := HBoxContainer.new()
+	cols.add_theme_constant_override("separation", 12)
+	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cols.add_child(_kanban_column("Template", d.templates,
+		func(c): return "%s — %s" % [str(c.requester_name), _job_of(c)]))
+	cols.add_child(_kanban_column("Standing", d.standing,
+		func(c): return "%s · %s" % [str(c.requester_name), _dest_of(c)]))
+	cols.add_child(_kanban_column("Taken", d.taken,
+		func(c): return "%s → %s" % [str(c.requester_name), str(c.taker_name)]))
+	cols.add_child(_kanban_column("Completed", d.completed,
+		func(c): return "%s · %s" % [str(c.requester_name), str(c.state)]))
+	modal_body.add_child(cols)
+	_open_modal()
+
+func _kanban_column(title: String, items: Array, line_fn: Callable) -> Control:
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(_header("%s (%d)" % [title, items.size()]))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
+	if items.size() == 0:
+		box.add_child(_wrapped("—", 11))
+	for it in items:
+		box.add_child(_wrapped("• " + str(line_fn.call(it)), 11))
+	col.add_child(scroll)
+	return col
+
+func _dest_of(c) -> String:
+	return str(c.site_name) if str(c.reach) == "posting" else "in town"
+
+func _job_of(c) -> String:
+	if str(c.reach) == "posting":
+		return "%s, pays %.2f" % [_dest_of(c), float(c.reward)]
+	return "errand, pays %.2f" % float(c.reward)
 
 ## The postings board — the paper hanging on the guildhall steps. This panel IS PNO.M1's gate: the
 ## board filling and emptying is the readout, and until this existed the board filled and emptied
@@ -432,7 +592,13 @@ func _build_right(v: VBoxContainer) -> void:
 ## and nothing regressed by moving here. Cards are narrower (290 vs 503) so they wrap a line further;
 ## that costs height this rail has and the other one did not.
 func _build_board(v: VBoxContainer) -> void:
-	v.add_child(_header("Postings board"))
+	var head := HBoxContainer.new()
+	var h := _header("Postings board")
+	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(h)
+	# Opens the kanban: Template → Standing → Taken → Completed, the whole board's lifecycle at once.
+	head.add_child(_btn("⤢", _open_board_modal, "btn-questboard"))
+	v.add_child(head)
 	var scroll := ScrollContainer.new()
 	# A fixed bite, NOT size_flags_vertical = EXPAND_FILL: the inspector below is EXPAND_FILL and
 	# fills this rail the moment a townee is selected, so an expanding board would fight it for room
@@ -766,6 +932,12 @@ func _refresh_inspector() -> void:
 	bio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	inspector_box.add_child(bio)
 	inspector_box.add_child(_wrapped("traits: " + ", ".join(t.traits), 11))
+	# The phase chip + current-outing glance (PNO.M2). The full log/loadout is the ⤢ dossier modal.
+	if t.outing != null:
+		var o = t.outing
+		inspector_box.add_child(_wrapped("phase: %s — at %s, %s" % [str(t.phase), str(o.site_name), str(o.activity)], 11))
+	elif str(t.phase) != "daily":
+		inspector_box.add_child(_wrapped("phase: " + str(t.phase), 11))
 	if t.marks.size() > 0:
 		inspector_box.add_child(_header("marks (bio)"))
 		for m in t.marks:

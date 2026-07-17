@@ -97,7 +97,13 @@ public static class SchemaValidator
         // Day-plan blocks resolve place tokens and stay in range.
         foreach (var (id, plan) in t.DayPlans)
         {
-            foreach (var block in plan.Weekday.Concat(plan.Away ?? Enumerable.Empty<DayBlockDto>()))
+            // All FOUR block lists are walked now (`PNO.M2`) — Outing and Cooldown were unvalidated, and
+            // because Clockwork.ResolvePlace has a silent catch-all (`_ => t.Home`), a typo'd token in a
+            // cooldown block would send the townee home with no error, defeating validate-then-run.
+            foreach (var block in plan.Weekday
+                         .Concat(plan.Away ?? Enumerable.Empty<DayBlockDto>())
+                         .Concat(plan.Outing ?? Enumerable.Empty<DayBlockDto>())
+                         .Concat(plan.Cooldown ?? Enumerable.Empty<DayBlockDto>()))
             {
                 if (block.Start < 0 || block.End > slots || block.Start >= block.End)
                     errors.Add($"dayplan '{id}' block {block.Start}..{block.End} malformed (0..{slots}).");
@@ -106,9 +112,11 @@ public static class SchemaValidator
                     var pid = block.Place["haunt:".Length..];
                     if (!t.PlaceById.ContainsKey(pid)) errors.Add($"dayplan '{id}' haunt '{pid}' is not a place.");
                 }
-                else if (block.Place is not ("work" or "home" or "away"))
+                // `site` is the dynamic outing token — it resolves to the townee's runtime outing site, so
+                // there is nothing to existence-check here (the site is not known until an outing starts).
+                else if (block.Place is not ("work" or "home" or "away" or "site"))
                 {
-                    errors.Add($"dayplan '{id}' block place token '{block.Place}' unrecognized (work|home|away|haunt:<id>).");
+                    errors.Add($"dayplan '{id}' block place token '{block.Place}' unrecognized (work|home|away|site|haunt:<id>).");
                 }
                 foreach (var r in block.Roams ?? Enumerable.Empty<string>())
                     if (!t.PlaceById.ContainsKey(r)) errors.Add($"dayplan '{id}' roam '{r}' is not a place.");
@@ -160,6 +168,12 @@ public static class SchemaValidator
                          + "in-town by definition, so Board.File would carry a site that nothing will ever "
                          + "route to and the board would still read it as in-town.");
 
+            // Site existence, now that sites exist (`PNO.M2`; at M1 this was shape-only, sites.json not yet
+            // loaded). An outing against a posting whose site resolves to nothing has nowhere to walk.
+            if (p.Reach == "posting" && hasSite && t.Sites.Count > 0 && t.SiteById(p.Site!) is null)
+                errors.Add($"posting '{p.Id}' site '{p.Site}' is not a site in sites.json — an outing "
+                         + "against it would have nowhere to go.");
+
             // Board.File does Math.Max(1, Round(ExpiresDays * PostingExpiryScale)), so a 0 or a
             // negative does not fail — it silently becomes 1 and the author's intent is gone. The
             // clamp is right (paper that expires before it is filed is not a state); catching the
@@ -175,6 +189,29 @@ public static class SchemaValidator
                 errors.Add($"posting '{p.Id}' reward is {p.Reward} — a reward is paid into the taker's purse "
                          + "(PNO.M3) and is rendered on the board as the job's terms; a negative one is a "
                          + "posting that bills the person who takes it.");
+        }
+
+        // Sites (`PNO.M2`). Optional like postings; empty in the frozen fixture, so this is a no-op there.
+        // Each is also synthesized into a place at load, so co-presence works — but the leg TRACK is what
+        // Outings walks, and a defect in it is a silent-wrong outing (no crash), the failure this file exists
+        // to refuse.
+        var siteIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var site in t.Sites)
+        {
+            if (!siteIds.Add(site.Id))
+                errors.Add($"site '{site.Id}' is declared more than once.");
+            if (site.Legs.Count == 0)
+                errors.Add($"site '{site.Id}' has no legs — an outing there completes instantly, walking nothing "
+                         + "and rolling no hazard, so the trip is a no-op that still burns a cooldown.");
+            foreach (var leg in site.Legs)
+            {
+                if (leg.Slots < 1)
+                    errors.Add($"site '{site.Id}' leg '{leg.Id}' slots is {leg.Slots} — Outings.StepSlot does "
+                             + "Max(1, Round(slots × pace)), so a 0 or negative is silently rewritten to 1.");
+                if (leg.Hazard is < 0.0 or > 1.0)
+                    errors.Add($"site '{site.Id}' leg '{leg.Id}' hazard {leg.Hazard} is outside 0..1 — leg hazards "
+                             + "sum (× outing_hazard_scale) into the rout probability rolled against the outings stream.");
+            }
         }
 
         // The kind vocabulary is whatever this town's places actually use — not a hardcoded enum, so
@@ -204,6 +241,50 @@ public static class SchemaValidator
                                  + $"(kinds present: {string.Join(", ", placeKinds.OrderBy(k => k, StringComparer.Ordinal))}).");
             }
 
+            // Flags (`PNO.M2` trap #1). Only `departing_today` is wired — StoryletEngine.CheckPredicates
+            // hardcodes it, so any other key evaluates to false and FAILS the predicate silently rather
+            // than erroring. Lifecycle conditions go through `phase`, never a flag.
+            foreach (var (key, _) in s.Predicates.Flag)
+            {
+                int dot = key.IndexOf('.');
+                string role = dot < 0 ? key : key[..dot];
+                string flag = dot < 0 ? "" : key[(dot + 1)..];
+                if (flag != "departing_today")
+                    errors.Add($"storylet '{s.Id}' flag '{key}' is unknown — only 'departing_today' is wired, and "
+                             + "StoryletEngine evaluates any other flag to false, so the rule silently never fires. "
+                             + "Use a `phase` predicate for outing/cooldown conditions.");
+                else if (!s.Predicates.Copresent.Contains(role))
+                    errors.Add($"storylet '{s.Id}' flag '{key}' role '{role}' is not one of its copresent roles.");
+            }
+
+            // Phase predicate (`PNO.M2`): a valid phase name on a copresent role.
+            foreach (var (role, phaseName) in s.Predicates.Phase)
+            {
+                if (!Enum.TryParse<Engine.Phase>(phaseName, ignoreCase: true, out _))
+                    errors.Add($"storylet '{s.Id}' phase '{role}: {phaseName}' is not a phase (daily|outing|cooldown).");
+                if (!s.Predicates.Copresent.Contains(role))
+                    errors.Add($"storylet '{s.Id}' phase role '{role}' is not one of its copresent roles.");
+            }
+
+            // Adventurer predicate (`PNO.M2`/`T1`): reads TowneeDto.Adventurer, so the only check is that
+            // the role is a real bound townee role.
+            foreach (var (role, _) in s.Predicates.Adventurer)
+                if (!s.Predicates.Copresent.Contains(role))
+                    errors.Add($"storylet '{s.Id}' adventurer role '{role}' is not one of its copresent roles.");
+
+            // Posting predicate (`PNO.M2`): binds a NON-townee role, so it must NOT also be co-presence-bound
+            // (the intersection would try to place a posting in a room).
+            if (s.Predicates.Posting is { } postPred)
+            {
+                if (postPred.Role.Length == 0)
+                    errors.Add($"storylet '{s.Id}' posting predicate has an empty role.");
+                else if (s.Predicates.Copresent.Contains(postPred.Role))
+                    errors.Add($"storylet '{s.Id}' posting role '{postPred.Role}' also appears in copresent — a posting "
+                             + "is not a townee and must not be co-presence-bound.");
+                if (postPred.State is { Length: > 0 } pst && !Enum.TryParse<Engine.PostingState>(pst, ignoreCase: true, out _))
+                    errors.Add($"storylet '{s.Id}' posting state '{pst}' is not a posting state.");
+            }
+
             for (int i = 0; i < s.Effects.Count; i++)
             {
                 var e = s.Effects[i];
@@ -220,18 +301,33 @@ public static class SchemaValidator
                 // "set" here exactly when Apply would take that branch, and an explicit "chronicle":
                 // false or "regard": "" is correctly not a member. delta/tellability/mark are
                 // modifiers, not members: they legitimately ride along with the member they belong to.
-                var set = new List<string>(4);
+                var set = new List<string>(5);
                 if (e.Regard is { Length: > 0 }) set.Add("regard");
                 if (e.Pressure is { Length: > 0 }) set.Add("pressure");
                 if (e.Post is not null) set.Add("post");
+                if (e.Take is not null) set.Add("take");
                 if (e.Chronicle) set.Add("chronicle");
                 if (set.Count > 1)
-                    errors.Add($"storylet '{s.Id}' effects[{i}] sets {set.Count} of regard/pressure/post/chronicle "
+                    errors.Add($"storylet '{s.Id}' effects[{i}] sets {set.Count} of regard/pressure/post/take/chronicle "
                              + $"({string.Join(" + ", set)}) — exactly one is allowed per effect entry. "
                              + $"StoryletEngine.Apply dispatches on an if/else-if chain, so this entry would apply "
                              + $"'{set[0]}' and silently drop {string.Join(" and ", set.Skip(1).Select(k => $"'{k}'"))}. "
                              + $"Split it into {set.Count} entries, one per key (delta/tellability/mark are modifiers "
                              + $"and stay with the key they belong to).");
+
+                // The `take` effect (`PNO.M2`): adventurer is a copresent role; posting is THIS storylet's
+                // posting-predicate role — there is nothing else on the board to take. A take with no
+                // posting predicate to bind its role can never resolve its own effect.
+                if (e.Take is { } take)
+                {
+                    if (take.Adventurer.Length == 0 || !s.Predicates.Copresent.Contains(take.Adventurer))
+                        errors.Add($"storylet '{s.Id}' take.adventurer '{take.Adventurer}' is not one of its copresent roles "
+                                 + $"[{string.Join(", ", s.Predicates.Copresent)}].");
+                    if (s.Predicates.Posting is not { } pr || pr.Role != take.Posting)
+                        errors.Add($"storylet '{s.Id}' take.posting '{take.Posting}' must be the role of this storylet's "
+                                 + "`posting` predicate — that is the paper being taken, and there is nothing else to bind it to.");
+                    continue;
+                }
 
                 // The `post` effect. Same reasoning as `place` above: a template id that resolves to
                 // nothing makes Board.File return null and the filing vanish without a word.

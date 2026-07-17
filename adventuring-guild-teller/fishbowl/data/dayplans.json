@@ -148,6 +148,9 @@
       ],
       "away": [
         { "start": 0, "end": 48, "place": "away", "activity": "on expedition" }
+      ],
+      "outing": [
+        { "start": 0, "end": 48, "place": "site", "activity": "out on the job" }
       ]
     },
     "adventurer-early": {
@@ -161,6 +164,19 @@
       ],
       "away": [
         { "start": 0, "end": 48, "place": "away", "activity": "on expedition" }
+      ],
+      "outing": [
+        { "start": 0, "end": 48, "place": "site", "activity": "out on the job" }
+      ]
+    },
+    "cooldown-default": {
+      "_comment": "The shared Phase.Cooldown plan (PNO.M2) — resting in town after a trip. Reached by fallback for any dayplan with no cooldown block of its own; place tokens are generic (home) so it fits any townee. This is where the outing's consequences land in town, which is what makes cooldown worth simulating rather than skipping.",
+      "weekday": [
+        { "start": 0,  "end": 16, "place": "home", "activity": "sleeping it off" },
+        { "start": 16, "end": 26, "place": "home", "activity": "mending gear at home" },
+        { "start": 26, "end": 34, "place": "haunt:the-long-table", "activity": "a long one, earned" },
+        { "start": 34, "end": 44, "place": "home", "activity": "resting up" },
+        { "start": 44, "end": 48, "place": "home", "activity": "asleep" }
       ]
     }
   }

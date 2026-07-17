@@ -86,7 +86,7 @@ running observatory**, use the GTH harness (§ *Test harness* below) — a `test
 - Single-threaded tick; townees iterate in stable id order, places in stable id order. The engine
   steps only via `Simulation.StepSlot()` / `RunToDawn()`.
 
-**The absolute pin, and the one time it moved.** `M1_ClockworkDeterminismTests.Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned`
+**The absolute pin, and the two times it moved.** `M1_ClockworkDeterminismTests.Twelve_Townees_Three_Days_Hash_Sequence_Is_Pinned`
 hard-asserts the fixture's day-1..3 hashes as literals. It exists because the test beside it
 (`..._Identical_Hash_Sequence`) only ever compared run A to run B **inside one build** — self-consistency,
 not stability — so a change that moved every hash *consistently* sailed through it green. The contract
@@ -95,16 +95,21 @@ asserted against a town that can be edited underneath it pins nothing.
 
 | | day 1 | day 2 | day 3 |
 |---|---|---|---|
-| **was** (through 2026-07-16) | `b8d15299d8817639` | `e3478bc4ff7d4848` | `02bc86b987c547c3` |
-| **now** | `2a6a8a3af0a1a81d` | `d615d01daa2c8020` | `619649026a9d8895` |
+| **v0** (through 2026-07-16) | `b8d15299d8817639` | `e3478bc4ff7d4848` | `02bc86b987c547c3` |
+| **after `NTD.Q1`** (2026-07-16) | `2a6a8a3af0a1a81d` | `d615d01daa2c8020` | `619649026a9d8895` |
+| **now** (after `PNO.M2`, 2026-07-17) | `55a6a33de66834df` | `cfffcde39b479b1e` | `f2e15c51f07b3c33` |
 
-**They have moved exactly once**, 2026-07-16, on a Panda ruling (`NTD.Q1` + `FBT.Q1`; the `DEV-LOG.md`
-entry of that date *is* the ruling). Cause: `Pressures.BaseDaily`'s `trade` arm stopped being a flat
-`−0.11/day` countdown and became a restoring force. Two other fixes landed in the same change — signed
-`pressure_rate_mods`, `heart` `pressure_targets` — and moved **nothing** here, verified by staging them
-alone and watching the old literals stay green, which is what "hash-neutral" has to mean if it means
-anything. **If this test goes red, that is the test working. Do not re-baseline it** — either the change
-was not supposed to touch the hash, or it was, and that needs a ruling in `DEV-LOG.md` first.
+**They have moved exactly twice, both on a Panda ruling with a `DEV-LOG.md` entry** — never re-baselined
+to make a red go green. (1) 2026-07-16 (`NTD.Q1` + `FBT.Q1`): `Pressures.BaseDaily`'s `trade` arm stopped
+being a flat `−0.11/day` countdown and became a restoring force; two sibling fixes in that change moved
+**nothing**, verified by staging them alone. (2) 2026-07-17 (`PNO.M2`): `World.ToHashNode` stopped emitting
+the `away` bool and started emitting `phase` (+ per-townee outing/cooldown state) — **pre-committed**, the
+spec and the test both said in advance the phase key would redden this by design and required a ruling
+first. The fixture is posting-free AND outing-free (`PNO.D2`), so it still draws zero RNG and the new
+sequence was verified identical across three fresh CLI processes and at `--seed 999999`
+(`At_Default_Config_Hash_Is_Seed_Independent` still holds). **If this test goes red, that is the test
+working. Do not re-baseline it** — either the change was not supposed to touch the hash, or it was, and
+that needs a ruling in `DEV-LOG.md` first.
 
 ## The machinery (CPS — Clockwork · Pressures · Storylets)
 
@@ -178,8 +183,8 @@ GDScript (`bridge.SlotTicked.connect(...)`).
 - Lifecycle: `LoadTown(path)`, `GenerateTown(configJson)`, `Reseed(seed)`
 - Tick: `StepSlot()`, `RunToDawn()`, `RunDays(n)`, `CurrentDay()`
 - Readouts (JSON out): `GetClock()`, `GetRoster()`, `GetTownee(id)`, `GetPlaces()`, **`GetBoard()`**,
-  `GetChronicle(day)`, `GetSummary(day)`, `GetStats(day)`, `GetKnobs()`,
-  `GetPressureSeries(id,drive)`, `GetStorylets()`
+  **`GetQuestBoard()`** (kanban), **`GetTowneeEvents(id)`** (one townee's whole log), `GetChronicle(day)`,
+  `GetSummary(day)`, `GetStats(day)`, `GetKnobs()`, `GetPressureSeries(id,drive)`, `GetStorylets()`
 
 **`GetBoard()` takes no day, and that is a decision rather than an omission.** Every other readout with
 a timeline takes one and answers *"what happened then"*; the board answers *"what is up now"*. Giving
@@ -204,7 +209,7 @@ the bridge is a thin marshalling shim.
 | | `data/` — **the live town** | `tests/towns/golden-town/` — **the frozen fixture** |
 |---|---|---|
 | Who loads it | the observatory (`FishbowlBridge._Ready()` → `res://data`), the CLI (default; `--town` overrides), and the tests that need a board — via `TestSupport.LoadLiveTown()` | **every acceptance test**, via `TestSupport.LoadGoldenTown()` |
-| Counts *(measured 2026-07-16)* | **18** townees · **16** places (**8** `board:true`) · **4** adventurers · **50** storylets · **49** regard edges | **12** townees · **12** places (**6** `board:true`) · **2** adventurers · **12** storylets · **10** regard edges |
+| Counts *(measured 2026-07-17)* | **18** townees · **19** places (**8** `board:true`, **3** offscreen sites) · **4** adventurers · **51** storylets · **49** regard edges | **12** townees · **12** places (**6** `board:true`) · **2** adventurers · **12** storylets · **10** regard edges |
 | Features | **all of them** — postings are authored here | **posting-free, forever** |
 | `--lint` | `errors=0 accepted=14 warnings=70 exit=0` — clean, via its ledger | `errors=23 accepted=0 warnings=64 exit=1` — **correct**: it has no ledger and it really is defective |
 | Why | the board filling and emptying is the readout; it has to be the town you actually run | it pins seed-independence, the 12/6/2 counts, the three hash literals, and the golden day's beats |
@@ -242,7 +247,8 @@ Files, both towns: `simconfig.json` (every knob's default) · `places.json` (boa
 `dayplans.json` (one template per role; `haunt:<id>` tokens, courier `roams`) · `traits.json`
 (`pressure_rate_mods` — **`{gain, decay}` or a bare number**, see below; `storylet_weight_mods`,
 `hearsay_carrier`, `pressure_targets`) · `storylets/*.json` (`_binding` anchors, `must_fire` override).
-**Live town only:** `postings.json` (authored seeds + generator templates) · `lint-accepted.json` (the
+**Live town only:** `postings.json` (authored seeds + generator templates) · `sites.json` (`PNO.M2` — leg
+tracks; each is also synthesized into an offscreen place at load) · `lint-accepted.json` (the
 acceptance ledger). **Fixture only:** `golden/day1.json` (the pinned beat types + participants the M3
 test reproduces; `TownLoader` treats it as optional, so the live town reports `Town.Golden == null` and
 that is correct).
@@ -320,6 +326,27 @@ Anything placed under `data/` joins that suite; that is why the fixture lives un
   > not zero." Total board traffic in summaries is **unchanged at 2 lines/fortnight**; the town simply
   > hears about paper going *up* twice and never about paper coming *down* unanswered. **Not retuned**
   > — buying the line back with tellability is tuning toward a threshold.
+- **PNO.M2 outings** ✅ *(engine + UI; 2026-07-17)* — the phase machine `Daily→Outing→Cooldown→Daily`.
+  An adventurer takes a standing posting (`take` effect + `posting`/`phase`/`adventurer` predicates),
+  leaves town, is findable at an offscreen **site** (`sites.json`, synthesized into a `board:false,
+  offscreen:true` place) every slot, walks its **legs**, rolls one outcome off `SubRngFor("outings", …)`,
+  cools down, and re-enters daily life. **`Away`'s one-way trapdoor is gone** — `Away` is now derived
+  `Phase == Outing`, and `ToHashNode` emits `phase` (which moved the pin — see above). `Outings.ResolveDay`
+  runs before `Board.ResolveDay` before `Clockwork.ResolveDay`. Restlessness discharges three ways (a
+  `take` burst, a resolve burst, and burning while out) — the live-town `--lint` ledger dropped one
+  restlessness ratchet (14→13) on its own, the ruling's own test. `carried`/`rout` are decided here;
+  reward/gear-loss-retrieval/tale-told are `PNO.M3`. Suite **71 → 81**; the outings stream draws real RNG
+  now, so same-seed reproducibility is genuine (verified editor `bc6cf150b190201b` = CLI day-3). **Postings
+  are in the snapshot now** — they were not, and only the posting-free fixture test ran, so a live-town
+  reload silently dropped the board and diverged; `Live_Town_Snapshot_Reproduces_The_Forward_Hash_Sequence`
+  is the guard.
+  > **The expand modal** (spec change, ruled 2026-07-17 — replaced the standalone outing-track panel). A
+  > reusable not-quite-full-screen pop-up with a **dimmed margin that closes it and consumes the click**
+  > (verified in-engine: a margin click hits `modal-close` and never reaches the roster beneath). Two
+  > modes: the **townee dossier** (`btn-inspect` → whole event log + current outing + a loadout
+  > placeholder) and the **quest-board kanban** (`btn-questboard` → Template · Standing · Taken ·
+  > Completed; no PM vocabulary). Attaches to the scene Control, never the layout VBox (a VBox hands it
+  > 0 height).
 
 ## Build · test · run
 
@@ -457,7 +484,8 @@ is code-built and auto-generated node names (`@HSlider@68`) shift on relayout. R
 |---|---|
 | Readouts | `clock` · `hash` · `seed` · `register` · `stats` · `summary` |
 | Tables | `roster` · `chronicle` · `postings` |
-| Buttons | `btn-step` · `btn-dawn` · `btn-run3` · `btn-reseed` · `btn-generate` · `btn-townee` · `btn-place` · `btn-storylets` · `seed-spin` |
+| Buttons | `btn-step` · `btn-dawn` · `btn-run3` · `btn-reseed` · `btn-generate` · `btn-townee` · `btn-place` · `btn-storylets` · `btn-inspect` · `btn-questboard` · `seed-spin` |
+| Expand modal | `modal` (the overlay) · `modal-close` (the dim margin — click closes + consumes) |
 | Knobs — *rendering, applies now* | `knob-actionability` · `knob-summary_lines` · `knob-novelty_decay` · `knob-hearsay_required` |
 | Knobs — *simulation, applies next dawn* | `knob-storylet_rate` · `knob-pressure_rates.trade` · `knob-posting_expiry_scale` · `knob-bio_marks_enabled` |
 

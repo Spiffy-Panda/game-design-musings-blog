@@ -26,7 +26,7 @@ public static class TownLoader
             throw new DirectoryNotFoundException($"Town data directory not found: {dataDir}");
 
         var config = DataJson.Deserialize<SimConfig>(Read(dataDir, "simconfig.json"));
-        var places = DataJson.Deserialize<PlacesFile>(Read(dataDir, "places.json")).Places;
+        var authoredPlaces = DataJson.Deserialize<PlacesFile>(Read(dataDir, "places.json")).Places;
         var townees = DataJson.Deserialize<TowneesFile>(Read(dataDir, "townees.json")).Townees;
         var dayplans = DataJson.Deserialize<DayPlansFile>(Read(dataDir, "dayplans.json")).Dayplans;
         var traits = DataJson.Deserialize<TraitsFile>(Read(dataDir, "traits.json")).Traits;
@@ -54,6 +54,19 @@ public static class TownLoader
         if (File.Exists(postingsPath))
             postings = DataJson.Deserialize<PostingsFile>(DataJson.ReadText(postingsPath)).Postings;
 
+        // Sites: OPTIONAL like postings/, and each one is ALSO a place. A site is authored once in
+        // sites.json (its leg track); the offscreen place it needs for co-presence is synthesized here
+        // rather than hand-authored in places.json twice, so an author cannot forget one or drift them
+        // apart. board:false + offscreen:true keeps sites out of daily routing and out of the place board.
+        IReadOnlyList<SiteDto> sites = Array.Empty<SiteDto>();
+        var sitesPath = Path.Combine(dataDir, "sites.json");
+        if (File.Exists(sitesPath))
+            sites = DataJson.Deserialize<SitesFile>(DataJson.ReadText(sitesPath)).Sites;
+
+        var places = sites.Count > 0
+            ? authoredPlaces.Concat(sites.Select(s => SitePlace(s, config.SlotsPerDay))).ToList()
+            : authoredPlaces;
+
         var town = new Town
         {
             Config = config,
@@ -64,6 +77,7 @@ public static class TownLoader
             Storylets = storylets,
             Golden = golden,
             Postings = postings,
+            Sites = sites,
             PlaceById = ToLookup(places, p => p.Id, "place"),
             TowneeById = ToLookup(townees, t => t.Id, "townee"),
             TraitById = ToLookup(traits, t => t.Id, "trait"),
@@ -88,6 +102,9 @@ public static class TownLoader
             // the exact shape of the btn-generate bug (a Rebuild that quietly kept the wrong
             // Storylets). If you add a field to Town, add it here in the same commit.
             Postings = from.Postings,
+            // The synthesized site-places already ride along in `p` (they are in from.Places); Sites is
+            // the parallel authored list and must be carried too, or an outing's SiteById lookup goes null.
+            Sites = from.Sites,
             PlaceById = ToLookup(p, x => x.Id, "place"),
             TowneeById = ToLookup(t, x => x.Id, "townee"),
             TraitById = from.TraitById, StoryletById = from.StoryletById,
@@ -95,6 +112,17 @@ public static class TownLoader
         SchemaValidator.Validate(town);
         return town;
     }
+
+    /// <summary>The offscreen place a site is co-present at. Hours span the whole day and capacity is
+    /// generous because neither is read at runtime for an offscreen place (only range-checked at load);
+    /// what matters is <c>Board=false</c> (off the place board) and <c>Offscreen=true</c> (out of daily
+    /// routing and out of <c>TownGenerator</c>'s home pool).</summary>
+    private static PlaceDto SitePlace(SiteDto s, int slots) => new()
+    {
+        Id = s.Id, Name = s.Name, Kind = s.Kind,
+        Hours = new HoursDto { Open = 0, Close = slots }, Capacity = 99,
+        Board = false, Shut = false, Offscreen = true,
+    };
 
     private static string Read(string dir, string file)
     {

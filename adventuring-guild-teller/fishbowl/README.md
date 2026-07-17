@@ -84,12 +84,16 @@ two towns, the linter's ledger, the data shapes, and milestone status — see
 Milestones M0–M3 are complete and gate-checked; M4 (creation menus, generator, stats, soak) is in
 place. The **board** landed 2026-07-16 (`PNO.M1`) and reached the screen on 2026-07-17: a posting
 files, stands, ages, and expires in the town you actually run, and the **Postings board** panel shows
-what is up right now. **Outings — an adventurer taking a posting and leaving town — are next**
-(`PNO.M2`), and they are the reason `restlessness` currently ships as a known-broken drive: the buildup
-exists to push a townee somewhere, and today there is nowhere to be pushed.
+what is up right now. **Outings landed 2026-07-17 (`PNO.M2`)** — an adventurer takes a posting off the
+board, leaves town, walks an off-screen site's legs, and comes home to cool down before daily life
+resumes, so the away-flag's old one-way trapdoor is gone. An **expand modal** (a full-screen pop-up you
+click off to close) opens two views: a townee's whole event log, and the quest board as a kanban. The
+outing loop is what finally gives `restlessness` somewhere to discharge — the drive was shipped
+known-broken precisely because until now there was nowhere to be pushed. Still to come (`PNO.M3`):
+rewards paid, a failed outing seeding a retrieval posting, and the tale told when the party walks back in.
 
 Determinism holds across runs and between the CLI and the editor. The day-hash is pinned to three
-literals in the test suite, and they have **moved exactly once** — on an explicit ruling, recorded in
+literals in the test suite, and they have **moved exactly twice** — each time on an explicit ruling, recorded in
 `DEV-LOG.md` before the strings changed.
 
 **The most useful thing this project has learned so far** is in the same log, and it isn't about
