@@ -109,6 +109,22 @@
         "dark":  { "bg": "#101310", "ink": "#e5e1d3", "muted": "#8f8a78", "line": "#2b2f27", "accent": "#6fc59c", "accent2": "#ff937e", "accent3": "#d5b45f" }
       },
       "hidden": false
+    },
+    {
+      "folder": "crokinole",
+      "slug": "crokinole",
+      "name": "Crokinole",
+      "description": "A 150-year-old dexterity game whose rulebook is mostly a description of a piece of plywood — and what falls out when you make every implicit rule explicit. Ships a playable simulator: real board dimensions, eight pegs, the contact rule enforced, deterministic seeded physics, and an opponent that searches ~150 shots a turn and tells you which term won.",
+      "links": [
+        { "label": "The Board", "href": "board.html" }
+      ],
+      "emblem": "emblem.svg",
+      "theme": {
+        "font": "sans",
+        "light": { "bg": "#f7f1e4", "ink": "#2b2118", "muted": "#7d6a52", "line": "#ddcdb0", "accent": "#b4541c", "accent2": "#31606e" },
+        "dark":  { "bg": "#14100b", "ink": "#ece2d2", "muted": "#9b8b74", "line": "#2e261c", "accent": "#e8894a", "accent2": "#6fb2c4" }
+      },
+      "hidden": false
     }
   ]
 }

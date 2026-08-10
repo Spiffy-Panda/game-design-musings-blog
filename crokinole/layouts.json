@@ -1,0 +1,197 @@
+{
+  "lane": {
+    "label": "Lane · 48 × 24",
+    "blurb": "A 2:1 rectangle shot down its long axis. Long sides bank, both short ends are open ditch, and two staggered fences flank the crown so no straight line passes through both.",
+    "halfW": 24,
+    "halfH": 12,
+
+    "edges": [
+      { "axis": "y", "at":  12, "span": [-24, 24], "kind": "rail"  },
+      { "axis": "y", "at": -12, "span": [-24, 24], "kind": "rail"  },
+      { "axis": "x", "at":  24, "span": [-12, 12], "kind": "ditch" },
+      { "axis": "x", "at": -24, "span": [-12, 12], "kind": "ditch" }
+    ],
+
+    "zones": [
+      { "name": "crown", "rect": { "cx": 0, "cy": 0, "hx":  4, "hy":  2.5 }, "value": 3 },
+      { "name": "mid",   "rect": { "cx": 0, "cy": 0, "hx":  9, "hy":  4.5 }, "value": 2 },
+      { "name": "outer", "rect": { "cx": 0, "cy": 0, "hx": 16, "hy":  8   }, "value": 1 },
+      { "name": "apron", "rect": { "cx": 0, "cy": 0, "hx": 24, "hy": 12   }, "value": 0 }
+    ],
+
+    "crown": {
+      "rect": { "cx": 0, "cy": 0, "hx": 4, "hy": 2.5 },
+      "chamfer": 0.9,
+      "lipV2": [340, 340, 340, 340]
+    },
+
+    "pickets": [
+      { "name": "fence A (west)", "r": 0.1875, "pegs": [
+        { "x": -6.5, "y": -6 }, { "x": -6.5, "y": -3 }, { "x": -6.5, "y": 0 },
+        { "x": -6.5, "y":  3 }, { "x": -6.5, "y":  6 } ] },
+      { "name": "fence B (east)", "r": 0.1875, "pegs": [
+        { "x": 6.5, "y": -4.5 }, { "x": 6.5, "y": -1.5 },
+        { "x": 6.5, "y":  1.5 }, { "x": 6.5, "y":  4.5 } ] }
+    ],
+    "gates": [
+      { "picket": 0, "pair": [2, 3] },
+      { "picket": 1, "pair": [1, 2] }
+    ],
+
+    "shootLine": [
+      { "x0":  20, "y0": -11.375, "x1":  20, "y1":  11.375, "faceDeg": 180 },
+      { "x0": -20, "y0":  11.375, "x1": -20, "y1": -11.375, "faceDeg":   0 }
+    ],
+
+    "railDrag": 0.90, "crownFricMul": 1.9, "lipE": 0.35, "lipSnap": 0.05,
+    "sweep": 2, "matchTarget": 50
+  },
+
+  "courtyard": {
+    "label": "Courtyard · 32 × 32",
+    "blurb": "Square, played from all four sides, every edge open ditch. Diamond zones, and a ring of posts on the cardinals and diagonals so no straight shot reaches the crown — the only ways in are off-axis.",
+    "halfW": 16,
+    "halfH": 16,
+
+    "edges": [
+      { "axis": "x", "at":  16, "span": [-16, 16], "kind": "ditch" },
+      { "axis": "x", "at": -16, "span": [-16, 16], "kind": "ditch" },
+      { "axis": "y", "at":  16, "span": [-16, 16], "kind": "ditch" },
+      { "axis": "y", "at": -16, "span": [-16, 16], "kind": "ditch" }
+    ],
+
+    "zones": [
+      { "name": "crown", "poly": [[ 2.8, 0], [0,  2.8], [ -2.8, 0], [0,  -2.8]], "value": 3 },
+      { "name": "mid",   "poly": [[ 9.5, 0], [0,  9.5], [ -9.5, 0], [0,  -9.5]], "value": 2 },
+      { "name": "outer", "poly": [[15.0, 0], [0, 15.0], [-15.0, 0], [0, -15.0]], "value": 1 },
+      { "name": "apron", "rect": { "cx": 0, "cy": 0, "hx": 16, "hy": 16 },       "value": 0 }
+    ],
+
+    "crown": {
+      "poly": [[2.8, 0], [0, 2.8], [-2.8, 0], [0, -2.8]],
+      "chamfer": 0.7,
+      "lipV2": [300, 300, 300, 300]
+    },
+
+    "pickets": [
+      { "name": "ring · cardinals", "r": 0.1875, "pegs": [
+        { "x":  3.05, "y":  0    }, { "x":  0,    "y":  3.05 },
+        { "x": -3.05, "y":  0    }, { "x":  0,    "y": -3.05 } ] },
+      { "name": "ring · diagonals", "r": 0.1875, "pegs": [
+        { "x":  1.5768, "y":  1.5768 }, { "x": -1.5768, "y":  1.5768 },
+        { "x": -1.5768, "y": -1.5768 }, { "x":  1.5768, "y": -1.5768 } ] }
+    ],
+    "gates": [
+      { "pair": [[0, 3], [1, 3]] },
+      { "pair": [[0, 1], [1, 1]] }
+    ],
+
+    "shootLine": [
+      { "x0": -12.5, "y0":  12.5, "x1":  12.5, "y1":  12.5, "faceDeg": -90 },
+      { "x0":  12.5, "y0": -12.5, "x1": -12.5, "y1": -12.5, "faceDeg":  90 },
+      { "x0":  12.5, "y0":  12.5, "x1":  12.5, "y1": -12.5, "faceDeg": 180 },
+      { "x0": -12.5, "y0": -12.5, "x1": -12.5, "y1":  12.5, "faceDeg":   0 }
+    ],
+
+    "railDrag": 0.90, "crownFricMul": 1.9, "lipE": 0.35, "lipSnap": 0.05,
+    "sweep": 2, "matchTarget": 50
+  },
+
+  "gauntlet": {
+    "label": "Gauntlet · 56 × 20",
+    "blurb": "Narrow and fully enclosed — every edge is a rail, so nothing is ever removed and the board only fills. A chevron faces each shooter, leaving the crown no direct line at all.",
+    "halfW": 28,
+    "halfH": 10,
+    "enclosed": true,
+
+    "edges": [
+      { "axis": "x", "at":  28, "span": [-10, 10], "kind": "rail" },
+      { "axis": "x", "at": -28, "span": [-10, 10], "kind": "rail" },
+      { "axis": "y", "at":  10, "span": [-28, 28], "kind": "rail" },
+      { "axis": "y", "at": -10, "span": [-28, 28], "kind": "rail" }
+    ],
+
+    "zones": [
+      { "name": "crown", "rect": { "cx": 0, "cy": 0, "hx":  4, "hy": 2.2 }, "value": 3 },
+      { "name": "mid",   "rect": { "cx": 0, "cy": 0, "hx":  6, "hy": 3.8 }, "value": 2 },
+      { "name": "outer", "rect": { "cx": 0, "cy": 0, "hx": 10, "hy": 6.6 }, "value": 1 },
+      { "name": "apron", "rect": { "cx": 0, "cy": 0, "hx": 28, "hy": 10  }, "value": 0 }
+    ],
+
+    "crown": {
+      "rect": { "cx": 0, "cy": 0, "hx": 4, "hy": 2.2 },
+      "chamfer": 0.8,
+      "lipV2": [340, 340, 340, 340]
+    },
+
+    "pickets": [
+      { "name": "west chevron", "r": 0.1875, "pegs": [
+        { "x": -8,   "y": -4.4 }, { "x": -9,   "y": -2.2 }, { "x": -9.4, "y": 0 },
+        { "x": -9,   "y":  2.2 }, { "x": -8,   "y":  4.4 } ] },
+      { "name": "east chevron", "r": 0.1875, "pegs": [
+        { "x":  8,   "y":  4.4 }, { "x":  9,   "y":  2.2 }, { "x":  9.4, "y": 0 },
+        { "x":  9,   "y": -2.2 }, { "x":  8,   "y": -4.4 } ] }
+    ],
+    "gates": [
+      { "picket": 0, "pair": [0, 1] },
+      { "picket": 1, "pair": [0, 1] }
+    ],
+
+    "shootLine": [
+      { "x0":  24, "y0": -9.375, "x1":  24, "y1":  9.375, "faceDeg": 180 },
+      { "x0": -24, "y0":  9.375, "x1": -24, "y1": -9.375, "faceDeg":   0 }
+    ],
+
+    "railDrag": 0.90, "crownFricMul": 1.9, "lipE": 0.35, "lipSnap": 0.05,
+    "sweep": 2, "matchTarget": 50
+  },
+
+  "terrace": {
+    "label": "Terrace · 36 × 28",
+    "blurb": "Shot across the short axis at a crown that is not a point but a full-width stripe, guarded by two interleaved colonnades. A shot is a depth judgement; overshoot and you sail past into their approach.",
+    "halfW": 18,
+    "halfH": 14,
+
+    "edges": [
+      { "axis": "x", "at":  18, "span": [-14, 14], "kind": "rail"  },
+      { "axis": "x", "at": -18, "span": [-14, 14], "kind": "rail"  },
+      { "axis": "y", "at":  14, "span": [-18, 18], "kind": "ditch" },
+      { "axis": "y", "at": -14, "span": [-18, 18], "kind": "ditch" }
+    ],
+
+    "zones": [
+      { "name": "crown", "rect": { "cx": 0, "cy": 0, "hx": 18, "hy":  2.1 }, "value": 3 },
+      { "name": "mid",   "rect": { "cx": 0, "cy": 0, "hx": 18, "hy":  6.3 }, "value": 2 },
+      { "name": "outer", "rect": { "cx": 0, "cy": 0, "hx": 18, "hy": 10.5 }, "value": 1 },
+      { "name": "apron", "rect": { "cx": 0, "cy": 0, "hx": 18, "hy": 14   }, "value": 0 }
+    ],
+
+    "crown": {
+      "rect": { "cx": 0, "cy": 0, "hx": 18, "hy": 2.1 },
+      "chamfer": 0.8,
+      "lipV2": [340, 340, 340, 340]
+    },
+
+    "pickets": [
+      { "name": "north colonnade", "r": 0.1875, "pegs": [
+        { "x": -15, "y": -3.4 }, { "x": -10, "y": -3.4 }, { "x": -5, "y": -3.4 },
+        { "x":   0, "y": -3.4 }, { "x":   5, "y": -3.4 }, { "x": 10, "y": -3.4 },
+        { "x":  15, "y": -3.4 } ] },
+      { "name": "south colonnade", "r": 0.1875, "pegs": [
+        { "x": -12.5, "y": 3.4 }, { "x": -7.5, "y": 3.4 }, { "x": -2.5, "y": 3.4 },
+        { "x":   2.5, "y": 3.4 }, { "x":  7.5, "y": 3.4 }, { "x":  12.5, "y": 3.4 } ] }
+    ],
+    "gates": [
+      { "picket": 0, "pair": [3, 4] },
+      { "picket": 1, "pair": [2, 3] }
+    ],
+
+    "shootLine": [
+      { "x0": -17.375, "y0":  12, "x1":  17.375, "y1":  12, "faceDeg": -90 },
+      { "x0":  17.375, "y0": -12, "x1": -17.375, "y1": -12, "faceDeg":  90 }
+    ],
+
+    "railDrag": 0.90, "crownFricMul": 1.9, "lipE": 0.35, "lipSnap": 0.05,
+    "sweep": 2, "matchTarget": 50
+  }
+}

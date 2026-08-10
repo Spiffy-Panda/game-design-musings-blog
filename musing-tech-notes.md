@@ -168,6 +168,20 @@ design-system-heavy sets where the page *is* the deliverable. Worked examples:
   verbatim to `site/musings/<slug>/` (same treatment as the MSL `explorations/` gallery);
   `.md` files are never copied. The contract is otherwise unchanged: `--out`, repo-root
   anchoring via `__file__`, non-zero exit on failure.
+- **Data a self-contained page needs goes in a JSON file and is INLINED at build time.**
+  Worked example: `crokinole/layouts.json` holds the geometry of all four boards, and
+  `crokinole/build-musing.py` regenerates a `<script type="application/json" id="board-layouts">`
+  block inside `board.html` from it on every build, then copies `layouts.json` into the output
+  so the served page can be diffed against what it was built from. The page parses the block
+  with `JSON.parse`. **Do not reach for `fetch`** — these pages must open from `file://`, where
+  fetching a sibling file is blocked by the same-origin rule, so a fetch turns a self-contained
+  page into a served-only one. The rules that make this safe rather than a second copy of the
+  data: the JSON is the only hand-maintained copy; the block carries an HTML comment saying it
+  is generated; the build exits non-zero if the JSON is missing or unparseable, and non-zero if
+  the block it must fill is absent; and because the repo copy of the page also has to open from
+  disk, the script grows a `--sync` flag that rewrites it in place. A plain build never writes
+  to the source tree — it prints a loud `warning: … is STALE` and publishes from the JSON
+  regardless, so the site is never wrong even when the repo copy is.
 - **A musing may carry a non-published subfolder.** `glob("*.html")` is top-level only, so
   a subfolder (tooling, a source project, working files) is invisible to the site build —
   it lives in the repo but never deploys. First instance: `adventuring-guild-teller/morning-queue/`,
@@ -347,6 +361,20 @@ musing folder just because it's hidden.
   per-note `setTimeout`. To judge live input against the audio clock, bridge clocks via a
   sampled offset (`performance.now()/1000 − ctx.currentTime`); `MIDIMessageEvent.timeStamp`
   is on the `performance.now()` clock.
+
+- **Canvas pages** (worked example: `crokinole/board.html`): a `<canvas>` cannot read CSS
+  custom properties, so a themed page has to pull them out itself —
+  `getComputedStyle(document.documentElement).getPropertyValue('--token')` into a palette
+  object, re-read on resize **and** on
+  `matchMedia('(prefers-color-scheme: dark)')` `change` (otherwise the page's chrome flips
+  theme and the canvas keeps painting the old one — invisible until someone switches
+  themes with the page open). Size the backing store by `devicePixelRatio` (clamp it, ~2.5)
+  and set the world→pixel transform once per frame rather than scaling every draw call.
+  For a **simulation**, keep the step fixed (accumulate `requestAnimationFrame` time into
+  fixed substeps) and keep all randomness in a seeded PRNG outside the integrator: that is
+  what lets an AI search run the *same* code headlessly and makes "same seed ⇒ same result"
+  a check a headless browser can assert. Define the world's dimensions once in a constants
+  object in real-world units and derive everything (including the drawing) from it.
 
 ## Where the pieces live
 

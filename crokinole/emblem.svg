@@ -1,0 +1,51 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <!-- The crokinole board read as a diagram: concentric rings (26" surface, 24" starting
+       line, 16" ten-ring, 8" fifteen-ring), the eight pegs on the 15 circle at 22.5deg
+       phase, the quadrant dividers, the 20-hole at centre — and one disc mid-flight down
+       the open-twenty lane, straight through the peg gap. That lane is the argument.
+       Colors come from the landing row's m-* custom properties (fallbacks = light
+       palette). Note: an XML comment may not contain a double hyphen, so the token
+       names are written without their leading dashes here. -->
+
+  <!-- playing surface -->
+  <circle cx="100" cy="100" r="93" fill="var(--m-bg, #f7f1e4)" stroke="var(--m-ink, #2b2118)" stroke-width="2.5"/>
+  <!-- 24" starting line -->
+  <circle cx="100" cy="100" r="86" fill="none" stroke="var(--m-line, #ddcdb0)" stroke-width="1.6"/>
+  <!-- 16" ten-ring -->
+  <circle cx="100" cy="100" r="57" fill="none" stroke="var(--m-line, #ddcdb0)" stroke-width="2"/>
+  <!-- 8" fifteen-ring (the guarded ring) -->
+  <circle cx="100" cy="100" r="29" fill="none" stroke="var(--m-muted, #7d6a52)" stroke-width="2.4"/>
+
+  <!-- quadrant dividers, 15-ring out to the edge -->
+  <g stroke="var(--m-line, #ddcdb0)" stroke-width="1.8" stroke-linecap="round">
+    <line x1="120.5" y1="120.5" x2="165.8" y2="165.8"/>
+    <line x1="79.5"  y1="120.5" x2="34.2"  y2="165.8"/>
+    <line x1="79.5"  y1="79.5"  x2="34.2"  y2="34.2"/>
+    <line x1="120.5" y1="79.5"  x2="165.8" y2="34.2"/>
+  </g>
+
+  <!-- the open-twenty lane: down the quadrant centre line, between two pegs, into the hole -->
+  <g stroke="var(--m-accent2, #31606e)" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <line x1="100" y1="181" x2="100" y2="121" stroke-dasharray="7 7"/>
+    <polyline points="94,128 100,120 106,128"/>
+  </g>
+
+  <!-- eight pegs, centres on the 8" circle, 22.5deg off each quadrant line -->
+  <g fill="var(--m-ink, #2b2118)">
+    <circle cx="126.8" cy="111.1" r="4.2"/>
+    <circle cx="111.1" cy="126.8" r="4.2"/>
+    <circle cx="88.9"  cy="126.8" r="4.2"/>
+    <circle cx="73.2"  cy="111.1" r="4.2"/>
+    <circle cx="73.2"  cy="88.9"  r="4.2"/>
+    <circle cx="88.9"  cy="73.2"  r="4.2"/>
+    <circle cx="111.1" cy="73.2"  r="4.2"/>
+    <circle cx="126.8" cy="88.9"  r="4.2"/>
+  </g>
+
+  <!-- the 20-hole -->
+  <circle cx="100" cy="100" r="9" fill="var(--m-ink, #2b2118)"/>
+
+  <!-- the disc in flight -->
+  <circle cx="100" cy="156" r="10" fill="var(--m-accent, #b4541c)"/>
+  <circle cx="100" cy="156" r="4.5" fill="none" stroke="var(--m-bg, #f7f1e4)" stroke-width="1.8"/>
+</svg>

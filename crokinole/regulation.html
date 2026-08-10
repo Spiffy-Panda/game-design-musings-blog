@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Regulation Board — a playable crokinole simulator</title>
+<style>
+  /* ————————————————————————————————————————————————
+     Design tokens. Every colour in the page AND on the
+     canvas resolves through one of these variables.
+     ———————————————————————————————————————————————— */
+  :root{
+    --ground:#f2ecdf; --surface:#fbf7ee; --line:#ded3bd; --line2:#c2b499;
+    --ink:#252118; --ink2:#544c3d; --ink3:#7f7563;
+    --accent:#b34a22; --accent2:#2f6f52; --warn:#9a6b12;
+
+    /* board woods */
+    --ditch:#5d3f26;
+    --rim:#3f2a19;
+    --wood-outer:#c79f66;
+    --wood-5:#d9b98a;
+    --wood-10:#e6cda4;
+    --wood-15:#f2e2bf;
+    --hole:#2e1f12;
+    --board-line:#6a4826;
+    --board-ink:#7c5730;
+    --peg:#2c1e12;
+    --peg-top:#6d543c;
+
+    /* discs */
+    --disc-a:#f4e6c2; --disc-a-edge:#a4854d; --disc-a-mark:#5c4620;
+    --disc-b:#4a2d18; --disc-b-edge:#22120a; --disc-b-mark:#e2cfa8;
+
+    /* overlays */
+    --aim:#b34a22; --aim-soft:rgba(179,74,34,.35); --ghost:rgba(0,0,0,.30);
+
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#100f13; --surface:#191820; --line:#2c2a35; --line2:#454150;
+      --ink:#eae5da; --ink2:#b2ab9d; --ink3:#8b8375;
+      --accent:#ff7d4c; --accent2:#78c79b; --warn:#e0ab4f;
+
+      --ditch:#2a1c0d; --rim:#0d0906;
+      --wood-outer:#67482a; --wood-5:#89653a; --wood-10:#a37e4a; --wood-15:#c19c62;
+      --hole:#0a0603;
+      --board-line:#f0dcb8; --board-ink:#f0dcb8;
+      --peg:#120a04; --peg-top:#6b543c;
+
+      --disc-a:#f6e9c6; --disc-a-edge:#7a5f31; --disc-a-mark:#3d2c10;
+      --disc-b:#24140a; --disc-b-edge:#0b0503; --disc-b-mark:#e8d6b0;
+
+      --aim:#ff7d4c; --aim-soft:rgba(255,125,76,.35); --ghost:rgba(255,255,255,.32);
+    }
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--ground); color:var(--ink);
+    font:16px/1.6 var(--sans); min-height:100vh;
+  }
+  .wrap{max-width:1180px; margin-inline:auto; padding:clamp(20px,4vh,48px) clamp(14px,4vw,40px) 64px}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.4rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--accent); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+
+  /* ————————————————— header ————————————————— */
+  .eyebrow{font:600 11.5px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 10px}
+  h1{font:650 clamp(28px,5.4vw,46px)/1.08 var(--sans); letter-spacing:-.02em; margin:0 0 10px}
+  .sub{font-size:clamp(15px,2vw,17.5px); color:var(--ink2); max-width:66ch; margin:0 0 26px}
+
+  /* ————————————————— layout ————————————————— */
+  .game{display:grid; gap:20px; grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr); align-items:start}
+  @media (max-width:900px){ .game{grid-template-columns:1fr} }
+
+  .boardcol{min-width:0}
+  .stage{position:relative; width:100%; aspect-ratio:1/1; max-width:640px; margin-inline:auto}
+  canvas{width:100%; height:100%; display:block; border-radius:8px; touch-action:none;
+         background:var(--rim); border:1px solid var(--line)}
+  canvas:focus-visible{outline:3px solid var(--accent); outline-offset:3px}
+
+  .hint{margin:10px 0 0; font-size:13px; color:var(--ink3); max-width:60ch}
+  .hint kbd{font:12px var(--mono); border:1px solid var(--line2); border-bottom-width:2px;
+            border-radius:3px; padding:1px 5px; color:var(--ink2); background:var(--surface)}
+
+  /* ————————————————— panel ————————————————— */
+  .panel{display:grid; gap:14px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:14px 16px}
+  .card h2{font:650 13px/1.4 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+           color:var(--ink3); margin:0 0 10px}
+
+  .scoreline{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:5px 0;
+             border-bottom:1px dashed var(--line)}
+  .scoreline:last-child{border-bottom:0}
+  .who{display:flex; align-items:center; gap:8px; font-weight:600}
+  .chip{width:16px; height:16px; border-radius:50%; flex:none; position:relative}
+  .chip.a{background:var(--disc-a); border:2px solid var(--disc-a-edge)}
+  .chip.a::after{content:""; position:absolute; inset:4px; border-radius:50%; background:var(--disc-a-mark)}
+  .chip.b{background:var(--disc-b); border:2px solid var(--disc-b-edge)}
+  .chip.b::after{content:""; position:absolute; inset:3px; border-radius:50%; border:1.5px solid var(--disc-b-mark)}
+  .big{font:650 21px/1 var(--mono)}
+  .muted{color:var(--ink3); font-size:13px}
+
+  .status{font-weight:600; color:var(--ink); margin:0}
+  .status .tag{font:600 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase;
+               color:var(--accent); display:block; margin-bottom:3px}
+
+  .meter{height:9px; border-radius:5px; background:var(--line); overflow:hidden; margin:6px 0 2px}
+  .meter i{display:block; height:100%; background:var(--accent); width:0%}
+  .readout{font:12.5px/1.6 var(--mono); color:var(--ink2)}
+  .readout b{color:var(--ink); font-weight:600}
+
+  .ctl{display:grid; gap:9px}
+  .row{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+  label{font-size:13px; color:var(--ink2)}
+  input[type=range]{flex:1; min-width:110px; accent-color:var(--accent)}
+  input[type=number]{width:9.5ch; font:13px var(--mono); padding:4px 6px; color:var(--ink);
+                     background:var(--ground); border:1px solid var(--line2); border-radius:4px}
+  button{font:600 13px var(--sans); color:var(--ink); background:var(--ground);
+         border:1px solid var(--line2); border-radius:5px; padding:6px 11px; cursor:pointer}
+  button:hover{border-color:var(--accent); color:var(--accent)}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  button[disabled]{opacity:.45; cursor:not-allowed}
+  input:focus-visible, select:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  input[type=checkbox]{accent-color:var(--accent)}
+
+  .reason{font-size:13.5px; color:var(--ink2); margin:0}
+  .reason .shot{font:12.5px var(--mono); color:var(--ink); display:block; margin-bottom:6px}
+  table.terms{width:100%; border-collapse:collapse; font:12px var(--mono); margin-top:8px}
+  table.terms th{text-align:left; font:600 10.5px var(--sans); letter-spacing:.08em;
+                 text-transform:uppercase; color:var(--ink3); padding:0 0 4px; border-bottom:1px solid var(--line)}
+  table.terms td{padding:3px 0; border-bottom:1px dotted var(--line); color:var(--ink2)}
+  table.terms td.n{text-align:right; color:var(--ink)}
+  table.terms tr.win td{color:var(--accent); font-weight:700}
+
+  ul.log{list-style:none; margin:0; padding:0; font-size:13px; color:var(--ink2);
+         max-height:180px; overflow:auto}
+  ul.log li{padding:4px 0; border-bottom:1px dotted var(--line)}
+  ul.log li:last-child{border-bottom:0}
+  ul.log .r{color:var(--ink3); font:11px var(--mono)}
+
+  /* ————————————————— rules panel ————————————————— */
+  details.rules{margin-top:26px; background:var(--surface); border:1px solid var(--line); border-radius:6px}
+  details.rules > summary{cursor:pointer; padding:14px 18px; font:650 15px var(--sans); list-style:none}
+  details.rules > summary::-webkit-details-marker{display:none}
+  details.rules > summary::before{content:"\25B8"; display:inline-block; margin-right:9px; color:var(--accent);
+                                  transition:transform .15s ease}
+  details.rules[open] > summary::before{transform:rotate(90deg)}
+  details.rules > summary:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:6px}
+  .rules-body{padding:0 18px 18px; color:var(--ink2); font-size:14.5px}
+  .rules-body h3{font:650 13px var(--sans); letter-spacing:.1em; text-transform:uppercase;
+                 color:var(--ink3); margin:20px 0 8px}
+  .rules-body p{max-width:74ch}
+  .rules-body ul{max-width:74ch; padding-left:1.15em}
+  .rules-body li{margin:5px 0}
+  .rules-body code{font:12.5px var(--mono); background:var(--ground); border:1px solid var(--line);
+                   border-radius:3px; padding:.05em .35em}
+  table.dim{width:100%; border-collapse:collapse; font-size:13.5px; margin:6px 0 4px}
+  table.dim th{text-align:left; font:600 11px var(--sans); letter-spacing:.08em; text-transform:uppercase;
+               color:var(--ink3); border-bottom:1px solid var(--line2); padding:6px 8px 6px 0}
+  table.dim td{padding:5px 8px 5px 0; border-bottom:1px dotted var(--line); vertical-align:top}
+  table.dim td.v{font:12.5px var(--mono); color:var(--ink); white-space:nowrap}
+  .approx{border-left:3px solid var(--warn); padding:2px 0 2px 12px; margin:10px 0}
+
+  .foot{margin-top:34px; border-top:1px solid var(--line); padding-top:14px;
+        font:12.5px/1.75 var(--sans); color:var(--ink3); max-width:78ch}
+
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+           clip:rect(0 0 0 0); white-space:nowrap; border:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+      <li><a href="../../index.html">Game Design Musings</a></li>
+      <li><a href="index.html">Crokinole</a></li>
+      <li><span aria-current="page">The Regulation Board</span></li>
+    </ol>
+  </nav>
+
+  <p class="eyebrow">A playable simulator · self-contained, no build, no dependencies</p>
+  <h1>The Regulation Board</h1>
+  <p class="sub">A regulation crokinole board, drawn from the real numbers and simulated with a
+  fixed-timestep rigid-disc solver. The opponent is the point: it searches shots by running the
+  <em>same</em> physics you're watching, scores the resulting board with terms you can read, and
+  then lets a shaky hand ruin the plan.</p>
+
+  <div class="game">
+    <div class="boardcol">
+      <div class="stage">
+        <canvas id="board" width="640" height="640" tabindex="0"
+                aria-label="Crokinole board. Use the text description below the board for the current position of every disc."></canvas>
+      </div>
+      <p class="hint">
+        <strong>Mouse / touch:</strong> drag back from your disc and release — slingshot.
+        Click elsewhere on your arc to slide the disc along the line.<br>
+        <strong>Keyboard</strong> (click the board first):
+        <kbd>&larr;</kbd><kbd>&rarr;</kbd> aim &middot;
+        <kbd>&uarr;</kbd><kbd>&darr;</kbd> power &middot;
+        <kbd>A</kbd><kbd>D</kbd> slide along the line &middot;
+        <kbd>Space</kbd> shoot &middot; hold <kbd>Shift</kbd> for fine steps.
+      </p>
+      <div id="mirror" class="sr-only" role="region" aria-label="Board state in text"></div>
+    </div>
+
+    <aside class="panel">
+      <div class="card">
+        <h2>Match</h2>
+        <div class="scoreline">
+          <span class="who"><span class="chip a" aria-hidden="true"></span>You</span>
+          <span><span class="big" id="scoreYou">0</span> <span class="muted" id="discsYou">12 left</span></span>
+        </div>
+        <div class="scoreline">
+          <span class="who"><span class="chip b" aria-hidden="true"></span>Machine</span>
+          <span><span class="big" id="scoreAi">0</span> <span class="muted" id="discsAi">12 left</span></span>
+        </div>
+        <p class="muted" style="margin:8px 0 0" id="roundInfo">Round 1 · first to 100</p>
+        <p class="status" id="status" aria-live="polite" style="margin-top:10px">
+          <span class="tag">Status</span><span id="statusText">Your shot.</span>
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Your shot</h2>
+        <div class="readout" id="aimReadout">aim +0.0&deg; · power 32%</div>
+        <div class="meter" aria-hidden="true"><i id="powerBar" style="width:32%"></i></div>
+        <div class="readout muted" id="placeReadout">placed 0.0&deg; from quadrant centre</div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnFire" type="button">Shoot</button>
+          <button id="btnCentre" type="button">Centre placement</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>The machine's last shot</h2>
+        <p class="reason" id="aiReason"><em>Waiting for its turn.</em></p>
+        <table class="terms" id="aiTerms" hidden>
+          <thead><tr><th>Term</th><th class="n" style="text-align:right">Raw</th><th class="n" style="text-align:right">&Delta;pts</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Controls</h2>
+        <div class="ctl">
+          <div class="row">
+            <label for="diff">Hand tremor</label>
+            <input type="range" id="diff" min="0" max="40" step="1" value="12">
+            <span class="readout" id="diffVal">1.2&deg;</span>
+          </div>
+          <p class="muted" style="margin:-2px 0 4px">Difficulty here is the machine's <em>hand</em>, not its
+          head: the search is identical at every setting, only the Gaussian noise on release angle and power changes.</p>
+          <div class="row">
+            <label for="cands">Search width</label>
+            <input type="range" id="cands" min="40" max="320" step="20" value="160">
+            <span class="readout" id="candsVal">160</span>
+          </div>
+          <div class="row">
+            <label><input type="checkbox" id="handPlayer"> Give <em>me</em> a shaky hand too</label>
+          </div>
+          <div class="row">
+            <label for="seed">Seed</label>
+            <input type="number" id="seed" value="20260809" min="0" step="1">
+            <button id="btnSeed" type="button">New match</button>
+          </div>
+          <div class="row">
+            <button id="btnRound" type="button">Next round</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Shot log</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+    </aside>
+  </div>
+
+  <details class="rules">
+    <summary>Rules implemented — the numbers, and where this board bends them</summary>
+    <div class="rules-body">
+
+      <h3>Board, in inches</h3>
+      <p>Every dimension below lives in one <code>BOARD</code> constants object in the source, in inches,
+      and is scaled to pixels at draw time. The rendering has no independent numbers.</p>
+      <table class="dim">
+        <thead><tr><th>Feature</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Playing surface</td><td class="v">26&Prime; dia. (r&nbsp;13&Prime;)</td><td>Tournament size.</td></tr>
+          <tr><td>Ditch</td><td class="v">2&Prime; wide ring</td><td>Board is 30&Prime; overall; the ditch is a gutter, not a wall.</td></tr>
+          <tr><td>Outer / starting line</td><td class="v">24&Prime; dia. (r&nbsp;12&Prime;)</td><td>Shots are placed touching it. Outside it scores nothing.</td></tr>
+          <tr><td>10-ring line</td><td class="v">16&Prime; dia. (r&nbsp;8&Prime;)</td><td></td></tr>
+          <tr><td>15-ring line</td><td class="v">8&Prime; dia. (r&nbsp;4&Prime;)</td><td>The guarded ring.</td></tr>
+          <tr><td>20-hole</td><td class="v">1&nbsp;3/8&Prime; dia.</td><td>&frac14;&Prime; deep recess.</td></tr>
+          <tr><td>Discs</td><td class="v">1&frac14;&Prime; dia., 3/8&Prime; thick</td><td>12 per player in singles.</td></tr>
+          <tr><td>Pegs</td><td class="v">8 &times; 3/8&Prime; dia.</td><td>Centres on the 8&Prime; circle, 45&deg; apart.</td></tr>
+          <tr><td>Peg phase</td><td class="v">22.5&deg; off each quadrant line</td><td>Two pegs per quadrant, symmetric about its centre line — so both the
+              dividing line <em>and</em> the middle of your own quadrant look straight through a gap. That gap is the open 20.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Rules enforced</h3>
+      <ul>
+        <li><strong>Placement.</strong> Your disc is set flat inside your own quadrant, touching the
+        starting line. You choose where along that arc; the simulator keeps the disc centre on the line
+        and clamps the angle to your quadrant.</li>
+        <li><strong>The contact rule.</strong> If the opponent has any disc on the surface, your shot must
+        touch one — directly or through a carom off your own disc. A shot that touches none is a foul:
+        your shooting disc is removed, and so is every one of your own discs that moved during the shot.
+        The opponent's discs stay where the shot left them.</li>
+        <li><strong>Empty board.</strong> When the opponent has no discs down, your shot must finish in the
+        guarded 15-ring (or in the hole). Anything else is removed under the same penalty. This is why the
+        opening shot of a round is an open 20 attempt and not a quiet park.</li>
+        <li><strong>The ditch.</strong> No walls. A disc whose centre passes the edge of the playing surface
+        is gone for the round. A disc that comes to rest <em>outside the starting line</em> is also removed —
+        the 2&Prime; band outside that line is a launch pad, not a scoring zone.</li>
+        <li><strong>The 20-hole.</strong> A disc that settles in the hole is lifted out and banked as 20 for
+        its owner, whoever shot it.</li>
+        <li><strong>Scoring a round.</strong> Add up ring values plus 20 per banked disc for each side. Only
+        the higher side scores, and it scores the <em>difference</em>. Then the lead alternates. First to 100.</li>
+      </ul>
+
+      <h3>Where this board approximates</h3>
+      <div class="approx">
+        <p><strong>Ring value is decided by the disc's centre.</strong> The tournament rule is stricter and
+        line-based: a disc touching a line takes the lower value, so it must be wholly inside a ring to earn
+        it. Centre-based scoring is a small, uniform simplification and it is applied consistently — including
+        to the "outside the starting line is dead" rule and the empty-board 15-ring rule.</p>
+        <p><strong>The hole swallows a little more than it should.</strong> Geometrically, a 1&frac14;&Prime;
+        disc is wholly inside a 1&nbsp;3/8&Prime; hole only when its centre is within 1/16&Prime; of dead
+        centre. Real holes have a lip that tips a leaning disc in, so a disc here drops when it comes to
+        <em>rest</em> with its centre within 5/16&Prime;. It is a sink-on-rest test, not a sink-on-pass one:
+        a disc travelling fast over the hole keeps going.</p>
+        <p><strong>No spin, no bevel, no thickness.</strong> Discs are flat circles of equal mass. Real
+        crokinole discs are dished and can ride up on each other; that is not modelled.</p>
+        <p><strong>Foul bookkeeping.</strong> "Discs that moved" is measured literally — any of your own discs
+        whose resting position differs from where the shot found it.</p>
+      </div>
+
+      <h3>Physics, briefly</h3>
+      <ul>
+        <li>Fixed timestep: 4 substeps of <code>1/960&nbsp;s</code> per <code>1/240&nbsp;s</code> tick, accumulated
+        against the frame clock. At the maximum shot speed a disc advances about 0.11&Prime; per substep against
+        a 0.81&Prime; disc-plus-peg contact distance, so nothing tunnels.</li>
+        <li>Sliding friction is a constant deceleration (about 78&nbsp;in/s&sup2;) with a stop threshold, so a
+        shot always terminates.</li>
+        <li>Disc–disc: equal mass, restitution 0.95, impulse along the contact normal, plus positional
+        de-overlap. Disc–peg: immovable circle, restitution 0.6 (tournament pegs are rubber-covered and eat
+        energy).</li>
+        <li>The machine's search runs this identical solver headlessly. Same seed and same released
+        angle/power give bit-identical resting positions.</li>
+      </ul>
+
+      <h3>The opponent</h3>
+      <p>Each turn it builds candidate <em>(placement, angle, power)</em> triples — shots aimed at every
+      opponent disc, shots aimed at the hole, a coarse grid, and then a refinement pass around the best
+      of those — simulates every one to rest, and scores the resulting board:</p>
+      <ul id="termDoc"></ul>
+      <p>It picks the best-scoring candidate, then adds Gaussian noise to the released angle and power. The
+      difficulty slider is that noise. A perfect search with a 4&deg; hand is a worse opponent than a
+      narrow search with a still one — which is the honest way round, because that is also true of people.</p>
+    </div>
+  </details>
+
+  <p class="foot">One file, no build step, no network. Physics, rules, opponent and rendering are separate
+  sections of a single inline script. Sources consulted for the dimensions and rules: the National Crokinole
+  Association / World Crokinole Championship rule summaries, Wikipedia's crokinole article, and published
+  board-builder templates. Rules are restated here in this page's own words.</p>
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   1. CONSTANTS — the single source of truth. All lengths in inches,
+      all speeds in inches/second, all angles in radians unless named *Deg.
+      ========================================================================== */
+
+const BOARD = {
+  surfaceR   : 13.0,      // 26" playing surface
+  ditchR     : 15.0,      // + 2" ditch  => 30" overall
+  baseLineR  : 12.0,      // 24" outer / starting line
+  ring10R    : 8.0,       // 16" circle
+  ring15R    : 4.0,       // 8" circle (the guarded ring)
+  holeR      : 0.6875,    // 1 3/8" dia. 20-hole
+  discR      : 0.625,     // 1 1/4" dia. disc
+  discThick  : 0.375,     // 3/8"
+  pegR       : 0.1875,    // 3/8" dia. peg
+  pegCount   : 8,
+  pegRingR   : 4.0,       // peg centres sit on the 15-ring circle
+  pegPhaseDeg: 22.5,      // 22.5deg off each quadrant line -> 2 pegs per quadrant
+  discsPerPlayer: 12,     // singles
+  matchTarget: 100
+};
+
+// Sink tolerance: see the "approximates" note in the rules panel.
+const SINK_R = 0.3125;    // 5/16" of centre, tested at rest only
+
+// Physics
+const TICK      = 1/240;      // accumulator tick
+const SUBSTEPS  = 4;          // per tick
+const DT        = TICK/SUBSTEPS;   // 1/960 s
+const MAX_SUBSTEPS_PER_SHOT = 960*10;
+const FRICTION  = 78;         // in/s^2, constant deceleration
+const STOP_SPEED= 0.6;        // in/s
+const REST_E    = 0.95;       // disc-disc restitution
+const PEG_E     = 0.60;       // disc-peg restitution
+const MIN_SPEED = 12;         // power 0
+const MAX_SPEED = 112;        // power 1
+// Power that just carries a disc from the starting line to the middle of the board:
+// v = sqrt(2 * FRICTION * 12in) ~= 43 in/s. A sane place to leave the meter.
+const DEFAULT_POWER = 0.32;
+const RELAX_ITERS = 2;
+
+// Quadrants. Screen space: +x right, +y down, angle measured from +x.
+// Player 0 (you) shoots from the bottom quadrant, player 1 from the top.
+const QUAD = [
+  { centreDeg:  90, halfDeg: 45 },   // bottom
+  { centreDeg: -90, halfDeg: 45 }    // top
+];
+
+const PEGS = (() => {
+  const out = [];
+  for (let k = 0; k < BOARD.pegCount; k++) {
+    const a = (BOARD.pegPhaseDeg + k * (360 / BOARD.pegCount)) * Math.PI / 180;
+    out.push({ x: BOARD.pegRingR * Math.cos(a), y: BOARD.pegRingR * Math.sin(a) });
+  }
+  return out;
+})();
+
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+
+/* ==========================================================================
+   2. PRNG — mulberry32. Only the "hand" uses randomness; the physics never does.
+      ========================================================================== */
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// Box-Muller on top of a uniform generator.
+function gauss(rand) {
+  let u = 0, v = 0;
+  while (u === 0) u = rand();
+  while (v === 0) v = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* ==========================================================================
+   3. PHYSICS — a shot is a "sim". makeSim / simAdvance / simFinish are shared
+      verbatim between the animated game and the opponent's headless search,
+      which is what makes its predictions honest.
+      ========================================================================== */
+
+function cloneDiscs(discs) {
+  const out = new Array(discs.length);
+  for (let i = 0; i < discs.length; i++) {
+    const d = discs[i];
+    out[i] = { id: d.id, owner: d.owner, x: d.x, y: d.y, vx: 0, vy: 0 };
+  }
+  return out;
+}
+
+/**
+ * Build a shot simulation.
+ * @param discs  resting discs on the board (copied)
+ * @param owner  0|1 the shooter
+ * @param shot   {x, y, angle, speed}
+ * @param nextId id to give the shooting disc
+ */
+function makeSim(discs, owner, shot, nextId) {
+  const work = cloneDiscs(discs);
+  const before = new Map();
+  for (const d of work) before.set(d.id, { x: d.x, y: d.y });
+  const oppOnBoard = work.some(d => d.owner !== owner);
+  const shooter = {
+    id: nextId, owner,
+    x: shot.x, y: shot.y,
+    vx: Math.cos(shot.angle) * shot.speed,
+    vy: Math.sin(shot.angle) * shot.speed
+  };
+  work.push(shooter);
+  return {
+    discs: work, before, owner, oppOnBoard,
+    shooterId: nextId,
+    contacted: false,     // did anything touch an opponent disc?
+    ditchedDuring: [],    // {id, owner} that fell off during motion
+    steps: 0, done: false
+  };
+}
+
+/** One physics substep: friction -> integrate -> resolve contacts -> ditch check. */
+function substep(sim) {
+  const discs = sim.discs;
+
+  // -- friction + integration (only moving discs) ------------------------
+  for (let i = 0; i < discs.length; i++) {
+    const d = discs[i];
+    if (d.vx === 0 && d.vy === 0) continue;
+    const sp = Math.hypot(d.vx, d.vy);
+    const ns = sp - FRICTION * DT;
+    if (ns <= STOP_SPEED) { d.vx = 0; d.vy = 0; continue; }
+    const k = ns / sp;
+    d.vx *= k; d.vy *= k;
+    d.x += d.vx * DT;
+    d.y += d.vy * DT;
+  }
+
+  // -- contacts ----------------------------------------------------------
+  const dd = BOARD.discR * 2, dp = BOARD.discR + BOARD.pegR;
+  for (let iter = 0; iter < RELAX_ITERS; iter++) {
+    // disc <-> disc (equal mass, restitution, positional de-overlap)
+    for (let i = 0; i < discs.length; i++) {
+      const a = discs[i];
+      for (let j = i + 1; j < discs.length; j++) {
+        const b = discs[j];
+        const moving = (a.vx || a.vy || b.vx || b.vy);
+        if (!moving) continue;
+        let nx = b.x - a.x, ny = b.y - a.y;
+        let dist = Math.hypot(nx, ny);
+        if (dist >= dd) continue;
+        if (dist < 1e-9) { nx = 1; ny = 0; dist = 1e-9; }
+        nx /= dist; ny /= dist;
+        // de-overlap, half each
+        const pen = (dd - dist) * 0.5;
+        a.x -= nx * pen; a.y -= ny * pen;
+        b.x += nx * pen; b.y += ny * pen;
+        // impulse along the normal
+        const rvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (rvn < 0) {
+          const j2 = -(1 + REST_E) * rvn * 0.5;
+          a.vx -= j2 * nx; a.vy -= j2 * ny;
+          b.vx += j2 * nx; b.vy += j2 * ny;
+        }
+        if (a.owner !== b.owner) sim.contacted = true;
+        else if (a.owner !== sim.owner) sim.contacted = true; // opp hit opp
+      }
+    }
+    // disc <-> peg (peg immovable)
+    for (let i = 0; i < discs.length; i++) {
+      const a = discs[i];
+      if (!(a.vx || a.vy)) continue;
+      for (let p = 0; p < PEGS.length; p++) {
+        const pg = PEGS[p];
+        let nx = a.x - pg.x, ny = a.y - pg.y;
+        let dist = Math.hypot(nx, ny);
+        if (dist >= dp) continue;
+        if (dist < 1e-9) { nx = 1; ny = 0; dist = 1e-9; }
+        nx /= dist; ny /= dist;
+        a.x = pg.x + nx * dp; a.y = pg.y + ny * dp;
+        const vn = a.vx * nx + a.vy * ny;
+        if (vn < 0) { a.vx -= (1 + PEG_E) * vn * nx; a.vy -= (1 + PEG_E) * vn * ny; }
+      }
+    }
+  }
+
+  // -- ditch: no walls, the disc simply leaves ---------------------------
+  for (let i = discs.length - 1; i >= 0; i--) {
+    const d = discs[i];
+    if (Math.hypot(d.x, d.y) > BOARD.surfaceR) {
+      sim.ditchedDuring.push({ id: d.id, owner: d.owner });
+      discs.splice(i, 1);
+    }
+  }
+}
+
+/** Advance up to n substeps. Returns true when everything is at rest. */
+function simAdvance(sim, n) {
+  for (let s = 0; s < n; s++) {
+    let moving = false;
+    for (const d of sim.discs) if (d.vx || d.vy) { moving = true; break; }
+    if (!moving) return true;
+    if (sim.steps >= MAX_SUBSTEPS_PER_SHOT) return true;
+    substep(sim);
+    sim.steps++;
+  }
+  for (const d of sim.discs) if (d.vx || d.vy) return false;
+  return true;
+}
+
+/**
+ * Everything that happens once the board is still: sinking, the dead outer
+ * band, the contact foul, and the empty-board 15-ring requirement.
+ * Returns the events the UI and the opponent's scorer both read.
+ */
+function simFinish(sim) {
+  const ev = {
+    sunk: [], ditched: sim.ditchedDuring.slice(),
+    foul: false, foulKind: null, contacted: sim.contacted,
+    shooterSurvived: false
+  };
+  const discs = sim.discs;
+
+  // (a) discs at rest inside the hole are lifted out and banked
+  for (let i = discs.length - 1; i >= 0; i--) {
+    const d = discs[i];
+    if (Math.hypot(d.x, d.y) <= SINK_R) {
+      ev.sunk.push({ id: d.id, owner: d.owner });
+      discs.splice(i, 1);
+    }
+  }
+  // (b) a disc resting on/outside the starting line is out of play
+  for (let i = discs.length - 1; i >= 0; i--) {
+    const d = discs[i];
+    if (Math.hypot(d.x, d.y) >= BOARD.baseLineR) {
+      ev.ditched.push({ id: d.id, owner: d.owner });
+      discs.splice(i, 1);
+    }
+  }
+
+  const shooter = discs.find(d => d.id === sim.shooterId) || null;
+  const shooterSunk = ev.sunk.some(s => s.id === sim.shooterId);
+
+  // (c) the penalty rules
+  let penalty = false;
+  if (sim.oppOnBoard) {
+    if (!sim.contacted) { penalty = true; ev.foulKind = "no-contact"; }
+  } else if (!shooterSunk) {
+    // empty board: must finish in the guarded ring
+    if (!shooter || Math.hypot(shooter.x, shooter.y) > BOARD.ring15R) {
+      penalty = true; ev.foulKind = "missed the 15-ring";
+    }
+  }
+
+  if (penalty) {
+    ev.foul = true;
+    for (let i = discs.length - 1; i >= 0; i--) {
+      const d = discs[i];
+      if (d.owner !== sim.owner) continue;
+      const b = sim.before.get(d.id);
+      const moved = !b || Math.abs(b.x - d.x) > 1e-9 || Math.abs(b.y - d.y) > 1e-9;
+      if (d.id === sim.shooterId || moved) {
+        ev.ditched.push({ id: d.id, owner: d.owner });
+        discs.splice(i, 1);
+      }
+    }
+    // a 20 sunk on a fouled shot does not count for the shooter
+    for (let i = ev.sunk.length - 1; i >= 0; i--) {
+      if (ev.sunk[i].owner === sim.owner) { ev.ditched.push(ev.sunk[i]); ev.sunk.splice(i, 1); }
+    }
+  }
+
+  ev.shooterSurvived = discs.some(d => d.id === sim.shooterId);
+  sim.done = true;
+  return ev;
+}
+
+/** Run a whole shot headlessly. Used by the opponent's search and by tests. */
+function resolveShot(discs, owner, shot, nextId) {
+  const sim = makeSim(discs, owner, shot, nextId);
+  while (!simAdvance(sim, 240)) { /* spin */ }
+  const ev = simFinish(sim);
+  return { discs: sim.discs, events: ev, steps: sim.steps };
+}
+
+/* ==========================================================================
+   4. RULES — placement geometry and scoring.
+      ========================================================================== */
+
+/** Ring value of a resting disc, decided by its centre (documented approximation). */
+function ringValue(d) {
+  const r = Math.hypot(d.x, d.y);
+  if (r < BOARD.ring15R) return 15;
+  if (r < BOARD.ring10R) return 10;
+  if (r < BOARD.baseLineR) return 5;
+  return 0;
+}
+
+/** Where a shot is placed: centre on the starting line, angle inside your quadrant. */
+function placementPoint(owner, t) {          // t in [0,1] across the quadrant
+  const q = QUAD[owner];
+  const a = (q.centreDeg + (t * 2 - 1) * q.halfDeg) * D2R;
+  return { x: BOARD.baseLineR * Math.cos(a), y: BOARD.baseLineR * Math.sin(a), angle: a };
+}
+
+function placementBlocked(discs, p) {
+  const need = BOARD.discR * 2;
+  for (const d of discs) if (Math.hypot(d.x - p.x, d.y - p.y) < need) return true;
+  return false;
+}
+
+/** Aim: 0 points at the centre of the board; positive rotates clockwise on screen. */
+function aimAngle(p, aimDeg) {
+  return Math.atan2(-p.y, -p.x) + aimDeg * D2R;
+}
+const powerToSpeed = pw => MIN_SPEED + clamp(pw, 0, 1) * (MAX_SPEED - MIN_SPEED);
+
+function boardScore(discs, twenties) {
+  const s = [twenties[0] * 20, twenties[1] * 20];
+  for (const d of discs) s[d.owner] += ringValue(d);
+  return s;
+}
+
+/* ==========================================================================
+   5. THE OPPONENT — search, scoring terms, and a shaky hand.
+      ========================================================================== */
+
+const AI_TERMS = [
+  { key: 'SINK_20',   w:  20, label: 'Own disc sunk',           doc: 'each of my discs that ends in the hole' },
+  { key: 'OPP_SINK',  w: -20, label: 'Opponent disc sunk',      doc: 'each of their discs I accidentally post' },
+  { key: 'OWN_RINGS', w:   1, label: 'My rings on board',       doc: 'total ring value of my discs left standing' },
+  { key: 'OPP_RINGS', w:  -1, label: 'Their rings on board',    doc: 'total ring value of theirs, subtracted' },
+  { key: 'CLEARED',   w:   8, label: 'Their discs ditched',     doc: 'bonus per opponent disc knocked off the surface' },
+  { key: 'LOST',      w:  -4, label: 'My discs ditched',        doc: 'penalty per disc of mine lost, including the shooter' },
+  { key: 'GUARDED',   w:   3, label: 'Mine behind the pegs',    doc: 'bonus per disc of mine resting in the 15-ring' },
+  { key: 'EXPOSED',   w:  -2, label: 'Mine left in the open',   doc: 'penalty per disc of mine parked in the wide 5-ring' },
+  { key: 'FOUL',      w: -40, label: 'Fouled shot',             doc: 'the shot touched nothing legal and cost me the disc' }
+];
+
+/** Score a post-shot board from the shooter's point of view. */
+function scoreOutcome(owner, discs, events) {
+  const opp = 1 - owner;
+  const raw = {
+    SINK_20:   events.sunk.filter(s => s.owner === owner).length,
+    OPP_SINK:  events.sunk.filter(s => s.owner === opp).length,
+    OWN_RINGS: 0, OPP_RINGS: 0,
+    CLEARED:   events.ditched.filter(s => s.owner === opp).length,
+    LOST:      events.ditched.filter(s => s.owner === owner).length,
+    GUARDED:   0, EXPOSED: 0,
+    FOUL:      events.foul ? 1 : 0
+  };
+  for (const d of discs) {
+    const v = ringValue(d);
+    if (d.owner === owner) {
+      raw.OWN_RINGS += v;
+      if (v === 15) raw.GUARDED++;
+      if (v === 5)  raw.EXPOSED++;
+    } else {
+      raw.OPP_RINGS += v;
+    }
+  }
+  let total = 0;
+  const parts = AI_TERMS.map(t => {
+    const pts = t.w * raw[t.key];
+    total += pts;
+    return { key: t.key, label: t.label, raw: raw[t.key], pts };
+  });
+  return { total, parts };
+}
+
+/** Build the candidate (placement, angle, power) triples. */
+function buildCandidates(discs, owner, budget) {
+  const cands = [];
+  const push = (t, aimDeg, pw, tag) => cands.push({ t, aimDeg, pw, tag });
+  const opp = 1 - owner;
+  const oppDiscs = discs.filter(d => d.owner === opp);
+
+  // (a) targeted: from 3 placements, aim straight at every opponent disc
+  const placements = [0.28, 0.5, 0.72];
+  for (const t of placements) {
+    const p = placementPoint(owner, t);
+    const base = Math.atan2(-p.y, -p.x);
+    for (const o of oppDiscs) {
+      const want = Math.atan2(o.y - p.y, o.x - p.x);
+      let dev = (want - base) * R2D;
+      dev = ((dev + 180) % 360 + 360) % 360 - 180;
+      if (Math.abs(dev) > 55) continue;
+      for (const pw of [0.55, 0.75, 1.0]) push(t, dev, pw, 'takeout');
+      push(t, dev, 0.42, 'nudge');
+    }
+    // (b) the open 20 lane and quiet parks
+    for (const pw of [0.30, 0.34, 0.38, 0.42, 0.47]) push(t, 0, pw, 'twenty');
+  }
+
+  // (c) coarse grid, trimmed to the search budget
+  const per = Math.max(1, Math.floor((budget - cands.length) / (placements.length * 5)));
+  const spread = 34;
+  for (const t of placements) {
+    for (let i = 0; i < 5; i++) {
+      const aimDeg = -spread + (i / 4) * spread * 2;
+      for (let k = 0; k < per; k++) {
+        const pw = 0.3 + (per === 1 ? 0.45 : (k / (per - 1)) * 0.7);
+        push(t, aimDeg, clamp(pw, 0.25, 1), 'grid');
+      }
+    }
+  }
+  return cands.slice(0, Math.max(24, budget));
+}
+
+const NO_EVENTS = { sunk: [], ditched: [], foul: false };
+
+/** Run the whole search. Deterministic — no randomness anywhere in here. */
+function aiSearch(discs, owner, budget, idSeed) {
+  let best = null, evaluated = 0;
+  // The "do nothing" board, so a term's contribution can be reported as a change
+  // rather than as a level — otherwise the standing ring count always wins.
+  const baseline = scoreOutcome(owner, discs, NO_EVENTS);
+
+  const tryCand = (c) => {
+    const p = placementPoint(owner, c.t);
+    if (placementBlocked(discs, p)) return;
+    const shot = { x: p.x, y: p.y, angle: aimAngle(p, c.aimDeg), speed: powerToSpeed(c.pw) };
+    const out = resolveShot(discs, owner, shot, idSeed);
+    const sc = scoreOutcome(owner, out.discs, out.events);
+    evaluated++;
+    if (!best || sc.total > best.score.total + 1e-9) best = { cand: c, score: sc, out };
+  };
+
+  for (const c of buildCandidates(discs, owner, budget)) tryCand(c);
+
+  // refinement pass around the winner
+  if (best) {
+    const b = best.cand;
+    for (const dA of [-6, -3, -1.5, 1.5, 3, 6]) {
+      for (const dP of [-0.10, -0.04, 0.04, 0.10]) {
+        tryCand({ t: b.t, aimDeg: b.aimDeg + dA, pw: clamp(b.pw + dP, 0.22, 1), tag: b.tag + '+' });
+      }
+    }
+    for (const dT of [-0.12, 0.12]) {
+      tryCand({ t: clamp(b.t + dT, 0.06, 0.94), aimDeg: b.aimDeg, pw: b.pw, tag: b.tag + '+' });
+    }
+  }
+  if (!best) return null;
+  // annotate each term with how much it changed relative to doing nothing
+  const baseMap = new Map(baseline.parts.map(p => [p.key, p.pts]));
+  best.score.parts.forEach(p => { p.delta = p.pts - (baseMap.get(p.key) || 0); });
+  return { ...best, evaluated, baseline: baseline.total };
+}
+
+/* ==========================================================================
+   6. GAME STATE
+      ========================================================================== */
+
+const G = {
+  seed: 20260809, rand: mulberry32(20260809),
+  discs: [], nextId: 1,
+  hands: [BOARD.discsPerPlayer, BOARD.discsPerPlayer],
+  twenties: [0, 0],
+  match: [0, 0],
+  round: 1, leader: 0, turn: 0,
+  phase: 'aim',              // aim | moving | thinking | roundover | matchover
+  aimDeg: 0, power: DEFAULT_POWER, placeT: 0.5,
+  sim: null, acc: 0, lastT: 0,
+  log: [], aiReport: null,
+  tremorDeg: 1.2, budget: 160, playerTremor: false,
+  dragging: false, dragVec: null
+};
+
+function newMatch(seed) {
+  G.seed = seed >>> 0;
+  G.rand = mulberry32(G.seed);
+  G.match = [0, 0]; G.round = 1; G.leader = 0;
+  G.log = []; G.aiReport = null;
+  startRound();
+}
+function startRound() {
+  G.discs = []; G.nextId = 1;
+  G.hands = [BOARD.discsPerPlayer, BOARD.discsPerPlayer];
+  G.twenties = [0, 0];
+  G.turn = G.leader;
+  G.aimDeg = 0; G.power = DEFAULT_POWER; G.placeT = 0.5;
+  G.phase = (G.match[0] >= BOARD.matchTarget || G.match[1] >= BOARD.matchTarget) ? 'matchover' : 'aim';
+  G.sim = null;
+  pushLog(`Round ${G.round} — ${G.leader === 0 ? 'you lead' : 'the machine leads'}.`);
+  if (G.phase === 'aim' && G.turn === 1) scheduleAI();
+  syncUI();
+}
+function pushLog(text) {
+  G.log.unshift({ r: G.round, text });
+  if (G.log.length > 60) G.log.pop();
+}
+
+/* -- taking a shot ------------------------------------------------------- */
+
+function currentShot(owner, aimDeg, power) {
+  const p = placementPoint(owner, G.placeT);
+  return { p, shot: { x: p.x, y: p.y, angle: aimAngle(p, aimDeg), speed: powerToSpeed(power) } };
+}
+
+/** Apply the hand: Gaussian noise on released angle and power. */
+function shakyHand(aimDeg, power, sigmaDeg) {
+  // Always draw both values, then scale by sigma. Returning early at sigma 0
+  // would consume no draws, so moving the tremor slider to 0 and back would
+  // desync the stream against a run that never touched it: same seed, different
+  // game. The draw count has to be invariant to sigma for the seed to mean anything.
+  const ga = gauss(G.rand), gp = gauss(G.rand);
+  const sig = Math.max(0, sigmaDeg);
+  return {
+    aimDeg: aimDeg + ga * sig,
+    power: clamp(power * (1 + gp * (sig / 40)), 0.05, 1)
+  };
+}
+
+function beginShot(owner, aimDeg, power, placeT, animated) {
+  if (placeT !== undefined) G.placeT = clamp(placeT, 0, 1);
+  const p = placementPoint(owner, G.placeT);
+  if (placementBlocked(G.discs, p)) { pushLog('Placement blocked — slide along the line.'); syncUI(); return false; }
+  const shot = { x: p.x, y: p.y, angle: aimAngle(p, aimDeg), speed: powerToSpeed(power) };
+  const sim = makeSim(G.discs, owner, shot, G.nextId++);
+  G.hands[owner]--;
+  if (animated) { G.sim = sim; G.phase = 'moving'; }
+  else { while (!simAdvance(sim, 240)) {} commitShot(sim); }
+  syncUI();
+  return true;
+}
+
+function commitShot(sim) {
+  const ev = simFinish(sim);
+  G.discs = sim.discs;
+  for (const s of ev.sunk) G.twenties[s.owner]++;
+  const owner = sim.owner;
+  const who = owner === 0 ? 'You' : 'The machine';
+  let line = `${who} shot.`;
+  const mySunk = ev.sunk.filter(s => s.owner === owner).length;
+  const theirSunk = ev.sunk.filter(s => s.owner !== owner).length;
+  if (ev.foul) line = `${who} fouled (${ev.foulKind}) — disc removed.`;
+  else if (mySunk) line = `${who} sank a 20!`;
+  else if (theirSunk) line = `${who} posted an opponent disc for 20.`;
+  else {
+    const cleared = ev.ditched.filter(s => s.owner !== owner).length;
+    const lost = ev.ditched.filter(s => s.owner === owner).length;
+    const bits = [];
+    if (cleared) bits.push(`cleared ${cleared}`);
+    if (lost) bits.push(`lost ${lost}`);
+    if (bits.length) line = `${who} shot — ${bits.join(', ')}.`;
+  }
+  pushLog(line);
+  G.sim = null;
+
+  // turn / round advance
+  if (G.hands[0] === 0 && G.hands[1] === 0) { endRound(); return; }
+  const other = 1 - owner;
+  G.turn = G.hands[other] > 0 ? other : owner;
+  G.phase = 'aim';
+  G.aimDeg = 0; G.power = DEFAULT_POWER; G.placeT = 0.5;
+  if (G.turn === 1) scheduleAI();
+}
+
+function endRound() {
+  const s = boardScore(G.discs, G.twenties);
+  const hi = s[0] > s[1] ? 0 : s[1] > s[0] ? 1 : -1;
+  if (hi >= 0) {
+    const diff = Math.abs(s[0] - s[1]);
+    G.match[hi] += diff;
+    pushLog(`Round ${G.round}: ${s[0]}–${s[1]} · ${hi === 0 ? 'you' : 'the machine'} +${diff}.`);
+  } else {
+    pushLog(`Round ${G.round}: ${s[0]}–${s[1]} · tied, nobody scores.`);
+  }
+  G.phase = 'roundover';
+  if (G.match[0] >= BOARD.matchTarget || G.match[1] >= BOARD.matchTarget) {
+    G.phase = 'matchover';
+    pushLog(G.match[0] > G.match[1] ? 'You win the match.' : 'The machine wins the match.');
+  }
+  syncUI();
+}
+
+function nextRound() {
+  if (G.phase === 'matchover') { newMatch(G.seed); return; }
+  G.round++; G.leader = 1 - G.leader;
+  startRound();
+}
+
+/* -- the machine's turn --------------------------------------------------- */
+
+let aiTimer = null;
+function scheduleAI() {
+  G.phase = 'thinking';
+  syncUI();
+  clearTimeout(aiTimer);
+  aiTimer = setTimeout(() => runAI(true), 260);
+}
+
+function runAI(animated) {
+  const best = aiSearch(G.discs, 1, G.budget, G.nextId);
+  if (!best) { // no legal placement at all: pass by burning a disc
+    G.hands[1]--; pushLog('The machine had no legal placement.');
+    G.phase = 'aim'; G.turn = 0; syncUI(); return null;
+  }
+  const hand = shakyHand(best.cand.aimDeg, best.cand.pw, G.tremorDeg);
+  const winning = best.score.parts.slice().sort((a, b) => b.delta - a.delta)[0];
+  G.aiReport = {
+    cand: best.cand, hand, parts: best.score.parts, total: best.score.total,
+    baseline: best.baseline,
+    winning: winning && winning.delta > 0 ? winning : null,
+    evaluated: best.evaluated
+  };
+  G.placeT = best.cand.t;
+  beginShot(1, hand.aimDeg, hand.power, best.cand.t, animated);
+  return G.aiReport;
+}
+
+/* ==========================================================================
+   7. RENDER
+      ========================================================================== */
+
+const cv = document.getElementById('board');
+const ctx = cv.getContext('2d');
+let PPI = 20, DPR = 1, PAL = {};
+
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue(n).trim() || '#888';
+  PAL = {
+    ditch: g('--ditch'), rim: g('--rim'),
+    wOuter: g('--wood-outer'), w5: g('--wood-5'), w10: g('--wood-10'), w15: g('--wood-15'),
+    hole: g('--hole'), line: g('--board-line'), ink: g('--board-ink'),
+    peg: g('--peg'), pegTop: g('--peg-top'),
+    dA: g('--disc-a'), dAE: g('--disc-a-edge'), dAM: g('--disc-a-mark'),
+    dB: g('--disc-b'), dBE: g('--disc-b-edge'), dBM: g('--disc-b-mark'),
+    aim: g('--aim'), aimSoft: g('--aim-soft'), ghost: g('--ghost')
+  };
+}
+
+function resize() {
+  const rect = cv.getBoundingClientRect();
+  const size = Math.max(200, Math.min(rect.width, rect.height) || 320);
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  cv.width = Math.round(size * DPR);
+  cv.height = Math.round(size * DPR);
+  PPI = (size / 2) / BOARD.ditchR;
+  readPalette();
+  draw();
+}
+
+function setBoardTransform() {
+  ctx.setTransform(PPI * DPR, 0, 0, PPI * DPR, cv.width / 2, cv.height / 2);
+}
+function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
+
+function drawBoard() {
+  // rim + ditch
+  ctx.fillStyle = PAL.rim;
+  circle(0, 0, BOARD.ditchR); ctx.fill();
+  ctx.fillStyle = PAL.ditch;
+  circle(0, 0, BOARD.ditchR - 0.35); ctx.fill();
+
+  // wood bands, outside in
+  ctx.fillStyle = PAL.wOuter; circle(0, 0, BOARD.surfaceR); ctx.fill();
+  ctx.fillStyle = PAL.w5;     circle(0, 0, BOARD.baseLineR); ctx.fill();
+  ctx.fillStyle = PAL.w10;    circle(0, 0, BOARD.ring10R); ctx.fill();
+  ctx.fillStyle = PAL.w15;    circle(0, 0, BOARD.ring15R); ctx.fill();
+
+  // quadrant lines: drawn only between the 10-ring and the starting line
+  ctx.strokeStyle = PAL.line; ctx.lineWidth = 0.07;
+  for (let k = 0; k < 4; k++) {
+    const a = (45 + 90 * k) * D2R;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * BOARD.ring10R, Math.sin(a) * BOARD.ring10R);
+    ctx.lineTo(Math.cos(a) * BOARD.baseLineR, Math.sin(a) * BOARD.baseLineR);
+    ctx.stroke();
+  }
+  // ring lines
+  ctx.lineWidth = 0.08;
+  for (const r of [BOARD.baseLineR, BOARD.ring10R, BOARD.ring15R]) { circle(0, 0, r); ctx.stroke(); }
+
+  // ring labels
+  ctx.fillStyle = PAL.ink;
+  ctx.font = `600 ${1.05}px ui-sans-serif, system-ui, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.globalAlpha = 0.45;
+  ctx.fillText('5', 0, -(BOARD.ring10R + BOARD.baseLineR) / 2);
+  ctx.fillText('10', 0, -(BOARD.ring15R + BOARD.ring10R) / 2);
+  ctx.fillText('15', -(BOARD.ring15R + BOARD.holeR) / 2 - 0.3, 0);
+  ctx.globalAlpha = 1;
+
+  // the 20-hole, as a recess
+  ctx.fillStyle = PAL.hole; circle(0, 0, BOARD.holeR); ctx.fill();
+  ctx.strokeStyle = PAL.line; ctx.lineWidth = 0.05;
+  circle(0, 0, BOARD.holeR); ctx.stroke();
+
+  // pegs
+  for (const p of PEGS) {
+    ctx.fillStyle = PAL.peg; circle(p.x, p.y, BOARD.pegR); ctx.fill();
+    ctx.fillStyle = PAL.pegTop; circle(p.x - BOARD.pegR * 0.22, p.y - BOARD.pegR * 0.22, BOARD.pegR * 0.5); ctx.fill();
+  }
+}
+
+function drawDisc(d, alpha) {
+  ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+  const light = d.owner === 0;
+  ctx.fillStyle = light ? PAL.dA : PAL.dB;
+  circle(d.x, d.y, BOARD.discR); ctx.fill();
+  ctx.strokeStyle = light ? PAL.dAE : PAL.dBE; ctx.lineWidth = 0.09;
+  circle(d.x, d.y, BOARD.discR - 0.045); ctx.stroke();
+  // non-colour distinguisher: player 0 = filled pip, player 1 = open ring
+  if (light) {
+    ctx.fillStyle = PAL.dAM;
+    circle(d.x, d.y, BOARD.discR * 0.30); ctx.fill();
+  } else {
+    ctx.strokeStyle = PAL.dBM; ctx.lineWidth = 0.075;
+    circle(d.x, d.y, BOARD.discR * 0.44); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** Honest aim helper: a straight ray to the first thing it would hit. No bounces. */
+function firstContact(p, angle) {
+  const dx = Math.cos(angle), dy = Math.sin(angle);
+  let best = Infinity;
+  const test = (cx, cy, rad) => {
+    const ox = cx - p.x, oy = cy - p.y;
+    const proj = ox * dx + oy * dy;
+    if (proj <= 0) return;
+    const perp2 = (ox * ox + oy * oy) - proj * proj;
+    const rr = rad * rad;
+    if (perp2 > rr) return;
+    const t = proj - Math.sqrt(rr - perp2);
+    if (t > 0 && t < best) best = t;
+  };
+  for (const pg of PEGS) test(pg.x, pg.y, BOARD.pegR + BOARD.discR);
+  for (const d of G.discs) test(d.x, d.y, BOARD.discR * 2);
+  // else the edge of the surface
+  if (best === Infinity) {
+    const b = p.x * dx + p.y * dy, c = p.x * p.x + p.y * p.y - BOARD.surfaceR * BOARD.surfaceR;
+    const disc = b * b - c;
+    if (disc > 0) best = -b + Math.sqrt(disc);
+  }
+  return best === Infinity ? null : { x: p.x + dx * best, y: p.y + dy * best, t: best };
+}
+
+function drawAimUI() {
+  if (G.phase !== 'aim' || G.turn !== 0) return;
+  const p = placementPoint(0, G.placeT);
+  const blocked = placementBlocked(G.discs, p);
+
+  // legal placement arc
+  ctx.strokeStyle = PAL.aimSoft; ctx.lineWidth = 0.10;
+  ctx.setLineDash([0.35, 0.30]);
+  ctx.beginPath();
+  ctx.arc(0, 0, BOARD.baseLineR, (QUAD[0].centreDeg - QUAD[0].halfDeg) * D2R,
+          (QUAD[0].centreDeg + QUAD[0].halfDeg) * D2R);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ghost disc
+  drawDisc({ x: p.x, y: p.y, owner: 0 }, blocked ? 0.28 : 0.95);
+
+  // aim line + first-contact marker
+  const ang = aimAngle(p, G.aimDeg);
+  const hit = firstContact(p, ang);
+  const len = Math.min(hit ? hit.t : 6, 6);
+  ctx.strokeStyle = PAL.aim; ctx.lineWidth = 0.06; ctx.globalAlpha = 0.75;
+  ctx.beginPath();
+  ctx.moveTo(p.x + Math.cos(ang) * BOARD.discR, p.y + Math.sin(ang) * BOARD.discR);
+  ctx.lineTo(p.x + Math.cos(ang) * (BOARD.discR + len), p.y + Math.sin(ang) * (BOARD.discR + len));
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  if (hit && hit.t < 26) {
+    ctx.strokeStyle = PAL.aim; ctx.lineWidth = 0.07;
+    circle(hit.x, hit.y, 0.34); ctx.stroke();
+  }
+
+  // slingshot pull, drawn behind the disc
+  if (G.dragging && G.dragVec) {
+    ctx.strokeStyle = PAL.ghost; ctx.lineWidth = 0.09;
+    ctx.setLineDash([0.25, 0.25]);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + G.dragVec.x, p.y + G.dragVec.y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function draw() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  setBoardTransform();
+  drawBoard();
+  const list = G.sim ? G.sim.discs : G.discs;
+  for (const d of list) drawDisc(d);
+  drawAimUI();
+}
+
+/* ==========================================================================
+   8. INPUT — pointer slingshot and a complete keyboard path.
+      ========================================================================== */
+
+function toBoard(evt) {
+  const r = cv.getBoundingClientRect();
+  const s = r.width / (BOARD.ditchR * 2);
+  return { x: (evt.clientX - r.left - r.width / 2) / s, y: (evt.clientY - r.top - r.height / 2) / s };
+}
+const MAX_PULL = 5.0;   // inches of drag == full power
+
+function nearestPlaceT(pt) {
+  let a = Math.atan2(pt.y, pt.x) * R2D;
+  const q = QUAD[0];
+  let rel = ((a - q.centreDeg + 180) % 360 + 360) % 360 - 180;
+  rel = clamp(rel, -q.halfDeg, q.halfDeg);
+  return (rel / q.halfDeg + 1) / 2;
+}
+
+cv.addEventListener('pointerdown', e => {
+  if (G.phase !== 'aim' || G.turn !== 0) return;
+  cv.focus();
+  const pt = toBoard(e);
+  const p = placementPoint(0, G.placeT);
+  if (Math.hypot(pt.x - p.x, pt.y - p.y) < 1.8) {
+    G.dragging = true; G.dragVec = { x: 0, y: 0 };
+    cv.setPointerCapture(e.pointerId);
+  } else {
+    G.placeT = nearestPlaceT(pt);
+    syncUI();
+  }
+  e.preventDefault();
+});
+cv.addEventListener('pointermove', e => {
+  if (!G.dragging) return;
+  const pt = toBoard(e);
+  const p = placementPoint(0, G.placeT);
+  let vx = pt.x - p.x, vy = pt.y - p.y;
+  const len = Math.hypot(vx, vy);
+  if (len > 1e-4) {
+    const clipped = Math.min(len, MAX_PULL);
+    G.dragVec = { x: vx / len * clipped, y: vy / len * clipped };
+    G.power = clamp(clipped / MAX_PULL, 0.05, 1);
+    // fire opposite the pull
+    const shootAng = Math.atan2(-vy, -vx);
+    const base = Math.atan2(-p.y, -p.x);
+    let dev = (shootAng - base) * R2D;
+    G.aimDeg = clamp(((dev + 180) % 360 + 360) % 360 - 180, -75, 75);
+  }
+  syncUI();
+  e.preventDefault();
+});
+function endDrag(e) {
+  if (!G.dragging) return;
+  G.dragging = false; G.dragVec = null;
+  if (G.power > 0.06) playerFire();
+  else syncUI();
+  if (e && e.pointerId !== undefined && cv.hasPointerCapture(e.pointerId)) cv.releasePointerCapture(e.pointerId);
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+
+cv.addEventListener('keydown', e => {
+  if (G.phase === 'roundover' || G.phase === 'matchover') {
+    if (e.key === ' ' || e.key === 'Enter') { nextRound(); e.preventDefault(); }
+    return;
+  }
+  if (G.phase !== 'aim' || G.turn !== 0) return;
+  const fine = e.shiftKey;
+  let used = true;
+  switch (e.key) {
+    case 'ArrowLeft':  G.aimDeg = clamp(G.aimDeg - (fine ? 0.2 : 1.5), -75, 75); break;
+    case 'ArrowRight': G.aimDeg = clamp(G.aimDeg + (fine ? 0.2 : 1.5), -75, 75); break;
+    case 'ArrowUp':    G.power = clamp(G.power + (fine ? 0.005 : 0.025), 0.05, 1); break;
+    case 'ArrowDown':  G.power = clamp(G.power - (fine ? 0.005 : 0.025), 0.05, 1); break;
+    case 'a': case 'A': G.placeT = clamp(G.placeT - (fine ? 0.005 : 0.03), 0, 1); break;
+    case 'd': case 'D': G.placeT = clamp(G.placeT + (fine ? 0.005 : 0.03), 0, 1); break;
+    case ' ': playerFire(); break;
+    default: used = false;
+  }
+  if (used) { e.preventDefault(); syncUI(); }
+});
+
+function playerFire() {
+  if (G.phase !== 'aim' || G.turn !== 0) return;
+  const h = G.playerTremor ? shakyHand(G.aimDeg, G.power, G.tremorDeg) : { aimDeg: G.aimDeg, power: G.power };
+  beginShot(0, h.aimDeg, h.power, G.placeT, true);
+}
+
+/* ==========================================================================
+   9. WIRING — UI sync, the animation loop, and a small test hook.
+      ========================================================================== */
+
+const $ = id => document.getElementById(id);
+const els = {
+  scoreYou: $('scoreYou'), scoreAi: $('scoreAi'),
+  discsYou: $('discsYou'), discsAi: $('discsAi'),
+  roundInfo: $('roundInfo'), statusText: $('statusText'),
+  aimReadout: $('aimReadout'), powerBar: $('powerBar'), placeReadout: $('placeReadout'),
+  aiReason: $('aiReason'), aiTerms: $('aiTerms'), log: $('log'), mirror: $('mirror'),
+  btnFire: $('btnFire')
+};
+
+function statusLine() {
+  switch (G.phase) {
+    case 'moving': return 'Discs in motion…';
+    case 'thinking': return 'The machine is searching shots…';
+    case 'roundover': {
+      const s = boardScore(G.discs, G.twenties);
+      return `Round over — board ${s[0]}–${s[1]}. Press "Next round".`;
+    }
+    case 'matchover': return G.match[0] > G.match[1] ? 'You win the match.' : 'The machine wins the match.';
+    default: return G.turn === 0 ? 'Your shot.' : 'The machine to shoot.';
+  }
+}
+
+function syncUI() {
+  els.scoreYou.textContent = G.match[0];
+  els.scoreAi.textContent = G.match[1];
+  els.discsYou.textContent = `${G.hands[0]} left · ${G.twenties[0]} in the 20`;
+  els.discsAi.textContent = `${G.hands[1]} left · ${G.twenties[1]} in the 20`;
+  els.roundInfo.textContent = `Round ${G.round} · ${G.leader === 0 ? 'you lead' : 'machine leads'} · first to ${BOARD.matchTarget}`;
+  els.statusText.textContent = statusLine();
+
+  els.aimReadout.innerHTML = `aim <b>${G.aimDeg >= 0 ? '+' : ''}${G.aimDeg.toFixed(1)}&deg;</b> · power <b>${Math.round(G.power * 100)}%</b> · <span class="muted">${powerToSpeed(G.power).toFixed(0)} in/s</span>`;
+  els.powerBar.style.width = (G.power * 100).toFixed(1) + '%';
+  const relDeg = (G.placeT * 2 - 1) * QUAD[0].halfDeg;
+  els.placeReadout.textContent = `placed ${relDeg >= 0 ? '+' : ''}${relDeg.toFixed(1)}° from your quadrant centre`;
+  els.btnFire.disabled = !(G.phase === 'aim' && G.turn === 0);
+
+  els.log.innerHTML = G.log.map(l => `<li><span class="r">R${l.r}</span> ${l.text}</li>`).join('');
+  renderAI();
+  renderMirror();
+  draw();
+}
+
+function renderAI() {
+  const r = G.aiReport;
+  if (!r) { els.aiReason.innerHTML = '<em>Waiting for its turn.</em>'; els.aiTerms.hidden = true; return; }
+  const relDeg = (r.cand.t * 2 - 1) * QUAD[1].halfDeg;
+  const drift = Math.abs(r.hand.aimDeg - r.cand.aimDeg);
+  els.aiReason.innerHTML =
+    `<span class="shot">place ${relDeg >= 0 ? '+' : ''}${relDeg.toFixed(1)}° · aim ${r.cand.aimDeg >= 0 ? '+' : ''}${r.cand.aimDeg.toFixed(1)}° · power ${Math.round(r.cand.pw * 100)}%` +
+    `<br>hand drifted ${drift.toFixed(2)}° · released ${Math.round(r.hand.power * 100)}%</span>` +
+    (r.winning
+      ? `Chose it for <strong>${r.winning.label}</strong> (${r.winning.delta > 0 ? '+' : ''}${r.winning.delta} against leaving the board alone). `
+      : 'Nothing improved the board — this was damage limitation. ') +
+    `Searched <strong>${r.evaluated}</strong> candidates; board went from <strong>${r.baseline}</strong> to <strong>${r.total}</strong>.`;
+  const tb = els.aiTerms.querySelector('tbody');
+  tb.innerHTML = r.parts.filter(p => p.raw !== 0 || p.delta !== 0).map(p =>
+    `<tr class="${r.winning && p.key === r.winning.key ? 'win' : ''}"><td>${p.label}</td><td class="n">${p.raw}</td><td class="n">${p.delta > 0 ? '+' : ''}${p.delta}</td></tr>`
+  ).join('') || '<tr><td colspan="3">Empty board after the shot.</td></tr>';
+  els.aiTerms.hidden = false;
+}
+
+function renderMirror() {
+  const names = ['your', "the machine's"];
+  const buckets = { 15: [], 10: [], 5: [] };
+  for (const d of G.discs) { const v = ringValue(d); if (buckets[v]) buckets[v].push(d); }
+  const parts = [];
+  for (const v of [15, 10, 5]) {
+    const b = buckets[v];
+    if (!b.length) continue;
+    const mine = b.filter(d => d.owner === 0).length, theirs = b.length - mine;
+    parts.push(`${v}-ring: ${mine} of yours, ${theirs} of the machine's`);
+  }
+  const s = boardScore(G.discs, G.twenties);
+  els.mirror.textContent =
+    `${statusLine()} Board count ${s[0]} to ${s[1]}. ` +
+    `Twenties banked: you ${G.twenties[0]}, machine ${G.twenties[1]}. ` +
+    (parts.length ? parts.join('. ') + '.' : 'No discs on the surface.') +
+    ` Your next shot is placed ${((G.placeT * 2 - 1) * QUAD[0].halfDeg).toFixed(0)} degrees from your quadrant centre, aimed ${G.aimDeg.toFixed(1)} degrees, power ${Math.round(G.power * 100)} percent.` +
+    ` ${names[G.turn]} turn.`;
+}
+
+/* -- animation loop ------------------------------------------------------ */
+function frame(t) {
+  if (G.sim) {
+    if (!G.lastT) G.lastT = t;
+    let dt = Math.min((t - G.lastT) / 1000, 0.1);
+    G.lastT = t;
+    G.acc += dt;
+    let ticks = 0;
+    while (G.acc >= TICK && ticks < 6 && G.sim) {
+      G.acc -= TICK; ticks++;
+      if (simAdvance(G.sim, SUBSTEPS)) { commitShot(G.sim); syncUI(); break; }
+    }
+    draw();
+  } else { G.lastT = t; G.acc = 0; }
+  requestAnimationFrame(frame);
+}
+
+/* -- controls ------------------------------------------------------------ */
+$('diff').addEventListener('input', e => {
+  G.tremorDeg = (+e.target.value) / 10;
+  $('diffVal').innerHTML = G.tremorDeg.toFixed(1) + '&deg;';
+});
+$('cands').addEventListener('input', e => { G.budget = +e.target.value; $('candsVal').textContent = G.budget; });
+$('handPlayer').addEventListener('change', e => { G.playerTremor = e.target.checked; });
+$('btnSeed').addEventListener('click', () => { newMatch(Math.max(0, Math.floor(+$('seed').value || 0))); });
+$('btnRound').addEventListener('click', () => { nextRound(); });
+$('btnFire').addEventListener('click', () => { cv.focus(); playerFire(); });
+$('btnCentre').addEventListener('click', () => { G.placeT = 0.5; G.aimDeg = 0; syncUI(); });
+
+// document the AI terms straight from the table that scores them
+$('termDoc').innerHTML = AI_TERMS.map(t =>
+  `<li><code>${t.key}</code> <strong>${t.w > 0 ? '+' : ''}${t.w}</strong> — ${t.doc}.</li>`).join('');
+
+window.addEventListener('resize', resize);
+if (window.matchMedia) {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onTheme = () => { readPalette(); draw(); };
+  if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme);
+}
+
+/* -- test hook: tiny, read-mostly, and harmless --------------------------- */
+window.__test = {
+  BOARD, PEGS, SINK_R,
+  state: () => ({
+    phase: G.phase, turn: G.turn, round: G.round, leader: G.leader,
+    hands: G.hands.slice(), twenties: G.twenties.slice(), match: G.match.slice(),
+    board: boardScore(G.discs, G.twenties),
+    discs: G.discs.map(d => ({ id: d.id, owner: d.owner, x: d.x, y: d.y, ring: ringValue(d) }))
+  }),
+  hash: () => G.discs.slice().sort((a, b) => a.id - b.id)
+    .map(d => `${d.id}:${d.owner}:${d.x.toFixed(6)}:${d.y.toFixed(6)}`).join('|'),
+  /** Fire an exact shot with no hand noise, resolved synchronously. */
+  fire: (aimDeg, power, placeT) => {
+    if (G.phase !== 'aim') return false;
+    return beginShot(G.turn, aimDeg, power, placeT === undefined ? G.placeT : placeT, false);
+  },
+  /** Run the machine's turn synchronously; returns its report. */
+  aiShot: () => { clearTimeout(aiTimer); const r = runAI(false); syncUI(); return r && { cand: r.cand, hand: r.hand, evaluated: r.evaluated, total: r.total, winning: r.winning && r.winning.key }; },
+  newMatch: (seed) => { clearTimeout(aiTimer); newMatch(seed); },
+  nextRound: () => { clearTimeout(aiTimer); nextRound(); },
+  setBudget: (n) => { G.budget = n; },
+  setTremor: (deg) => { G.tremorDeg = deg; },
+  /** Geometry audit: overlaps, NaNs, escapes. */
+  audit: () => {
+    const bad = [];
+    const list = G.sim ? G.sim.discs : G.discs;
+    for (const d of list) {
+      if (!isFinite(d.x) || !isFinite(d.y) || !isFinite(d.vx) || !isFinite(d.vy)) bad.push({ t: 'nan', id: d.id });
+      const r = Math.hypot(d.x, d.y);
+      if (r > BOARD.surfaceR + 1e-6) bad.push({ t: 'escaped', id: d.id, r });
+      for (const p of PEGS) {
+        const dd = Math.hypot(d.x - p.x, d.y - p.y);
+        if (dd < BOARD.discR + BOARD.pegR - 1e-4) bad.push({ t: 'in-peg', id: d.id, gap: dd });
+      }
+    }
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      const dd = Math.hypot(list[i].x - list[j].x, list[i].y - list[j].y);
+      if (dd < BOARD.discR * 2 - 1e-4) bad.push({ t: 'overlap', a: list[i].id, b: list[j].id, gap: dd });
+    }
+    return bad;
+  },
+  /** Legality probe used by the verification pass. */
+  quadrantOf: (x, y) => {
+    const a = Math.atan2(y, x) * R2D;
+    const rel0 = ((a - QUAD[0].centreDeg + 180) % 360 + 360) % 360 - 180;
+    const rel1 = ((a - QUAD[1].centreDeg + 180) % 360 + 360) % 360 - 180;
+    return { rel0, rel1, r: Math.hypot(x, y) };
+  },
+  lastPlacement: () => placementPoint(G.turn, G.placeT),
+  log: () => G.log.slice()
+};
+
+/* -- boot ---------------------------------------------------------------- */
+readPalette();
+resize();
+newMatch(20260809);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

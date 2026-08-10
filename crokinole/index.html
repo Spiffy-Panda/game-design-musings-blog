@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crokinole — the board is the ruleset</title>
+<style>
+  :root{
+    --ground:#f7f1e4; --surface:#fdf8ee; --line:#ddcdb0; --line2:#c4ab84;
+    --ink:#2b2118; --ink2:#4d3f30; --ink3:#7d6a52;
+    --accent:#b4541c; --accent2:#31606e;
+    --accent-wash:rgba(180,84,28,.07); --accent2-wash:rgba(49,96,110,.07);
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'Cascadia Code',Consolas,'SF Mono',ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#14100b; --surface:#1c1712; --line:#2e261c; --line2:#4a3d2c;
+      --ink:#ece2d2; --ink2:#c6b8a3; --ink3:#9b8b74;
+      --accent:#e8894a; --accent2:#6fb2c4;
+      --accent-wash:rgba(232,137,74,.06); --accent2-wash:rgba(111,178,196,.05);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--ground); color:var(--ink);
+    font:16.5px/1.65 var(--sans);
+    background-image:
+      radial-gradient(46% 38% at 90% 3%, var(--accent-wash), transparent 70%),
+      radial-gradient(50% 44% at 4% 100%, var(--accent2-wash), transparent 70%);
+  }
+  .wrap{max-width:860px; margin-inline:auto; padding:clamp(40px,8vh,96px) clamp(18px,5vw,48px) 72px}
+  a{color:var(--accent)}
+
+  .eyebrow{font:600 12px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+  h1{font:650 clamp(32px,6vw,54px)/1.06 var(--sans); letter-spacing:-.02em; margin:0 0 6px}
+  .tagline{font:500 clamp(15px,2.4vw,19px)/1.35 var(--sans); color:var(--accent); margin:0 0 16px}
+  .sub{font-size:clamp(16px,2.2vw,19px); color:var(--ink2); max-width:62ch; margin:0 0 40px}
+  h2{font:650 22px/1.3 var(--sans); letter-spacing:-.01em; margin:44px 0 12px}
+  p{max-width:70ch}
+  .prose p{margin:0 0 16px; color:var(--ink2)}
+  .prose strong{color:var(--ink)}
+  code{font:14px var(--mono); background:var(--surface); border:1px solid var(--line); border-radius:3px; padding:.06em .35em}
+
+  /* claims */
+  .claims{list-style:none; margin:18px 0 0; padding:0; display:grid; gap:12px}
+  .claims li{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+             border-radius:4px; padding:14px 18px 13px}
+  .claims li:nth-child(2n){border-left-color:var(--accent2)}
+  .claims .hd{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px}
+  .claims .id{font:600 12px/1 var(--mono); letter-spacing:.08em; color:var(--ink3);
+              border:1px solid var(--line2); border-radius:3px; padding:4px 6px}
+  .claims .ttl{font:640 16.5px/1.35 var(--sans)}
+  .claims p{margin:0; font-size:15px; color:var(--ink2)}
+
+  /* cards */
+  .cards{display:grid; gap:16px; margin-top:20px}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--surface);
+         border:1px solid var(--line); border-top:3px solid var(--accent); border-radius:4px;
+         padding:22px 24px 20px; transition:border-color .15s ease, transform .15s ease}
+  a.card:hover{border-color:var(--line2); border-top-color:var(--accent); transform:translateY(-1px)}
+  a.card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .no{font:600 10.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--ink3)}
+  .card h3{font:640 23px/1.25 var(--sans); margin:8px 0 6px}
+  .card h3 .arrow{color:var(--ink3); font-weight:400}
+  .card p{margin:0; font-size:15px; color:var(--ink2); max-width:66ch}
+  .ghost{border:1.5px dashed var(--line2); border-radius:4px; padding:20px 24px 18px; color:var(--ink3)}
+  .ghost h3{font:640 20px/1.25 var(--sans); margin:8px 0 6px; color:var(--ink2)}
+  .ghost p{margin:0; font-size:14.5px; max-width:66ch}
+
+  .foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px;
+        font:12.5px/1.8 var(--sans); color:var(--ink3); max-width:72ch}
+  .foot a{color:var(--ink2)}
+
+  /* ————————————————— breadcrumb ————————————————— */
+  .crumbs{margin:0 0 1.6rem; font:500 .92rem/1.5 var(--sans)}
+  .crumbs ol{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; align-items:center}
+  .crumbs li{display:flex; align-items:center; min-height:34px}
+  .crumbs li + li::before{content:"\203A"; margin:0 .1rem; color:var(--line2); user-select:none}
+  .crumbs a{color:var(--accent); text-decoration:none; padding:.4rem .3rem; border-radius:3px}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .crumbs [aria-current="page"]{color:var(--ink3); padding:.4rem .3rem}
+  @media (max-width:420px){ .crumbs{font-size:.86rem} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://spiffy-panda.github.io/">Panda's Portfolio</a></li>
+        <li><a href="../../index.html">Game Design Musings</a></li>
+        <li><span aria-current="page">Crokinole</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow">A musing + a playable board · self-contained, no build</p>
+    <h1>Crokinole</h1>
+    <p class="tagline">The board is the ruleset.</p>
+    <p class="sub">A dexterity game from 1870s Ontario, taken apart by rebuilding it. Simulating a
+    physical game is the fastest way to find out how much of its design was never written down —
+    because <strong>a simulator cannot leave anything implicit</strong>.</p>
+
+    <div class="prose">
+      <h2>The bet</h2>
+      <p>Crokinole is a round board, a hole in the middle, eight pegs, and two people taking turns
+      flicking small wooden discs at each other. No cards, no dice, no hidden information, no text
+      anywhere on the equipment. Writing a design note about it ought to be like writing a design
+      note about a frisbee.</p>
+      <p>The bet is that this is precisely what makes it interesting. Most games keep their rules in
+      a book and their state in components; crokinole keeps both in one piece of plywood. The rules
+      are inscribed as geometry — and once you notice that, the object stops being a board and
+      starts being a <strong>compiled ruleset</strong>, one that has been iterated on by furniture
+      makers for a century and a half without anyone editing a single sentence.</p>
+      <p>The fastest way to decompile it is to rebuild it. <a href="board.html">The Board</a> is a
+      playable crokinole: regulation dimensions in inches, a fixed-timestep rigid-disc solver, the
+      contact rule enforced, and an opponent that searches by running the same physics you are
+      watching. Nothing about it is clever. Its value is that every hand-wave had to become a
+      number, and the hand-waves turned out to be where the design lives.</p>
+
+      <h2>What the rebuild made explicit</h2>
+      <p>Three things stopped being scenery the moment they had to compile.</p>
+      <p><strong>The dimensions are load-bearing.</strong> A 26&Prime; playing surface; a 24&Prime;
+      starting line you must shoot from; a 16&Prime; circle worth 10 and an 8&Prime; circle worth
+      15; a 1&nbsp;3/8&Prime; hole worth 20 and 1&frac14;&Prime; discs to put in it. Those are
+      quoted numbers. The one that isn't quoted is the peg <em>phase</em>. Eight 3/8&Prime; pegs sit
+      with their centres on the 8&Prime; circle, 45&deg; apart — but at what rotation? The
+      simulator uses 22.5&deg; off each quadrant line, which puts two pegs per quadrant straddling
+      its centre line, and that is <strong>derived from the geometry, not cited from a source</strong>:
+      it is the only phase under which both the quadrant divider and the middle of your own quadrant
+      look straight down a gap. Get it wrong and there is no open twenty at all. A rotation nobody
+      writes down is the difference between crokinole and a shrug.</p>
+      <p><strong>The contact rule is doing all the balancing.</strong> On paper it is a one-line
+      restriction: if your opponent has a disc on the surface, your shot must touch one. In code it
+      is a foul check that removes your shooting disc <em>and every disc of yours that moved</em>,
+      while leaving theirs wherever the shot pushed them. That asymmetry is the whole tempo of the
+      game, and it only became obvious once it was written as an <code>if</code>.</p>
+      <p><strong>Difficulty had nowhere to hide.</strong> A physical crokinole player's variance is
+      their own hand; a digital one has to be manufactured. The simulator's difficulty control is a
+      Gaussian tremor applied to the released angle and power — 1.2&deg; by default, up to 4&deg; —
+      and the search is <em>identical</em> at every setting. Turning the dial does not make the
+      machine smarter, only steadier. That is honest, and it is also flat: the opponent has one
+      personality at every level. It is the live tension in the design, and it is stated on the page
+      rather than hidden behind a "Hard" label.</p>
+
+      <h2 id="claims">Six claims</h2>
+      <ol class="claims">
+        <li id="crk-1">
+          <div class="hd"><span class="id">CRK.1</span><span class="ttl">The board is the ruleset.</span></div>
+          <p>Nearly every rule in crokinole is a geometric fact already sitting on the plywood: the
+          rings <em>are</em> the scoring table, the ditch <em>is</em> the out-of-bounds clause, the
+          hole <em>is</em> the jackpot. The rulebook is mostly a description of an object. Very few
+          games can be read off their own equipment.</p>
+        </li>
+        <li id="crk-2">
+          <div class="hd"><span class="id">CRK.2</span><span class="ttl">The contact rule taxes the lead.</span></div>
+          <p>Your discs on the board are simultaneously your score and your opponent's
+          <em>permission to shoot freely</em>: if they have a target they must hit it, and if they
+          miss they lose the shot and everything they moved. Scoring well hands the opponent an
+          obligation and something to knock at. The catch-up mechanism is not a rule bolted on top
+          — it is the same discs, counted twice.</p>
+        </li>
+        <li id="crk-3">
+          <div class="hd"><span class="id">CRK.3</span><span class="ttl">The hand is the randomiser.</span></div>
+          <p>No dice, no shuffle, no hidden information — the variance is entirely your own motor
+          control. Digitising the game therefore means <em>choosing a noise model</em>, and that
+          choice is the whole of the difficulty design. Here it is Gaussian tremor on release angle
+          and power: the machine never gets cleverer, only steadier. Honest, and flat, and the most
+          interesting unsolved part.</p>
+        </li>
+        <li id="crk-4">
+          <div class="hd"><span class="id">CRK.4</span><span class="ttl">Eight pegs turn geometry into repertoire.</span></div>
+          <p>An open plane has infinite shots and no vocabulary. Eight posts guarding the 15-ring cut
+          it into named lanes — the open twenty straight down your quadrant's centre line, the
+          ricochet off the near post, the hide tucked behind a peg. Obstacles are what make a skill
+          <em>learnable</em>: they give it landmarks to be good at.</p>
+        </li>
+        <li id="crk-5">
+          <div class="hd"><span class="id">CRK.5</span><span class="ttl">Only the leader scores, and only the margin.</span></div>
+          <p>Round scoring is differential — the higher side banks the difference — so a round is a
+          tug-of-war rather than an accumulation, and a blowout on the board converts to a modest
+          number. The scoreboard actively refuses to compound. Twelve discs of work can be worth
+          five points.</p>
+        </li>
+        <li id="crk-6">
+          <div class="hd"><span class="id">CRK.6</span><span class="ttl">A legible opponent beats a strong one.</span></div>
+          <p>The machine searches on the order of 160 candidate shots a turn with the same
+          deterministic physics the player gets, then says which scoring term actually won — measured
+          as the <em>improvement over leaving the board alone</em>, because raw board value made "my
+          discs are worth points" win every single time and explained nothing. An opponent that
+          narrates its reason is a teacher; one that merely wins is weather.</p>
+        </li>
+      </ol>
+
+      <h2>The pages</h2>
+      <div class="cards">
+        <a class="card" href="board.html">
+          <span class="no">I · The simulator</span>
+          <h3>The Board — play a round <span class="arrow">→</span></h3>
+          <p>A regulation board at 26&Prime;, twelve discs a side shot alternately, the contact rule
+          and the empty-board 15-ring rule enforced, the ditch fatal. Drag back from your disc and
+          release like a slingshot, or aim with the keyboard. The physics is deterministic and
+          seeded — same seed, same release, same resting positions — and the opponent shows its
+          search: the shot it chose, how far its hand drifted, and the scoring terms that decided
+          it.</p>
+        </a>
+        <div class="ghost">
+          <span class="no">II · candidate</span>
+          <h3>The Curves</h3>
+          <p>Drive the deterministic solver headlessly and plot what the hand model actually does:
+          open-twenty hit rate against tremor &sigma;, takeout success by ring, foul rate as the
+          board fills. The difficulty dial stops being a feeling and becomes a graph.</p>
+        </div>
+      </div>
+
+      <h2>Where it bends the real game</h2>
+      <p>Two departures worth naming up front. <strong>Ring value is decided by the disc's centre</strong>,
+      where the tournament rule is line-based — a disc touching a line takes the lower value — so
+      this board is very slightly generous at every boundary, uniformly. And <strong>singles here is
+      twelve discs a side</strong>: the general rule sets say twelve, while World Crokinole
+      Championship singles plays eight. The simulator's own rules panel lists the rest of the
+      approximations, including how much the hole is allowed to swallow.</p>
+    </div>
+
+    <p class="foot">Everything runs in the page — one file, no build step, no network, no telemetry;
+    nothing you do leaves the tab. Handles <code>CRK.1</code>–<code>CRK.6</code> above are stable and
+    append-only: new claims take new numbers, nothing renumbers, so they can be cited from other
+    pages.</p>
+  </div>
+</body>
+</html>

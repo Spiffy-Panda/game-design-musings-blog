@@ -6,6 +6,211 @@ records *what changed*. Write an entry before every commit (Rule 5).
 
 ---
 
+## 2026-08-10 — Crokinole: four chosen boards, a polygon zone kind, and two "defining traits" that turned out to be geometrically impossible
+
+The picket board's four placeholder layouts (`lane-24x40`, `arena-30x30`, `sidewinder-36x22`,
+`alley-18x44` — invented by the previous pass before Panda had chosen) are replaced by the four
+Panda picked: **lane**, **courtyard**, **gauntlet**, **terrace**. Dev 1's data contract survives
+intact; only the geometry and the identities changed. Five things worth writing down.
+
+**Board geometry moved out of the page and into `crokinole/layouts.json`.** The page cannot
+`fetch` it — `board.html` must open from `file://`, where a sibling fetch is same-origin-blocked —
+so `build-musing.py` inlines the JSON into a `<script type="application/json" id="board-layouts">`
+block at build time and copies the JSON next to the published page. The failure mode this
+arrangement has to avoid is a *second hand-maintained copy*: the block is generated, the build
+exits non-zero if the JSON is missing or unparseable, and `--sync` rewrites the repo copy (which
+also has to open from disk). A plain build never touches the source tree; it warns loudly that the
+repo copy is stale and publishes from the JSON anyway, so the site is never wrong even when the
+working copy is. Generalised into `musing-tech-notes.md` — it is the pattern for any
+self-contained page that needs data.
+
+**`poly` is now a first-class zone kind, and so is the Crown.** The courtyard's zones are
+diamonds. Rather than special-case them, zones and the Crown plateau both compile to a list of
+outward half-planes `n·p ≤ d`; a rect emits its four in the historical `[+x, −x, +y, −y]` order,
+which is the order `lipV2` has always been written in, so a rectangular Crown's climb toll is
+term-for-term what it was. The lip is now taken **per face** rather than per axis: the toll is
+along the face normal, the tangential component is untouched, a rejected disc is parked `LIP_EPS`
+outside the face it failed, and a corner entry still pays both. That is what let the Crown become
+a diamond without the physics learning a second kind of shape.
+
+**Two of the four "defining traits" are geometrically impossible as written, and the numbers had
+to move.** Both are the same theorem. A single fence of pitch `p` blocks a disc-centre line within
+`0.8125"` of a post, so two staggered fences leave a straight corridor of width `p − 3.25`; making
+that zero (`p ≤ 3.25`) is fine, but only because the fence stays passable at `p − 1.625` wide. So
+the **lane's** fence pitch went 3.75 → 3.0 (posts at `y = 0, ±3, ±6` against `±4.5, ±1.5`): at the
+spec's 3.75 there were two 0.25"-wide straight lanes threading both fences, one of them landing
+square on the crown, which is precisely the "commit to one side" the board exists to force.
+Measured after: widest corridor through both fences **0.0005"** (the sampling step), against
+**1.375"** through either fence alone.
+
+The **courtyard** is the harder one, and it does not have a clean answer. With eight posts on one
+circle of radius `r`, the gap between the cardinal post and the diagonal post projects to a
+straight-line corridor of width `r/√2 − 1.625`, which is empty only for `r ≤ 2.298` — i.e. only
+for a ring *inside* a crown of the spec's half-diagonal 4. There is no eight-post ring outside a
+crown of any usable size that blocks parallel straight lines. Measured on the spec's own numbers
+(crown 4, ring 6.5): **25.9% of the launch line** gives a straight shot that comes to rest on the
+crown — a completely open front door, and the board's named fail condition. Shipped instead: crown
+half-diagonal **2.8**, cardinals at **3.05**, diagonals at **2.23** — a ring hugging the crown's
+rim rather than a circle, which is what "on the cardinals and diagonals" reduces to once the
+geometry is honoured. That gets it to **7.5%**, and every one of those is a post *carom*, not a
+clean line: geometrically only **0.025"** of the 25" launch line has an unobstructed straight line
+to the crown, and the cardinal itself (x = 0) is shut. Shrinking the crown further barely helps
+(7.0% at half-diagonal 2.2), which is the tell that the residue is caroms rather than lines. This
+is the weakest of the four traits and it is weak for a reason that is worth keeping in view: on a
+board where the centre is an *area* rather than a hole, blocking the line is not the same as
+denying the target.
+
+**The gauntlet's chevron was tightened, and the tightening broke the board.** A chevron with
+y-pitch 1.625 admits no straight line at all — and then nothing else either. Because the Engage
+rule's only legal answer on an empty board is "rest on the Crown", and the Crown was no longer
+reachable by anything the player or the search would find, **every first shot of every round
+fouled and the board never populated**: 12 shots, zero discs standing, 0–0 forever. Reverted to
+the spec's exact chevron (`(8, ±4.4) (9, ±2.2) (9.4, 0)`), which leaves a 0.575"-wide straight
+lane at the crown — under half a disc — and a board that actually plays (peak 7 discs in play,
+matches resolving). The lesson is the general one: a picket is not scored by how much it blocks,
+it is scored against the rule that says what a legal shot is. A "perfect" fence plus the Engage
+rule is a deadlock.
+
+**The gauntlet is enclosed, so it needed a board-full rule, and the first version of it deadlocked
+too.** Rule chosen: *the round ends the moment the side to move has no legal placement anywhere on
+its launch line, and the board scores exactly as it stands, unspent discs and all.* Letting the
+stuck player pass was rejected — on a board that only fills, passing hands the last word to
+whoever is holding fewer discs, which rewards having already spent badly. Ending it makes a jam a
+**position**. The bug: the check answers "is there anywhere to stand", which must use the
+*smallest* body in the hand (otherwise a blocked Anvil declares a board full that a Skate fits) —
+but the AI's fallback then took that spot with `firstInHand`, whose radius did not fit, so
+`beginShot` refused, the turn never completed, and the game sat there. The check now returns a
+**(spot, disc) pair** and every caller uses both halves; the human's "placement blocked" message
+names a spot and a body that would work rather than being a dead end. `enclosed: true` is a
+declaration the audit *checks* — every segment must be a rail — rather than one it takes.
+
+Verified across all four boards with the real page over HTTP: zero console errors; layout audit
+clean; zero geometry violations (overlap / in-peg / in-rail / escaped / NaN) over 58 max-power
+shots each plus max-power slams into packed clusters; scoring recomputed independently from disc
+positions through the compiled half-planes matches the page; the AI takes 20+ legal turns on each;
+byte-identical replay from the same seed after switching away through every other board and back;
+the runtime loader installs a good file and rejects bad JSON, missing fields, a degenerate polygon
+and a ditchless-but-not-`enclosed` board with named errors and no state change.
+
+---
+
+## 2026-08-10 — Crokinole v1: six designers, nineteen dead ideas, and an aim-assist disc that could not have worked
+
+The rebuild from the round regulation board to the rectangular picket board, plus the twelve-disc
+roster. Run as a persona fan-out (six designers with deliberately incompatible convictions) →
+a design critic with a mandate to kill → two dev agents → an adversarial verifier → a fixer.
+The v2 boards entry above covers the geometry; this covers **why the system is shaped the way it
+is**, which is the part that would otherwise be lost.
+
+### The one that mattered: aim assist was structurally impossible
+
+Panda asked for meta effects, "like aim assist". Five of the six designers proposed one. **Three of
+them independently worked out that it could not function**, and they were right: `aiSearch` searches
+**noiseless** candidates, and `shakyHand` applies tremor *after* the search. So reducing a disc's
+tremor changes neither the searched trajectory nor its score — the machine's valuation of a precision
+disc was byte-identical to its valuation of the vanilla one. It would have held the disc and never
+played it, while the UI claimed the disc was precise. That is exactly the `CRK.6` failure the musing
+was written to warn about, reintroduced by the feature request.
+
+The fix is a **two-stage search**: stage 1 is the existing noiseless pass; stage 2 re-scores the top
+16 candidates under three seeded tremor samples drawn from a **dedicated substream** that never
+touches `G.rand` (or looking at a shot would change the game). Precision now collapses the spread of
+a candidate's samples, so the machine can finally *see* what a steady hand is worth. It was made a
+precondition of the disc shipping at all, not a follow-up. Side benefit: it fixes the flatness the
+hub already admits about the difficulty slider — a shaky machine starts preferring rail banks over
+threaded gates on its own, with no second heuristic.
+
+### A latent determinism bug in the v0 code
+
+`shakyHand` early-returned at sigma 0 **without consuming any draws**. Move the tremor slider to 0
+and back and the whole downstream PRNG stream desyncs: same seed, different game. It shipped in the
+round board too, whose headline claim is determinism, so it was fixed in `regulation.html` as well —
+always draw both gaussians, then scale. Behaviour at any sigma > 0 is byte-identical to before; only
+the draw count becomes invariant. Found by reading, not by testing, because every test held sigma
+constant. That is the shape of bug this project keeps producing: **the test performs the step the
+code omits**.
+
+### What the critic refused, and the principle behind each refusal
+
+- **Every currency.** Three designers independently invented the same activation meter (Poise /
+  Charges / Composure). All three died on one argument: *the disc is already the resource*. A named
+  disc appears a fixed number of times in your twelve and playing it spends it. A second meter
+  double-charges every effect and doubles the honest search's branching factor.
+- **The entire mutable-terrain school** — friction-wear grid, emitters, breakable pegs. The wear grid
+  meant ~160 candidate sims each shadowing a 4160-cell mutable array with a patch overlay: the most
+  dangerous determinism bug available in this file, bought for a texture no player can read. Emitters
+  can prevent a disc ever coming to rest (the designer flagged it himself). The breakable picket
+  needs the module-level `PEGS` global hoisted into sim state and movable chips added to an O(n²)
+  contact loop.
+- **Group scoring** (the most elegant single proposal in the pile) — because it makes the Crown a
+  mere anchor and moves all the value into inter-disc spacing, which makes the raised centre
+  decorative. Right game, wrong brief.
+
+Six designers proposed the same heavy disc under six names, and all six independently identified the
+same required solver change (reduced-mass impulse). That convergence is the strongest signal the
+exercise produced: one disc, one solver change.
+
+### The verifier earned its keep
+
+It failed the build with 10 defects. The sharpest: the rules panel asserted *"Nothing about the aim
+assist is asymmetric"* while the player's tremor checkbox **shipped unchecked** — so the precision
+disc paid its costs and bought the human literally nothing, while the machine collected the benefit
+every shot. Also a stale AI timer that let the machine take a free out-of-turn shot after "Next
+round", and a stage-2 re-score that drew *independent* noise per candidate instead of common random
+numbers (measured: a 10.6-point swing on an identical candidate from draw luck alone, against term
+weights of ±2 to ±4). Nine were fixed.
+
+**The transferable lesson:** the persona fan-out was worth it not because six designers produced six
+good systems — they produced one good system and nineteen dead ends — but because **three of them
+independently caught an architectural impossibility that a single designer would have specified
+straight past.** The redundancy was the product.
+
+---
+
+## 2026-08-09 — Crokinole: the rules the plywood was keeping, and an opponent whose stated reason was a tautology
+
+New musing `crokinole/` (HTML-first, folder == slug, mnemonic `CRK`) on Panda's brief: *"a
+crokinole simulator, JavaScript, framed on the website."* Hub `index.html` + the playable
+`board.html`, registered in `MUSING-CONFIG.json`. Four things worth writing down.
+
+**The board's dimensions are well documented; the pegs' *phase* is not.** Diameters, ring
+sizes, hole, disc, peg count and peg-circle radius are all cited across multiple sources.
+The angular relationship between the eight pegs and the four quadrant lines is not, in
+anything reachable — the definitive data lives inside binary board-template PDFs. It is
+forced by geometry (8 pegs + 4-fold symmetry + the existence of a straight open shot at the
+hole from your quadrant's centre line ⇒ pegs at 22.5° + 45°k, two per quadrant straddling
+its bisector), so that is what the simulator uses, and **both the page's rules panel and
+the hub say plainly that this one number is derived rather than cited**. Deriving it is
+also the nicest fact in the musing: the peg phase is what creates the open twenty.
+
+**The outer band is dead, not cheap.** The 2" between the 24" starting line and the 26"
+edge is a launch pad — a disc that *rests* there is out of play, not worth 5. Easy to get
+wrong from a diagram, where it looks like the outermost scoring ring.
+
+**The opponent's stated reason was a tautology for its first hour.** It reports which
+scoring term won, which is the whole point of `CRK.6` — legibility over strength. Reporting
+the term with the largest raw value made `OWN_RINGS` ("my discs on the board are worth
+points") win *every single shot*, because it is a level, not a change. Now it reports the
+term with the largest **delta against leaving the board alone**, and it says useful things:
+`CLEARED`, `OPP_RINGS`, `OWN_RINGS`, or honestly "nothing improved the board". A director
+that narrates a constant is not narrating.
+
+**Difficulty is hand-tremor, and that is honest but flat.** With no dice and no hidden
+information, the only randomizer in crokinole is motor control, so the difficulty slider is
+Gaussian σ on release angle. It makes the machine *steadier*, never *different* — it does
+not open new lines of play at high skill the way a human's does. Search width is wired as a
+second axis but under-used. Recorded as the live tension in `CRK.3` rather than papered
+over; the follow-up statistics page (tremor σ → open-twenty hit rate) is the way to make it
+legible instead of merely admitted.
+
+Verification was Playwright-driven, and the two checks that mattered were **determinism**
+(same seed ⇒ byte-identical 6-shot traces, so the opponent's headless search predicts
+exactly the physics the player gets) and **no tunnelling** (nine max-power slams into a
+packed cluster and a head-on peg strike, 0 geometry violations; 0.117" of travel per substep
+against a 0.8125" disc–peg contact distance). Plan + candidates: `plans/PLAN-crokinole.md`.
+
+---
+
 ## 2026-07-16 — GTH.Q4 ruled full convergence — and the second consumer found two bugs within the hour
 
 Panda ruled the last four open GTH questions. `GTH.Q2` (3D hit-reporting) and `GTH.M5`'s optional C#
