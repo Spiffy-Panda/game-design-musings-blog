@@ -94,12 +94,13 @@
       </ol>
     </nav>
 
-    <p class="eyebrow">A musing + a playable board · self-contained, no build</p>
+    <p class="eyebrow">A musing + two playable boards · self-contained, no build</p>
     <h1>Crokinole</h1>
     <p class="tagline">The board is the ruleset.</p>
     <p class="sub">A dexterity game from 1870s Ontario, taken apart by rebuilding it. Simulating a
     physical game is the fastest way to find out how much of its design was never written down —
-    because <strong>a simulator cannot leave anything implicit</strong>.</p>
+    because <strong>a simulator cannot leave anything implicit</strong>. And once the object is
+    running, the cheapest way to prove the rules live in it is to <strong>edit the object</strong>.</p>
 
     <div class="prose">
       <h2>The bet</h2>
@@ -112,10 +113,10 @@
       are inscribed as geometry — and once you notice that, the object stops being a board and
       starts being a <strong>compiled ruleset</strong>, one that has been iterated on by furniture
       makers for a century and a half without anyone editing a single sentence.</p>
-      <p>The fastest way to decompile it is to rebuild it. <a href="board.html">The Board</a> is a
-      playable crokinole: regulation dimensions in inches, a fixed-timestep rigid-disc solver, the
-      contact rule enforced, and an opponent that searches by running the same physics you are
-      watching. Nothing about it is clever. Its value is that every hand-wave had to become a
+      <p>The fastest way to decompile it is to rebuild it. <a href="regulation.html">The Regulation
+      Board</a> is a playable crokinole: regulation dimensions in inches, a fixed-timestep rigid-disc
+      solver, the contact rule enforced, and an opponent that searches by running the same physics you
+      are watching. Nothing about it is clever. Its value is that every hand-wave had to become a
       number, and the hand-waves turned out to be where the design lives.</p>
 
       <h2>What the rebuild made explicit</h2>
@@ -143,7 +144,39 @@
       personality at every level. It is the live tension in the design, and it is stated on the page
       rather than hidden behind a "Hard" label.</p>
 
-      <h2 id="claims">Six claims</h2>
+      <h2>Then the object was edited</h2>
+      <p>A thesis you can only assert is a weak one. If the board really <em>is</em> the ruleset, the
+      test is not an argument — it is a chisel: change the object, and the rules should change with it,
+      without a single sentence being rewritten. <a href="board.html">The Picket Board</a> is that
+      chisel. Crokinole comes off the circle and onto a rectangle, and the pocket is taken away
+      entirely.</p>
+      <p><strong>What replaces the hole is not a hole.</strong> The centre is a raised <em>Crown</em>
+      with a chamfered lip and a climb threshold on each face: a disc arriving too slow is turned away
+      and rebounds off the chamfer, and one arriving too fast crests, keeps the remainder, and rides
+      across and off the far side. Crossing outward refunds exactly what crossing inward cost, so a
+      disc up there is standing on a downhill — knocking one off is easier than putting one on. The
+      20 was a shot you either made or missed; the Crown is a window you can overshoot, and it scores
+      by occupancy rather than by swallowing. A picket of pegs fences it, and <strong>which edges
+      cushion and which are open ditch is a property of the board rather than of the game</strong> —
+      which is the old ditch clause promoted from scenery to a field in a file.</p>
+      <p>Four boards ship, all authored in one file — <code>layouts.json</code>, inlined into the page
+      at build time, with a loader for pasting a fifth in at runtime. A 48&nbsp;&times;&nbsp;24
+      <em>lane</em> down the long axis, with staggered fences no straight line passes through. A
+      32&nbsp;&times;&nbsp;32 <em>courtyard</em> where every edge is open ditch and eight posts shut
+      the straight-ahead line, inverting the open twenty on purpose. A 56&nbsp;&times;&nbsp;20
+      <em>gauntlet</em> that is fully enclosed, so nothing is ever removed and the board only fills —
+      which forced a rule the round game never needed, about what happens when there is nowhere left
+      to stand. And a 36&nbsp;&times;&nbsp;28 <em>terrace</em> whose Crown is a stripe spanning the
+      full width, rail to rail, so there is no left or right to get wrong, only depth. Same solver,
+      four different definitions of a good shot.</p>
+      <p><strong>And the discs stopped being interchangeable.</strong> Each side plays a rack of
+      twelve — eight named types, eight stats apiece, and every one of the eight bound to a term the
+      solver actually evaluates, so nothing on the card is decoration. They run from the plainly
+      physical (mass, radius, the bounce off a post) through a drag field to an aim-assist disc that is
+      defined purely as a noise contract. That last one broke the opponent, in the useful way: see
+      <a href="#crk-7">CRK.7</a>.</p>
+
+      <h2 id="claims">Seven claims</h2>
       <ol class="claims">
         <li id="crk-1">
           <div class="hd"><span class="id">CRK.1</span><span class="ttl">The board is the ruleset.</span></div>
@@ -190,22 +223,44 @@
           discs are worth points" win every single time and explained nothing. An opponent that
           narrates its reason is a teacher; one that merely wins is weather.</p>
         </li>
+        <li id="crk-7">
+          <div class="hd"><span class="id">CRK.7</span><span class="ttl">A stat the search cannot see is a lie.</span></div>
+          <p>The rack's eighth stat is the hand's own sigma, and it is the only one that never enters
+          the physics step. A single noiseless pass is therefore blind to it: the aim-assist disc
+          scores exactly like the plain body, so the machine would spend it at random while the page
+          called it precise. Pricing it cost a second stage — the best sixteen candidates re-shot under
+          four paired hands, the <em>same</em> four for every candidate, so the ranking compares shots
+          rather than the wobbles they happened to draw. An evaluator can only value what it models;
+          a stat outside the model is decoration with a number on it.</p>
+        </li>
       </ol>
 
       <h2>The pages</h2>
       <div class="cards">
         <a class="card" href="board.html">
-          <span class="no">I · The simulator</span>
-          <h3>The Board — play a round <span class="arrow">→</span></h3>
-          <p>A regulation board at 26&Prime;, twelve discs a side shot alternately, the contact rule
-          and the empty-board 15-ring rule enforced, the ditch fatal. Drag back from your disc and
-          release like a slingshot, or aim with the keyboard. The physics is deterministic and
-          seeded — same seed, same release, same resting positions — and the opponent shows its
-          search: the shot it chose, how far its hand drifted, and the scoring terms that decided
-          it.</p>
+          <span class="no">I · The mutation</span>
+          <h3>The Picket Board — play a round <span class="arrow">→</span></h3>
+          <p>Crokinole off the circle and onto a rectangle, with no hole at all: the centre is a
+          raised Crown that turns away a disc arriving too slow and lets a fast one ride across and
+          off the far side, fenced by a picket of pegs. Four boards ship — the 48&nbsp;&times;&nbsp;24
+          lane, the 32&nbsp;&times;&nbsp;32 courtyard, the fully enclosed 56&nbsp;&times;&nbsp;20
+          gauntlet, the 36&nbsp;&times;&nbsp;28 terrace whose Crown is a full-width stripe — every
+          number of all four authored in <code>layouts.json</code>, plus a loader for pasting in a
+          fifth. Both sides play the same rack of twelve, eight stats apiece, and the opponent
+          re-scores its best shots under a shaking hand so it knows what a steady one is worth.</p>
+        </a>
+        <a class="card" href="regulation.html">
+          <span class="no">II · The original</span>
+          <h3>The Regulation Board — play a round <span class="arrow">→</span></h3>
+          <p>The round game this grew out of, preserved and playable. A regulation board at 26&Prime;,
+          twelve discs a side shot alternately, the contact rule and the empty-board 15-ring rule
+          enforced, the ditch fatal. Drag back from your disc and release like a slingshot, or aim
+          with the keyboard. The physics is deterministic and seeded — same seed, same release, same
+          resting positions — and the opponent shows its search: the shot it chose, how far its hand
+          drifted, and the scoring terms that decided it.</p>
         </a>
         <div class="ghost">
-          <span class="no">II · candidate</span>
+          <span class="no">III · candidate</span>
           <h3>The Curves</h3>
           <p>Drive the deterministic solver headlessly and plot what the hand model actually does:
           open-twenty hit rate against tremor &sigma;, takeout success by ring, foul rate as the
@@ -214,16 +269,18 @@
       </div>
 
       <h2>Where it bends the real game</h2>
-      <p>Two departures worth naming up front. <strong>Ring value is decided by the disc's centre</strong>,
+      <p>Two departures in the regulation build worth naming up front.
+      <strong>Ring value is decided by the disc's centre</strong>,
       where the tournament rule is line-based — a disc touching a line takes the lower value — so
       this board is very slightly generous at every boundary, uniformly. And <strong>singles here is
       twelve discs a side</strong>: the general rule sets say twelve, while World Crokinole
-      Championship singles plays eight. The simulator's own rules panel lists the rest of the
-      approximations, including how much the hole is allowed to swallow.</p>
+      Championship singles plays eight. That board's own rules panel lists the rest of the
+      approximations, including how much the hole is allowed to swallow; the Picket Board keeps its
+      own, longer list, because it is no longer pretending to be the same game.</p>
     </div>
 
-    <p class="foot">Everything runs in the page — one file, no build step, no network, no telemetry;
-    nothing you do leaves the tab. Handles <code>CRK.1</code>–<code>CRK.6</code> above are stable and
+    <p class="foot">Everything runs in the page — one file each, no build step, no network, no
+    telemetry; nothing you do leaves the tab. Handles <code>CRK.1</code>–<code>CRK.7</code> above are stable and
     append-only: new claims take new numbers, nothing renumbers, so they can be cited from other
     pages.</p>
   </div>

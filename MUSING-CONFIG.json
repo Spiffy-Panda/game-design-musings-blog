@@ -114,9 +114,10 @@
       "folder": "crokinole",
       "slug": "crokinole",
       "name": "Crokinole",
-      "description": "A 150-year-old dexterity game whose rulebook is mostly a description of a piece of plywood — and what falls out when you make every implicit rule explicit. Ships a playable simulator: real board dimensions, eight pegs, the contact rule enforced, deterministic seeded physics, and an opponent that searches ~150 shots a turn and tells you which term won.",
+      "description": "A 150-year-old dexterity game whose rulebook is mostly a description of a piece of plywood — and what falls out when you make every implicit rule explicit, then edit the object. Two playable boards: the regulation round one, and the same game laid on a rectangle with the hole replaced by a raised crown, four layouts authored in JSON, and a rack of twelve discs whose stats the opponent can actually price.",
       "links": [
-        { "label": "The Board", "href": "board.html" }
+        { "label": "The Picket Board", "href": "board.html" },
+        { "label": "The Regulation Board", "href": "regulation.html" }
       ],
       "emblem": "emblem.svg",
       "theme": {
