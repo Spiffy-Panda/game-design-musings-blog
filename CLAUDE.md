@@ -153,6 +153,21 @@ referenceable handles. This is the persistent counterpart to the global chat-loc
 
 Applies to **any page**, not just musing-formatted ones.
 
+### Rule 9 — Top-tier root agents delegate by default
+
+- A **root agent** is an agent instance spawned directly by the user — the top-level
+  agent the user is conversing with. Sub-agents are not root agents. Neither are
+  scheduled/automated routines: they are top-level (non-sub-agent) but not
+  user-spawned, so this rule does not bind them.
+- **Top-tier** means the frontier reasoning models — currently **Fable 5** and
+  **Opus 5**. Cheaper/faster tiers (Sonnet, Haiku) are not bound by this rule.
+- A root agent running a top-tier model should **delegate and oversee** by
+  default: farm substantive work out to sub-agents and supervise the results,
+  rather than doing the work directly. It works directly only when the user
+  explicitly asks it to.
+- Top-tier **sub-agents** are unaffected — no additional restrictions apply to
+  them under this rule.
+
 ---
 
 ## Where to look first
